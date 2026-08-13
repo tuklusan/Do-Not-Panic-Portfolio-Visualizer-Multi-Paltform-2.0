@@ -561,7 +561,9 @@ catch {
 }
 
 try {
-    `$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -ExecutionPolicy Bypass -File `"`{0}`"" -f `$scriptPath)
+    `$escapedScriptPath = `$scriptPath.Replace('"', '""')
+    `$actionArgs = '-NoProfile -ExecutionPolicy Bypass -File "' + `$escapedScriptPath + '"'
+    `$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument `$actionArgs
     `$trigger = New-ScheduledTaskTrigger -Once -At ([DateTime]::Today.AddHours(23).AddMinutes(59))
     `$principal = New-ScheduledTaskPrincipal -UserId `$taskUser -LogonType Interactive -RunLevel Limited
     Register-ScheduledTask -TaskName `$taskName -Action `$action -Trigger `$trigger -Principal `$principal -Force | Out-Null
