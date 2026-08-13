@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DoNotPanicPortfolioVisualizer.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="DoNotPanicPortfolioVisualizer.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="1120"
+        Height="700"
+        MinWidth="960"
+        MinHeight="600"
+        Background="#12171D"
+        Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="*,Auto,*"
+          Margin="32">
+        <StackPanel Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    MaxWidth="760"
+                    Spacing="10">
+            <TextBlock Text="{Binding ProductTitle}"
+                       HorizontalAlignment="Center"
+                       FontSize="34"
+                       FontWeight="SemiBold"
+                       Foreground="#F6FAFF"
+                       TextAlignment="Center" />
+            <TextBlock Text="{Binding StageTitle}"
+                       HorizontalAlignment="Center"
+                       FontSize="18"
+                       Foreground="#93B7D9"
+                       TextAlignment="Center" />
+            <Border Background="#1B2430"
+                    BorderBrush="#33506D"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="18"
+                    Margin="0,12,0,0">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding StatusLine}"
+                               HorizontalAlignment="Center"
+                               FontSize="16"
+                               Foreground="#E8F1FA"
+                               TextAlignment="Center" />
+                    <TextBlock Text="{Binding RuntimeLine}"
+                               HorizontalAlignment="Center"
+                               FontSize="14"
+                               Foreground="#A8BED4"
+                               TextAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
+
+</Window>
