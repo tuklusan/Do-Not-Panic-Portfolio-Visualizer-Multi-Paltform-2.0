@@ -3,58 +3,390 @@
         xmlns:vm="using:DoNotPanicPortfolioVisualizer.App.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
+        d:DesignWidth="1280"
+        d:DesignHeight="820"
         x:Class="DoNotPanicPortfolioVisualizer.App.Views.MainWindow"
-        x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Width="1120"
-        Height="700"
-        MinWidth="960"
-        MinHeight="600"
-        Background="#12171D"
-        Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0">
+        Width="1280"
+        Height="820"
+        MinWidth="1080"
+        MinHeight="700"
+        Background="#14191F"
+        Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0 Configuration">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="*,Auto,*"
-          Margin="32">
-        <StackPanel Grid.Row="1"
-                    HorizontalAlignment="Center"
-                    MaxWidth="760"
-                    Spacing="10">
+    <Grid RowDefinitions="Auto,*,Auto"
+          Margin="24"
+          RowSpacing="18">
+        <StackPanel Spacing="4">
             <TextBlock Text="{Binding ProductTitle}"
-                       HorizontalAlignment="Center"
-                       FontSize="34"
+                       FontSize="28"
                        FontWeight="SemiBold"
-                       Foreground="#F6FAFF"
-                       TextAlignment="Center" />
-            <TextBlock Text="{Binding StageTitle}"
-                       HorizontalAlignment="Center"
-                       FontSize="18"
-                       Foreground="#93B7D9"
-                       TextAlignment="Center" />
-            <Border Background="#1B2430"
-                    BorderBrush="#33506D"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="18"
-                    Margin="0,12,0,0">
-                <StackPanel Spacing="6">
-                    <TextBlock Text="{Binding StatusLine}"
-                               HorizontalAlignment="Center"
-                               FontSize="16"
-                               Foreground="#E8F1FA"
-                               TextAlignment="Center" />
-                    <TextBlock Text="{Binding RuntimeLine}"
-                               HorizontalAlignment="Center"
-                               FontSize="14"
-                               Foreground="#A8BED4"
-                               TextAlignment="Center" />
-                </StackPanel>
-            </Border>
+                       Foreground="#F4FAFF" />
+            <TextBlock Text="{Binding WindowSubtitle}"
+                       FontSize="16"
+                       Foreground="#96B3CD" />
+            <TextBlock Text="{Binding RuntimeLine}"
+                       FontSize="13"
+                       Foreground="#6D869C" />
         </StackPanel>
-    </Grid>
 
+        <TabControl Grid.Row="1"
+                    Background="#14191F">
+            <TabItem Header="General">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8"
+                                Spacing="16">
+                        <Border Background="#1C232C"
+                                BorderBrush="#33414F"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Background"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="#F4FAFF" />
+                                <CheckBox Content="Use my image folder"
+                                          IsChecked="{Binding UseCustomBackgroundImageFolder}"
+                                          Foreground="#DAE6F2" />
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="Custom folder"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding CustomBackgroundImageFolder}" />
+                                    <CheckBox Grid.Column="2"
+                                              Content="Include subfolders"
+                                              IsChecked="{Binding BackgroundIncludeSubfolders}"
+                                              Foreground="#DAE6F2"
+                                              VerticalAlignment="Center" />
+                                </Grid>
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="Change interval"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <Slider Grid.Column="1"
+                                            Minimum="120"
+                                            Maximum="14400"
+                                            TickFrequency="60"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding BackgroundChangeSeconds}" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding BackgroundChangeSeconds, StringFormat='{}{0}s'}"
+                                               VerticalAlignment="Center"
+                                               Foreground="#F3D57F" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#1C232C"
+                                BorderBrush="#33414F"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="14">
+                                <DockPanel LastChildFill="False">
+                                    <TextBlock Text="Portfolio Tapes"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="#F4FAFF"
+                                               DockPanel.Dock="Left" />
+                                    <Button Content="Add Tape"
+                                            Command="{Binding AddGroupCommand}"
+                                            DockPanel.Dock="Right"
+                                            MinWidth="110" />
+                                </DockPanel>
+
+                                <ItemsControl ItemsSource="{Binding Groups}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#202A35"
+                                                    BorderBrush="#324354"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="14"
+                                                    Margin="0,0,0,12">
+                                                <StackPanel Spacing="10">
+                                                    <DockPanel LastChildFill="False">
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    DockPanel.Dock="Left"
+                                                                    Spacing="10">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       Foreground="#F4FAFF"
+                                                                       FontSize="16"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="{Binding TickerSlotsLabel}"
+                                                                       Foreground="#8FA8BE"
+                                                                       VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                        <Button Content="Remove Tape"
+                                                                Command="{Binding RemoveGroupCommand}"
+                                                                DockPanel.Dock="Right"
+                                                                MinWidth="118" />
+                                                    </DockPanel>
+
+                                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                                          ColumnSpacing="12">
+                                                        <TextBlock Text="Name"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="#AFC4D8" />
+                                                        <TextBox Grid.Column="1"
+                                                                 Text="{Binding Name}" />
+                                                        <ComboBox Grid.Column="2"
+                                                                  ItemsSource="{Binding DirectionOptions}"
+                                                                  SelectedItem="{Binding Direction}"
+                                                                  MinWidth="120" />
+                                                        <CheckBox Grid.Column="3"
+                                                                  Content="Enabled"
+                                                                  IsChecked="{Binding Enabled}"
+                                                                  VerticalAlignment="Center"
+                                                                  Foreground="#DAE6F2" />
+                                                    </Grid>
+
+                                                    <Grid ColumnDefinitions="Auto,*,Auto"
+                                                          ColumnSpacing="12">
+                                                        <TextBlock Text="Speed"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="#AFC4D8" />
+                                                        <Slider Grid.Column="1"
+                                                                Minimum="0.20"
+                                                                Maximum="0.65"
+                                                                TickFrequency="0.01"
+                                                                IsSnapToTickEnabled="True"
+                                                                Value="{Binding SpeedValue}" />
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding SpeedLabel}"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="#F3D57F" />
+                                                    </Grid>
+
+                                                    <Border Background="#182028"
+                                                            BorderBrush="#2D3A47"
+                                                            BorderThickness="1"
+                                                            CornerRadius="6"
+                                                            Padding="10">
+                                                        <StackPanel Spacing="8">
+                                                            <Grid ColumnDefinitions="2*,2*,*,*,*,Auto,Auto,Auto"
+                                                                  ColumnSpacing="8">
+                                                                <TextBlock Text="Symbol"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="Display"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="2"
+                                                                           Text="Qty"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="3"
+                                                                           Text="Cost"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="4"
+                                                                           Text="CCY"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="5"
+                                                                           Text="On"
+                                                                           Foreground="#8FA8BE" />
+                                                                <TextBlock Grid.Column="6"
+                                                                           Text="State"
+                                                                           Foreground="#8FA8BE" />
+                                                            </Grid>
+
+                                                            <ItemsControl ItemsSource="{Binding Tickers}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Grid ColumnDefinitions="2*,2*,*,*,*,Auto,Auto,Auto"
+                                                                              ColumnSpacing="8"
+                                                                              Margin="0,0,0,6">
+                                                                            <TextBox Text="{Binding Symbol}" />
+                                                                            <TextBox Grid.Column="1"
+                                                                                     Text="{Binding DisplayName}" />
+                                                                            <TextBox Grid.Column="2"
+                                                                                     Text="{Binding QuantityText}" />
+                                                                            <TextBox Grid.Column="3"
+                                                                                     Text="{Binding CostBasisText}" />
+                                                                            <TextBox Grid.Column="4"
+                                                                                     Text="{Binding Currency}" />
+                                                                            <CheckBox Grid.Column="5"
+                                                                                      IsChecked="{Binding Enabled}"
+                                                                                      VerticalAlignment="Center"
+                                                                                      HorizontalAlignment="Center" />
+                                                                            <Border Grid.Column="6"
+                                                                                    Background="#253242"
+                                                                                    CornerRadius="999"
+                                                                                    Padding="8,3">
+                                                                                <TextBlock Text="{Binding ValidationBadgeText}"
+                                                                                           Foreground="#EAF3FA"
+                                                                                           FontSize="11"
+                                                                                           VerticalAlignment="Center" />
+                                                                            </Border>
+                                                                            <Button Grid.Column="7"
+                                                                                    Content="Remove"
+                                                                                    Command="{Binding RemoveCommand}"
+                                                                                    MinWidth="78" />
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+
+                                                            <Button Content="Add Ticker"
+                                                                    Command="{Binding AddTickerCommand}"
+                                                                    HorizontalAlignment="Left"
+                                                                    MinWidth="110" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Advanced">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8"
+                                Spacing="16">
+                        <Border Background="#1C232C"
+                                BorderBrush="#33414F"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="News"
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="#F4FAFF" />
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="24">
+                                    <RadioButton Content="Summarized Financial News"
+                                                 IsChecked="{Binding IsSummarizedFinancialNewsSelected}"
+                                                 Foreground="#EAF3FA" />
+                                    <RadioButton Content="RSS Feed"
+                                                 IsChecked="{Binding IsRssFeedSelected}"
+                                                 Foreground="#EAF3FA" />
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="Writing style"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                Spacing="24">
+                                        <RadioButton Content="Douglas Adams"
+                                                     IsChecked="{Binding IsDouglasAdamsStyleSelected}"
+                                                     Foreground="#EAF3FA" />
+                                        <RadioButton Content="William Shakespeare"
+                                                     IsChecked="{Binding IsWilliamShakespeareStyleSelected}"
+                                                     Foreground="#EAF3FA" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="RSS feed URL"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding NewsFeedUrl}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="Headline refresh"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <Slider Grid.Column="1"
+                                            Minimum="30"
+                                            Maximum="240"
+                                            TickFrequency="5"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding NewsRefreshMinutes}" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding NewsRefreshMinutes, StringFormat='{}{0}m'}"
+                                               VerticalAlignment="Center"
+                                               Foreground="#F3D57F" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="AI API key"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding AiApiKey}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="AI endpoint URL"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding AiEndpointUrl}" />
+                                </Grid>
+
+                                <Grid ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12">
+                                    <TextBlock Text="AI model ID"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding AiModelId}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2"
+                Background="#1B2128"
+                BorderBrush="#2F3944"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="14">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+                  ColumnSpacing="12">
+                <StackPanel Grid.Column="0"
+                            Spacing="4">
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Foreground="#F4FAFF"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ValidationSummary}"
+                               Foreground="#A8BDCF"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="Revert"
+                        Command="{Binding RevertCommand}"
+                        IsEnabled="{Binding CanRevert}"
+                        MinWidth="96" />
+                <Button Grid.Column="2"
+                        Content="Validate"
+                        Command="{Binding ValidateCommand}"
+                        IsEnabled="{Binding CanValidate}"
+                        MinWidth="104" />
+                <Button Grid.Column="3"
+                        Content="Save"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding CanSave}"
+                        MinWidth="96" />
+            </Grid>
+        </Border>
+    </Grid>
 </Window>
