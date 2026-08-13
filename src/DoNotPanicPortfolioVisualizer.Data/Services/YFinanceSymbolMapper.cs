@@ -1,0 +1,66 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using DoNotPanicPortfolioVisualizer.Core.Enums;
+
+namespace DoNotPanicPortfolioVisualizer.Data.Services;
+
+public static class YFinanceSymbolMapper
+{
+    private static readonly IReadOnlyDictionary<string, string> RequestAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["INDY.US"] = "INDY",
+        ["EWA.US"] = "EWA",
+        ["US10Y"] = "^TNX",
+        ["US2M"] = "^IRX"
+    };
+
+    public static string Normalize(string? symbol)
+        => (symbol ?? string.Empty).Trim().ToUpperInvariant();
+
+    public static string ToRequestSymbol(string? symbol)
+    {
+        string normalized = Normalize(symbol);
+        return RequestAliases.TryGetValue(normalized, out string? mapped) ? mapped : normalized;
+    }
+
+    public static string ToResponseMatchKey(string? symbol)
+        => Normalize(symbol).TrimStart('^');
+
+    public static decimal? NormalizeNumericValue(string requestedSymbol, decimal? value)
+    {
+        if (!value.HasValue)
+            return null;
+
+        string normalized = Normalize(requestedSymbol);
+        if (normalized is "US10Y" or "US2M")
+            return Math.Round(value.Value / 10m, 3);
+
+        return value;
+    }
+
+    public static MarketSession MapMarketSession(string? marketState)
+    {
+        if (string.IsNullOrWhiteSpace(marketState))
+            return MarketSession.Unknown;
+
+        return marketState.Trim().ToUpperInvariant() switch
+        {
+            "PRE" or "PREPRE" or "PREPREMARKET" or "PREMARKET" => MarketSession.PreMarket,
+            "REGULAR" or "OPEN" => MarketSession.Regular,
+            "POST" or "POSTPOST" or "POSTMARKET" or "AFTER_HOURS" => MarketSession.AfterHours,
+            "CLOSED" => MarketSession.Closed,
+            _ => MarketSession.Unknown
+        };
+    }
+}
