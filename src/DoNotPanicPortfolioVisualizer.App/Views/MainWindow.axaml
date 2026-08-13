@@ -7,6 +7,7 @@
         d:DesignWidth="1280"
         d:DesignHeight="820"
         x:Class="DoNotPanicPortfolioVisualizer.App.Views.MainWindow"
+        x:CompileBindings="False"
         Icon="/Assets/avalonia-logo.ico"
         Width="1280"
         Height="820"
