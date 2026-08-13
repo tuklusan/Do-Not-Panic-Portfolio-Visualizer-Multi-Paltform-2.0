@@ -15,7 +15,7 @@ using System;
 using System.IO;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
-using DoNotPanicPortfolioVisualizer.Shared.Helpers;
+using DoNotPanicPortfolioVisualizer.Core.Storage;
 
 namespace DoNotPanicPortfolioVisualizer.Core.Constants;
 
@@ -45,10 +45,10 @@ public static class Defaults
         => Path.Combine(Environment.GetEnvironmentVariable("TEMP") ?? Path.GetTempPath(), "PortfolioSaver", "history-cache");
 
     public static string GetHistoricalCacheFolder()
-        => Path.Combine(PathHelper.GetLocalDataDirectory(), "Caches", "History");
+        => LocalDataRootResolver.ResolveForCurrentPlatform().HistoricalCacheRoot;
 
     public static string GetManagedBackgroundCacheFolder()
-        => Path.Combine(PathHelper.GetLocalDataDirectory(), "Backgrounds", "ExchangePhotoCache");
+        => Path.Combine(LocalDataRootResolver.ResolveForCurrentPlatform().Root, "Backgrounds", "ExchangePhotoCache");
 
     public static AppSettings CreateSettings() => new()
     {

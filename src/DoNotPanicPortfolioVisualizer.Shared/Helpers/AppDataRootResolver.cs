@@ -12,10 +12,12 @@
 // patent, trademark, and governing-law provisions.
 // ============================================================================
 using DoNotPanicPortfolioVisualizer.Core;
-using DoNotPanicPortfolioVisualizer.Shared.Storage;
+using DoNotPanicPortfolioVisualizer.Core.Storage;
 
 namespace DoNotPanicPortfolioVisualizer.Shared.Helpers;
 
+// Shared intentionally layers on top of Core foundation contracts so UI-facing
+// code can consume stable helpers without making Core depend on Shared.
 public static class AppDataRootResolver
 {
     public const string AppLocalDataFolderName = AppIdentity.LocalDataFolderName;

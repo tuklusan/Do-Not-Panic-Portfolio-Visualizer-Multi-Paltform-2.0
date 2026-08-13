@@ -1,5 +1,5 @@
 using DoNotPanicPortfolioVisualizer.Core;
-using DoNotPanicPortfolioVisualizer.Shared.Storage;
+using DoNotPanicPortfolioVisualizer.Core.Storage;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
@@ -15,9 +15,38 @@ public sealed class RuntimeContractsTests
             [AppIdentity.DeprecatedPortfolioSaverLocalDataRootOverrideEnvironmentVariable] = @"D:\PortfolioSaver"
         };
 
-        string? resolved = LocalDataRootResolver.ResolveFirstOverride(name => values.GetValueOrDefault(name));
+        string? resolved = LocalDataRootResolver.ResolveFirstOverride(DesktopPlatformKind.Windows, name => values.GetValueOrDefault(name));
 
         Assert.Equal(@"D:\DNPPV2", resolved);
+    }
+
+    [Fact]
+    public void ResolveFirstOverride_RejectsRelativeOverrides()
+    {
+        Dictionary<string, string?> values = new(StringComparer.OrdinalIgnoreCase)
+        {
+            [AppIdentity.LocalDataRootOverrideEnvironmentVariable] = @"..\DNPPV2"
+        };
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+            () => LocalDataRootResolver.ResolveFirstOverride(DesktopPlatformKind.Windows, name => values.GetValueOrDefault(name)));
+
+        Assert.Contains("absolute", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ResolveFirstOverride_NormalizesAbsoluteDotSegments()
+    {
+        Dictionary<string, string?> values = new(StringComparer.OrdinalIgnoreCase)
+        {
+            [AppIdentity.LocalDataRootOverrideEnvironmentVariable] = @"D:\Workspace\..\DNPPV2\.\CacheRoot"
+        };
+
+        string? resolved = LocalDataRootResolver.ResolveFirstOverride(
+            DesktopPlatformKind.Windows,
+            name => values.GetValueOrDefault(name));
+
+        Assert.Equal(@"D:\DNPPV2\CacheRoot", resolved);
     }
 
     [Fact]
@@ -87,6 +116,18 @@ public sealed class RuntimeContractsTests
 
         Assert.Equal("/srv/dnppv2", paths.Root);
         Assert.Equal("/srv/dnppv2/Caches/History", paths.HistoricalCacheRoot);
+    }
+
+    [Fact]
+    public void Resolve_NormalizesForeignPlatformOverrideWithoutCurrentPlatformAssumptions()
+    {
+        LocalDataPaths paths = LocalDataRootResolver.Resolve(
+            DesktopPlatformKind.Linux,
+            environmentLookup: name => string.Equals(name, AppIdentity.LocalDataRootOverrideEnvironmentVariable, StringComparison.Ordinal) ? "/srv//dnppv2/./state" : null,
+            userHomeDirectory: "/home/tester",
+            createDirectories: false);
+
+        Assert.Equal("/srv/dnppv2/state", paths.Root);
     }
 
     [Fact]
