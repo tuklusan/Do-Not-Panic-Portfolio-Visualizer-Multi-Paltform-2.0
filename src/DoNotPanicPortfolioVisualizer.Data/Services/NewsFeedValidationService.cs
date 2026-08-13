@@ -13,6 +13,7 @@
 // ============================================================================
 using System.Xml.Linq;
 using System.Xml;
+using System.Net;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
 using System.Net.Sockets;
 
