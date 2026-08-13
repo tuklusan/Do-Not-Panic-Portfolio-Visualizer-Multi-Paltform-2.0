@@ -1,8 +1,24 @@
+<!--
+============================================================================
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Proprietary rights reserved except as expressly licensed herein.
+
+DO NOT PANIC PORTFOLIO VISUALIZER
+This file is governed by the SANYALnet Labs Non-Commercial License in the
+root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+for AI/ML model training are prohibited unless separately authorized.
+
+Attribution is required: "Based on original work by Supratim Sanyal of
+SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+patent, trademark, and governing-law provisions.
+============================================================================
+-->
+
 # Test Machine Access Details
 
 Current working record: 2026-08-13
 
-This repository is in clean-slate mode.
+This repository is in migration-baseline mode.
 
 Exact live credentials are intentionally not committed. Operators may keep a
 local ignored endpoint inventory such as `build/vm/remote-test-machines.local.txt`,
@@ -45,8 +61,7 @@ and passwords remain in the operator password manager.
 - `github-windows-arm64`: runner `windows-11-arm`, RID `win-arm64`
 - `github-linux-x64`: runner `ubuntu-24.04`, RID `linux-x64`
 
-## Reset Note
+## Baseline Note
 
-These are the only retained environment details from the prior project state.
-All former workflow, validation, application, migration, and evidence artifacts
-were intentionally removed during the clean-slate reset.
+These are the retained environment details for the fresh DNPPV-2.0 migration
+repository.

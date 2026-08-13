@@ -1,0 +1,30 @@
+{
+  "document_type": "audit_state",
+  "license_notice": "Based on original work by Supratim Sanyal of SANYALnet Labs.",
+  "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
+  "title": "DNPPV 2.0 Migration Audit State",
+  "date": "2026-08-13",
+  "current_lane": "2.0-migration",
+  "current_snapshot": {
+    "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
+    "publisher": "SANYALnet Labs",
+    "author": "Supratim Sanyal",
+    "license": "SANYALnet Labs Non-Commercial License",
+    "version_lane": "2.0-migration",
+    "target_framework": "net10.0",
+    "primary_host": "Avalonia desktop shell",
+    "legacy_host": null,
+    "repository_history": null,
+    "current_baseline_label": "migration-baseline"
+  },
+  "previous_recorded_validation_state": {},
+  "latest_recorded_validation_state": {},
+  "post_remote_recovery_replay": [],
+  "beta55_migration_program": [],
+  "ssh_first_vm_harness": {},
+  "change_requests": [],
+  "remaining_validation_gaps": [],
+  "current_operational_recommendations": [],
+  "full_codebase_review_records": [],
+  "documentation_review_records": []
+}
