@@ -21,12 +21,22 @@ public static class YFinanceSymbolMapper
     {
         ["INDY.US"] = "INDY",
         ["EWA.US"] = "EWA",
+        ["BRK.B"] = "BRK-B",
+        ["BF.B"] = "BF-B",
         ["US10Y"] = "^TNX",
         ["US2M"] = "^IRX"
     };
 
     public static string Normalize(string? symbol)
         => (symbol ?? string.Empty).Trim().ToUpperInvariant();
+
+    internal static string NormalizeValidationSymbol(string? symbol)
+    {
+        string normalized = Normalize(symbol);
+        return string.IsNullOrWhiteSpace(normalized) || normalized.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch))
+            ? string.Empty
+            : normalized;
+    }
 
     public static string ToRequestSymbol(string? symbol)
     {

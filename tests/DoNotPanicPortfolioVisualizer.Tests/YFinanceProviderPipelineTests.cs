@@ -128,6 +128,30 @@ public sealed class YFinanceProviderPipelineTests
     }
 
     [Fact]
+    public async Task YahooFinanceQuoteProvider_UsesKnownRequestAliasesForClassShareSymbols()
+    {
+        FakeYFinanceRuntimeClient runtimeClient = new()
+        {
+            QuotesAsync = (symbols, _) =>
+            {
+                Assert.Equal(["BRK-B"], symbols);
+                return Task.FromResult(
+                    new YFinanceQuotesResponse(
+                    [
+                        new("BRK-B", 400m, 395m, 5m, 1.26m, "USD", "America/New_York", "REGULAR", new YFinanceCacheMetadata(false))
+                    ]));
+            }
+        };
+        YahooFinanceQuoteProvider provider = new(runtimeClient, throwOnPartial: false);
+
+        IReadOnlyList<QuoteSnapshot> quotes = await provider.GetQuotesAsync(["BRK.B"]);
+
+        QuoteSnapshot quote = Assert.Single(quotes);
+        Assert.Equal("BRK.B", quote.Symbol);
+        Assert.Equal(400m, quote.Last);
+    }
+
+    [Fact]
     public async Task HybridHistoricalDataProvider_UsesFreshCacheBeforeRuntime()
     {
         InMemoryHistoricalCacheService cache = new();
