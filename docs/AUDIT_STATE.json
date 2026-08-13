@@ -4,7 +4,7 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-08-13",
-  "current_lane": "phase-0-acceptance-baseline",
+  "current_lane": "phase-0-runtime-contracts",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
     "publisher": "SANYALnet Labs",
@@ -26,18 +26,25 @@
       "osx-arm64"
     ],
     "delivery_model": "platform publish bundles; no Windows-only installer lane",
-    "yfinance_loopback_port": 14871
+    "yfinance_loopback_port": 14871,
+    "solution_file": "DoNotPanicPortfolioVisualizer.sln"
   },
   "previous_recorded_validation_state": {},
   "latest_recorded_validation_state": {
     "date": "2026-08-13",
-    "git_head": "66e91a8",
-    "git_sync_state": "clean; HEAD matches origin/main before migration planning updates",
+    "git_head": "c63e28d",
+    "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
       "checked PowerShell wrapper available",
       "license header gate available",
-      "upstream push lock available"
+      "upstream push lock available",
+      "validation checkpoint script available"
+    ],
+    "validation_results": [
+      "dotnet restore succeeded for the Avalonia app and xUnit test project",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors",
+      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed"
     ]
   },
   "post_remote_recovery_replay": [],
@@ -149,7 +156,7 @@
       "id": "CR-002",
       "phase": "Phase 0",
       "title": "Create fresh .NET 10 + Avalonia solution skeleton for DNPPV-2.0",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-001"
       ],
@@ -164,13 +171,26 @@
         "Tracker update with created solution structure",
         "Committed proof that the solution is Avalonia-only"
       ],
-      "started_on": "2026-08-13"
+      "started_on": "2026-08-13",
+      "completed_on": "2026-08-13",
+      "artifacts": [
+        "DoNotPanicPortfolioVisualizer.sln",
+        "NuGet.Config",
+        "build/Assert-ValidationCheckpoint.ps1",
+        "src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj"
+      ],
+      "closure_notes": [
+        "Installed the official Avalonia templates at version 12.1.1 and scaffolded a .NET 10 Avalonia MVVM app plus portable library/test projects.",
+        "Added a repository-local NuGet.Config that clears the broken machine-wide Visual Studio fallback folder and pins package resolution to nuget.org.",
+        "Added the missing build/Assert-ValidationCheckpoint.ps1 workflow guard and validated the pushed scaffold commit with a local build and test cycle."
+      ]
     },
     {
       "id": "CR-003",
       "phase": "Phase 0",
       "title": "Define cross-platform app identity, local-data roots, and YFinance loopback contract",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-002"
       ],
@@ -184,7 +204,8 @@
         "Unit tests for path resolution and identity separation",
         "Documentation update for platform storage and loopback behavior",
         "Review of local and remote machine assumptions"
-      ]
+      ],
+      "started_on": "2026-08-13"
     },
     {
       "id": "CR-004",
@@ -388,7 +409,6 @@
     }
   ],
   "remaining_validation_gaps": [
-    "The fresh repo does not yet contain the new .NET 10 + Avalonia solution skeleton.",
     "No real DNPPV-2.0 product code has been ported into this repository yet.",
     "The full cross-platform publish pipeline for the migrated product has not been created yet."
   ],
@@ -396,6 +416,7 @@
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
     "Do not claim visual product progress from any scaffold or toy application surface.",
+    "Use the repository-local NuGet.Config to keep restore deterministic and independent of machine-wide Visual Studio fallback-folder quirks.",
     "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment."
   ],
   "full_codebase_review_records": [],
@@ -425,6 +446,22 @@
       "notes": [
         "Closed CR-001 with a committed upstream workflow inventory and acceptance contract.",
         "Promoted CR-002 to the next active work item."
+      ]
+    },
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "DoNotPanicPortfolioVisualizer.sln",
+        "NuGet.Config",
+        "build/Assert-ValidationCheckpoint.ps1",
+        "src/",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-002 with a pushed and validated .NET 10 + Avalonia solution skeleton.",
+        "Promoted CR-003 to the next active runtime-contract work item."
       ]
     }
   ]
