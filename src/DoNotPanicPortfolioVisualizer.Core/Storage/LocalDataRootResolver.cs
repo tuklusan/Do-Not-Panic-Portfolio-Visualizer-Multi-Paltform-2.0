@@ -220,7 +220,7 @@ public static class LocalDataRootResolver
         return platform switch
         {
             DesktopPlatformKind.Windows => IsWindowsAbsolutePath(path),
-            DesktopPlatformKind.Linux or DesktopPlatformKind.MacOS => path.StartsWith('/', StringComparison.Ordinal),
+            DesktopPlatformKind.Linux or DesktopPlatformKind.MacOS => path.StartsWith("/", StringComparison.Ordinal),
             _ => false
         };
     }
@@ -267,7 +267,7 @@ public static class LocalDataRootResolver
     private static string NormalizePosixAbsolutePath(string path)
     {
         string normalized = path.Replace('\\', '/');
-        if (!normalized.StartsWith('/', StringComparison.Ordinal))
+        if (!normalized.StartsWith("/", StringComparison.Ordinal))
             throw new InvalidOperationException("POSIX local data override paths must start at the filesystem root.");
 
         string[] segments = normalized[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
