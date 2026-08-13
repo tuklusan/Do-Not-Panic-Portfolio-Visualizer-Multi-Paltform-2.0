@@ -64,7 +64,7 @@ public sealed class YFinanceServerProcessManagerOptions
         if (string.IsNullOrWhiteSpace(LoopbackHost))
             throw new InvalidOperationException("A non-empty loopback host is required.");
 
-        if (LoopbackPort <= 0 or > 65535)
+        if (LoopbackPort is <= 0 or > 65535)
             throw new InvalidOperationException("The YFinance loopback port must be between 1 and 65535.");
 
         if (StartupTimeout <= TimeSpan.Zero)
