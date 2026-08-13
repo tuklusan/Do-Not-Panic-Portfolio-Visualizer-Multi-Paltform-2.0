@@ -13,7 +13,6 @@ Only the following retained assets remain in scope:
 1. The DeepSeek review gate under `build/` and its supporting standard in
    `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`.
 2. The build/test machine access record in `docs/TEST_MACHINE_ACCESS.md`.
-3. The retained upstream 1.x pointer in `docs/UPSTREAM_REFERENCE.md`.
 
 All prior product, migration, workflow, validation, and architecture artifacts
 were deliberately removed.
@@ -39,8 +38,3 @@ The preserved review-gate entry points are:
 
 Current machine access details are recorded only in
 `docs/TEST_MACHINE_ACCESS.md`.
-
-## Upstream Reference
-
-The retained upstream 1.x reference is documented in
-`docs/UPSTREAM_REFERENCE.md`.
