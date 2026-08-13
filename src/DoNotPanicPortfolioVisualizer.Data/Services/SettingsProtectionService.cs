@@ -14,6 +14,7 @@
 using System.Security.Cryptography;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Runtime.Versioning;
 using System.Text;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Data.Interfaces;
@@ -180,6 +181,7 @@ public sealed class SettingsProtectionService : ISettingsProtectionService
         File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
 
+    [SupportedOSPlatform("windows")]
     private static void ApplyWindowsAcl(FileSystemInfo fileSystemInfo)
     {
         using WindowsIdentity identity = WindowsIdentity.GetCurrent();

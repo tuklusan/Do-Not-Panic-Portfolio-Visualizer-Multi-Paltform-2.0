@@ -207,8 +207,8 @@ public sealed class SettingsFileService
         {
             string[] parts = pair.Split('=', 2);
             string key = Uri.UnescapeDataString(parts[0]);
-            string value = parts.Length > 1 ? Uri.UnescapeDataString(parts[1]) : string.Empty;
-            if (SensitiveDataRedactor.IsSensitiveKey(key) || LooksSensitiveValue(value))
+            string queryValue = parts.Length > 1 ? Uri.UnescapeDataString(parts[1]) : string.Empty;
+            if (SensitiveDataRedactor.IsSensitiveKey(key) || LooksSensitiveValue(queryValue))
                 continue;
 
             safeQueryPairs.Add(pair);
