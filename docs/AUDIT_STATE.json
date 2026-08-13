@@ -4,7 +4,7 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-08-13",
-  "current_lane": "phase-1-portable-foundations",
+  "current_lane": "phase-2-data-and-configuration-port",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
     "publisher": "SANYALnet Labs",
@@ -32,7 +32,7 @@
   "previous_recorded_validation_state": {},
   "latest_recorded_validation_state": {
     "date": "2026-08-13",
-    "git_head": "34322d9",
+    "git_head": "014dd17",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -42,9 +42,9 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek code review passed for the portable-foundation port and the one-line compile fix-forward before validation.",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors from pushed HEAD 34322d9.",
-      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 17 tests from pushed HEAD 34322d9."
+      "DeepSeek code review passed for the CR-005 YFinance lifecycle and provider-pipeline port, including follow-up fixes for compile, warning, and test issues.",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors from pushed HEAD 014dd17.",
+      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 33 tests from pushed HEAD 014dd17."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -64,7 +64,7 @@
     {
       "phase": "Phase 1",
       "title": "Portable Foundations",
-      "status": "in_progress",
+      "status": "completed",
       "exit_criteria": [
         "Portable shared models and service contracts exist",
         "Cross-platform local-data abstractions exist",
@@ -75,7 +75,7 @@
     {
       "phase": "Phase 2",
       "title": "Data And Configuration Port",
-      "status": "planned",
+      "status": "in_progress",
       "exit_criteria": [
         "Quote/history/news/provider services run in the new solution",
         "Settings persistence and validation are portable",
@@ -264,7 +264,7 @@
       "id": "CR-005",
       "phase": "Phase 1",
       "title": "Port YFinance process management and quote/history provider pipeline",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-004"
       ],
@@ -279,13 +279,30 @@
         "Targeted local runtime smoke with the real service path",
         "Tracker evidence for port 14871 and process isolation"
       ],
-      "started_on": "2026-08-13"
+      "started_on": "2026-08-13",
+      "completed_on": "2026-08-13",
+      "artifacts": [
+        "src/DoNotPanicPortfolioVisualizer.Shared/Services/YFinanceServerProcessManager.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Runtime/YFinanceRuntimeContracts.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Runtime/ManagedYFinanceRuntimeClient.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Providers/YahooFinanceQuoteProvider.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Providers/HybridHistoricalDataProvider.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/HistoricalCacheService.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/YFinanceSymbolMapper.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceInfrastructureTests.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceProviderPipelineTests.cs"
+      ],
+      "closure_notes": [
+        "Added a portable owned-server process manager for the YFinance loopback lane, using the approved DNPPV-2.0 port 14871 and portable bundle resolution rules.",
+        "Ported the first managed runtime-client abstractions plus quote/history providers, symbol mapping, and historical-cache storage into the new Data and Shared projects.",
+        "Validated the pushed CR-005 slice with a clean-checkpoint local build and a 33-test suite covering runtime contracts, settings foundations, YFinance infrastructure, and provider/cache behavior."
+      ]
     },
     {
       "id": "CR-006",
       "phase": "Phase 2",
       "title": "Port settings persistence, validation, and configuration workflow services",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-005"
       ],
@@ -299,7 +316,8 @@
         "dotnet test for settings and validation services",
         "Documentation update for configuration storage behavior",
         "Tracker evidence tied to upstream configuration workflows"
-      ]
+      ],
+      "started_on": "2026-08-13"
     },
     {
       "id": "CR-007",
@@ -521,6 +539,19 @@
       "notes": [
         "Closed CR-004 with the first portable foundation port, including shared models, diagnostics, service interfaces, and the Core-owned local-data resolver.",
         "Promoted CR-005 as the next active process-management and provider-pipeline work item."
+      ]
+    },
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "src/",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-005 with the first portable YFinance owned-server lifecycle, runtime-client abstractions, quote/history providers, and historical-cache implementation.",
+        "Completed Phase 1 and promoted CR-006 as the first active Phase 2 settings/configuration work item."
       ]
     }
   ]
