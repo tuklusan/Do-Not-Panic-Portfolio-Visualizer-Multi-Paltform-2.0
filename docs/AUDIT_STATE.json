@@ -32,7 +32,7 @@
   "previous_recorded_validation_state": {},
   "latest_recorded_validation_state": {
     "date": "2026-08-13",
-    "git_head": "f43a05a",
+    "git_head": "34322d9",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -42,9 +42,9 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "dotnet restore succeeded for the Avalonia app and xUnit test project",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors",
-      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 7 tests"
+      "DeepSeek code review passed for the portable-foundation port and the one-line compile fix-forward before validation.",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors from pushed HEAD 34322d9.",
+      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 17 tests from pushed HEAD 34322d9."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -226,7 +226,7 @@
       "id": "CR-004",
       "phase": "Phase 1",
       "title": "Port shared domain models, settings contracts, diagnostics, and service interfaces",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-003"
       ],
@@ -241,13 +241,30 @@
         "Review against upstream type inventory",
         "Tracker closure evidence for recreated contracts"
       ],
-      "started_on": "2026-08-13"
+      "started_on": "2026-08-13",
+      "completed_on": "2026-08-13",
+      "artifacts": [
+        "src/DoNotPanicPortfolioVisualizer.Core/Constants/Defaults.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Models/AppSettings.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Services/AppSettingsNormalizer.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Storage/LocalDataPaths.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Storage/LocalDataRootResolver.cs",
+        "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/CircularTraceSettings.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Interfaces/IQuoteProvider.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/FoundationSettingsTests.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
+      ],
+      "closure_notes": [
+        "Ported the first shared foundation slice from upstream into portable Core, Shared, and Data projects, including settings models, enums, diagnostics helpers, and service interfaces.",
+        "Moved the local-data resolver into Core so portable defaults and storage contracts no longer depend on Shared, while keeping Shared as a consumer layer over Core.",
+        "Validated the pushed implementation with a clean-checkpoint local build and a 17-test foundation/runtime suite."
+      ]
     },
     {
       "id": "CR-005",
       "phase": "Phase 1",
       "title": "Port YFinance process management and quote/history provider pipeline",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-004"
       ],
@@ -261,7 +278,8 @@
         "Automated service tests",
         "Targeted local runtime smoke with the real service path",
         "Tracker evidence for port 14871 and process isolation"
-      ]
+      ],
+      "started_on": "2026-08-13"
     },
     {
       "id": "CR-006",
@@ -490,6 +508,19 @@
       "notes": [
         "Closed CR-003 with committed runtime identity, storage, and loopback contracts.",
         "Promoted CR-004 as the next active shared-foundation work item."
+      ]
+    },
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "src/",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-004 with the first portable foundation port, including shared models, diagnostics, service interfaces, and the Core-owned local-data resolver.",
+        "Promoted CR-005 as the next active process-management and provider-pipeline work item."
       ]
     }
   ]
