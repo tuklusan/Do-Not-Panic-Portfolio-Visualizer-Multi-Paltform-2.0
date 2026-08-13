@@ -7,3 +7,4 @@ public static class YFinanceLoopbackContract
 
     public static Uri BaseUri { get; } = new($"http://{LoopbackHost}:{DefaultPort}/", UriKind.Absolute);
 }
+

@@ -1,0 +1,295 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using System;
+using System.IO;
+using DoNotPanicPortfolioVisualizer.Core.Constants;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
+using DoNotPanicPortfolioVisualizer.Core.Models;
+
+namespace DoNotPanicPortfolioVisualizer.Core.Services;
+
+public static class AppSettingsNormalizer
+{
+    private const string LegacyDefaultAiEndpointUrl = "https://api.deepseek.com";
+    private const string LegacyDefaultAiModelId = "deepseek-v4-flash";
+
+    public static AppSettings Normalize(AppSettings? settings)
+    {
+        AppSettings normalized = settings ?? Defaults.CreateSettings();
+
+        normalized.Groups ??= [];
+        normalized.Groups = normalized.Groups
+            .Take(Defaults.MaxTapeCount)
+            .Select((group, index) => NormalizeGroup(group, index))
+            .ToList();
+        if (normalized.Groups.Count == 0)
+        {
+            normalized.Groups = Defaults.CreateSettings().Groups
+                .Take(Defaults.MaxTapeCount)
+                .Select((group, index) => NormalizeGroup(CloneGroup(group), index))
+                .ToList();
+        }
+
+        ApplyLegacyAlternatingDirectionFallback(normalized.Groups);
+        ApplyLegacyDifferentiatedSpeedFallback(normalized.Groups);
+
+        normalized.HistoricalCacheRootFolder = NormalizeHistoricalCachePath(
+            normalized.HistoricalCacheRootFolder,
+            Defaults.GetHistoricalCacheFolder());
+
+        normalized.BackgroundImageFolder = NormalizePath(
+            normalized.BackgroundImageFolder,
+            Defaults.GetManagedBackgroundCacheFolder());
+
+        normalized.CustomBackgroundImageFolder = NormalizePath(
+            normalized.CustomBackgroundImageFolder,
+            string.Empty);
+
+        normalized.AiApiKey = NormalizeApiKey(normalized.AiApiKey);
+        normalized.AiEndpointUrl = NormalizeAiEndpointUrl(normalized.AiEndpointUrl);
+        normalized.AiModelId = NormalizeAiModelId(normalized.AiModelId);
+
+        normalized.MarketCalendarRefreshHours = Clamp(
+            normalized.MarketCalendarRefreshHours,
+            1,
+            7 * 24,
+            12);
+
+        normalized.RefreshSecondsPortfolio = Defaults.DefaultDesktopRefreshSeconds;
+        normalized.RefreshSecondsOffHours = Defaults.DefaultDesktopRefreshSeconds;
+
+        normalized.BackgroundChangeSeconds = Clamp(
+            normalized.BackgroundChangeSeconds,
+            Defaults.MinBackgroundChangeSeconds,
+            Defaults.MaxRefreshSeconds,
+            300);
+
+        normalized.NewsRefreshMinutes = Clamp(
+            normalized.NewsRefreshMinutes,
+            Defaults.MinNewsRefreshMinutes,
+            Defaults.MaxNewsRefreshMinutes,
+            Defaults.MinNewsRefreshMinutes);
+
+        normalized.NewsScrollerMode = NormalizeNewsScrollerMode(normalized.NewsScrollerMode);
+        normalized.AiWritingStyle = NormalizeAiWritingStyle(normalized.AiWritingStyle);
+        normalized.NewsFeedUrl = NormalizeNewsFeedUrl(normalized.NewsFeedUrl);
+
+        return normalized;
+    }
+
+
+    private static void ApplyLegacyAlternatingDirectionFallback(IReadOnlyList<TickerGroup> groups)
+    {
+        if (groups.Count < 2)
+            return;
+
+        bool hasAnyRight = groups.Any(group => group.Direction == ScrollDirection.Right);
+        if (hasAnyRight)
+            return;
+
+        for (int index = 0; index < groups.Count; index++)
+            groups[index].Direction = index % 2 == 0 ? ScrollDirection.Left : ScrollDirection.Right;
+    }
+
+    private static void ApplyLegacyDifferentiatedSpeedFallback(IReadOnlyList<TickerGroup> groups)
+    {
+        if (groups.Count < 2)
+            return;
+
+        double baseline = groups[0].Speed;
+        bool uniformBaselineSpeed = Math.Abs(baseline - Defaults.DefaultTapeBaseSpeed) < 0.0001d &&
+                                    groups.All(group => Math.Abs(group.Speed - baseline) < 0.0001d);
+        if (!uniformBaselineSpeed)
+            return;
+
+        for (int index = 0; index < groups.Count; index++)
+            groups[index].Speed = Defaults.GetDefaultTapeSpeed(index);
+    }
+
+    private static TickerGroup NormalizeGroup(TickerGroup? group, int index)
+    {
+        TickerGroup normalized = group ?? Defaults.CreateEmptyTickerGroup(index);
+        normalized.Name = NormalizeTapeName(normalized.Name, index);
+        normalized.Speed = Math.Clamp(
+            normalized.Speed <= 0 ? Defaults.GetDefaultTapeSpeed(index) : normalized.Speed,
+            Defaults.MinTapeSpeed,
+            Defaults.MaxTapeSpeed);
+        normalized.RowHeight = normalized.RowHeight <= 0 ? 56.0 : normalized.RowHeight;
+        normalized.Tickers ??= [];
+        normalized.Tickers = normalized.Tickers
+            .Where(item => item is not null)
+            .Take(Defaults.MaxTickersPerTape)
+            .Select(NormalizeTicker)
+            .ToList();
+        return normalized;
+    }
+
+    private static TickerItem NormalizeTicker(TickerItem item)
+        => new()
+        {
+            Symbol = (item.Symbol ?? string.Empty).Trim(),
+            DisplayName = (item.DisplayName ?? string.Empty).Trim(),
+            Quantity = item.Quantity,
+            CostBasis = item.CostBasis,
+            Currency = string.IsNullOrWhiteSpace(item.Currency) ? "USD" : item.Currency.Trim(),
+            Enabled = item.Enabled
+        };
+
+    private static TickerGroup CloneGroup(TickerGroup source)
+        => new()
+        {
+            Name = source.Name,
+            Speed = source.Speed,
+            Direction = source.Direction,
+            RenderMode = source.RenderMode,
+            RowHeight = source.RowHeight,
+            Enabled = source.Enabled,
+            Tickers = source.Tickers.Select(CloneTicker).ToList()
+        };
+
+    private static TickerItem CloneTicker(TickerItem source)
+        => new()
+        {
+            Symbol = source.Symbol,
+            DisplayName = source.DisplayName,
+            Quantity = source.Quantity,
+            CostBasis = source.CostBasis,
+            Currency = source.Currency,
+            Enabled = source.Enabled
+        };
+
+    private static string NormalizeHistoricalCachePath(string currentValue, string fallbackValue)
+    {
+        string normalized = NormalizePath(currentValue, fallbackValue);
+        string legacy = Environment.ExpandEnvironmentVariables(Defaults.GetLegacyHistoricalCacheFolder());
+        if (PathsEqual(normalized, legacy))
+            return fallbackValue;
+
+        return normalized;
+    }
+
+    private static string NormalizePath(string currentValue, string fallbackValue)
+    {
+        string value = string.IsNullOrWhiteSpace(currentValue) ? fallbackValue : currentValue;
+        if (IsHttpUri(value))
+            value = fallbackValue;
+
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : Environment.ExpandEnvironmentVariables(value.Trim());
+    }
+
+    private static bool IsHttpUri(string value)
+        => Uri.TryCreate(value.Trim(), UriKind.Absolute, out Uri? uri) &&
+           (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+
+    private static bool PathsEqual(string left, string right)
+    {
+        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+            return false;
+
+        return string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeApiKey(string currentValue)
+    {
+        string trimmed = (currentValue ?? string.Empty).Trim();
+        return IsApiKeyPlaceholder(trimmed) ? string.Empty : trimmed;
+    }
+
+    private static bool IsApiKeyPlaceholder(string value)
+        => value switch
+        {
+            "" => false,
+            "abcdefghijklmnopqrstuvwxyz01234567890abc" => true,
+            "abcdefghijklmnopqrstuvwxyz012345" => true,
+            "abcdefghijklmn.01234567" => true,
+            _ => value.StartsWith("REPLACE_WITH_", StringComparison.OrdinalIgnoreCase) ||
+                 value.StartsWith("REDACTED", StringComparison.OrdinalIgnoreCase)
+        };
+
+    private static int Clamp(int value, int min, int max, int fallback)
+    {
+        int candidate = value <= 0 ? fallback : value;
+        return Math.Clamp(candidate, min, max);
+    }
+
+    private static string NormalizeNewsFeedUrl(string currentValue)
+    {
+        string candidate = (currentValue ?? string.Empty).Trim();
+        if (Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri) &&
+            (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+        {
+            return uri.ToString();
+        }
+
+        return Defaults.DefaultNewsFeedUrl;
+    }
+
+    private static string NormalizeAiEndpointUrl(string currentValue)
+    {
+        string candidate = (currentValue ?? string.Empty).Trim();
+        if (Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri) &&
+            (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+        {
+            string normalized = uri.ToString().TrimEnd('/');
+            const string chatPath = "/chat/completions";
+            if (normalized.EndsWith(chatPath, StringComparison.OrdinalIgnoreCase))
+                normalized = normalized[..^chatPath.Length];
+
+            if (string.Equals(normalized, LegacyDefaultAiEndpointUrl, StringComparison.OrdinalIgnoreCase))
+                return Defaults.DefaultAiEndpointUrl;
+
+            return normalized;
+        }
+
+        return Defaults.DefaultAiEndpointUrl;
+    }
+
+    private static string NormalizeAiModelId(string currentValue)
+    {
+        string candidate = (currentValue ?? string.Empty).Trim();
+        if (string.Equals(candidate, LegacyDefaultAiModelId, StringComparison.OrdinalIgnoreCase))
+            return Defaults.DefaultAiModelId;
+
+        return string.IsNullOrWhiteSpace(candidate)
+            ? Defaults.DefaultAiModelId
+            : candidate;
+    }
+
+    private static NewsScrollerMode NormalizeNewsScrollerMode(NewsScrollerMode currentValue)
+        => Enum.IsDefined(typeof(NewsScrollerMode), currentValue)
+            ? currentValue
+            : NewsScrollerMode.RssFeed;
+
+    private static AiWritingStyle NormalizeAiWritingStyle(AiWritingStyle currentValue)
+        => Enum.IsDefined(typeof(AiWritingStyle), currentValue)
+            ? currentValue
+            : AiWritingStyle.DouglasAdams;
+
+    private static string NormalizeTapeName(string? currentValue, int index)
+    {
+        string candidate = (currentValue ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(candidate))
+            return Defaults.GetDefaultTapeName(index + 1);
+
+        return candidate.Length > Defaults.MaxTapeNameLength
+            ? candidate[..Defaults.MaxTapeNameLength]
+            : candidate;
+    }
+}
+

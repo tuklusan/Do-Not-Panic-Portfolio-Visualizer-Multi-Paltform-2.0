@@ -10,3 +10,4 @@ public sealed record LocalDataPaths(
     string HistoricalCacheRoot,
     string LogRoot,
     string SecretRoot);
+

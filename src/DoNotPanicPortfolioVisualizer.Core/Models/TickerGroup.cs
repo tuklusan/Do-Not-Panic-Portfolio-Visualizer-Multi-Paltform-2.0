@@ -1,0 +1,29 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using DoNotPanicPortfolioVisualizer.Core.Enums;
+
+namespace DoNotPanicPortfolioVisualizer.Core.Models;
+
+public sealed class TickerGroup
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; } = "New Group";
+    public RenderMode RenderMode { get; set; } = RenderMode.HorizontalTape;
+    public ScrollDirection Direction { get; set; } = ScrollDirection.Left;
+    public double Speed { get; set; } = 0.9;
+    public double RowHeight { get; set; } = 56.0;
+    public bool Enabled { get; set; } = true;
+    public List<TickerItem> Tickers { get; set; } = [];
+}
+

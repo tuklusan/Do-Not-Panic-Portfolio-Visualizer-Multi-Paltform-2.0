@@ -6,3 +6,4 @@ public enum DesktopPlatformKind
     Linux,
     MacOS
 }
+
