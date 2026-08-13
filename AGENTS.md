@@ -49,6 +49,15 @@ nested quoting/interpolation, or a Windows native-command bridge, parse it with
 If the command intentionally hops through `cmd.exe`, include
 `-AllowCmdShell` after inspecting the exact command text.
 
+For every nontrivial generated PowerShell command, the default execution path
+is the checked wrapper:
+
+`build/Invoke-CheckedPowerShell.ps1 -CommandText`
+
+That wrapper must remain the standard path for multi-line commands, nested
+quoting/interpolation, native-command bridges, and other nontrivial generated
+PowerShell invocations so validation and execution happen in one step.
+
 The preserved review-gate entry points are:
 
 - `build/Run-DeepSeekCodeReview.ps1`
@@ -56,6 +65,7 @@ The preserved review-gate entry points are:
 - `build/Test-DeepSeekWorkflowGate.ps1`
 - `build/DeepSeekWorkflowCommon.ps1`
 - `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`
+- `build/Invoke-CheckedPowerShell.ps1`
 
 ## Test Machines
 

@@ -55,6 +55,8 @@ were removed before the new migration repo was created.
 - license headers are mandatory for project artifacts
 - pushes to the upstream 1.0 repository are blocked locally
 - the local migration issue tracker starts empty and is maintained in JSON
+- nontrivial generated PowerShell commands run through
+  `build/Invoke-CheckedPowerShell.ps1`
 
 ## License
 
