@@ -230,7 +230,7 @@ public sealed class SettingsPersistenceAndValidationTests
         {
             QuotesAsync = (symbols, _) =>
             {
-                Assert.Equal(["^TNX", "AAPL"], symbols);
+                Assert.Equal(["^TNX", "AAPL", "MISSING"], symbols);
                 return Task.FromResult(
                     new YFinanceQuotesResponse(
                     [
