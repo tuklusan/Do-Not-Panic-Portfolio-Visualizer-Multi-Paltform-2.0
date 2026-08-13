@@ -122,7 +122,7 @@
       "id": "CR-001",
       "phase": "Phase 0",
       "title": "Capture authoritative upstream workflow inventory and acceptance baseline",
-      "status": "open",
+      "status": "closed",
       "depends_on": [],
       "objective": "Document every upstream user-visible workflow, configuration path, and runtime surface that DNPPV-2.0 must preserve.",
       "acceptance_criteria": [
@@ -134,13 +134,22 @@
         "Manual source/document inspection against the upstream repository",
         "Tracker update with preserved workflow inventory",
         "Documentation sanity pass before closure"
+      ],
+      "completed_on": "2026-08-13",
+      "artifacts": [
+        "docs/UPSTREAM_ACCEPTANCE_BASELINE.md"
+      ],
+      "closure_notes": [
+        "Reviewed the upstream README, release baseline, manual UI QA suite, real production screenshots, and key shell/scene/settings source files.",
+        "Captured the real production screen composition and user-visible workflow inventory.",
+        "Recorded approved DNPPV-2.0 deltas so later parity work preserves functionality while honoring the Avalonia-only architecture reset."
       ]
     },
     {
       "id": "CR-002",
       "phase": "Phase 0",
       "title": "Create fresh .NET 10 + Avalonia solution skeleton for DNPPV-2.0",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-001"
       ],
@@ -154,7 +163,8 @@
         "dotnet restore/build on the local machine",
         "Tracker update with created solution structure",
         "Committed proof that the solution is Avalonia-only"
-      ]
+      ],
+      "started_on": "2026-08-13"
     },
     {
       "id": "CR-003",
@@ -378,13 +388,12 @@
     }
   ],
   "remaining_validation_gaps": [
-    "The fresh repo does not yet contain the upstream workflow inventory as committed migration evidence.",
     "The fresh repo does not yet contain the new .NET 10 + Avalonia solution skeleton.",
     "No real DNPPV-2.0 product code has been ported into this repository yet.",
     "The full cross-platform publish pipeline for the migrated product has not been created yet."
   ],
   "current_operational_recommendations": [
-    "Execute CR-001 first and treat it as the acceptance contract for all downstream product-port work.",
+    "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
     "Do not claim visual product progress from any scaffold or toy application surface.",
     "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment."
@@ -404,6 +413,18 @@
       "notes": [
         "Restored the missing migration design document referenced by AGENTS.md.",
         "Seeded the CR queue for the full Avalonia-only migration program."
+      ]
+    },
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-001 with a committed upstream workflow inventory and acceptance contract.",
+        "Promoted CR-002 to the next active work item."
       ]
     }
   ]
