@@ -4,7 +4,7 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-08-13",
-  "current_lane": "2.0-migration",
+  "current_lane": "phase-0-acceptance-baseline",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
     "publisher": "SANYALnet Labs",
@@ -15,16 +15,396 @@
     "primary_host": "Avalonia desktop shell",
     "legacy_host": null,
     "repository_history": null,
-    "current_baseline_label": "migration-baseline"
+    "current_baseline_label": "migration-baseline",
+    "upstream_reference_repository": "https://github.com/tuklusan/DO-NOT-PANIC-PORTFOLIO-VISUALIZER",
+    "target_platforms": [
+      "windows-x64",
+      "windows-arm64",
+      "linux-x64",
+      "linux-arm64",
+      "osx-x64",
+      "osx-arm64"
+    ],
+    "delivery_model": "platform publish bundles; no Windows-only installer lane",
+    "yfinance_loopback_port": 14871
   },
   "previous_recorded_validation_state": {},
-  "latest_recorded_validation_state": {},
+  "latest_recorded_validation_state": {
+    "date": "2026-08-13",
+    "git_head": "66e91a8",
+    "git_sync_state": "clean; HEAD matches origin/main before migration planning updates",
+    "baseline_checks": [
+      "PowerShell syntax gate available",
+      "checked PowerShell wrapper available",
+      "license header gate available",
+      "upstream push lock available"
+    ]
+  },
   "post_remote_recovery_replay": [],
-  "beta55_migration_program": [],
+  "beta55_migration_program": [
+    {
+      "phase": "Phase 0",
+      "title": "Acceptance Baseline And Program Skeleton",
+      "status": "in_progress",
+      "exit_criteria": [
+        "Architecture source of truth committed",
+        "Upstream user-visible workflows inventoried and traceable",
+        "JSON CR queue seeded and ordered",
+        "Fresh .NET 10 + Avalonia solution skeleton created",
+        "Platform path and loopback-process contracts captured"
+      ]
+    },
+    {
+      "phase": "Phase 1",
+      "title": "Portable Foundations",
+      "status": "planned",
+      "exit_criteria": [
+        "Portable shared models and service contracts exist",
+        "Cross-platform local-data abstractions exist",
+        "YFinance loopback manager is portable and isolated",
+        "Foundation unit tests pass"
+      ]
+    },
+    {
+      "phase": "Phase 2",
+      "title": "Data And Configuration Port",
+      "status": "planned",
+      "exit_criteria": [
+        "Quote/history/news/provider services run in the new solution",
+        "Settings persistence and validation are portable",
+        "Avalonia configuration UI can edit and validate product settings"
+      ]
+    },
+    {
+      "phase": "Phase 3",
+      "title": "Main Visual Shell Port",
+      "status": "planned",
+      "exit_criteria": [
+        "The real DNPPV scene is rendered in Avalonia",
+        "Ticker tapes, graph cards, news, markets, and backgrounds are integrated",
+        "Window and fullscreen controls work on supported platforms"
+      ]
+    },
+    {
+      "phase": "Phase 4",
+      "title": "Runtime Fidelity And Degraded Behavior",
+      "status": "planned",
+      "exit_criteria": [
+        "Quote orchestration and motion behavior are stable",
+        "Degraded operation remains useful and traceable",
+        "Acceptance artifacts capture real product behavior"
+      ]
+    },
+    {
+      "phase": "Phase 5",
+      "title": "Cross-Platform Publish And Acceptance",
+      "status": "planned",
+      "exit_criteria": [
+        "Product publishes for the full required matrix",
+        "Physical-machine validation passes on the three SSH machines",
+        "GitHub-hosted publish and smoke coverage passes for the remaining platforms"
+      ]
+    },
+    {
+      "phase": "Phase 6",
+      "title": "Release Readiness",
+      "status": "planned",
+      "exit_criteria": [
+        "No migration-baseline parity blockers remain",
+        "Documentation and workflow records are internally consistent",
+        "Issue tracker reflects the reconciled migration state"
+      ]
+    }
+  ],
   "ssh_first_vm_harness": {},
-  "change_requests": [],
-  "remaining_validation_gaps": [],
-  "current_operational_recommendations": [],
+  "change_requests": [
+    {
+      "id": "CR-001",
+      "phase": "Phase 0",
+      "title": "Capture authoritative upstream workflow inventory and acceptance baseline",
+      "status": "open",
+      "depends_on": [],
+      "objective": "Document every upstream user-visible workflow, configuration path, and runtime surface that DNPPV-2.0 must preserve.",
+      "acceptance_criteria": [
+        "The upstream README, screenshots, key docs, and source structure are reviewed and summarized in committed migration documents.",
+        "Every major user-visible feature is listed with a migration target and acceptance evidence expectation.",
+        "No product-port CR may claim closure against a toy application surface."
+      ],
+      "validation_plan": [
+        "Manual source/document inspection against the upstream repository",
+        "Tracker update with preserved workflow inventory",
+        "Documentation sanity pass before closure"
+      ]
+    },
+    {
+      "id": "CR-002",
+      "phase": "Phase 0",
+      "title": "Create fresh .NET 10 + Avalonia solution skeleton for DNPPV-2.0",
+      "status": "planned",
+      "depends_on": [
+        "CR-001"
+      ],
+      "objective": "Create the new portable solution and project layout that will host the migration.",
+      "acceptance_criteria": [
+        "A new solution and Avalonia app host build on the local development machine.",
+        "Project layout separates portable libraries from platform abstractions.",
+        "No WPF project or Windows-installer project exists in the active 2.0 solution."
+      ],
+      "validation_plan": [
+        "dotnet restore/build on the local machine",
+        "Tracker update with created solution structure",
+        "Committed proof that the solution is Avalonia-only"
+      ]
+    },
+    {
+      "id": "CR-003",
+      "phase": "Phase 0",
+      "title": "Define cross-platform app identity, local-data roots, and YFinance loopback contract",
+      "status": "planned",
+      "depends_on": [
+        "CR-002"
+      ],
+      "objective": "Lock down the runtime contracts that keep DNPPV-2.0 isolated and portable across machines.",
+      "acceptance_criteria": [
+        "Portable data-root abstractions exist for Windows, Linux, and macOS.",
+        "The 2.0 app identity is isolated from upstream 1.0 paths and processes.",
+        "The locally managed YFinance endpoint contract uses port 14871."
+      ],
+      "validation_plan": [
+        "Unit tests for path resolution and identity separation",
+        "Documentation update for platform storage and loopback behavior",
+        "Review of local and remote machine assumptions"
+      ]
+    },
+    {
+      "id": "CR-004",
+      "phase": "Phase 1",
+      "title": "Port shared domain models, settings contracts, diagnostics, and service interfaces",
+      "status": "planned",
+      "depends_on": [
+        "CR-003"
+      ],
+      "objective": "Recreate the shared portable foundation required by the product runtime.",
+      "acceptance_criteria": [
+        "Core models and enums required by the product are present in portable projects.",
+        "Diagnostics and app-identity services are portable.",
+        "Foundation unit tests cover the recreated contracts."
+      ],
+      "validation_plan": [
+        "dotnet test for foundation projects",
+        "Review against upstream type inventory",
+        "Tracker closure evidence for recreated contracts"
+      ]
+    },
+    {
+      "id": "CR-005",
+      "phase": "Phase 1",
+      "title": "Port YFinance process management and quote/history provider pipeline",
+      "status": "planned",
+      "depends_on": [
+        "CR-004"
+      ],
+      "objective": "Restore the quote and history data path in a portable form.",
+      "acceptance_criteria": [
+        "DNPPV-2.0 can start and stop the local YFinance service through portable code.",
+        "Quote/history provider services compile and run in the new solution.",
+        "Provider tests cover the loopback contract and major service behavior."
+      ],
+      "validation_plan": [
+        "Automated service tests",
+        "Targeted local runtime smoke with the real service path",
+        "Tracker evidence for port 14871 and process isolation"
+      ]
+    },
+    {
+      "id": "CR-006",
+      "phase": "Phase 2",
+      "title": "Port settings persistence, validation, and configuration workflow services",
+      "status": "planned",
+      "depends_on": [
+        "CR-005"
+      ],
+      "objective": "Recreate settings storage and validation so the product can be configured faithfully.",
+      "acceptance_criteria": [
+        "Settings persistence works through the new portable storage abstractions.",
+        "Symbol/feed/AI-access validation services are recreated where still applicable.",
+        "Unit tests cover settings normalization and validation behavior."
+      ],
+      "validation_plan": [
+        "dotnet test for settings and validation services",
+        "Documentation update for configuration storage behavior",
+        "Tracker evidence tied to upstream configuration workflows"
+      ]
+    },
+    {
+      "id": "CR-007",
+      "phase": "Phase 2",
+      "title": "Port the configuration window to Avalonia",
+      "status": "planned",
+      "depends_on": [
+        "CR-006"
+      ],
+      "objective": "Provide a real Avalonia configuration experience for editing product settings.",
+      "acceptance_criteria": [
+        "The user can edit portfolio tapes, news options, and backgrounds in Avalonia.",
+        "Validation feedback is visible before settings are applied.",
+        "The configuration flow is physically exercised on the three SSH-accessed machines."
+      ],
+      "validation_plan": [
+        "Local UI run",
+        "SSH-accessed physical-machine validation with screenshots/logs",
+        "Artifact review before closure"
+      ]
+    },
+    {
+      "id": "CR-008",
+      "phase": "Phase 3",
+      "title": "Port the main Avalonia shell and fullscreen lifecycle",
+      "status": "planned",
+      "depends_on": [
+        "CR-007"
+      ],
+      "objective": "Create the real DNPPV visual shell on Avalonia and restore its core window behavior.",
+      "acceptance_criteria": [
+        "The main Avalonia window opens the product shell rather than a toy screen.",
+        "Fullscreen, maximize, escape, and pointer toggles work as required.",
+        "The shell runs on the three physical machines."
+      ],
+      "validation_plan": [
+        "Local visual run",
+        "Physical-machine shell validation with screenshots",
+        "GitHub smoke publish for supported RIDs"
+      ]
+    },
+    {
+      "id": "CR-009",
+      "phase": "Phase 3",
+      "title": "Port ticker tapes, macro ribbon, and scene status surfaces",
+      "status": "planned",
+      "depends_on": [
+        "CR-008"
+      ],
+      "objective": "Restore the primary market-information overlays that define the product's look and utility.",
+      "acceptance_criteria": [
+        "Four configurable ticker lanes render from live runtime state.",
+        "Macro-market ribbon and scene status surfaces are present.",
+        "Behavior is compared against upstream visual evidence."
+      ],
+      "validation_plan": [
+        "Unit tests where practical",
+        "Physical visual acceptance on local SSH machines",
+        "Artifact review against the upstream workflow inventory"
+      ]
+    },
+    {
+      "id": "CR-010",
+      "phase": "Phase 3",
+      "title": "Port floating graph cards, global markets, clocks, weather, news, and backgrounds",
+      "status": "planned",
+      "depends_on": [
+        "CR-009"
+      ],
+      "objective": "Restore the remainder of the real scene composition and ambient experience.",
+      "acceptance_criteria": [
+        "Floating graph cards and motion behavior are present.",
+        "Global markets, clocks, weather, news scroller, and rotating backgrounds are integrated.",
+        "The resulting screen resembles the upstream product rather than a scaffold."
+      ],
+      "validation_plan": [
+        "Visual acceptance on physical machines",
+        "Logs and screenshots captured for review",
+        "Tracker evidence tied to upstream screenshots and README behavior"
+      ]
+    },
+    {
+      "id": "CR-011",
+      "phase": "Phase 4",
+      "title": "Port degraded-mode behavior, recovery, and traceability",
+      "status": "planned",
+      "depends_on": [
+        "CR-010"
+      ],
+      "objective": "Make the real product resilient when providers or network conditions degrade.",
+      "acceptance_criteria": [
+        "Slow or failed providers do not collapse the entire scene.",
+        "Logs and traces remain actionable and bounded.",
+        "Degraded behavior is demonstrated intentionally during validation."
+      ],
+      "validation_plan": [
+        "Fault-injection or controlled degraded-run checks",
+        "Artifact review of traces/logs/screenshots",
+        "Closure evidence in the issue tracker"
+      ]
+    },
+    {
+      "id": "CR-012",
+      "phase": "Phase 5",
+      "title": "Publish and validate DNPPV-2.0 across all required platforms",
+      "status": "planned",
+      "depends_on": [
+        "CR-011"
+      ],
+      "objective": "Prove that the migrated application runs across the full target matrix.",
+      "acceptance_criteria": [
+        "Publish outputs are produced for all required RIDs.",
+        "Physical-machine acceptance passes on Windows 10, Windows 11, and Lubuntu.",
+        "GitHub-hosted smoke coverage passes on macOS x64/arm64, Linux x64/arm64, and Windows arm64."
+      ],
+      "validation_plan": [
+        "Local and remote publish/install runs",
+        "GitHub Actions smoke/publish matrix",
+        "Artifact review before CR closure"
+      ]
+    },
+    {
+      "id": "CR-013",
+      "phase": "Phase 6",
+      "title": "Close migration-baseline parity and documentation reconciliation",
+      "status": "planned",
+      "depends_on": [
+        "CR-012"
+      ],
+      "objective": "Reconcile remaining parity gaps, docs, and tracker state so the migrated baseline is ready for continued development.",
+      "acceptance_criteria": [
+        "Remaining parity gaps are either closed or explicitly deferred by approved CR.",
+        "Project documentation is internally and cross-document consistent.",
+        "The tracker reflects a closed migration-baseline state."
+      ],
+      "validation_plan": [
+        "Manual documentation scan",
+        "Tracker reconciliation pass",
+        "Final multi-platform sanity confirmation"
+      ]
+    }
+  ],
+  "remaining_validation_gaps": [
+    "The fresh repo does not yet contain the upstream workflow inventory as committed migration evidence.",
+    "The fresh repo does not yet contain the new .NET 10 + Avalonia solution skeleton.",
+    "No real DNPPV-2.0 product code has been ported into this repository yet.",
+    "The full cross-platform publish pipeline for the migrated product has not been created yet."
+  ],
+  "current_operational_recommendations": [
+    "Execute CR-001 first and treat it as the acceptance contract for all downstream product-port work.",
+    "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
+    "Do not claim visual product progress from any scaffold or toy application surface.",
+    "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment."
+  ],
   "full_codebase_review_records": [],
-  "documentation_review_records": []
+  "documentation_review_records": [
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "README.md",
+        "AGENTS.md",
+        "docs/TEST_MACHINE_ACCESS.md",
+        "docs/AUDIT_STATE.json",
+        "docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Restored the missing migration design document referenced by AGENTS.md.",
+        "Seeded the CR queue for the full Avalonia-only migration program."
+      ]
+    }
+  ]
 }

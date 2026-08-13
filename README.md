@@ -41,6 +41,8 @@ PANIC PORTFOLIO VISUALIZER 2.0**. The goal is to migrate the public upstream
 The current baseline intentionally keeps only the migration-start artifacts we
 need:
 
+- the migration design source of truth at
+  `docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md`
 - the DeepSeek review gate under `build/`
 - the DeepSeek gate reference document at
   `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`
@@ -57,6 +59,7 @@ were removed before the new migration repo was created.
 - the local migration issue tracker starts empty and is maintained in JSON
 - nontrivial generated PowerShell commands run through
   `build/Invoke-CheckedPowerShell.ps1`
+- the Avalonia migration design document is the architecture source of truth
 
 ## License
 
