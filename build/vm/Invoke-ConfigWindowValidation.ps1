@@ -546,39 +546,44 @@ function Invoke-WindowsValidation {
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path $remoteScriptPath)
 
     $remoteScriptPathPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteScriptPath
+    $remoteUserPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $User
     $remoteDriver = @"
-$taskName = $taskNamePsLiteral
-$scriptPath = $remoteScriptPathPsLiteral
-$artifactDir = $targetPublishDirPsLiteral
-$donePath = Join-Path $artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue $donePath, (Join-Path $artifactDir 'general.png'), (Join-Path $artifactDir 'validation.png'), (Join-Path $artifactDir 'step.log')
+`$taskName = $taskNamePsLiteral
+`$scriptPath = $remoteScriptPathPsLiteral
+`$artifactDir = $targetPublishDirPsLiteral
+`$taskUser = $remoteUserPsLiteral
+`$donePath = Join-Path `$artifactDir 'done.txt'
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'step.log')
 try {
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
+    Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
 catch {
 }
 
-`$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -ExecutionPolicy Bypass -File `"`{0}`"" -f `$scriptPath)
-`$trigger = New-ScheduledTaskTrigger -Once -At ([DateTime]::Today.AddHours(23).AddMinutes(59))
-`$principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
-Register-ScheduledTask -TaskName $taskName -Action `$action -Trigger `$trigger -Principal `$principal -Force | Out-Null
-Start-ScheduledTask -TaskName $taskName
-for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {
-    if (Test-Path `$donePath) {
-        break
+try {
+    `$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ("-NoProfile -ExecutionPolicy Bypass -File `"`{0}`"" -f `$scriptPath)
+    `$trigger = New-ScheduledTaskTrigger -Once -At ([DateTime]::Today.AddHours(23).AddMinutes(59))
+    `$principal = New-ScheduledTaskPrincipal -UserId `$taskUser -LogonType Interactive -RunLevel Limited
+    Register-ScheduledTask -TaskName `$taskName -Action `$action -Trigger `$trigger -Principal `$principal -Force | Out-Null
+    Start-ScheduledTask -TaskName `$taskName
+    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {
+        if (Test-Path `$donePath) {
+            break
+        }
+
+        Start-Sleep -Seconds 1
     }
 
-    Start-Sleep -Seconds 1
+    if (Test-Path `$donePath) {
+        Get-Content `$donePath
+    }
+    else {
+        'DONE_FILE_MISSING'
+    }
 }
-
-if (Test-Path `$donePath) {
-    Get-Content `$donePath
+finally {
+    Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
-else {
-    'DONE_FILE_MISSING'
-}
-
-Unregister-ScheduledTask -TaskName $taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 "@
     Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
 
