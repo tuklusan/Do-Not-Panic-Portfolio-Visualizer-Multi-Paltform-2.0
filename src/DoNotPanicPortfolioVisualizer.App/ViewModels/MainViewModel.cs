@@ -64,10 +64,10 @@ public sealed class MainViewModel : ViewModelBase
         _aiEndpointUrl = Defaults.DefaultAiEndpointUrl;
         _aiModelId = Defaults.DefaultAiModelId;
         Groups = [];
-        ValidateCommand = new AsyncRelayCommand(ValidateAsync, CanValidate);
-        SaveCommand = new RelayCommand(Save, CanSave);
-        RevertCommand = new RelayCommand(Revert, CanRevert);
-        AddGroupCommand = new RelayCommand(AddGroup, CanAddGroup);
+        ValidateCommand = new AsyncRelayCommand(ValidateAsync, () => CanValidate);
+        SaveCommand = new RelayCommand(Save, () => CanSave);
+        RevertCommand = new RelayCommand(Revert, () => CanRevert);
+        AddGroupCommand = new RelayCommand(AddGroup, () => CanAddGroup);
         ApplyLoadedSettings(_loadedSettings);
     }
 
