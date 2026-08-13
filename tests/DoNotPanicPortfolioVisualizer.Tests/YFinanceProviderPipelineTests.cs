@@ -74,14 +74,14 @@ public sealed class YFinanceProviderPipelineTests
 
         IReadOnlyList<QuoteSnapshot> quotes = await provider.GetQuotesAsync(["US10Y", "INDY.US"]);
 
-        QuoteSnapshot us10y = Assert.Single(quotes.Where(q => q.Symbol == "US10Y"));
+        QuoteSnapshot us10y = Assert.Single(quotes, q => q.Symbol == "US10Y");
         Assert.Equal(4.23m, us10y.Last);
         Assert.Equal(4.18m, us10y.PreviousClose);
         Assert.Equal(0.05m, us10y.Change);
         Assert.Equal(MarketSession.Regular, us10y.MarketSession);
         Assert.True(us10y.IsStale);
 
-        QuoteSnapshot indy = Assert.Single(quotes.Where(q => q.Symbol == "INDY.US"));
+        QuoteSnapshot indy = Assert.Single(quotes, q => q.Symbol == "INDY.US");
         Assert.Equal(MarketSession.AfterHours, indy.MarketSession);
         Assert.False(indy.IsStale);
     }

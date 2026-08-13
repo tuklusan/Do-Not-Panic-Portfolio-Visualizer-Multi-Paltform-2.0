@@ -117,7 +117,8 @@ public sealed class YahooFinanceQuoteProvider : IQuoteProvider
                     requestSymbol,
                     exactByResponseSymbol,
                     byResponseMatchKey,
-                    out YFinanceQuoteResponse? quote))
+                    out YFinanceQuoteResponse? quote) ||
+                quote is null)
             {
                 continue;
             }
