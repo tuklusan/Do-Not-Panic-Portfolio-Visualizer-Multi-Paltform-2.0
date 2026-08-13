@@ -100,9 +100,12 @@ public sealed class HistoricalCacheService : IHistoricalCacheService, IDisposabl
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             try
             {
-                await using FileStream stream = File.Create(tempPath);
-                await JsonSerializer.SerializeAsync(stream, snapshot, cancellationToken: cancellationToken).ConfigureAwait(false);
-                await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await using (FileStream stream = File.Create(tempPath))
+                {
+                    await JsonSerializer.SerializeAsync(stream, snapshot, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
+
                 File.Move(tempPath, path, overwrite: true);
             }
             finally

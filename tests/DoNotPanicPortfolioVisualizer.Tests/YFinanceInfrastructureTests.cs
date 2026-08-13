@@ -168,7 +168,7 @@ public sealed class YFinanceInfrastructureTests
             probe);
 
         using CancellationTokenSource cts = new(TimeSpan.FromMilliseconds(60));
-        await Assert.ThrowsAsync<OperationCanceledException>(
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => manager.EnsureOwnedServerAsync("DNPPV.Tests / unsafe", cts.Token));
 
         Assert.True(handle.KillCalled);
