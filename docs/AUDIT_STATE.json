@@ -4,7 +4,7 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-08-13",
-  "current_lane": "phase-2-data-and-configuration-port",
+  "current_lane": "phase-3-main-visual-shell-port",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
     "publisher": "SANYALnet Labs",
@@ -48,7 +48,7 @@
   },
   "latest_recorded_validation_state": {
     "date": "2026-08-13",
-    "git_head": "2ceb523",
+    "git_head": "52c447b",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -58,9 +58,10 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek code review passed for the CR-006 settings persistence and validation port, with follow-up reviewer passes for the two forward-fix commits made during validation.",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors from pushed HEAD 2ceb523.",
-      "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 49 tests from pushed HEAD 2ceb523."
+      "DeepSeek code review passed for the CR-007 Avalonia configuration-window slice and for the follow-up physical-validation harness improvements used to gather closure evidence.",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors, and dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 49 tests from the app-equivalent pushed HEAD ad1f5fe.",
+      "git diff --name-only ad1f5fe..52c447b showed only build/vm/Invoke-ConfigWindowValidation.ps1 changed after the build/test-proven product head, so the later pushed heads remained product-equivalent for CR-007 closure evidence.",
+      "Physical-machine evidence for CR-007 was captured across Lubuntu, Windows 10, and Windows 11, and a DeepSeek TEST_ARTIFACT second-opinion review passed on the final mixed-evidence packet from pushed HEAD 52c447b."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -91,7 +92,7 @@
     {
       "phase": "Phase 2",
       "title": "Data And Configuration Port",
-      "status": "in_progress",
+      "status": "completed",
       "exit_criteria": [
         "Quote/history/news/provider services run in the new solution",
         "Settings persistence and validation are portable",
@@ -101,7 +102,7 @@
     {
       "phase": "Phase 3",
       "title": "Main Visual Shell Port",
-      "status": "planned",
+      "status": "in_progress",
       "exit_criteria": [
         "The real DNPPV scene is rendered in Avalonia",
         "Ticker tapes, graph cards, news, markets, and backgrounds are integrated",
@@ -354,7 +355,7 @@
       "id": "CR-007",
       "phase": "Phase 2",
       "title": "Port the configuration window to Avalonia",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-006"
       ],
@@ -369,13 +370,28 @@
         "SSH-accessed physical-machine validation with screenshots/logs",
         "Artifact review before closure"
       ],
-      "started_on": "2026-08-13"
+      "started_on": "2026-08-13",
+      "completed_on": "2026-08-13",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj",
+        "src/DoNotPanicPortfolioVisualizer.App/ViewModels/MainViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/ViewModels/SymbolValidationState.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/ViewModels/TickerGroupEditorViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/ViewModels/TickerItemEditorViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "closure_notes": [
+        "Replaced the placeholder Avalonia window with a real configuration surface that edits portable background, portfolio-tape, and news/provider settings and surfaces pre-save validation feedback.",
+        "Validated the CR-007 slice from clean pushed checkpoints with a zero-warning Debug build, a 49-test suite, a local UI smoke run, and physical-machine evidence across Lubuntu, Windows 10, and Windows 11.",
+        "Closed the CR only after a DeepSeek TEST_ARTIFACT second-opinion review passed on the final mixed evidence set, with later harness-only commits explicitly verified not to change product code."
+      ]
     },
     {
       "id": "CR-008",
       "phase": "Phase 3",
       "title": "Port the main Avalonia shell and fullscreen lifecycle",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-007"
       ],
@@ -389,7 +405,8 @@
         "Local visual run",
         "Physical-machine shell validation with screenshots",
         "GitHub smoke publish for supported RIDs"
-      ]
+      ],
+      "started_on": "2026-08-13"
     },
     {
       "id": "CR-009",
@@ -597,6 +614,21 @@
       "notes": [
         "Closed CR-006 with portable settings persistence, protected secret storage, RSS validation, symbol validation, and override-path hardening.",
         "Promoted CR-007 as the next active Phase 2 Avalonia configuration-window work item."
+      ]
+    },
+    {
+      "date": "2026-08-13",
+      "scope": [
+        "src/",
+        "tests/",
+        "build/vm/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-007 with the first real Avalonia configuration window, local build/test proof, and physical-machine evidence from Lubuntu, Windows 10, and Windows 11.",
+        "Added and hardened the reusable physical-machine configuration-window validation harness, then passed the mandatory DeepSeek TEST_ARTIFACT second-opinion gate on the final closure packet.",
+        "Completed Phase 2 and promoted CR-008 as the first active Phase 3 main-shell port work item."
       ]
     }
   ]
