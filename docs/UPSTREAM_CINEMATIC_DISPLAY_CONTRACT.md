@@ -73,6 +73,9 @@ not evidence that motion behavior passes.
   state, UTC/date information, and the seven macro meters.
 - Macro meters preserve their compact `96x50` geometry and independent refresh
   lane. Macro refresh is not coupled to the four portfolio tape animations.
+- The left status stack is capped at 248 pixels, the last-updated field reserves
+  222 pixels, and the right clock card has a 102-pixel minimum width. These
+  constraints keep the centered macro meters stable during text changes.
 - Missing, stale, or loading data remains visually explicit.
 
 ## Portfolio Ticker Tapes
@@ -117,6 +120,9 @@ not evidence that motion behavior passes.
   second vertically, targets approximately 1.4 seconds, and times out after
   four seconds. At the target edge it restores nominal X motion and reverses
   nominal Y away from that edge.
+- A normal card flash follows the upstream multi-pulse sequence at approximately
+  180, 620, 980, and 1680 ms. Refresh travel uses a sustained 220 ms
+  auto-reversing pulse capped at four seconds.
 - Initial hydration and structural graph replacement suppress false quote-change
   impulses.
 
@@ -124,8 +130,11 @@ not evidence that motion behavior passes.
 
 - The global-market lane preserves all upstream centers, local exchange clocks,
   index value/direction, session state, and weather, with its own refresh lane.
-- It remains a tape-like bottom surface and must fit supported viewport widths
-  without clipping centers or text.
+- It remains a continuously animated tape, not eight static squeezed cells.
+  New York/NASDAQ is pinned in a 150-pixel card; the other 164x54 cards move
+  through a 68-pixel clipped viewport with duplicated sequences, edge fades,
+  and shrouds. It must fit supported viewport widths without clipping the pinned
+  card, viewport, or text.
 - Finance news preserves the upstream telegraph-style headline state machine:
   preparation, pause before scroll, vertical scrolling, pause after scroll, and
   transition to the next headline.

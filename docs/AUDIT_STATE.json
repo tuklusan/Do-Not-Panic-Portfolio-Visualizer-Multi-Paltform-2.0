@@ -485,7 +485,7 @@
       "id": "CR-010A",
       "phase": "Phase 3",
       "title": "Audit and contract the upstream cinematic display",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-009"
       ],
@@ -500,13 +500,24 @@
         "Cross-check against upstream release screenshot and UI QA suite",
         "Documentation and tracker consistency review"
       ],
-      "started_on": "2026-08-20"
+      "started_on": "2026-08-20",
+      "completed_on": "2026-08-20",
+      "evidence_files": [
+        "docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md",
+        "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+        "docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md"
+      ],
+      "closure_notes": [
+        "Audited upstream commit 2e2fab0 across the scene control, startup coordinator, ticker/graph/global-market/news/status controls, motion services and view models, release screenshot, and manual UI QA suite.",
+        "Recorded source-derived scene geometry, tape travel, graph dimensions and physics, quote rise/drop impulses and flash timing, background cross-fade/zoom, independently animated global markets, telegraph news playback, lifecycle, recovery, and dynamic evidence requirements.",
+        "Repeated tracker and migration-document scans reached zero gaps in two successive passes, the license gate passed, and mandatory review passed before the audit checkpoint was pushed."
+      ]
     },
     {
       "id": "CR-010B",
       "phase": "Phase 3",
       "title": "Port viewport-relative scene geometry and background cinema",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010A"
       ],
@@ -520,7 +531,8 @@
         "Deterministic geometry and background-state tests",
         "Smallest/wider viewport physical captures",
         "Trace and lifecycle cleanup review"
-      ]
+      ],
+      "started_on": "2026-08-20"
     },
     {
       "id": "CR-010C",
