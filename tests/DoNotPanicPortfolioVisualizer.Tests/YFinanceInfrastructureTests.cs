@@ -16,11 +16,22 @@ using System.Net;
 using System.Net.Sockets;
 using DoNotPanicPortfolioVisualizer.Data.Runtime;
 using DoNotPanicPortfolioVisualizer.Shared.Services;
+using YFinance.NET.Transport;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
 public sealed class YFinanceInfrastructureTests
 {
+    [Fact]
+    public void ResolveRequestBaseUri_TreatsRootedApiPathAsYahooRelativeUri()
+    {
+        Uri baseUri = new("https://query1.finance.yahoo.com");
+
+        Uri resolved = YahooFinanceHttpClient.ResolveRequestBaseUri("/v7/finance/quote", baseUri);
+
+        Assert.Equal("https://query1.finance.yahoo.com/v7/finance/quote", resolved.AbsoluteUri);
+    }
+
     [Fact]
     public void ResolveLaunchCommand_PrefersBundledExecutable()
     {

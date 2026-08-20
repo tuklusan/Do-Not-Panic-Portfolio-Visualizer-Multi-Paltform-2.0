@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\DoNotPanicPortfolioVisualizer.Media\DoNotPanicPortfolioVisualizer.Media.csproj" />
     <ProjectReference Include="..\..\src\DoNotPanicPortfolioVisualizer.Render\DoNotPanicPortfolioVisualizer.Render.csproj" />
     <ProjectReference Include="..\..\src\DoNotPanicPortfolioVisualizer.Presentation\DoNotPanicPortfolioVisualizer.Presentation.csproj" />
+    <ProjectReference Include="..\..\src\YFinance\YFinance.NET\YFinance.NET.csproj" />
   </ItemGroup>
 
 </Project>

@@ -172,9 +172,7 @@ public sealed class YahooFinanceHttpClient : IDisposable
 
     private Uri BuildUri(string relativeOrAbsoluteUrl, IReadOnlyDictionary<string, string?>? query, string crumb)
     {
-        Uri baseUri = Uri.TryCreate(relativeOrAbsoluteUrl, UriKind.Absolute, out Uri? absolute)
-            ? absolute
-            : new Uri(_options.Query1BaseUri, relativeOrAbsoluteUrl);
+        Uri baseUri = ResolveRequestBaseUri(relativeOrAbsoluteUrl, _options.Query1BaseUri);
 
         List<string> parameters = new();
         if (query is not null)
@@ -193,6 +191,17 @@ public sealed class YahooFinanceHttpClient : IDisposable
         }.Where(static value => !string.IsNullOrWhiteSpace(value)));
         builder.Query = mergedQuery;
         return builder.Uri;
+    }
+
+    internal static Uri ResolveRequestBaseUri(string relativeOrAbsoluteUrl, Uri queryBaseUri)
+    {
+        if (Uri.TryCreate(relativeOrAbsoluteUrl, UriKind.Absolute, out Uri? absolute) &&
+            (absolute.Scheme == Uri.UriSchemeHttp || absolute.Scheme == Uri.UriSchemeHttps))
+        {
+            return absolute;
+        }
+
+        return new Uri(queryBaseUri, relativeOrAbsoluteUrl);
     }
 
     private static string BuildQueryKey(IReadOnlyDictionary<string, string?>? query)
