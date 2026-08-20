@@ -48,7 +48,7 @@
   },
   "latest_recorded_validation_state": {
     "date": "2026-08-20",
-    "git_head": "74c5139",
+    "git_head": "5c9d6b7",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -58,10 +58,10 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek code review passed for the CR-008 Avalonia product-shell and fullscreen-lifecycle slice.",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors, and dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug passed with 49 tests.",
-      "Self-contained publishes passed for win-x64, linux-x64, osx-x64, osx-arm64, linux-arm64, and win-arm64 from pushed HEAD 74c5139.",
-      "Visible product-shell evidence was captured on Lubuntu, Windows 10, and Windows 11; local F11 fullscreen and Escape restoration were exercised; and a DeepSeek TEST_ARTIFACT second-opinion review passed."
+      "DeepSeek code review passed for the CR-009 live YFinance integration, market surfaces, Linux native-service launch correction, and cross-platform Yahoo URI correction.",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Release passed with 0 warnings and 0 errors, and dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 54 tests.",
+      "Self-contained publishes passed for win-x64, linux-x64, osx-x64, osx-arm64, linux-arm64, and win-arm64 with a matching YFinance server bundle in every output.",
+      "Live macro and ticker evidence was captured on Lubuntu, Windows 10, and Windows 11; process cleanup was verified; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -312,7 +312,8 @@
       "closure_notes": [
         "Added a portable owned-server process manager for the YFinance loopback lane, using the approved DNPPV-2.0 port 14871 and portable bundle resolution rules.",
         "Ported the first managed runtime-client abstractions plus quote/history providers, symbol mapping, and historical-cache storage into the new Data and Shared projects.",
-        "Validated the pushed CR-005 slice with a clean-checkpoint local build and a 33-test suite covering runtime contracts, settings foundations, YFinance infrastructure, and provider/cache behavior."
+        "Validated the pushed CR-005 slice with a clean-checkpoint local build and a 33-test suite covering runtime contracts, settings foundations, YFinance infrastructure, and provider/cache behavior.",
+        "Reconciliation during CR-009 completed the real protocol client and self-contained server integration that CR-005's initial abstraction-only closure had not yet supplied; that repair was code-reviewed and physically proven on all three local platforms."
       ]
     },
     {
@@ -425,7 +426,7 @@
       "id": "CR-009",
       "phase": "Phase 3",
       "title": "Port ticker tapes, macro ribbon, and scene status surfaces",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-008"
       ],
@@ -440,13 +441,28 @@
         "Physical visual acceptance on local SSH machines",
         "Artifact review against the upstream workflow inventory"
       ],
-      "started_on": "2026-08-20"
+      "started_on": "2026-08-20",
+      "completed_on": "2026-08-20",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Runtime/YFinanceProtocolRuntimeClient.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr009-linux-live-final.png",
+        "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr009-acceptance-win10/validation.png",
+        "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr009-acceptance-win11/validation.png"
+      ],
+      "closure_notes": [
+        "Restored four settings-driven ticker lanes, the seven-symbol macro-market ribbon, market-session state, last-update state, and live/stale/degraded feed status in the real Avalonia product shell.",
+        "Integrated the retained YFinance implementation as a self-contained owned service on port 14871 and added the real protocol runtime adapter, lifecycle cleanup, and six-RID publish bundling.",
+        "Physical acceptance found and corrected Unix execute-bit, extensionless-native-launch, and rooted-URI resolution defects; final live screenshots passed on Lubuntu, Windows 10, and Windows 11.",
+        "Closed from pushed checkpoint 5c9d6b7 after a zero-warning Release build, 54 passing tests, six successful target publishes, verified remote process cleanup, mandatory CODE reviews, and a PASS from the TEST_ARTIFACT second-opinion gate."
+      ]
     },
     {
       "id": "CR-010",
       "phase": "Phase 3",
       "title": "Port floating graph cards, global markets, clocks, weather, news, and backgrounds",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-009"
       ],
@@ -460,7 +476,8 @@
         "Visual acceptance on physical machines",
         "Logs and screenshots captured for review",
         "Tracker evidence tied to upstream screenshots and README behavior"
-      ]
+      ],
+      "started_on": "2026-08-20"
     },
     {
       "id": "CR-011",
@@ -524,8 +541,8 @@
     }
   ],
   "remaining_validation_gaps": [
-    "No real DNPPV-2.0 visual shell or configuration UI has been ported into this repository yet.",
-    "The full cross-platform publish pipeline for the migrated product has not been created yet."
+    "CR-010 must replace the current global-markets and finance-news placeholders and add floating graph cards, clocks, weather, rotating backgrounds, and the required ambient motion.",
+    "Hosted execution and release-quality acceptance across the non-local target architectures remain assigned to later queue items."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
@@ -657,6 +674,23 @@
         "Closed CR-008 with the real Avalonia product shell, retained upstream imagery, maximized/fullscreen lifecycle, and Settings/About/Exit shell commands.",
         "Passed six-target publishing, the 49-test suite, physical visual acceptance on Lubuntu, Windows 10, and Windows 11, and the mandatory DeepSeek CODE and TEST_ARTIFACT gates.",
         "Corrected the remote-validation harness temporary-script race discovered during parallel physical-machine execution and promoted CR-009."
+      ]
+    },
+    {
+      "date": "2026-08-20",
+      "scope": [
+        "src/YFinance/",
+        "src/DoNotPanicPortfolioVisualizer.Data/Runtime/",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-009 with real port-14871 runtime integration, live macro/ticker surfaces, six-target publish proof, and live visual acceptance on all three physical machines.",
+        "Physical Linux acceptance discovered and drove corrections for native-service permissions, extensionless executable selection, and rooted Yahoo API path resolution.",
+        "Passed mandatory CODE and TEST_ARTIFACT reviews, reconciled the previously incomplete CR-005 integration claim, and promoted CR-010 as the remaining Phase 3 scene-composition work item."
       ]
     }
   ]
