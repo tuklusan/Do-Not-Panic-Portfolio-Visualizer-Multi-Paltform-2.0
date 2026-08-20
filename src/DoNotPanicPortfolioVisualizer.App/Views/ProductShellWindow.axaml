@@ -5,6 +5,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
 -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:DoNotPanicPortfolioVisualizer.App.Converters"
         x:Class="DoNotPanicPortfolioVisualizer.App.Views.ProductShellWindow"
         x:Name="ShellWindow"
         x:CompileBindings="False"
@@ -18,6 +19,9 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
         Closing="OnWindowClosing"
         KeyDown="OnWindowKeyDown"
         DoubleTapped="OnWindowDoubleTapped">
+    <Window.Resources>
+        <converters:BackgroundImageConverter x:Key="BackgroundImageConverter" />
+    </Window.Resources>
     <Grid RowDefinitions="Auto,*">
         <Menu x:Name="MainMenu"
               Grid.Row="0"
@@ -41,7 +45,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
         </Menu>
 
         <Grid x:Name="SceneRoot" Grid.Row="1">
-            <Image Source="/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg"
+            <Image Source="{Binding CurrentBackgroundSource, Converter={StaticResource BackgroundImageConverter}}"
                    Stretch="UniformToFill" />
             <Border Background="#990B0D0F" />
 
@@ -135,9 +139,65 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                     </Grid>
                 </Border>
 
-                <ItemsControl Grid.Row="2"
-                              ItemsSource="{Binding Lanes}"
-                              Margin="8,34,8,10">
+                <Grid Grid.Row="2" ClipToBounds="True">
+                    <ItemsControl ItemsSource="{Binding Graphs}"
+                                  IsHitTestVisible="False"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas Width="1200" Height="300" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.Styles>
+                            <Style Selector="ItemsControl > ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                            </Style>
+                        </ItemsControl.Styles>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="168" Height="78"
+                                        Background="#B80D131B"
+                                        BorderBrush="{Binding AccentBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="5"
+                                        Padding="8,5">
+                                    <Grid RowDefinitions="Auto,*,Auto">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding Symbol}"
+                                                       FontFamily="Consolas"
+                                                       FontWeight="Bold"
+                                                       Foreground="White" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding ChangeText}"
+                                                       FontFamily="Consolas"
+                                                       Foreground="{Binding AccentBrush}" />
+                                        </Grid>
+                                        <Path Grid.Row="1"
+                                              Data="{Binding PathData}"
+                                              Stroke="{Binding AccentBrush}"
+                                              StrokeThickness="2"
+                                              Stretch="Fill"
+                                              Margin="2" />
+                                        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding TapeName}"
+                                                       FontSize="9"
+                                                       Foreground="#8EA4B4" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding LastText}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="10"
+                                                       Foreground="White" />
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <ItemsControl ItemsSource="{Binding Lanes}"
+                                  Margin="8,34,8,10">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Spacing="8" />
@@ -192,7 +252,8 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ItemsControl>
+                </Grid>
 
                 <Border Grid.Row="3"
                         Background="#E20B1116"
@@ -204,11 +265,61 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                    FontFamily="Consolas"
                                    FontWeight="Bold"
                                    Foreground="#C9E8FF" />
-                        <TextBlock Grid.Column="1"
-                                   Text="World-market clocks and weather are initializing"
-                                   HorizontalAlignment="Center"
-                                   FontFamily="Consolas"
-                                   Foreground="#AFC0CB" />
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding GlobalMarkets}"
+                                      Margin="14,0,0,0"
+                                      ClipToBounds="True">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="7" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="137"
+                                            Background="#C2171D22"
+                                            BorderBrush="#405564"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="6,3">
+                                        <Grid RowDefinitions="Auto,Auto,Auto">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Text="{Binding City}"
+                                                           FontSize="10"
+                                                           FontWeight="Bold"
+                                                           Foreground="#C9E8FF" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding TimeText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="9"
+                                                           Foreground="#DCE6ED" />
+                                            </Grid>
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding ExchangeName}"
+                                                       FontSize="9"
+                                                       Foreground="#8EA4B4" />
+                                            <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*">
+                                                <TextBlock Text="{Binding ValueText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="10"
+                                                           Foreground="White" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding ChangeText}"
+                                                           Margin="5,0,0,0"
+                                                           FontFamily="Consolas"
+                                                           FontSize="9"
+                                                           Foreground="{Binding AccentBrush}" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding WeatherText}"
+                                                           HorizontalAlignment="Right"
+                                                           FontSize="9"
+                                                           Foreground="#AFC0CB" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </Border>
 
@@ -220,12 +331,18 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                            FontWeight="Bold"
                                            Foreground="White" />
                             </Border>
-                            <TextBlock Grid.Column="1"
-                                       Text="Loading France 24 business headlines..."
-                                       Margin="14,0"
-                                       VerticalAlignment="Center"
-                                       FontFamily="Consolas"
-                                       Foreground="#EEF2F4" />
+                            <Border Grid.Column="1" ClipToBounds="True">
+                                <TextBlock Text="{Binding NewsText}"
+                                           Margin="14,0"
+                                           VerticalAlignment="Center"
+                                           FontFamily="Consolas"
+                                           Foreground="#EEF2F4"
+                                           TextWrapping="NoWrap">
+                                    <TextBlock.RenderTransform>
+                                        <TranslateTransform X="{Binding NewsOffset}" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Border>
                         </Grid>
                     </Border>
                     <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" Margin="0,5,0,0">

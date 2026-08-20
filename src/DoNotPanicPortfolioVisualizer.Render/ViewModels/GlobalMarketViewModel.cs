@@ -17,47 +17,33 @@ using DoNotPanicPortfolioVisualizer.Render.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
-public sealed partial class TickerQuoteViewModel : ObservableObject
+public sealed partial class GlobalMarketViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private string _priceText = "--";
+    [ObservableProperty] private string _timeText = "--:--";
+    [ObservableProperty] private string _valueText = "--";
+    [ObservableProperty] private string _changeText = "--";
+    [ObservableProperty] private string _accentBrush = "#D4DEE5";
+    [ObservableProperty] private string _sessionText = "Waiting";
+    [ObservableProperty] private string _weatherText = "--";
 
-    [ObservableProperty]
-    private string _changeText = "--";
+    public required string Key { get; init; }
+    public required string City { get; init; }
+    public required string ExchangeName { get; init; }
+    public required string Symbol { get; init; }
+    public required string TimeZoneId { get; init; }
+    public required double Latitude { get; init; }
+    public required double Longitude { get; init; }
 
-    [ObservableProperty]
-    private string _trendBrush = "#B8C4CC";
-
-    [ObservableProperty]
-    private bool _isStale;
-
-    [ObservableProperty]
-    private decimal? _last;
-
-    [ObservableProperty]
-    private decimal? _changePercent;
-
-    public TickerQuoteViewModel(TickerItem ticker)
+    public void ApplyQuote(QuoteSnapshot quote)
     {
-        Symbol = ticker.Symbol;
-        DisplayName = string.IsNullOrWhiteSpace(ticker.DisplayName) ? ticker.Symbol : ticker.DisplayName;
-    }
-
-    public string Symbol { get; }
-    public string DisplayName { get; }
-
-    public void Apply(QuoteSnapshot quote)
-    {
-        PriceText = TickerFormatter.FormatPrice(quote);
+        ValueText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
-        TrendBrush = quote.ChangePercent switch
+        AccentBrush = quote.ChangePercent switch
         {
             > 0m => "#39E75F",
             < 0m => "#FF5A36",
             _ => "#D4DEE5"
         };
-        IsStale = quote.IsStale;
-        Last = quote.Last;
-        ChangePercent = quote.ChangePercent;
+        SessionText = quote.MarketSession.ToString();
     }
 }

@@ -20,22 +20,31 @@ using DoNotPanicPortfolioVisualizer.Data.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Data.Providers;
 
-public sealed class HybridHistoricalDataProvider : IHistoricalDataProvider
+public sealed class HybridHistoricalDataProvider : IHistoricalDataProvider, IDisposable
 {
     private const int MaxConcurrentHistoryRequests = 2;
     private const int MaxHistoryFetchAttempts = 2;
     private readonly IHistoricalCacheService _cacheService;
     private readonly IYFinanceRuntimeClient _runtimeClient;
     private readonly TimeSpan _cacheFreshness;
+    private readonly bool _disposeCache;
 
     public HybridHistoricalDataProvider(
         IHistoricalCacheService cacheService,
         IYFinanceRuntimeClient runtimeClient,
-        TimeSpan? cacheFreshness = null)
+        TimeSpan? cacheFreshness = null,
+        bool disposeCache = false)
     {
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         _runtimeClient = runtimeClient ?? throw new ArgumentNullException(nameof(runtimeClient));
         _cacheFreshness = cacheFreshness ?? TimeSpan.FromHours(12);
+        _disposeCache = disposeCache;
+    }
+
+    public void Dispose()
+    {
+        if (_disposeCache && _cacheService is IDisposable disposableCache)
+            disposableCache.Dispose();
     }
 
     public async Task<IReadOnlyList<TickerHistorySnapshot>> GetHistoryAsync(
