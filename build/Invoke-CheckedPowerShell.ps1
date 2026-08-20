@@ -56,8 +56,40 @@ function Invoke-CheckedScriptExecution {
 
     $scriptBlock = [scriptblock]::Create($Text)
     $global:LASTEXITCODE = 0
-    & $scriptBlock
-    $nativeExitCode = $global:LASTEXITCODE
+    $nativePreferenceWasDefined = Test-Path variable:global:PSNativeCommandUseErrorActionPreference
+    $previousNativePreference = if ($nativePreferenceWasDefined) {
+        $global:PSNativeCommandUseErrorActionPreference
+    }
+    else {
+        $null
+    }
+    $nativeFailureExitCode = $null
+    try {
+        $global:PSNativeCommandUseErrorActionPreference = -not $AllowNonZeroExit
+        & $scriptBlock
+    }
+    catch {
+        if ($_.Exception.GetType().Name -eq 'NativeCommandExitException') {
+            $nativeFailureExitCode = $global:LASTEXITCODE
+        }
+        else {
+            throw
+        }
+    }
+    finally {
+        if ($nativePreferenceWasDefined) {
+            $global:PSNativeCommandUseErrorActionPreference = $previousNativePreference
+        }
+        else {
+            Remove-Variable PSNativeCommandUseErrorActionPreference -Scope Global -ErrorAction SilentlyContinue
+        }
+    }
+    $nativeExitCode = if ($null -ne $nativeFailureExitCode) {
+        $nativeFailureExitCode
+    }
+    else {
+        $global:LASTEXITCODE
+    }
 
     if (-not $AllowNonZeroExit -and $nativeExitCode -ne 0) {
         throw "Checked PowerShell command completed with native exit code $nativeExitCode."
@@ -89,6 +121,17 @@ Write-Output "SELFTEST_OK"
             throw
         }
     }
+
+    try {
+        $null = Invoke-CheckedScriptExecution -Text 'dotnet definitely-not-a-command' -AllowCmd:$false -AllowNonZeroExit:$false -Echo:$false
+        throw 'Checked PowerShell wrapper self-test failed; a failing native command was accepted unexpectedly.'
+    }
+    catch {
+        if ($_.Exception.Message -ne 'Checked PowerShell command completed with native exit code 1.') {
+            throw
+        }
+    }
+    $global:LASTEXITCODE = 0
 
     Write-Output 'CHECKED_POWERSHELL_SELFTEST=Passed'
 }

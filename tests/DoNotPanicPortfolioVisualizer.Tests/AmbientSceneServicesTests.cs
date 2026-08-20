@@ -13,7 +13,9 @@
 // ============================================================================
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Media.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Render.Services;
@@ -62,6 +64,23 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void HistoricalGraphBuilder_KeepsSixteenthCardInsideGraphStage()
+    {
+        TickerHistorySnapshot snapshot = new()
+        {
+            Symbol = "VWO",
+            Points = [new HistoricalPricePoint { TimestampUtc = DateTimeOffset.UtcNow, Close = 42m }]
+        };
+
+        var graph = new HistoricalGraphBuilder().Build("Satellite", snapshot, 0.5m, 15);
+
+        Assert.InRange(graph.AnchorX, 0, 1060);
+        Assert.InRange(graph.AnchorY, 0, 96);
+        Assert.InRange(graph.AnchorX + 136 + 4, 0, 1200);
+        Assert.InRange(graph.AnchorY + 72 + 3, 0, 172);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_ReadsDistinctRssHeadlines()
     {
         const string rss = "<rss><channel><item><title>Markets rally</title></item><item><title>Markets rally</title></item><item><title>Rates move</title></item></channel></rss>";
@@ -81,6 +100,48 @@ public sealed class AmbientSceneServicesTests
             service.GetHeadlinesAsync("file:///tmp/private.xml", CancellationToken.None));
     }
 
+    [Fact]
+    public async Task FinanceNewsService_UsesConfiguredAiStyleForSummaries()
+    {
+        const string rss = "<rss><channel><item><title>Markets rally</title></item></channel></rss>";
+        SummaryResponseHandler handler = new(rss, "A rally, briefly illuminated.");
+        using FinanceNewsService service = new(handler);
+        AppSettings settings = new()
+        {
+            NewsFeedUrl = "https://example.test/feed",
+            NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews,
+            AiApiKey = "test-key",
+            AiEndpointUrl = "https://example.test/v1",
+            AiModelId = "test-model",
+            AiWritingStyle = AiWritingStyle.WilliamShakespeare
+        };
+
+        string text = await service.GetNewsTextAsync(settings, CancellationToken.None);
+
+        Assert.Equal("A rally, briefly illuminated.", text);
+        Assert.Contains("William Shakespeare", handler.RequestBody, StringComparison.Ordinal);
+        Assert.Equal("Bearer", handler.AuthorizationScheme);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_FallsBackToRssWhenSummaryFails()
+    {
+        const string rss = "<rss><channel><item><title>Markets rally</title></item></channel></rss>";
+        using FinanceNewsService service = new(new SummaryResponseHandler(rss, null));
+        AppSettings settings = new()
+        {
+            NewsFeedUrl = "https://example.test/feed",
+            NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews,
+            AiApiKey = "test-key",
+            AiEndpointUrl = "https://example.test/v1",
+            AiModelId = "test-model"
+        };
+
+        string text = await service.GetNewsTextAsync(settings, CancellationToken.None);
+
+        Assert.Equal("Markets rally", text);
+    }
+
     [Theory]
     [InlineData(0, true, "SUN")]
     [InlineData(0, false, "CLR")]
@@ -96,6 +157,39 @@ public sealed class AmbientSceneServicesTests
             {
                 Content = new StringContent(body, Encoding.UTF8, "application/rss+xml")
             });
+    }
+
+    private sealed class SummaryResponseHandler(string rss, string? summary) : HttpMessageHandler
+    {
+        public string RequestBody { get; private set; } = string.Empty;
+        public string? AuthorizationScheme { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(rss, Encoding.UTF8, "application/rss+xml")
+                };
+            }
+
+            RequestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
+            AuthorizationScheme = request.Headers.Authorization?.Scheme;
+            if (summary is null)
+                return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+
+            string json = JsonSerializer.Serialize(new
+            {
+                choices = new[] { new { message = new { content = summary } } }
+            });
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+        }
     }
 
     private sealed class TemporaryDirectoryScope : IDisposable

@@ -29,4 +29,6 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
 
     public string Symbol { get; init; } = string.Empty;
     public string TapeName { get; init; } = string.Empty;
+    public double AnchorX { get; init; }
+    public double AnchorY { get; init; }
 }

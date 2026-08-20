@@ -343,10 +343,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
-            IReadOnlyList<string> headlines = await _newsService.GetHeadlinesAsync(_settings.NewsFeedUrl, cancellationToken);
-            string text = headlines.Count == 0
-                ? "France 24 business feed returned no headlines"
-                : string.Join("     |     ", headlines);
+            string text = await _newsService.GetNewsTextAsync(_settings, cancellationToken);
             await InvokeOnUiAsync(() => NewsText = text, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -404,18 +401,18 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             double nextX = graph.X + graph.VelocityX;
             double nextY = graph.Y + graph.VelocityY;
-            if (nextX is < 20 or > 1010)
+            if (nextX < graph.AnchorX - 4 || nextX > graph.AnchorX + 4)
             {
                 graph.VelocityX = -graph.VelocityX;
                 nextX = graph.X + graph.VelocityX;
             }
-            if (nextY is < 5 or > 205)
+            if (nextY < graph.AnchorY - 3 || nextY > graph.AnchorY + 3)
             {
                 graph.VelocityY = -graph.VelocityY;
                 nextY = graph.Y + graph.VelocityY;
             }
-            graph.X = Math.Clamp(nextX, 20, 1010);
-            graph.Y = Math.Clamp(nextY, 5, 205);
+            graph.X = Math.Clamp(nextX, graph.AnchorX - 4, graph.AnchorX + 4);
+            graph.Y = Math.Clamp(nextY, graph.AnchorY - 3, graph.AnchorY + 3);
         }
 
         NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - 22;
