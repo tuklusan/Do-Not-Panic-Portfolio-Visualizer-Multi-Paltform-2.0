@@ -7,12 +7,15 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="DoNotPanicPortfolioVisualizer.App.Views.ProductShellWindow"
         x:Name="ShellWindow"
+        x:CompileBindings="False"
         Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0"
         Icon="/Assets/dnppv-icon.ico"
         WindowState="Maximized"
         MinWidth="960"
         MinHeight="600"
         Background="#111315"
+        Opened="OnWindowOpened"
+        Closing="OnWindowClosing"
         KeyDown="OnWindowKeyDown"
         DoubleTapped="OnWindowDoubleTapped">
     <Grid RowDefinitions="Auto,*">
@@ -47,14 +50,18 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                   RowSpacing="10">
                 <Grid ColumnDefinitions="*,Auto,*">
                     <StackPanel VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="Market: New York"
+                        <TextBlock Text="{Binding MarketStatusText}"
                                    FontFamily="Consolas"
                                    FontWeight="SemiBold"
                                    Foreground="#F5F7F8" />
-                        <TextBlock Text="Market status loading..."
+                        <TextBlock Text="{Binding LastUpdatedText}"
                                    FontFamily="Consolas"
                                    FontSize="12"
-                                   Foreground="#8BE28B" />
+                                   Foreground="#DCE6ED" />
+                        <TextBlock Text="{Binding DataFreshnessText}"
+                                   FontFamily="Consolas"
+                                   FontSize="11"
+                                   Foreground="{Binding FreshnessBrush}" />
                     </StackPanel>
 
                     <Border Grid.Column="1"
@@ -71,11 +78,11 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                     <StackPanel Grid.Column="2"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center">
-                        <TextBlock Text="UTC"
+                        <TextBlock Text="{Binding ClockDateText}"
                                    HorizontalAlignment="Right"
                                    FontFamily="Consolas"
                                    Foreground="#9DB1C0" />
-                        <TextBlock Text="Waiting for clock service"
+                        <TextBlock Text="{Binding ClockText}"
                                    FontFamily="Consolas"
                                    FontSize="12"
                                    Foreground="White" />
@@ -88,47 +95,104 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         BorderBrush="#46515A"
                         BorderThickness="1"
                         Padding="10,8">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Grid ColumnDefinitions="Auto,*">
                         <TextBlock Text="MACRO MARKETS"
                                    FontFamily="Consolas"
                                    Foreground="#AFC6D8" />
-                        <TextBlock Grid.Column="1"
-                                   Text="Market indicators will populate progressively"
-                                   HorizontalAlignment="Center"
-                                   FontFamily="Consolas"
-                                   Foreground="#DCE6ED" />
-                        <TextBlock Grid.Column="2"
-                                   Text="LIVE DATA INITIALIZING"
-                                   FontFamily="Consolas"
-                                   Foreground="#F4C95D" />
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding MacroQuotes}"
+                                      HorizontalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="5" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#AA1A2128"
+                                            BorderBrush="#4C5B68"
+                                            BorderThickness="1"
+                                            CornerRadius="5"
+                                            Width="92"
+                                            Padding="7,4">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Label}"
+                                                       FontSize="9"
+                                                       Foreground="#AFC6D8" />
+                                            <TextBlock Text="{Binding ValueText}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="12"
+                                                       Foreground="White" />
+                                            <TextBlock Text="{Binding ChangeText}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="10"
+                                                       Foreground="{Binding AccentBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Margin="8,34,8,10">
-                    <Border Background="#E8050607" CornerRadius="4" Padding="12,9">
-                        <TextBlock Text="PORTFOLIO TAPE 1     Waiting for configured symbols and quotes..."
-                                   FontFamily="Consolas" Foreground="#DCE8EE" />
-                    </Border>
-                    <Border Grid.Row="1" Background="#E8050607" CornerRadius="4" Padding="12,9">
-                        <TextBlock Text="PORTFOLIO TAPE 2     Waiting for configured symbols and quotes..."
-                                   FontFamily="Consolas" Foreground="#DCE8EE" />
-                    </Border>
-                    <Border Grid.Row="2" Background="#E8050607" CornerRadius="4" Padding="12,9">
-                        <TextBlock Text="PORTFOLIO TAPE 3     Waiting for configured symbols and quotes..."
-                                   FontFamily="Consolas" Foreground="#DCE8EE" />
-                    </Border>
-                    <Border Grid.Row="3" Background="#E8050607" CornerRadius="4" Padding="12,9">
-                        <TextBlock Text="PORTFOLIO TAPE 4     Waiting for configured symbols and quotes..."
-                                   FontFamily="Consolas" Foreground="#DCE8EE" />
-                    </Border>
-                    <TextBlock Grid.Row="4"
-                               Text="Scene services are starting"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontFamily="Consolas"
-                               FontSize="16"
-                               Foreground="#B9C8D2" />
-                </Grid>
+                <ItemsControl Grid.Row="2"
+                              ItemsSource="{Binding Lanes}"
+                              Margin="8,34,8,10">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="8" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#E8050607"
+                                    BorderBrush="#332E3A47"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Padding="8,6">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border Background="#FF121922"
+                                            BorderBrush="#5546637A"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="8,3"
+                                            Margin="0,0,12,0">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#9AB5C8" />
+                                    </Border>
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Quotes}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="13" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="7">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontFamily="Consolas"
+                                                               FontWeight="Bold"
+                                                               Foreground="{Binding TrendBrush}" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding PriceText}"
+                                                               FontFamily="Consolas"
+                                                               Foreground="#F3F6F8" />
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding ChangeText}"
+                                                               FontFamily="Consolas"
+                                                               Foreground="{Binding TrendBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
                 <Border Grid.Row="3"
                         Background="#E20B1116"

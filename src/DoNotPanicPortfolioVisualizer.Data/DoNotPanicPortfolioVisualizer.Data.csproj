@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Core\DoNotPanicPortfolioVisualizer.Core.csproj" />
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Shared\DoNotPanicPortfolioVisualizer.Shared.csproj" />
+    <ProjectReference Include="..\YFinance\YFinance.NET.Client\YFinance.NET.Client.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

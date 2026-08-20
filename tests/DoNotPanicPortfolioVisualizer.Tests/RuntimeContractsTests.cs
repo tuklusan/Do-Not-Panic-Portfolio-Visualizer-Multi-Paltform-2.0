@@ -1,5 +1,6 @@
 using DoNotPanicPortfolioVisualizer.Core;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
+using YFinance.NET.Protocol.Constants;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
@@ -135,6 +136,7 @@ public sealed class RuntimeContractsTests
     {
         Assert.Equal("127.0.0.1", YFinanceLoopbackContract.LoopbackHost);
         Assert.Equal(14871, YFinanceLoopbackContract.DefaultPort);
+        Assert.Equal(YFinanceLoopbackContract.DefaultPort, ProtocolConstants.DefaultPort);
         Assert.Equal("http://127.0.0.1:14871/", YFinanceLoopbackContract.BaseUri.AbsoluteUri);
     }
 }

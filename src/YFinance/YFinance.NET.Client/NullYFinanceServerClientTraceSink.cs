@@ -1,0 +1,31 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+namespace YFinance.NET.Client;
+
+public sealed class NullYFinanceServerClientTraceSink : IYFinanceServerClientTraceSink
+{
+    public static NullYFinanceServerClientTraceSink Instance { get; } = new();
+
+    public void Info(string eventName, IReadOnlyList<KeyValuePair<string, object?>> fields)
+    {
+    }
+
+    public void Warn(string eventName, IReadOnlyList<KeyValuePair<string, object?>> fields)
+    {
+    }
+
+    public void Error(string eventName, IReadOnlyList<KeyValuePair<string, object?>> fields, Exception ex)
+    {
+    }
+}

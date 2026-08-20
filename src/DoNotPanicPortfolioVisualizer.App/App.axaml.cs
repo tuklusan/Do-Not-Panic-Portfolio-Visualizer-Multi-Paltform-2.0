@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.App.Views;
+using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.App;
 
@@ -17,7 +17,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new ProductShellWindow();
+            desktop.MainWindow = new ProductShellWindow
+            {
+                DataContext = ProductSceneViewModel.CreateDefault(),
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

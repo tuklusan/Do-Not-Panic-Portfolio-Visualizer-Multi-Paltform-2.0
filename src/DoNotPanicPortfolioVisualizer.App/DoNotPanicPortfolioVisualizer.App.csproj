@@ -27,5 +27,25 @@
   <ItemGroup>
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Presentation\DoNotPanicPortfolioVisualizer.Presentation.csproj" />
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Shared\DoNotPanicPortfolioVisualizer.Shared.csproj" />
+    <ProjectReference Include="..\YFinance\YFinance.NET.Server\YFinance.NET.Server.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <Target Name="CopyYFinanceServerForBuild" AfterTargets="Build">
+    <ItemGroup>
+      <YFinanceServerBuildFiles Include="..\YFinance\YFinance.NET.Server\bin\$(Configuration)\net10.0\**\*"
+                                Exclude="..\YFinance\YFinance.NET.Server\bin\$(Configuration)\net10.0\**\*.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(YFinanceServerBuildFiles)"
+          DestinationFiles="@(YFinanceServerBuildFiles->'$(TargetDir)YFinanceServer\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishYFinanceServerBundle"
+          AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' != ''">
+    <MSBuild Projects="..\YFinance\YFinance.NET.Server\YFinance.NET.Server.csproj"
+             Targets="Publish"
+             Properties="Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=$(SelfContained);PublishDir=$(PublishDir)YFinanceServer\" />
+  </Target>
 </Project>

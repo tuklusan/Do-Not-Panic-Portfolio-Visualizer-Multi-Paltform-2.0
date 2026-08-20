@@ -1,0 +1,820 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using System.Net.Sockets;
+using System.Collections.Concurrent;
+using YFinance.NET.Protocol.Constants;
+using YFinance.NET.Protocol.Dtos;
+using YFinance.NET.Protocol.Errors;
+using YFinance.NET.Protocol.Integrity;
+using YFinance.NET.Protocol.Messages;
+using YFinance.NET.Protocol.Transport;
+using System.Text.Json;
+
+namespace YFinance.NET.Client;
+
+public sealed class YFinanceServerClient : IAsyncDisposable, IDisposable
+{
+    private static readonly TimeSpan ReceiveLoopDrainTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan GoodbyeTimeout = TimeSpan.FromSeconds(1);
+    private const int MaxCanceledRequestOperations = 2048;
+    private const int PreWriteReconnectRetryLimit = 1;
+    private readonly SemaphoreSlim _connectGate = new(1, 1);
+    private readonly SemaphoreSlim _writeGate = new(1, 1);
+    private readonly YFinanceServerConnectionOptions _options;
+    private readonly ConcurrentDictionary<string, IPendingRequest> _pendingRequests = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string> _canceledRequestOperations = new(StringComparer.Ordinal);
+    private readonly ConcurrentQueue<string> _canceledRequestOrder = new();
+    private readonly object _canceledRequestEvictionGate = new();
+    private readonly object _connectionStateGate = new();
+    private TcpClient? _tcpClient;
+    private NetworkStream? _stream;
+    private CancellationTokenSource? _connectionCts;
+    private Task? _receiveLoopTask;
+    private long _requestSequence;
+    private int _disposeStarted;
+    private int _disposed;
+    private HelloRequestDto? _helloRequest;
+    private bool _helloSent;
+
+    public YFinanceServerClient(YFinanceServerConnectionOptions? options = null)
+    {
+        _options = options ?? YFinanceServerConnectionOptions.Default;
+    }
+
+    public async Task<HelloResponseDto> HelloAsync(HelloRequestDto request, CancellationToken cancellationToken = default)
+        => await SendAsync<HelloRequestDto, HelloResponseDto>(ProtocolOperations.Hello, request, cancellationToken).ConfigureAwait(false);
+
+    public async Task<HealthResponseDto> HealthAsync(CancellationToken cancellationToken = default)
+        => await SendAsync<EmptyPayload, HealthResponseDto>(ProtocolOperations.Health, new EmptyPayload(), cancellationToken).ConfigureAwait(false);
+
+    public async Task<ServerStatusResponseDto> GetServerStatusAsync(CancellationToken cancellationToken = default)
+        => await SendAsync<EmptyPayload, ServerStatusResponseDto>(ProtocolOperations.GetServerStatus, new EmptyPayload(), cancellationToken).ConfigureAwait(false);
+
+    public async Task<QuoteDto> GetQuoteAsync(string symbol, CancellationToken cancellationToken = default)
+        => await SendAsync<GetQuoteRequestDto, QuoteDto>(ProtocolOperations.GetQuote, new GetQuoteRequestDto(symbol), cancellationToken).ConfigureAwait(false);
+
+    public async Task<QuotesResponseDto> GetQuotesAsync(IReadOnlyList<string> symbols, CancellationToken cancellationToken = default)
+        => await SendAsync<GetQuotesRequestDto, QuotesResponseDto>(ProtocolOperations.GetQuotes, new GetQuotesRequestDto(symbols), cancellationToken).ConfigureAwait(false);
+
+    public async Task<HistoryResponseDto> GetHistoryAsync(string symbol, DateTimeOffset startUtc, DateTimeOffset endUtc, string interval, CancellationToken cancellationToken = default)
+        => await SendAsync<GetHistoryRequestDto, HistoryResponseDto>(ProtocolOperations.GetHistory, new GetHistoryRequestDto(symbol, startUtc, endUtc, interval), cancellationToken).ConfigureAwait(false);
+
+    public async Task<MarketTimingDto> GetMarketTimingAsync(string symbol, CancellationToken cancellationToken = default)
+        => await SendAsync<GetMarketTimingRequestDto, MarketTimingDto>(ProtocolOperations.GetMarketTiming, new GetMarketTimingRequestDto(symbol), cancellationToken).ConfigureAwait(false);
+
+    public async Task<TickerInfoDto> GetTickerInfoAsync(string symbol, CancellationToken cancellationToken = default)
+        => await SendAsync<GetTickerInfoRequestDto, TickerInfoDto>(ProtocolOperations.GetTickerInfo, new GetTickerInfoRequestDto(symbol), cancellationToken).ConfigureAwait(false);
+
+    public async Task GoodbyeAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await SendAsync<EmptyPayload, EmptyPayload>(ProtocolOperations.Goodbye, new EmptyPayload(), cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+        }
+    }
+
+    public async Task ConnectAsync(HelloRequestDto helloRequest, CancellationToken cancellationToken = default)
+    {
+        Volatile.Write(ref _helloRequest, helloRequest);
+        await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+        await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (!_helloSent)
+            {
+                await SendCoreAsync<HelloRequestDto, HelloResponseDto>(ProtocolOperations.Hello, helloRequest, cancellationToken).ConfigureAwait(false);
+                _helloSent = true;
+            }
+        }
+        finally
+        {
+            _connectGate.Release();
+        }
+    }
+
+    private async Task<TResponse> SendAsync<TRequest, TResponse>(string operation, TRequest payload, CancellationToken cancellationToken)
+    {
+        for (int attempt = 0; ; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await SendCoreAsync<TRequest, TResponse>(operation, payload, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ConnectionLostBeforeWriteException) when (attempt < PreWriteReconnectRetryLimit)
+            {
+                // SendCore has already left its finally block and released _writeGate
+                // before this outer catch runs, so fault cleanup cannot self-deadlock.
+                await MarkConnectionFaultedAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task<TResponse> SendCoreAsync<TRequest, TResponse>(string operation, TRequest payload, CancellationToken cancellationToken, bool allowDisposed = false)
+    {
+        string requestId = $"req-{Interlocked.Increment(ref _requestSequence):D8}";
+        ProtocolRequest<TRequest> request = new()
+        {
+            RequestId = requestId,
+            Operation = operation,
+            Payload = payload
+        };
+        ProtocolIntegrity.Stamp(request, payload);
+        PendingRequest<TResponse> pending = new(operation, requestId);
+        if (!_pendingRequests.TryAdd(requestId, pending))
+            throw new IOException($"Duplicate request id '{requestId}'.");
+
+        _options.TraceSink.Info("ClientRequestSend",
+        [
+            new("request_id", requestId),
+            new("operation", operation),
+            new("timestamp", request.Timestamp),
+            new("payload_checksum", request.PayloadChecksum)
+        ]);
+
+        bool requestWritten = false;
+        await _writeGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (!allowDisposed)
+                ThrowIfDisposed();
+
+            NetworkStream stream;
+            lock (_connectionStateGate)
+            {
+                // Snapshot the current stream while write serialization is held; later
+                // fault/dispose paths detach state through MarkConnectionFaultedAsync.
+                stream = _stream ?? throw new NotConnectedException();
+            }
+
+            await LengthPrefixedProtocolStream.WriteAsync(stream, ProtocolJson.Serialize(request), cancellationToken).ConfigureAwait(false);
+            requestWritten = true;
+        }
+        catch (Exception ex)
+        {
+            _pendingRequests.TryRemove(requestId, out _);
+            pending.TrySetException(ex);
+            if (!requestWritten && IsPreWriteConnectionFailure(ex))
+            {
+                throw new ConnectionLostBeforeWriteException(ex);
+            }
+
+            throw;
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+
+        using CancellationTokenRegistration registration = cancellationToken.Register(() =>
+        {
+            RememberCanceledRequest(requestId, operation);
+            if (_pendingRequests.TryRemove(requestId, out IPendingRequest? removed))
+            {
+                removed.TrySetCanceled(cancellationToken);
+            }
+            else
+            {
+                ForgetCanceledRequest(requestId);
+            }
+        });
+        return await pending.Task.ConfigureAwait(false);
+    }
+
+    private static bool IsPreWriteConnectionFailure(Exception ex)
+        => ex is NotConnectedException ||
+           ex is IOException ||
+           ex is SocketException ||
+           ex.InnerException is SocketException;
+
+    private sealed class NotConnectedException : InvalidOperationException
+    {
+        public NotConnectedException()
+            : base("YFinance server client is not connected.")
+        {
+        }
+    }
+
+    private sealed class ConnectionLostBeforeWriteException : IOException
+    {
+        public ConnectionLostBeforeWriteException(Exception innerException)
+            : base("YFinance server connection was lost before the request could be written.", innerException)
+        {
+        }
+    }
+
+    private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        if (_tcpClient is { Connected: true } && _stream is not null)
+            return;
+
+        await _connectGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+
+            if (_tcpClient is { Connected: true } && _stream is not null)
+                return;
+
+            DisposeSocket(waitForWrites: false);
+            _options.TraceSink.Info("ClientConnectStart", [new("host", _options.Host), new("port", _options.Port)]);
+            _tcpClient = new TcpClient();
+            using CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(_options.ConnectTimeout);
+            await _tcpClient.ConnectAsync(_options.Host, _options.Port, timeoutCts.Token).ConfigureAwait(false);
+            _stream = _tcpClient.GetStream();
+            _connectionCts = new CancellationTokenSource();
+            _receiveLoopTask = Task.Run(() => ReceiveLoopAsync(_connectionCts.Token), _connectionCts.Token);
+            _helloSent = false;
+            _options.TraceSink.Info("ClientConnectComplete", [new("host", _options.Host), new("port", _options.Port)]);
+
+            HelloRequestDto? helloRequest = Volatile.Read(ref _helloRequest);
+            if (helloRequest is not null)
+            {
+                await SendCoreAsync<HelloRequestDto, HelloResponseDto>(ProtocolOperations.Hello, helloRequest, cancellationToken).ConfigureAwait(false);
+                _helloSent = true;
+            }
+        }
+        finally
+        {
+            _connectGate.Release();
+        }
+    }
+
+    private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                using PooledProtocolPayload? responsePayload = await LengthPrefixedProtocolStream.ReadPooledAsync(_stream!, cancellationToken).ConfigureAwait(false);
+                if (responsePayload is null)
+                    throw new IOException("Connection closed before a response was received.");
+
+                string? messageType;
+                // Parse only the message discriminator here; any JsonElement that
+                // escapes this receive-loop scope is cloned below before the pooled
+                // transport buffer can return to ArrayPool.
+                using (JsonDocument document = JsonDocument.Parse(responsePayload.Memory))
+                {
+                    messageType = document.RootElement.TryGetProperty("messageType", out JsonElement typeElement)
+                        ? typeElement.GetString()
+                        : null;
+                }
+
+                if (string.Equals(messageType, ProtocolMessageTypes.Event, StringComparison.Ordinal))
+                {
+                    ProtocolEvent<JsonElement>? protocolEvent = ProtocolJson.Deserialize<ProtocolEvent<JsonElement>>(responsePayload.Memory.Span);
+                    if (protocolEvent is null)
+                    {
+                        throw new IOException("Event could not be deserialized.");
+                    }
+
+                    protocolEvent = protocolEvent with { Payload = protocolEvent.Payload.Clone() };
+                    if (!TryVerifyEnvelope(protocolEvent, protocolEvent.Payload, "event", protocolEvent.EventType, protocolEvent.EventType, out IOException? eventIntegrityFailure))
+                    {
+                        _options.TraceSink.Warn("ClientEventIntegrityFailure",
+                        [
+                            new("event_type", protocolEvent.EventType),
+                            new("reason", eventIntegrityFailure?.Message ?? "Unknown integrity failure.")
+                        ]);
+                        continue;
+                    }
+
+                    _options.TraceSink.Info("ClientEventReceive",
+                    [
+                        new("event_type", protocolEvent.EventType),
+                        new("timestamp", protocolEvent.Timestamp),
+                        new("payload_checksum", protocolEvent.PayloadChecksum)
+                    ]);
+                    continue;
+                }
+
+                ProtocolResponse<JsonElement>? response = ProtocolJson.Deserialize<ProtocolResponse<JsonElement>>(responsePayload.Memory.Span);
+                if (response is null)
+                {
+                    throw new IOException("Response could not be deserialized.");
+                }
+
+                if (!TryVerifyEnvelope(response, response.Payload, "response", response.Operation, response.RequestId, out IOException? integrityFailure))
+                {
+                    if (_pendingRequests.TryRemove(response.RequestId, out IPendingRequest? corruptPending))
+                    {
+                        _options.TraceSink.Warn("ClientResponseIntegrityFailure",
+                        [
+                            new("request_id", response.RequestId),
+                            new("operation", response.Operation),
+                            new("reason", integrityFailure?.Message ?? "Unknown integrity failure.")
+                        ]);
+                        corruptPending.TrySetException(integrityFailure ?? new IOException("Protocol integrity failure."));
+                    }
+                    else
+                    {
+                        _options.TraceSink.Warn("ClientCorruptResponseNoPendingRequest",
+                        [
+                            new("request_id", response.RequestId),
+                            new("operation", response.Operation),
+                            new("status", response.Status)
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                _options.TraceSink.Info("ClientResponseReceive",
+                [
+                    new("request_id", response.RequestId),
+                    new("operation", response.Operation),
+                    new("status", response.Status),
+                    new("timestamp", response.Timestamp),
+                    new("payload_checksum", response.PayloadChecksum)
+                ]);
+
+                if (!_pendingRequests.TryRemove(response.RequestId, out IPendingRequest? pending))
+                {
+                    if (TryForgetCanceledRequest(response.RequestId, out string? canceledOperation))
+                    {
+                        _options.TraceSink.Info("ClientResponseLateCanceled",
+                        [
+                            new("request_id", response.RequestId),
+                            new("operation", response.Operation),
+                            new("canceled_operation", canceledOperation),
+                            new("status", response.Status)
+                        ]);
+                        continue;
+                    }
+
+                    _options.TraceSink.Warn("ClientResponseUnexpected",
+                    [
+                        new("request_id", response.RequestId),
+                        new("operation", response.Operation),
+                        new("status", response.Status)
+                    ]);
+                    continue;
+                }
+
+                if (!string.Equals(response.Status, ProtocolResponseStatuses.Ok, StringComparison.Ordinal))
+                {
+                    ProtocolError? error = response.Error;
+                    _options.TraceSink.Warn("ClientResponseError",
+                    [
+                        new("request_id", response.RequestId),
+                        new("operation", response.Operation),
+                        new("code", error?.Code ?? ProtocolErrorCodes.InternalError),
+                        new("message", error?.Message ?? "Unknown protocol error."),
+                        new("retryable", error?.Retryable ?? false)
+                    ]);
+                    pending.TrySetProtocolError(error);
+                    continue;
+                }
+
+                // Clone before completing the pending request so no JsonElement
+                // backed by the pooled transport buffer can escape this scope.
+                pending.TrySetPayload(response.Payload.Clone());
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _options.TraceSink.Warn("ClientReceiveLoopFailed",
+            [
+                new("message", ex.Message)
+            ]);
+            FailPendingRequests(ex);
+            await MarkConnectionFaultedAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async Task MarkConnectionFaultedAsync()
+    {
+        if (Volatile.Read(ref _disposeStarted) != 0)
+            return;
+
+        // DetachConnectionState is the single owner-transfer path for stale
+        // sockets; concurrent fault/dispose paths get nulls and cannot double-dispose.
+        await _writeGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+        ConnectionSnapshot snapshot;
+        try
+        {
+            snapshot = DetachConnectionState();
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+
+        try { snapshot.ConnectionCts?.Cancel(); } catch { }
+        TryDisposeFaultedConnection(snapshot.Stream, "ClientFaultCleanupStreamDisposeError");
+        TryDisposeFaultedConnection(snapshot.TcpClient, "ClientFaultCleanupTcpDisposeError");
+        TryDisposeFaultedConnection(snapshot.ConnectionCts, "ClientFaultCleanupCtsDisposeError");
+    }
+
+    private ConnectionSnapshot DetachConnectionState()
+    {
+        lock (_connectionStateGate)
+        {
+            // The first teardown path wins ownership of the live objects; racing
+            // dispose/fault paths receive nulls and therefore cannot double-dispose.
+            ConnectionSnapshot snapshot = new(_connectionCts, _receiveLoopTask, _stream, _tcpClient);
+            _connectionCts = null;
+            _receiveLoopTask = null;
+            _stream = null;
+            _tcpClient = null;
+            _helloSent = false;
+            ClearCanceledRequestTracking();
+            return snapshot;
+        }
+    }
+
+    private void TryDisposeFaultedConnection(IDisposable? disposable, string eventName)
+    {
+        if (disposable is null)
+            return;
+
+        try
+        {
+            disposable.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _options.TraceSink.Warn(eventName, [new("message", ex.Message)]);
+        }
+    }
+
+    private bool TryVerifyEnvelope<TPayload>(ProtocolEnvelope envelope, TPayload? payload, string kind, string operationOrEvent, string requestId, out IOException? integrityFailure)
+    {
+        if (string.IsNullOrWhiteSpace(envelope.PayloadChecksum))
+        {
+            integrityFailure = CreateIntegrityFailure(kind, operationOrEvent, requestId, "missing payload checksum");
+            return false;
+        }
+
+        if (!ProtocolIntegrity.Verify(envelope, payload))
+        {
+            integrityFailure = CreateIntegrityFailure(kind, operationOrEvent, requestId, "payload checksum mismatch");
+            return false;
+        }
+
+        integrityFailure = null;
+        return true;
+    }
+
+    private IOException CreateIntegrityFailure(string kind, string operationOrEvent, string requestId, string reason)
+        => new($"Protocol integrity failure for {kind} '{operationOrEvent}' ({requestId}): {reason}.");
+
+    private async ValueTask DisposeSocketAsync(bool waitForWrites)
+    {
+        bool writeGateAcquired = false;
+        if (waitForWrites)
+        {
+            await _writeGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            writeGateAcquired = true;
+        }
+
+        try
+        {
+            await DisposeSocketCoreAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            if (writeGateAcquired)
+                _writeGate.Release();
+        }
+    }
+
+    private async ValueTask DisposeSocketCoreAsync()
+    {
+        ConnectionSnapshot snapshot = DetachConnectionState();
+        CancellationTokenSource? connectionCts = snapshot.ConnectionCts;
+        Task? receiveLoopTask = snapshot.ReceiveLoopTask;
+        NetworkStream? stream = snapshot.Stream;
+        TcpClient? tcpClient = snapshot.TcpClient;
+
+        try { connectionCts?.Cancel(); } catch { }
+
+        if (receiveLoopTask is not null)
+        {
+            ObserveLateReceiveLoopFault(receiveLoopTask);
+            try
+            {
+                await receiveLoopTask.WaitAsync(ReceiveLoopDrainTimeout).ConfigureAwait(false);
+            }
+            catch (TimeoutException)
+            {
+                _options.TraceSink.Warn("ClientReceiveLoopDrainTimedOut", [new("timeout_ms", (int)ReceiveLoopDrainTimeout.TotalMilliseconds)]);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _options.TraceSink.Warn("ClientReceiveLoopDrainFailed", [new("message", ex.Message)]);
+            }
+
+        }
+
+        FailPendingRequests(new ObjectDisposedException(nameof(YFinanceServerClient), "YFinance server client connection is closing."));
+        try { stream?.Dispose(); } catch { }
+        try { tcpClient?.Dispose(); } catch { }
+        connectionCts?.Dispose();
+    }
+
+    private void DisposeSocket(bool waitForWrites)
+    {
+        bool writeGateAcquired = false;
+        if (waitForWrites)
+        {
+            _writeGate.Wait();
+            writeGateAcquired = true;
+        }
+
+        try
+        {
+            DisposeSocketCore();
+        }
+        finally
+        {
+            if (writeGateAcquired)
+                _writeGate.Release();
+        }
+    }
+
+    private void DisposeSocketCore()
+    {
+        ConnectionSnapshot snapshot = DetachConnectionState();
+        CancellationTokenSource? connectionCts = snapshot.ConnectionCts;
+        Task? receiveLoopTask = snapshot.ReceiveLoopTask;
+        NetworkStream? stream = snapshot.Stream;
+        TcpClient? tcpClient = snapshot.TcpClient;
+
+        try { connectionCts?.Cancel(); } catch { }
+
+        if (receiveLoopTask is not null)
+        {
+            ObserveLateReceiveLoopFault(receiveLoopTask);
+        }
+
+        FailPendingRequests(new ObjectDisposedException(nameof(YFinanceServerClient), "YFinance server client connection is closing."));
+
+        try { stream?.Dispose(); } catch { }
+        try { tcpClient?.Dispose(); } catch { }
+        connectionCts?.Dispose();
+    }
+
+    private async Task TrySendGoodbyeOnCurrentConnectionAsync()
+    {
+        using CancellationTokenSource goodbyeTimeout = new(GoodbyeTimeout);
+        await _writeGate.WaitAsync(goodbyeTimeout.Token).ConfigureAwait(false);
+        try
+        {
+            NetworkStream? stream;
+            lock (_connectionStateGate)
+            {
+                TcpClient? tcpClient = _tcpClient;
+                stream = _stream;
+                if (tcpClient is not { Connected: true } || stream is null)
+                    return;
+            }
+
+            await WriteGoodbyeFrameAsync(stream, goodbyeTimeout.Token).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Goodbye is best-effort; shutdown/fault paths may already own the socket.
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+    }
+
+    private void ThrowIfDisposed()
+    {
+        // Once disposal begins, public calls must not create fresh connections.
+        // DisposeAsync uses a private best-effort Goodbye path instead.
+        if (Volatile.Read(ref _disposed) != 0 || Volatile.Read(ref _disposeStarted) != 0)
+            throw new ObjectDisposedException(nameof(YFinanceServerClient));
+    }
+
+    private async Task WriteGoodbyeFrameAsync(NetworkStream stream, CancellationToken cancellationToken)
+    {
+        ProtocolRequest<EmptyPayload> request = new()
+        {
+            RequestId = $"bye-{Interlocked.Increment(ref _requestSequence):D8}",
+            Operation = ProtocolOperations.Goodbye,
+            Payload = new EmptyPayload()
+        };
+        ProtocolIntegrity.Stamp(request, request.Payload);
+        await LengthPrefixedProtocolStream.WriteAsync(stream, ProtocolJson.Serialize(request), cancellationToken).ConfigureAwait(false);
+    }
+
+    private static void ObserveLateReceiveLoopFault(Task receiveLoopTask)
+    {
+        _ = receiveLoopTask.ContinueWith(
+            task => _ = task.Exception,
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+    }
+
+    private void FailPendingRequests(Exception ex)
+    {
+        foreach ((string requestId, IPendingRequest pending) in _pendingRequests.ToArray())
+        {
+            if (_pendingRequests.TryRemove(requestId, out IPendingRequest? removed))
+                removed.TrySetException(ex);
+        }
+    }
+
+    private void RememberCanceledRequest(string requestId, string operation)
+    {
+        lock (_canceledRequestEvictionGate)
+        {
+            _canceledRequestOperations[requestId] = operation;
+            _canceledRequestOrder.Enqueue(requestId);
+            CompactCanceledRequestOrderIfNeeded();
+
+            while (_canceledRequestOperations.Count > MaxCanceledRequestOperations &&
+                   _canceledRequestOrder.TryDequeue(out string? evictedRequestId))
+            {
+                _canceledRequestOperations.TryRemove(evictedRequestId, out _);
+            }
+        }
+    }
+
+    private readonly record struct ConnectionSnapshot(
+        CancellationTokenSource? ConnectionCts,
+        Task? ReceiveLoopTask,
+        NetworkStream? Stream,
+        TcpClient? TcpClient);
+
+    private bool TryForgetCanceledRequest(string requestId, out string? operation)
+    {
+        lock (_canceledRequestEvictionGate)
+        {
+            return _canceledRequestOperations.TryRemove(requestId, out operation);
+        }
+    }
+
+    private void ForgetCanceledRequest(string requestId)
+    {
+        lock (_canceledRequestEvictionGate)
+        {
+            _canceledRequestOperations.TryRemove(requestId, out _);
+            CompactCanceledRequestOrderIfNeeded();
+        }
+    }
+
+    private void CompactCanceledRequestOrderIfNeeded()
+    {
+        if (_canceledRequestOrder.Count <= MaxCanceledRequestOperations * 2)
+            return;
+
+        string[] liveRequestIds = _canceledRequestOperations.Keys.ToArray();
+        while (_canceledRequestOrder.TryDequeue(out _))
+        {
+        }
+
+        foreach (string liveRequestId in liveRequestIds)
+            _canceledRequestOrder.Enqueue(liveRequestId);
+    }
+
+    private void ClearCanceledRequestTracking()
+    {
+        lock (_canceledRequestEvictionGate)
+        {
+            _canceledRequestOperations.Clear();
+            while (_canceledRequestOrder.TryDequeue(out _))
+            {
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+            return;
+
+        Volatile.Write(ref _disposed, 1);
+        try
+        {
+            DisposeSocket(waitForWrites: false);
+        }
+        catch
+        {
+        }
+        try { _connectGate.Dispose(); } catch { }
+        try { _writeGate.Dispose(); } catch { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeStarted, 1) != 0)
+            return;
+
+        Volatile.Write(ref _disposed, 1);
+        try
+        {
+            await TrySendGoodbyeOnCurrentConnectionAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            await DisposeSocketAsync(waitForWrites: true).ConfigureAwait(false);
+        }
+        catch
+        {
+        }
+        try { _connectGate.Dispose(); } catch { }
+        try { _writeGate.Dispose(); } catch { }
+    }
+}
+
+internal interface IPendingRequest
+{
+    void TrySetPayload(JsonElement payload);
+    void TrySetProtocolError(ProtocolError? error);
+    void TrySetCanceled(CancellationToken cancellationToken);
+    void TrySetException(Exception ex);
+}
+
+internal sealed class PendingRequest<TResponse> : IPendingRequest
+{
+    private readonly TaskCompletionSource<TResponse> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly string _operation;
+    private readonly string _requestId;
+
+    public PendingRequest(string operation, string requestId)
+    {
+        _operation = operation;
+        _requestId = requestId;
+    }
+
+    public Task<TResponse> Task => _tcs.Task;
+
+    public void TrySetPayload(JsonElement payload)
+    {
+        if (payload.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+        {
+            _tcs.TrySetException(new IOException($"Operation '{_operation}' returned no payload."));
+            return;
+        }
+
+        TResponse? typedPayload = payload.Deserialize<TResponse>(ProtocolJson.SerializerOptions);
+        if (typedPayload is null)
+        {
+            _tcs.TrySetException(new IOException($"Operation '{_operation}' returned an unreadable payload."));
+            return;
+        }
+
+        _tcs.TrySetResult(typedPayload);
+    }
+
+    public void TrySetProtocolError(ProtocolError? error)
+        => _tcs.TrySetException(new YFinanceServerProtocolException(
+            error?.Code ?? ProtocolErrorCodes.InternalError,
+            error?.Message ?? $"Unknown protocol error for request '{_requestId}'.",
+            error?.Retryable ?? false));
+
+    public void TrySetCanceled(CancellationToken cancellationToken)
+        => _tcs.TrySetCanceled(cancellationToken);
+
+    public void TrySetException(Exception ex)
+        => _tcs.TrySetException(ex);
+}
+
+public sealed class YFinanceServerProtocolException : Exception
+{
+    public YFinanceServerProtocolException(string code, string message, bool retryable)
+        : base(message)
+    {
+        Code = code;
+        Retryable = retryable;
+    }
+
+    public string Code { get; }
+    public bool Retryable { get; }
+}

@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
+using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.App.Views;
 
@@ -13,6 +14,7 @@ public partial class ProductShellWindow : Window
 {
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
     private MainWindow? _settingsWindow;
+    private bool _shutdownStarted;
 
     public ProductShellWindow()
     {
@@ -49,6 +51,23 @@ public partial class ProductShellWindow : Window
 
         WindowState = _windowStateBeforeFullScreen;
         MainMenu.IsVisible = true;
+    }
+
+    private async void OnWindowOpened(object? sender, EventArgs e)
+    {
+        if (DataContext is ProductSceneViewModel scene)
+            await scene.InitializeAsync();
+    }
+
+    private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)
+    {
+        if (_shutdownStarted || DataContext is not ProductSceneViewModel scene)
+            return;
+
+        e.Cancel = true;
+        _shutdownStarted = true;
+        await scene.DisposeAsync();
+        Close();
     }
 
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
