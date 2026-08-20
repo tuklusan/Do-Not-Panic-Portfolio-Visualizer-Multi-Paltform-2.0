@@ -298,7 +298,7 @@ function Invoke-LinuxValidation {
         'export XDG_RUNTIME_DIR=/run/user/1000',
         "ART=$remotePublishDirLiteral",
         'cd "$ART"',
-        'chmod +x ./DoNotPanicPortfolioVisualizer.App',
+        'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
         'rm -f general.png validation.png run.log step.log',
         './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
         'APPPID=$!',
