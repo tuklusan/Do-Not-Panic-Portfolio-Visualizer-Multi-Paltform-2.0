@@ -45,6 +45,10 @@ param(
     [int]$TimeoutSeconds = 120,
 
     [Parameter()]
+    [ValidateRange(2, 180)]
+    [int]$SceneWarmupSeconds = 2,
+
+    [Parameter()]
     [ValidateNotNullOrEmpty()]
     [string]$WindowsTaskName = 'DNPPV_CR007_ConfigWindow'
 )
@@ -260,7 +264,8 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][string]$SourcePublishDir,
         [Parameter(Mandatory = $true)][string]$TargetPublishDir,
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
-        [Parameter(Mandatory = $true)][int]$Timeout
+        [Parameter(Mandatory = $true)][int]$Timeout,
+        [Parameter(Mandatory = $true)][int]$Warmup
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
@@ -327,7 +332,7 @@ function Invoke-LinuxValidation {
         'xdotool windowraise "$WID" || true',
         'xdotool windowmove "$WID" 20 20 || true',
         'xdotool windowsize "$WID" 1200 700 || true',
-        'sleep 2',
+        "sleep $Warmup",
         'eval "$(xdotool getwindowgeometry --shell "$WID")"',
         'echo "X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
         'BG_X=$((X + (WIDTH * 384 / 1000)))',
@@ -410,6 +415,7 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][string]$TargetPublishDir,
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
+        [Parameter(Mandatory = $true)][int]$Warmup,
         [Parameter(Mandatory = $true)][string]$TaskName
     )
 
@@ -510,7 +516,7 @@ function Invoke-WindowsValidation {
         '',
         '    [DnppvRemoteNative]::ShowWindow($proc.MainWindowHandle, 5) | Out-Null',
         '    [DnppvRemoteNative]::SetForegroundWindow($proc.MainWindowHandle) | Out-Null',
-        '    Start-Sleep -Seconds 2',
+        "    Start-Sleep -Seconds $Warmup",
         '    [DnppvRemoteNative]::MoveWindow($proc.MainWindowHandle, 40, 40, 1100, 720, $true) | Out-Null',
         '    Start-Sleep -Seconds 1',
         '    [DnppvRemoteNative]::ShowWindow($proc.MainWindowHandle, 5) | Out-Null',
@@ -656,11 +662,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -TaskName $WindowsTaskName
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName
         break
     }
     default {
