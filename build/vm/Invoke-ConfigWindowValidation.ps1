@@ -246,7 +246,10 @@ function Assert-RequiredTool {
 function New-TemporaryScriptPath {
     param([Parameter(Mandatory = $true)][string]$LeafName)
 
-    return Join-Path $env:TEMP $LeafName
+    $extension = [IO.Path]::GetExtension($LeafName)
+    $stem = [IO.Path]::GetFileNameWithoutExtension($LeafName)
+    $uniqueLeafName = '{0}-{1}{2}' -f $stem, [Guid]::NewGuid().ToString('N'), $extension
+    return Join-Path $env:TEMP $uniqueLeafName
 }
 
 function Invoke-LinuxValidation {
