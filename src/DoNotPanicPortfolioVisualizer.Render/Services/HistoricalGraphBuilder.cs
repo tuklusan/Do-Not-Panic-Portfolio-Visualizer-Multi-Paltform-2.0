@@ -28,8 +28,8 @@ public sealed class HistoricalGraphBuilder
     {
         const double width = 150d;
         const double height = 54d;
-        double anchorX = 10 + ((sequence % 8) * 148);
-        double anchorY = 4 + ((sequence / 8) * 84);
+        double anchorX = 4 + ((sequence % 4) * 228);
+        double anchorY = 3 + ((sequence / 4) * 60);
         FloatingGraphViewModel graph = new()
         {
             Symbol = snapshot.Symbol,
@@ -38,8 +38,8 @@ public sealed class HistoricalGraphBuilder
             Y = anchorY,
             AnchorX = anchorX,
             AnchorY = anchorY,
-            VelocityX = sequence % 2 == 0 ? 0.8d : -0.8d,
-            VelocityY = sequence % 3 == 0 ? 0.5d : -0.5d
+            VelocityX = sequence % 2 == 0 ? 0.6d : -0.6d,
+            VelocityY = sequence % 3 == 0 ? 0.4d : -0.4d
         };
 
         if (snapshot.Points.Count == 0)

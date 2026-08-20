@@ -401,18 +401,18 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             double nextX = graph.X + graph.VelocityX;
             double nextY = graph.Y + graph.VelocityY;
-            if (nextX < graph.AnchorX - 4 || nextX > graph.AnchorX + 4)
+            if (nextX < graph.AnchorX - 3 || nextX > graph.AnchorX + 3)
             {
                 graph.VelocityX = -graph.VelocityX;
                 nextX = graph.X + graph.VelocityX;
             }
-            if (nextY < graph.AnchorY - 3 || nextY > graph.AnchorY + 3)
+            if (nextY < graph.AnchorY - 2 || nextY > graph.AnchorY + 2)
             {
                 graph.VelocityY = -graph.VelocityY;
                 nextY = graph.Y + graph.VelocityY;
             }
-            graph.X = Math.Clamp(nextX, graph.AnchorX - 4, graph.AnchorX + 4);
-            graph.Y = Math.Clamp(nextY, graph.AnchorY - 3, graph.AnchorY + 3);
+            graph.X = Math.Clamp(nextX, graph.AnchorX - 3, graph.AnchorX + 3);
+            graph.Y = Math.Clamp(nextY, graph.AnchorY - 2, graph.AnchorY + 2);
         }
 
         NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - 22;

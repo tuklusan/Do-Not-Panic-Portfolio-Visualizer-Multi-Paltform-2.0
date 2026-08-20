@@ -147,7 +147,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                   VerticalAlignment="Stretch">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas Width="1200" Height="172" />
+                                <Canvas Width="920" Height="244" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.Styles>
@@ -158,7 +158,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         </ItemsControl.Styles>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="136" Height="72"
+                                <Border Width="216" Height="54"
                                         Background="#B80D131B"
                                         BorderBrush="{Binding AccentBrush}"
                                         BorderThickness="1"
@@ -183,12 +183,12 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                               Margin="2" />
                                         <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
                                             <TextBlock Text="{Binding TapeName}"
-                                                       FontSize="9"
+                                                       FontSize="8"
                                                        Foreground="#8EA4B4" />
                                             <TextBlock Grid.Column="1"
                                                        Text="{Binding LastText}"
                                                        FontFamily="Consolas"
-                                                       FontSize="10"
+                                                       FontSize="9"
                                                        Foreground="White" />
                                         </Grid>
                                     </Grid>
@@ -273,48 +273,47 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                       ClipToBounds="True">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" Spacing="7" />
+                                    <UniformGrid Columns="8" Rows="1" ColumnSpacing="3" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="137"
-                                            Background="#C2171D22"
+                                    <Border Background="#C2171D22"
                                             BorderBrush="#405564"
                                             BorderThickness="1"
                                             CornerRadius="4"
-                                            Padding="6,3">
+                                            Padding="4,3">
                                         <Grid RowDefinitions="Auto,Auto,Auto">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <TextBlock Text="{Binding City}"
-                                                           FontSize="10"
+                                                           FontSize="9"
                                                            FontWeight="Bold"
                                                            Foreground="#C9E8FF" />
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding TimeText}"
                                                            FontFamily="Consolas"
-                                                           FontSize="9"
+                                                           FontSize="8"
                                                            Foreground="#DCE6ED" />
                                             </Grid>
                                             <TextBlock Grid.Row="1"
                                                        Text="{Binding ExchangeName}"
-                                                       FontSize="9"
+                                                       FontSize="8"
                                                        Foreground="#8EA4B4" />
                                             <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*">
                                                 <TextBlock Text="{Binding ValueText}"
                                                            FontFamily="Consolas"
-                                                           FontSize="10"
+                                                           FontSize="9"
                                                            Foreground="White" />
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding ChangeText}"
                                                            Margin="5,0,0,0"
                                                            FontFamily="Consolas"
-                                                           FontSize="9"
+                                                           FontSize="8"
                                                            Foreground="{Binding AccentBrush}" />
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding WeatherText}"
                                                            HorizontalAlignment="Right"
-                                                           FontSize="9"
+                                                           FontSize="8"
                                                            Foreground="#AFC0CB" />
                                             </Grid>
                                         </Grid>
