@@ -47,6 +47,11 @@ The baseline in this document was derived from the public upstream repository:
 The real upstream screen is not a sample panel or toy quote window. It is a
 single cinematic scene with these first-viewport characteristics:
 
+Exact geometry, timing, motion, impulse, collision, background, and playback
+requirements are defined in `docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md` from
+the upstream source. This baseline and that numeric contract are jointly
+mandatory; screenshots alone cannot establish dynamic parity.
+
 1. a full-window background city or exchange photograph dimmed behind overlays;
 2. a centered branded title capsule at the top;
 3. a top-left market-status block with New York status, last-updated symbol, and

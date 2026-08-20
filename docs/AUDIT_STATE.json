@@ -468,9 +468,11 @@
       ],
       "objective": "Restore the remainder of the real scene composition and ambient experience.",
       "acceptance_criteria": [
-        "Floating graph cards and motion behavior are present.",
-        "Global markets, clocks, weather, news scroller, and rotating backgrounds are integrated.",
-        "The resulting screen resembles the upstream product rather than a scaffold."
+        "The complete docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md is implemented without substituting a fixed dashboard layout.",
+        "Ticker tapes continuously cycle at upstream-derived speeds and preserve position during quote updates.",
+        "Up to 16 186x78 graph cards wander over the full scene, bounce, resolve collisions, flash, and travel up or down on raw quote changes.",
+        "Global markets, clocks, weather, telegraph-style news playback, cross-fading/zooming backgrounds, and render recovery are integrated.",
+        "Dynamic physical evidence proves displacement and quote impulses; still screenshots alone are insufficient."
       ],
       "validation_plan": [
         "Visual acceptance on physical machines",
@@ -480,12 +482,133 @@
       "started_on": "2026-08-20"
     },
     {
+      "id": "CR-010A",
+      "phase": "Phase 3",
+      "title": "Audit and contract the upstream cinematic display",
+      "status": "open",
+      "depends_on": [
+        "CR-009"
+      ],
+      "objective": "Convert upstream scene source, controls, tests, and release imagery into a numeric and behavioral Avalonia migration contract.",
+      "acceptance_criteria": [
+        "Scene geometry, ticker animation, graph motion and quote impulses, backgrounds, status/macro, global markets, news playback, and lifecycle recovery are source-traceable.",
+        "The audit rejects static presence as evidence for dynamic behavior.",
+        "The downstream CR sequence covers every cinematic contract section with no unowned gap."
+      ],
+      "validation_plan": [
+        "Manual line-by-line upstream source inspection",
+        "Cross-check against upstream release screenshot and UI QA suite",
+        "Documentation and tracker consistency review"
+      ],
+      "started_on": "2026-08-20"
+    },
+    {
+      "id": "CR-010B",
+      "phase": "Phase 3",
+      "title": "Port viewport-relative scene geometry and background cinema",
+      "status": "planned",
+      "depends_on": [
+        "CR-010A"
+      ],
+      "objective": "Recreate the upstream full-scene composition, z-order, responsive bounds, cross-fade, luminance dimming, attribution, and slow zoom in Avalonia.",
+      "acceptance_criteria": [
+        "The production scene matches upstream composition at 1024x768 and wider physical viewports without clipping.",
+        "Two-layer background cross-fade, 1.00-1.05 slow zoom, dimming, attribution, and recovery are behaviorally preserved.",
+        "Viewport resize and fullscreen transitions preserve or safely clamp overlay state."
+      ],
+      "validation_plan": [
+        "Deterministic geometry and background-state tests",
+        "Smallest/wider viewport physical captures",
+        "Trace and lifecycle cleanup review"
+      ]
+    },
+    {
+      "id": "CR-010C",
+      "phase": "Phase 3",
+      "title": "Port continuous cinematic ticker tapes and quote cues",
+      "status": "planned",
+      "depends_on": [
+        "CR-010B"
+      ],
+      "objective": "Port upstream duplicated-track ticker controls, elapsed-time animation, independent speeds/directions, and surgical quote-update cues to Avalonia.",
+      "acceptance_criteria": [
+        "Four lanes move continuously and seamlessly at max(18, 72 * configured speed) pixels per second.",
+        "Direction, fixed item geometry, loading/missing glyphs, trend colors, and quote flashes are preserved.",
+        "Quote updates do not reset track position and pause/resume cannot create motion jumps."
+      ],
+      "validation_plan": [
+        "Wrap, speed, direction, update-preservation, and pause/resume tests",
+        "Timestamped physical displacement captures on all three machines",
+        "Mandatory review and artifact second opinion"
+      ]
+    },
+    {
+      "id": "CR-010D",
+      "phase": "Phase 3",
+      "title": "Port full-scene floating graph physics and quote impulses",
+      "status": "planned",
+      "depends_on": [
+        "CR-010C"
+      ],
+      "objective": "Restore 186x78 full-overlay graph cards, 132x40 plots, viewport wandering, bounce/collision physics, and quote-driven rise/drop behavior.",
+      "acceptance_criteria": [
+        "Up to 16 graph cards roam the full safe scene at configured 22-48 pixel-per-second nominal velocity.",
+        "Cards bounce, resolve collisions, preserve motion across refresh, and remain inside resized viewport bounds.",
+        "A changed rising quote flashes and travels to the top; a changed falling quote flashes and travels to the bottom at at least 260 pixels per second before nominal motion resumes."
+      ],
+      "validation_plan": [
+        "Physics, collision, bounds, hydration-suppression, and impulse tests",
+        "Controlled rise/fall fixture with capture sequence and traces",
+        "Live physical motion acceptance"
+      ]
+    },
+    {
+      "id": "CR-010E",
+      "phase": "Phase 3",
+      "title": "Port cinematic status, macro, global-market, and news playback",
+      "status": "planned",
+      "depends_on": [
+        "CR-010D"
+      ],
+      "objective": "Recreate the independently refreshed status/macro and world-market lanes plus the upstream telegraph-style news state machine.",
+      "acceptance_criteria": [
+        "Status and seven macro meters preserve upstream geometry, state, and independent refresh behavior.",
+        "All world-market centers fit with clocks, session, index, direction, and weather at supported viewport sizes.",
+        "News visibly cycles through prepare, pre-scroll pause, vertical scroll, post-scroll pause, and next-headline phases for RSS and optional AI text."
+      ],
+      "validation_plan": [
+        "Playback-state and independent-refresh tests",
+        "Physical timed capture sequence",
+        "Failure-isolation and cleanup review"
+      ]
+    },
+    {
+      "id": "CR-010F",
+      "phase": "Phase 3",
+      "title": "Close cinematic parity with dynamic multi-platform evidence",
+      "status": "planned",
+      "depends_on": [
+        "CR-010E"
+      ],
+      "objective": "Reconcile the completed Avalonia scene against every cinematic contract item and close the CR-010 umbrella only with dynamic evidence.",
+      "acceptance_criteria": [
+        "Every cinematic contract line maps to implementation, deterministic tests, and reviewed evidence.",
+        "Six target publishes pass and dynamic acceptance passes on Lubuntu, Windows 10, and Windows 11.",
+        "No clipping, static-lane substitution, fixed-grid graph substitution, lifecycle leak, or unowned parity gap remains."
+      ],
+      "validation_plan": [
+        "Full contract traceability audit",
+        "Six-target publish and three-machine dynamic acceptance",
+        "Mandatory TEST_ARTIFACT second-opinion review"
+      ]
+    },
+    {
       "id": "CR-011",
       "phase": "Phase 4",
       "title": "Port degraded-mode behavior, recovery, and traceability",
       "status": "planned",
       "depends_on": [
-        "CR-010"
+        "CR-010F"
       ],
       "objective": "Make the real product resilient when providers or network conditions degrade.",
       "acceptance_criteria": [
@@ -541,7 +664,7 @@
     }
   ],
   "remaining_validation_gaps": [
-    "CR-010 must replace the current global-markets and finance-news placeholders and add floating graph cards, clocks, weather, rotating backgrounds, and the required ambient motion.",
+    "CR-010A through CR-010F must replace the current static ticker and fixed-grid graph scaffolding with the source-traceable cinematic behavior in docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md; current still screenshots are integration evidence, not Phase 3 closure evidence.",
     "Hosted execution and release-quality acceptance across the non-local target architectures remain assigned to later queue items."
   ],
   "current_operational_recommendations": [

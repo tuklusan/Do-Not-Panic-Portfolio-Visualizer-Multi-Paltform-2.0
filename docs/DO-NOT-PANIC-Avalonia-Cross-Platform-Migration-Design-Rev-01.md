@@ -157,6 +157,10 @@ Exit criteria:
 - the Avalonia main window reproduces the upstream composition model;
 - ticker tapes, status surfaces, graph cards, news, backgrounds, and global
   markets render from live runtime state;
+- cinematic geometry, render-timed tape motion, full-scene graph physics,
+  quote-driven rise/drop impulses, background cinema, and news playback satisfy
+  `docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md`; static presence or a fixed
+  dashboard substitute is not phase-completion evidence;
 - fullscreen/window controls behave correctly on supported platforms.
 
 ## Phase 4 - Runtime Fidelity And Degraded Behavior
