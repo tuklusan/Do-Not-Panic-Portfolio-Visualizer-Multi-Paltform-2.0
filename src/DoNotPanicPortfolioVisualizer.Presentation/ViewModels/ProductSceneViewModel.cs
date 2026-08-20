@@ -188,7 +188,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             ? _settings.CustomBackgroundImageFolder
             : _settings.BackgroundImageFolder;
         _backgrounds = _backgroundService.GetImages(selectedFolder, _settings.BackgroundIncludeSubfolders);
-        _backgrounds = new[] { "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg" }
+        _backgrounds = new[]
+            {
+                "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg",
+                "/Assets/ExchangeBackgrounds/london-skyline-public-domain.jpg",
+                "/Assets/ExchangeBackgrounds/shanghai-skyline-public-domain.jpg"
+            }
             .Concat(_backgrounds)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();

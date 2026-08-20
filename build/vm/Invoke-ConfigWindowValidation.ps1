@@ -50,7 +50,10 @@ param(
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
-    [string]$WindowsTaskName = 'DNPPV_CR007_ConfigWindow'
+    [string]$WindowsTaskName = 'DNPPV_CR007_ConfigWindow',
+
+    [Parameter()]
+    [switch]$ProductScene
 )
 
 Set-StrictMode -Version Latest
@@ -265,7 +268,8 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][string]$TargetPublishDir,
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
-        [Parameter(Mandatory = $true)][int]$Warmup
+        [Parameter(Mandatory = $true)][int]$Warmup,
+        [Parameter(Mandatory = $true)][bool]$CaptureProductScene
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
@@ -377,6 +381,46 @@ function Invoke-LinuxValidation {
         'echo "VALIDATION_CAPTURED" >> step.log',
         'echo "VALIDATION_DONE" >> step.log'
     )
+    if ($CaptureProductScene) {
+        $scriptLines = @(
+            '#!/usr/bin/env bash',
+            'set -euo pipefail',
+            'export DISPLAY=:0',
+            "export XAUTHORITY=$xAuthorityLiteral",
+            'export XDG_RUNTIME_DIR=/run/user/1000',
+            "ART=$remotePublishDirLiteral",
+            'cd "$ART"',
+            'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
+            'rm -f general.png validation.png run.log step.log',
+            './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
+            'APPPID=$!',
+            'echo "APPPID=$APPPID" >> step.log',
+            'cleanup() {',
+            '  if kill -0 "$APPPID" 2>/dev/null; then',
+            '    kill "$APPPID" 2>/dev/null || true',
+            '    sleep 2',
+            '    kill -9 "$APPPID" 2>/dev/null || true',
+            '  fi',
+            '}',
+            'trap cleanup EXIT',
+            "for i in `$(seq 1 $Timeout); do",
+            '  WID=$(xdotool search --pid "$APPPID" | tail -n 1 || true)',
+            '  if [ -n "${WID:-}" ]; then break; fi',
+            '  sleep 1',
+            'done',
+            'if [ -z "${WID:-}" ]; then echo "WINDOW_NOT_FOUND" >> step.log; exit 1; fi',
+            'xdotool windowactivate --sync "$WID" || true',
+            'xdotool key alt+F10 || true',
+            "sleep $Warmup",
+            'eval "$(xdotool getwindowgeometry --shell "$WID")"',
+            'echo "WINDOW=$WID X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
+            'scrot -o general.png',
+            'echo "GENERAL_CAPTURED" >> step.log',
+            'sleep 8',
+            'scrot -o validation.png',
+            'echo "VALIDATION_CAPTURED" >> step.log'
+        )
+    }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
 
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path $remoteScriptPath)
@@ -416,7 +460,8 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
-        [Parameter(Mandatory = $true)][string]$TaskName
+        [Parameter(Mandatory = $true)][string]$TaskName,
+        [Parameter(Mandatory = $true)][bool]$CaptureProductScene
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
@@ -594,6 +639,68 @@ function Invoke-WindowsValidation {
         '    }',
         '}'
     )
+    if ($CaptureProductScene) {
+        $scriptLines = @(
+            'Add-Type -AssemblyName System.Drawing',
+            'Add-Type -AssemblyName System.Windows.Forms',
+            'Add-Type @"',
+            'using System;',
+            'using System.Runtime.InteropServices;',
+            'public static class DnppvSceneNative',
+            '{',
+            '    [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();',
+            '    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);',
+            '    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);',
+            '}',
+            '"@',
+            '[DnppvSceneNative]::SetProcessDPIAware() | Out-Null',
+            '$artifactDir = ' + $targetPublishDirPsLiteral,
+            '$donePath = Join-Path $artifactDir ''done.txt''',
+            '$stepPath = Join-Path $artifactDir ''step.log''',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png'')',
+            'function Save-DesktopScreenshot {',
+            '    param([string]$Path)',
+            '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
+            '    $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height',
+            '    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)',
+            '    try {',
+            '        $graphics.CopyFromScreen($bounds.Left, $bounds.Top, 0, 0, $bitmap.Size)',
+            '        $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)',
+            '    }',
+            '    finally { $graphics.Dispose(); $bitmap.Dispose() }',
+            '}',
+            '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
+            '$proc = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
+            'try {',
+            '    Add-Content -Path $stepPath -Value (''PID={0}'' -f $proc.Id)',
+            "    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {",
+            '        Start-Sleep -Seconds 1',
+            '        $proc.Refresh()',
+            '        if ($proc.MainWindowHandle -ne 0) { break }',
+            '    }',
+            '    if ($proc.MainWindowHandle -eq 0) { throw ''Main window handle was not detected.'' }',
+            '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 3) | Out-Null',
+            '    [DnppvSceneNative]::SetForegroundWindow($proc.MainWindowHandle) | Out-Null',
+            "    Start-Sleep -Seconds $Warmup",
+            '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
+            '    Add-Content -Path $stepPath -Value (''SCREEN={0},{1}'' -f $bounds.Width, $bounds.Height)',
+            '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''general.png'')',
+            '    Add-Content -Path $stepPath -Value ''GENERAL_CAPTURED''',
+            '    Start-Sleep -Seconds 8',
+            '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''validation.png'')',
+            '    Add-Content -Path $stepPath -Value ''VALIDATION_CAPTURED''',
+            '    ''DONE'' | Set-Content -Path $donePath',
+            '}',
+            'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
+            'finally {',
+            '    if ($proc -and -not $proc.HasExited) {',
+            '        $proc.CloseMainWindow() | Out-Null',
+            '        Start-Sleep -Seconds 2',
+            '        if (-not $proc.HasExited) { $proc.Kill(); $proc.WaitForExit() }',
+            '    }',
+            '}'
+        )
+    }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`r`n", $scriptLines) + "`r`n")
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path $remoteScriptPath)
 
@@ -662,11 +769,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent
         break
     }
     default {
