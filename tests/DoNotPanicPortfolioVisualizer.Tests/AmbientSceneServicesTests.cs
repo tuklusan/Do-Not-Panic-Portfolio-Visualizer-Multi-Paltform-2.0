@@ -40,6 +40,40 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void BackgroundCinemaController_CrossFadesAndCanonicalizesLayers()
+    {
+        BackgroundCinemaController controller = new(["first.jpg", "second.jpg"], shuffle: false);
+
+        Assert.True(controller.BeginRotation());
+        controller.Step(TimeSpan.FromMilliseconds(225));
+        Assert.True(controller.IsTransitioning);
+        Assert.InRange(controller.OpacityB, 0.38d, 0.40d);
+
+        controller.Step(TimeSpan.FromMilliseconds(225));
+        Assert.False(controller.IsTransitioning);
+        Assert.Equal(0d, controller.OpacityA);
+        Assert.Equal(0.45d, controller.OpacityB);
+        Assert.Equal("second.jpg", controller.CurrentSource);
+    }
+
+    [Fact]
+    public void BackgroundCinemaController_ZoomsWithinAuditedBoundsAndReverses()
+    {
+        BackgroundCinemaController controller = new(["first.jpg"], shuffle: false);
+
+        for (int index = 0; index < 100; index++)
+            controller.Step(BackgroundCinemaController.ZoomTickInterval);
+
+        Assert.InRange(controller.ScaleA, BackgroundCinemaController.MinimumScale, BackgroundCinemaController.MaximumScale);
+        double upperScale = controller.ScaleA;
+        for (int index = 0; index < 100; index++)
+            controller.Step(BackgroundCinemaController.ZoomTickInterval);
+
+        Assert.InRange(controller.ScaleA, BackgroundCinemaController.MinimumScale, BackgroundCinemaController.MaximumScale);
+        Assert.NotEqual(upperScale, controller.ScaleA);
+    }
+
+    [Fact]
     public void HistoricalGraphBuilder_ProducesPortablePathAndTrendState()
     {
         TickerHistorySnapshot snapshot = new()

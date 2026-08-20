@@ -12,6 +12,7 @@
 // patent, trademark, and governing-law provisions.
 // ============================================================================
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
@@ -61,11 +62,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly FinanceNewsService _newsService = new();
     private readonly WorldWeatherService _weatherService = new();
     private readonly BackgroundImageService _backgroundService = new();
-    private readonly Random _random = new(1979);
     private readonly SynchronizationContext _uiContext;
     private AppSettings _settings = new();
     private IReadOnlyList<string> _backgrounds = [];
-    private int _backgroundIndex;
+    private BackgroundCinemaController? _backgroundCinema;
     private DateTimeOffset _nextBackgroundChangeUtc;
     private Task? _refreshLoop;
     private Task? _ambientLoop;
@@ -89,7 +89,25 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private string _clockText = DateTimeOffset.UtcNow.ToString("HH:mm:ss 'UTC'");
 
     [ObservableProperty]
-    private string _currentBackgroundSource = "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg";
+    private string _backgroundSourceA = "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg";
+
+    [ObservableProperty]
+    private string? _backgroundSourceB;
+
+    [ObservableProperty]
+    private double _backgroundOpacityA = 0.45d;
+
+    [ObservableProperty]
+    private double _backgroundOpacityB;
+
+    [ObservableProperty]
+    private double _backgroundScaleA = 1.01d;
+
+    [ObservableProperty]
+    private double _backgroundScaleB = 1.01d;
+
+    [ObservableProperty]
+    private double _sceneDimOpacity = 0.55d;
 
     [ObservableProperty]
     private string _newsText = "Loading France 24 business headlines...";
@@ -170,16 +188,28 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             ? _settings.CustomBackgroundImageFolder
             : _settings.BackgroundImageFolder;
         _backgrounds = _backgroundService.GetImages(selectedFolder, _settings.BackgroundIncludeSubfolders);
+        _backgrounds = new[] { "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg" }
+            .Concat(_backgrounds)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        _backgroundCinema = new BackgroundCinemaController(_backgrounds, _settings.ShuffleBackgrounds);
+        SceneDimOpacity = Math.Clamp(_settings.DimOpacity, 0d, 1d);
+        ApplyBackgroundCinemaState();
         _nextBackgroundChangeUtc = DateTimeOffset.UtcNow.AddSeconds(_settings.BackgroundChangeSeconds);
     }
 
     private async Task RunAmbientLoopAsync(CancellationToken cancellationToken)
     {
+        Stopwatch clock = Stopwatch.StartNew();
+        TimeSpan prior = clock.Elapsed;
         while (!cancellationToken.IsCancellationRequested)
         {
+            TimeSpan current = clock.Elapsed;
+            TimeSpan elapsed = current - prior;
+            prior = current;
             try
             {
-                await InvokeOnUiAsync(UpdateClockAndMotion, cancellationToken);
+                await InvokeOnUiAsync(() => UpdateClockAndMotion(elapsed), cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -189,7 +219,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 // Keep clocks and motion alive if one optional background is malformed.
             }
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
         }
     }
 
@@ -379,7 +409,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         return completion.Task;
     }
 
-    private void UpdateClockAndMotion()
+    private void UpdateClockAndMotion(TimeSpan elapsed)
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         ClockDateText = now.ToLocalTime().ToString("ddd dd-MMM-yyyy").ToUpperInvariant();
@@ -399,32 +429,45 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
         foreach (FloatingGraphViewModel graph in Graphs)
         {
-            double nextX = graph.X + graph.VelocityX;
-            double nextY = graph.Y + graph.VelocityY;
+            double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, 0.25d);
+            double nextX = graph.X + (graph.VelocityX * seconds);
+            double nextY = graph.Y + (graph.VelocityY * seconds);
             if (nextX < graph.AnchorX - 3 || nextX > graph.AnchorX + 3)
             {
                 graph.VelocityX = -graph.VelocityX;
-                nextX = graph.X + graph.VelocityX;
+                nextX = graph.X + (graph.VelocityX * seconds);
             }
             if (nextY < graph.AnchorY - 1 || nextY > graph.AnchorY + 1)
             {
                 graph.VelocityY = -graph.VelocityY;
-                nextY = graph.Y + graph.VelocityY;
+                nextY = graph.Y + (graph.VelocityY * seconds);
             }
             graph.X = Math.Clamp(nextX, graph.AnchorX - 3, graph.AnchorX + 3);
             graph.Y = Math.Clamp(nextY, graph.AnchorY - 1, graph.AnchorY + 1);
         }
 
-        NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - 22;
+        NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - (22d * elapsed.TotalSeconds);
 
-        if (_backgrounds.Count > 0 && now >= _nextBackgroundChangeUtc)
+        _backgroundCinema?.Step(elapsed);
+        if (_backgroundCinema is not null && now >= _nextBackgroundChangeUtc)
         {
-            _backgroundIndex = _settings.ShuffleBackgrounds
-                ? _random.Next(_backgrounds.Count)
-                : (_backgroundIndex + 1) % _backgrounds.Count;
-            CurrentBackgroundSource = _backgrounds[_backgroundIndex];
+            _backgroundCinema.BeginRotation();
             _nextBackgroundChangeUtc = now.AddSeconds(_settings.BackgroundChangeSeconds);
         }
+        ApplyBackgroundCinemaState();
+    }
+
+    private void ApplyBackgroundCinemaState()
+    {
+        if (_backgroundCinema is null)
+            return;
+
+        BackgroundSourceA = _backgroundCinema.SourceA;
+        BackgroundSourceB = _backgroundCinema.SourceB;
+        BackgroundOpacityA = _backgroundCinema.OpacityA;
+        BackgroundOpacityB = _backgroundCinema.OpacityB;
+        BackgroundScaleA = _backgroundCinema.ScaleA;
+        BackgroundScaleB = _backgroundCinema.ScaleB;
     }
 
     private static string FormatMarketSession(MarketSession session)

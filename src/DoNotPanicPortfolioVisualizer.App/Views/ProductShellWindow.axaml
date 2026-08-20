@@ -45,9 +45,23 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
         </Menu>
 
         <Grid x:Name="SceneRoot" Grid.Row="1">
-            <Image Source="{Binding CurrentBackgroundSource, Converter={StaticResource BackgroundImageConverter}}"
-                   Stretch="UniformToFill" />
-            <Border Background="#990B0D0F" />
+            <Image Source="{Binding BackgroundSourceA, Converter={StaticResource BackgroundImageConverter}}"
+                   Stretch="Fill"
+                   Opacity="{Binding BackgroundOpacityA}"
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding BackgroundScaleA}" ScaleY="{Binding BackgroundScaleA}" />
+                </Image.RenderTransform>
+            </Image>
+            <Image Source="{Binding BackgroundSourceB, Converter={StaticResource BackgroundImageConverter}}"
+                   Stretch="Fill"
+                   Opacity="{Binding BackgroundOpacityB}"
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding BackgroundScaleB}" ScaleY="{Binding BackgroundScaleB}" />
+                </Image.RenderTransform>
+            </Image>
+            <Border Background="Black" Opacity="{Binding SceneDimOpacity}" />
 
             <Grid Margin="16,12,16,10"
                   RowDefinitions="Auto,Auto,*,Auto,Auto"
