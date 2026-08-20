@@ -237,6 +237,13 @@ public sealed class YFinanceServerProcessManager : IYFinanceServerProcessManager
                 return BuildLaunchCommandForPath(exeCandidate, token);
             }
 
+            string nativeCandidate = Path.Combine(root, YFinanceLoopbackContract.ServerExecutableFileStem);
+            if (File.Exists(nativeCandidate))
+            {
+                CacheResolvedLaunchPath(baseDirectory, nativeCandidate);
+                return BuildLaunchCommandForPath(nativeCandidate, token);
+            }
+
             string dllCandidate = Path.Combine(root, YFinanceLoopbackContract.ServerExecutableFileStem + ".dll");
             if (File.Exists(dllCandidate))
             {

@@ -44,6 +44,28 @@ public sealed class YFinanceInfrastructureTests
     }
 
     [Fact]
+    public void ResolveLaunchCommand_PrefersBundledExtensionlessExecutableOverDll()
+    {
+        using TemporaryDirectoryScope directory = new();
+        string serverDirectory = Path.Combine(directory.Path, "YFinanceServer");
+        Directory.CreateDirectory(serverDirectory);
+        string executablePath = Path.Combine(serverDirectory, "YFinance.NET.Server");
+        File.WriteAllText(executablePath, string.Empty);
+        File.WriteAllText(executablePath + ".dll", string.Empty);
+
+        YFinanceServerProcessManager manager = new(new YFinanceServerProcessManagerOptions
+        {
+            BaseDirectoryOverride = directory.Path
+        });
+
+        YFinanceServerLaunchCommand command = manager.ResolveLaunchCommand("token-linux");
+
+        Assert.Equal(executablePath, command.FileName);
+        Assert.Equal(executablePath, command.ResolvedPath);
+        Assert.DoesNotContain("dotnet", command.FileName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ResolveLaunchCommand_FallsBackToDotNetForDll()
     {
         using TemporaryDirectoryScope directory = new();
