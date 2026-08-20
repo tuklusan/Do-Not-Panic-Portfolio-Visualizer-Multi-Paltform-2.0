@@ -147,7 +147,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                   VerticalAlignment="Stretch">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas Width="920" Height="244" />
+                                <Canvas Width="920" Height="184" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.Styles>
@@ -158,29 +158,31 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         </ItemsControl.Styles>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="216" Height="54"
+                                <Border Width="216" Height="42"
                                         Background="#B80D131B"
                                         BorderBrush="{Binding AccentBrush}"
                                         BorderThickness="1"
                                         CornerRadius="5"
-                                        Padding="8,5">
+                                        Padding="5,2">
                                     <Grid RowDefinitions="Auto,*,Auto">
                                         <Grid ColumnDefinitions="*,Auto">
                                             <TextBlock Text="{Binding Symbol}"
                                                        FontFamily="Consolas"
+                                                       FontSize="10"
                                                        FontWeight="Bold"
                                                        Foreground="White" />
                                             <TextBlock Grid.Column="1"
                                                        Text="{Binding ChangeText}"
                                                        FontFamily="Consolas"
+                                                       FontSize="10"
                                                        Foreground="{Binding AccentBrush}" />
                                         </Grid>
                                         <Path Grid.Row="1"
                                               Data="{Binding PathData}"
                                               Stroke="{Binding AccentBrush}"
-                                              StrokeThickness="2"
+                                              StrokeThickness="1.5"
                                               Stretch="Fill"
-                                              Margin="2" />
+                                              Margin="1" />
                                         <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
                                             <TextBlock Text="{Binding TapeName}"
                                                        FontSize="8"

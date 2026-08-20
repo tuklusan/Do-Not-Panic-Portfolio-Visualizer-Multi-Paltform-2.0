@@ -75,9 +75,9 @@ public sealed class AmbientSceneServicesTests
         var graph = new HistoricalGraphBuilder().Build("Satellite", snapshot, 0.5m, 15);
 
         Assert.InRange(graph.AnchorX, 0, 700);
-        Assert.InRange(graph.AnchorY, 0, 184);
+        Assert.InRange(graph.AnchorY, 0, 138);
         Assert.InRange(graph.AnchorX + 216 + 3, 0, 920);
-        Assert.InRange(graph.AnchorY + 54 + 2, 0, 244);
+        Assert.InRange(graph.AnchorY + 42 + 1, 0, 184);
     }
 
     [Fact]
