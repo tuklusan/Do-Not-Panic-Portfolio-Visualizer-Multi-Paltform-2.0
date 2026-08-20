@@ -1,0 +1,185 @@
+<!--
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Based on original work by Supratim Sanyal of SANYALnet Labs.
+Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DoNotPanicPortfolioVisualizer.App.Views.ProductShellWindow"
+        x:Name="ShellWindow"
+        Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0"
+        Icon="/Assets/dnppv-icon.ico"
+        WindowState="Maximized"
+        MinWidth="960"
+        MinHeight="600"
+        Background="#111315"
+        KeyDown="OnWindowKeyDown"
+        DoubleTapped="OnWindowDoubleTapped">
+    <Grid RowDefinitions="Auto,*">
+        <Menu x:Name="MainMenu"
+              Grid.Row="0"
+              Background="#171B1F"
+              Foreground="#E7EDF2">
+            <MenuItem Header="_File">
+                <MenuItem Header="E_xit" Click="OnExitClick" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem x:Name="FullScreenMenuItem"
+                          Header="_Full Screen"
+                          InputGesture="F11"
+                          Click="OnFullScreenClick" />
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem Header="_Settings" Click="OnSettingsClick" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="OnAboutClick" />
+            </MenuItem>
+        </Menu>
+
+        <Grid x:Name="SceneRoot" Grid.Row="1">
+            <Image Source="/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg"
+                   Stretch="UniformToFill" />
+            <Border Background="#990B0D0F" />
+
+            <Grid Margin="16,12,16,10"
+                  RowDefinitions="Auto,Auto,*,Auto,Auto"
+                  RowSpacing="10">
+                <Grid ColumnDefinitions="*,Auto,*">
+                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Market: New York"
+                                   FontFamily="Consolas"
+                                   FontWeight="SemiBold"
+                                   Foreground="#F5F7F8" />
+                        <TextBlock Text="Market status loading..."
+                                   FontFamily="Consolas"
+                                   FontSize="12"
+                                   Foreground="#8BE28B" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Background="#D91A2B38"
+                            BorderBrush="#5790B2"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="26,7">
+                        <TextBlock Text="SANYALnet Labs  DO NOT PANIC Portfolio Visualizer"
+                                   FontSize="18"
+                                   Foreground="White" />
+                    </Border>
+
+                    <StackPanel Grid.Column="2"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="UTC"
+                                   HorizontalAlignment="Right"
+                                   FontFamily="Consolas"
+                                   Foreground="#9DB1C0" />
+                        <TextBlock Text="Waiting for clock service"
+                                   FontFamily="Consolas"
+                                   FontSize="12"
+                                   Foreground="White" />
+                    </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="1"
+                        Margin="0,2,0,0"
+                        Background="#B7191D21"
+                        BorderBrush="#46515A"
+                        BorderThickness="1"
+                        Padding="10,8">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <TextBlock Text="MACRO MARKETS"
+                                   FontFamily="Consolas"
+                                   Foreground="#AFC6D8" />
+                        <TextBlock Grid.Column="1"
+                                   Text="Market indicators will populate progressively"
+                                   HorizontalAlignment="Center"
+                                   FontFamily="Consolas"
+                                   Foreground="#DCE6ED" />
+                        <TextBlock Grid.Column="2"
+                                   Text="LIVE DATA INITIALIZING"
+                                   FontFamily="Consolas"
+                                   Foreground="#F4C95D" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Margin="8,34,8,10">
+                    <Border Background="#E8050607" CornerRadius="4" Padding="12,9">
+                        <TextBlock Text="PORTFOLIO TAPE 1     Waiting for configured symbols and quotes..."
+                                   FontFamily="Consolas" Foreground="#DCE8EE" />
+                    </Border>
+                    <Border Grid.Row="1" Background="#E8050607" CornerRadius="4" Padding="12,9">
+                        <TextBlock Text="PORTFOLIO TAPE 2     Waiting for configured symbols and quotes..."
+                                   FontFamily="Consolas" Foreground="#DCE8EE" />
+                    </Border>
+                    <Border Grid.Row="2" Background="#E8050607" CornerRadius="4" Padding="12,9">
+                        <TextBlock Text="PORTFOLIO TAPE 3     Waiting for configured symbols and quotes..."
+                                   FontFamily="Consolas" Foreground="#DCE8EE" />
+                    </Border>
+                    <Border Grid.Row="3" Background="#E8050607" CornerRadius="4" Padding="12,9">
+                        <TextBlock Text="PORTFOLIO TAPE 4     Waiting for configured symbols and quotes..."
+                                   FontFamily="Consolas" Foreground="#DCE8EE" />
+                    </Border>
+                    <TextBlock Grid.Row="4"
+                               Text="Scene services are starting"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontFamily="Consolas"
+                               FontSize="16"
+                               Foreground="#B9C8D2" />
+                </Grid>
+
+                <Border Grid.Row="3"
+                        Background="#E20B1116"
+                        BorderBrush="#314B5F"
+                        BorderThickness="1"
+                        Padding="12,10">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Text="GLOBAL MARKETS"
+                                   FontFamily="Consolas"
+                                   FontWeight="Bold"
+                                   Foreground="#C9E8FF" />
+                        <TextBlock Grid.Column="1"
+                                   Text="World-market clocks and weather are initializing"
+                                   HorizontalAlignment="Center"
+                                   FontFamily="Consolas"
+                                   Foreground="#AFC0CB" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="4" RowDefinitions="Auto,Auto">
+                    <Border Background="#E2040506" Padding="0">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Background="#E51D2C" Padding="16,10">
+                                <TextBlock Text="FINANCE NEWS"
+                                           FontWeight="Bold"
+                                           Foreground="White" />
+                            </Border>
+                            <TextBlock Grid.Column="1"
+                                       Text="Loading France 24 business headlines..."
+                                       Margin="14,0"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Consolas"
+                                       Foreground="#EEF2F4" />
+                        </Grid>
+                    </Border>
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" Margin="0,5,0,0">
+                        <TextBlock Text="© Supratim Sanyal, SANYALnet Labs."
+                                   FontSize="10"
+                                   Foreground="#88939A" />
+                        <TextBlock Grid.Column="1"
+                                   Text="Delayed market data may apply."
+                                   FontSize="10"
+                                   Foreground="#88939A" />
+                        <TextBlock Grid.Column="2"
+                                   Text="2.0"
+                                   HorizontalAlignment="Right"
+                                   FontSize="10"
+                                   Foreground="#88939A" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
