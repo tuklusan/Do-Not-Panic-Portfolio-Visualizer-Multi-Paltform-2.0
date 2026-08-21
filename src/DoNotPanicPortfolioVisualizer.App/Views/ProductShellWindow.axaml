@@ -94,28 +94,34 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                         Opacity="{Binding FlashOpacity}"
                                         CornerRadius="5" />
                                 <Grid RowDefinitions="Auto,*">
-                                    <Grid ColumnDefinitions="*,Auto">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="{Binding Symbol}"
-                                                       FontFamily="Consolas"
-                                                       FontSize="11"
-                                                       FontWeight="Bold"
-                                                       Foreground="White" />
-                                            <TextBlock Text="{Binding OverlayText}"
-                                                       FontSize="8"
-                                                       Foreground="#8EA4B4" />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                                            <TextBlock Text="{Binding LastText}"
-                                                       FontFamily="Consolas"
-                                                       FontSize="10"
-                                                       Foreground="White" />
-                                            <TextBlock Text="{Binding ChangeText}"
-                                                       FontFamily="Consolas"
-                                                       FontSize="9"
-                                                       FontWeight="Bold"
-                                                       Foreground="{Binding AccentBrush}" />
-                                        </StackPanel>
+                                    <Grid ColumnDefinitions="34,*,42,46">
+                                        <TextBlock Text="{Binding Symbol}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="White" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OverlayText}"
+                                                   Margin="2,1"
+                                                   FontSize="7"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="#8EA4B4" />
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding LastText}"
+                                                   HorizontalAlignment="Right"
+                                                   FontFamily="Consolas"
+                                                   FontSize="9"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="White" />
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding ChangeText}"
+                                                   HorizontalAlignment="Right"
+                                                   FontFamily="Consolas"
+                                                   FontSize="8"
+                                                   FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{Binding AccentBrush}" />
                                     </Grid>
                                     <Grid Grid.Row="1" ColumnDefinitions="30,*" Margin="0,3,0,0">
                                         <Grid RowDefinitions="Auto,*,Auto" Margin="0,0,5,0">
