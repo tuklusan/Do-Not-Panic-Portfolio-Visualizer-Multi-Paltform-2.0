@@ -549,7 +549,7 @@
       "id": "CR-010C",
       "phase": "Phase 3",
       "title": "Port continuous cinematic ticker tapes and quote cues",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010B"
       ],
@@ -564,13 +564,26 @@
         "Timestamped physical displacement captures on all three machines",
         "Mandatory review and artifact second opinion"
       ],
-      "started_on": "2026-08-20"
+      "started_on": "2026-08-20",
+      "completed_on": "2026-08-21",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/TickerMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerLaneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerQuoteViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "closure_notes": [
+        "Ported four continuously wrapped duplicated ticker tracks with upstream-derived 72x speed scaling, an 18 pixel-per-second floor, independent direction, fixed 230-pixel quote geometry, and exact sequence spacing.",
+        "Preserved track position across quote refresh and viewport resize, suppressed hydration flashes, bounded pause/resume frame deltas, and restored rising/falling multi-pulse quote cues without rebuilding tracks.",
+        "Passed 70 tests, a warning-free build, six serial self-contained publishes, mandatory CODE review, and mandatory TEST_ARTIFACT review after same-geometry four-second displacement captures on Lubuntu, Windows 10, and high-DPI Windows 11; all post-run process counts were zero."
+      ]
     },
     {
       "id": "CR-010D",
       "phase": "Phase 3",
       "title": "Port full-scene floating graph physics and quote impulses",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010C"
       ],
@@ -584,7 +597,8 @@
         "Physics, collision, bounds, hydration-suppression, and impulse tests",
         "Controlled rise/fall fixture with capture sequence and traces",
         "Live physical motion acceptance"
-      ]
+      ],
+      "started_on": "2026-08-21"
     },
     {
       "id": "CR-010E",
@@ -855,6 +869,23 @@
         "Closed CR-010B with source-derived background cinema, all three retained upstream exchange images, and real viewport-relative production-scene evidence.",
         "Validated maximized-to-F11 transitions without clipping at 1024x768, 1280x768, and 2560x1600; every physical harness run cleaned up the application and YFinance service.",
         "Passed mandatory CODE and TEST_ARTIFACT reviews and promoted CR-010C for continuous ticker motion."
+      ]
+    },
+    {
+      "date": "2026-08-21",
+      "scope": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/TickerMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerLaneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerQuoteViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-010C with continuous four-lane duplicated-track ticker motion, independent upstream-derived speed and direction, stable update position, and quote flash cues.",
+        "Captured isolated fullscreen displacement evidence four seconds apart on Lubuntu, Windows 10, and Windows 11 after six-target publishing; mandatory CODE and TEST_ARTIFACT reviews passed and every remote process audit returned zero.",
+        "Kept the CR-010 cinematic umbrella open and promoted CR-010D for full-scene graph-card physics and quote impulses."
       ]
     }
   ]
