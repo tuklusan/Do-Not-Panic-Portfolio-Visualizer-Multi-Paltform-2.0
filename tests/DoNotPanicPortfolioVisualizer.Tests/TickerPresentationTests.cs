@@ -39,7 +39,7 @@ public sealed class TickerPresentationTests
         TickerLaneViewModel lane = new(source);
 
         Assert.Equal(source.Name, lane.Title);
-        Assert.Equal(source.Direction.ToString(), lane.Direction);
+        Assert.Equal(source.Direction, lane.Direction);
         Assert.Equal(source.Speed, lane.Speed);
         Assert.Equal(source.Tickers.Count - 1, lane.Quotes.Count);
         Assert.DoesNotContain(lane.Quotes, quote => quote.Symbol == source.Tickers[0].Symbol);

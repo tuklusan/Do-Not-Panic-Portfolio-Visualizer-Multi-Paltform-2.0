@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
+using DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.App.Views;
 
@@ -57,6 +58,16 @@ public partial class ProductShellWindow : Window
     {
         if (DataContext is ProductSceneViewModel scene)
             await scene.InitializeAsync();
+    }
+
+    private void OnSceneRootSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        if (DataContext is not ProductSceneViewModel scene)
+            return;
+
+        double tickerViewportWidth = Math.Max(1d, e.NewSize.Width - 180d);
+        foreach (TickerLaneViewModel lane in scene.Lanes)
+            lane.ConfigureViewport(tickerViewportWidth);
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

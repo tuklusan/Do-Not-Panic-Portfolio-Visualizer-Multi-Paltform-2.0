@@ -19,11 +19,78 @@ using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Media.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Render.Services;
+using DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
 public sealed class AmbientSceneServicesTests
 {
+    [Fact]
+    public void TickerMotionController_WrapsAtAuditedSpeedInBothDirections()
+    {
+        TickerMotionController left = new();
+        left.Configure(100d, 0.5d, ScrollDirection.Left, 2);
+        for (int index = 0; index < 10; index++)
+            left.Step(TimeSpan.FromMilliseconds(100));
+        Assert.Equal(-236d, left.Offset, 6);
+
+        TickerMotionController right = new();
+        right.Configure(100d, 0.5d, ScrollDirection.Right, 2);
+        for (int index = 0; index < 10; index++)
+            right.Step(TimeSpan.FromMilliseconds(100));
+        Assert.Equal(-164d, right.Offset, 6);
+
+        double pausedOffset = left.Offset;
+        left.Step(TimeSpan.FromSeconds(5), isVisible: false);
+        Assert.Equal(pausedOffset, left.Offset);
+        left.Step(TimeSpan.FromMilliseconds(100));
+        Assert.Equal(pausedOffset - 3.6d, left.Offset, 6);
+
+        for (int index = 0; index < 10; index++)
+            left.Step(TimeSpan.FromMilliseconds(100));
+        Assert.InRange(left.Progress, 0d, 99.999999d);
+    }
+
+    [Fact]
+    public void TickerLane_ResizeAndQuoteRefreshPreserveMotionProgress()
+    {
+        TickerGroup group = new()
+        {
+            Name = "TEST",
+            Speed = 0.5d,
+            Direction = ScrollDirection.Left,
+            Tickers = [new TickerItem { Symbol = "TEST", DisplayName = "TEST", Enabled = true }]
+        };
+        TickerLaneViewModel lane = new(group);
+        lane.Step(TimeSpan.FromMilliseconds(100));
+        double beforeRefresh = lane.MotionProgress;
+
+        lane.Quotes[0].Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 1m });
+        lane.ConfigureViewport(2560d);
+
+        Assert.NotEqual(0d, beforeRefresh);
+        Assert.Equal(beforeRefresh, lane.MotionProgress, 6);
+        Assert.True(lane.TrackItems.Count > lane.Quotes.Count * 3);
+    }
+
+    [Fact]
+    public void TickerQuote_FlashesOnlyAfterHydrationAndThenClears()
+    {
+        TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 1m });
+        Assert.Equal(0, quote.UpdateSequence);
+
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 11m, ChangePercent = 2m });
+        quote.StepVisuals(TimeSpan.FromMilliseconds(100));
+        quote.StepVisuals(TimeSpan.FromMilliseconds(80));
+        Assert.Equal(1, quote.UpdateSequence);
+        Assert.InRange(quote.FlashOpacity, 0.93d, 0.95d);
+
+        for (int index = 0; index < 16; index++)
+            quote.StepVisuals(TimeSpan.FromMilliseconds(100));
+        Assert.Equal(0d, quote.FlashOpacity);
+    }
+
     [Fact]
     public void BackgroundImageService_FiltersSupportedFilesAndSortsResults()
     {

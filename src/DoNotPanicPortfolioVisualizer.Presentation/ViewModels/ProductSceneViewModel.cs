@@ -432,6 +432,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
         }
 
+        foreach (TickerLaneViewModel lane in Lanes)
+            lane.Step(elapsed);
+
         foreach (FloatingGraphViewModel graph in Graphs)
         {
             double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, 0.25d);

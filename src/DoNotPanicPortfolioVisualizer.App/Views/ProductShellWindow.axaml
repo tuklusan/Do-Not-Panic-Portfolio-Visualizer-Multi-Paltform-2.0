@@ -44,7 +44,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
             </MenuItem>
         </Menu>
 
-        <Grid x:Name="SceneRoot" Grid.Row="1">
+        <Grid x:Name="SceneRoot" Grid.Row="1" SizeChanged="OnSceneRootSizeChanged">
             <Image Source="{Binding BackgroundSourceA, Converter={StaticResource BackgroundImageConverter}}"
                    Stretch="Fill"
                    Opacity="{Binding BackgroundOpacityA}"
@@ -241,31 +241,54 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                                    FontWeight="SemiBold"
                                                    Foreground="#9AB5C8" />
                                     </Border>
-                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Quotes}">
+                                    <Border Grid.Column="1" ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding TrackItems}"
+                                                  Width="{Binding TrackWidth}"
+                                                  HorizontalAlignment="Left">
+                                        <ItemsControl.RenderTransform>
+                                            <TranslateTransform X="{Binding TrackOffset}" />
+                                        </ItemsControl.RenderTransform>
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" Spacing="13" />
+                                                <StackPanel Orientation="Horizontal" />
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="7">
-                                                    <TextBlock Text="{Binding DisplayName}"
+                                                <Grid Width="{Binding Width}" ColumnDefinitions="62,64,72,*">
+                                                    <Border Grid.ColumnSpan="3"
+                                                            Background="{Binding Quote.FlashBrush}"
+                                                            Opacity="{Binding Quote.FlashOpacity}"
+                                                            CornerRadius="4" />
+                                                    <TextBlock Text="{Binding Quote.DisplayName}"
                                                                FontFamily="Consolas"
                                                                FontWeight="Bold"
-                                                               Foreground="{Binding TrendBrush}" />
+                                                               TextTrimming="CharacterEllipsis"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{Binding Quote.TrendBrush}" />
                                                     <TextBlock Grid.Column="1"
-                                                               Text="{Binding PriceText}"
+                                                               Text="{Binding Quote.PriceText}"
                                                                FontFamily="Consolas"
+                                                               TextAlignment="Right"
+                                                               VerticalAlignment="Center"
                                                                Foreground="#F3F6F8" />
                                                     <TextBlock Grid.Column="2"
-                                                               Text="{Binding ChangeText}"
+                                                               Text="{Binding Quote.ChangeText}"
                                                                FontFamily="Consolas"
-                                                               Foreground="{Binding TrendBrush}" />
+                                                               TextAlignment="Right"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{Binding Quote.TrendBrush}" />
+                                                    <Border Grid.Column="3"
+                                                            Width="1"
+                                                            Height="16"
+                                                            Margin="9,0,0,0"
+                                                            HorizontalAlignment="Left"
+                                                            Background="#5A768B9F" />
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>
