@@ -416,6 +416,8 @@ function Invoke-LinuxValidation {
             'echo "WINDOW=$WID X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
             'scrot -o general.png',
             'echo "GENERAL_CAPTURED" >> step.log',
+            'xdotool key F11',
+            'echo "FULLSCREEN_REQUESTED" >> step.log',
             'sleep 8',
             'scrot -o validation.png',
             'echo "VALIDATION_CAPTURED" >> step.log'
@@ -686,6 +688,8 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value (''SCREEN={0},{1}'' -f $bounds.Width, $bounds.Height)',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''general.png'')',
             '    Add-Content -Path $stepPath -Value ''GENERAL_CAPTURED''',
+            '    [System.Windows.Forms.SendKeys]::SendWait(''{F11}'')',
+            '    Add-Content -Path $stepPath -Value ''FULLSCREEN_REQUESTED''',
             '    Start-Sleep -Seconds 8',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''validation.png'')',
             '    Add-Content -Path $stepPath -Value ''VALIDATION_CAPTURED''',
