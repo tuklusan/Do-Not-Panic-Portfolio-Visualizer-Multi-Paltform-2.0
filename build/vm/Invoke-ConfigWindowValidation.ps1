@@ -391,7 +391,7 @@ function Invoke-LinuxValidation {
             "ART=$remotePublishDirLiteral",
             'cd "$ART"',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png run.log step.log',
+            'rm -f general.png validation.png motion.png run.log step.log',
             './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
             'APPPID=$!',
             'echo "APPPID=$APPPID" >> step.log',
@@ -420,7 +420,10 @@ function Invoke-LinuxValidation {
             'echo "FULLSCREEN_REQUESTED" >> step.log',
             'sleep 8',
             'scrot -o validation.png',
-            'echo "VALIDATION_CAPTURED" >> step.log'
+            'echo "VALIDATION_CAPTURED" >> step.log',
+            'sleep 4',
+            'scrot -o motion.png',
+            'echo "MOTION_CAPTURED" >> step.log'
         )
     }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
@@ -447,7 +450,13 @@ function Invoke-LinuxValidation {
         }
     }
 
-    foreach ($artifactName in @('general.png', 'validation.png', 'run.log', 'step.log')) {
+    $artifactNames = if ($CaptureProductScene) {
+        @('general.png', 'validation.png', 'motion.png', 'run.log', 'step.log')
+    }
+    else {
+        @('general.png', 'validation.png', 'run.log', 'step.log')
+    }
+    foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
 }
@@ -659,7 +668,7 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png'')',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -693,6 +702,9 @@ function Invoke-WindowsValidation {
             '    Start-Sleep -Seconds 8',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''validation.png'')',
             '    Add-Content -Path $stepPath -Value ''VALIDATION_CAPTURED''',
+            '    Start-Sleep -Seconds 4',
+            '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''motion.png'')',
+            '    Add-Content -Path $stepPath -Value ''MOTION_CAPTURED''',
             '    ''DONE'' | Set-Content -Path $donePath',
             '}',
             'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
@@ -716,7 +728,7 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'step.log')
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'step.log')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
@@ -752,7 +764,13 @@ finally {
 "@
     Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
 
-    foreach ($artifactName in @('general.png', 'validation.png', 'step.log', 'done.txt')) {
+    $artifactNames = if ($CaptureProductScene) {
+        @('general.png', 'validation.png', 'motion.png', 'step.log', 'done.txt')
+    }
+    else {
+        @('general.png', 'validation.png', 'step.log', 'done.txt')
+    }
+    foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
 }
