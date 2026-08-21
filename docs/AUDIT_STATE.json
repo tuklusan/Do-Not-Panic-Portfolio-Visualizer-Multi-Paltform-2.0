@@ -583,7 +583,7 @@
       "id": "CR-010D",
       "phase": "Phase 3",
       "title": "Port full-scene floating graph physics and quote impulses",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010C"
       ],
@@ -598,13 +598,26 @@
         "Controlled rise/fall fixture with capture sequence and traces",
         "Live physical motion acceptance"
       ],
-      "started_on": "2026-08-21"
+      "started_on": "2026-08-21",
+      "completed_on": "2026-08-21",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FloatingGraphMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/FloatingGraphViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "closure_notes": [
+        "Restored up to 16 source-sized floating graph cards across the full scene with viewport bounds, bounce, collision separation, resize handling, and motion continuity across live-history refresh.",
+        "Restored quote-driven rise and drop impulses at the migrated minimum speed, boundary arrival, sustained change cue, and subsequent nominal motion; 75 deterministic tests passed with zero build warnings.",
+        "Passed six self-contained target publishes plus live production-scene acceptance at 1280x768 Linux, 1024x768 Windows 10, and 2560x1600 Windows 11; screenshots and traces were manually inspected, mandatory CODE and TEST_ARTIFACT reviews passed, and all post-run process counts were zero."
+      ]
     },
     {
       "id": "CR-010E",
       "phase": "Phase 3",
       "title": "Port cinematic status, macro, global-market, and news playback",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010D"
       ],
@@ -618,7 +631,8 @@
         "Playback-state and independent-refresh tests",
         "Physical timed capture sequence",
         "Failure-isolation and cleanup review"
-      ]
+      ],
+      "started_on": "2026-08-21"
     },
     {
       "id": "CR-010F",
@@ -886,6 +900,23 @@
         "Closed CR-010C with continuous four-lane duplicated-track ticker motion, independent upstream-derived speed and direction, stable update position, and quote flash cues.",
         "Captured isolated fullscreen displacement evidence four seconds apart on Lubuntu, Windows 10, and Windows 11 after six-target publishing; mandatory CODE and TEST_ARTIFACT reviews passed and every remote process audit returned zero.",
         "Kept the CR-010 cinematic umbrella open and promoted CR-010D for full-scene graph-card physics and quote impulses."
+      ]
+    },
+    {
+      "date": "2026-08-21",
+      "scope": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FloatingGraphMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/FloatingGraphViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-010D with full-scene source-sized floating graph cards, nominal bounce/collision physics, and quote-driven top/bottom impulses while preserving motion across live refresh.",
+        "Passed 75 tests, a warning-free build, six-target publishing, and production-scene screenshot/trace acceptance on Lubuntu, Windows 10, and Windows 11 at the exact pushed checkpoint.",
+        "Mandatory CODE and TEST_ARTIFACT reviews passed, all physical processes were absent after capture, and CR-010E was promoted for status, macro, world-market, and news playback parity."
       ]
     }
   ]
