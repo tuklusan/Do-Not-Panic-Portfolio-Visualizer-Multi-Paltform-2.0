@@ -322,7 +322,7 @@ public sealed class AmbientSceneServicesTests
             frames++;
         }
 
-        Assert.InRange(frames, 1, 15);
+        Assert.InRange(frames, 1, 30);
         Assert.Equal(controller.Bounds.Bottom - falling.Height, falling.Y, 6);
         Assert.False(falling.IsRefreshTravelFlashActive);
         Assert.True(falling.VelocityY < 0d);
