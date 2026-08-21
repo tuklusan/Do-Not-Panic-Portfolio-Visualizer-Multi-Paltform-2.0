@@ -68,6 +68,10 @@ public partial class ProductShellWindow : Window
         double tickerViewportWidth = Math.Max(1d, e.NewSize.Width - 180d);
         foreach (TickerLaneViewModel lane in scene.Lanes)
             lane.ConfigureViewport(tickerViewportWidth);
+
+        scene.ConfigureGraphViewport(
+            Math.Max(1d, e.NewSize.Width - 32d),
+            Math.Max(1d, e.NewSize.Height - 22d));
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

@@ -17,6 +17,11 @@ namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
 public sealed partial class FloatingGraphViewModel : ObservableObject
 {
+    public const double CardWidth = 186d;
+    public const double CardHeight = 78d;
+    public const double ChartWidth = 132d;
+    public const double ChartHeight = 40d;
+
     [ObservableProperty] private double _x;
     [ObservableProperty] private double _y;
     [ObservableProperty] private string _lastText = "--";
@@ -26,9 +31,44 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
     [ObservableProperty] private string _rangeText = string.Empty;
     [ObservableProperty] private double _velocityX;
     [ObservableProperty] private double _velocityY;
+    [ObservableProperty] private double _nominalVelocityX;
+    [ObservableProperty] private double _nominalVelocityY;
+    [ObservableProperty] private decimal? _rawLastValue;
+    [ObservableProperty] private double? _refreshTravelTargetY;
+    [ObservableProperty] private int _refreshTravelDirection;
+    [ObservableProperty] private bool _isRefreshTravelFlashActive;
+    [ObservableProperty] private string _flashBrush = "#00FFFFFF";
+    [ObservableProperty] private double _flashOpacity;
+    [ObservableProperty] private string _maxScaleText = string.Empty;
+    [ObservableProperty] private string _midScaleText = string.Empty;
+    [ObservableProperty] private string _minScaleText = string.Empty;
+    [ObservableProperty] private string _leftTimeScaleText = string.Empty;
+    [ObservableProperty] private string _middleTimeScaleText = string.Empty;
+    [ObservableProperty] private string _rightTimeScaleText = string.Empty;
+    [ObservableProperty] private string _overlayText = string.Empty;
 
     public string Symbol { get; init; } = string.Empty;
     public string TapeName { get; init; } = string.Empty;
-    public double AnchorX { get; init; }
-    public double AnchorY { get; init; }
+    public double Width => CardWidth;
+    public double Height => CardHeight;
+    public double PlotWidth => ChartWidth;
+    public double PlotHeight => ChartHeight;
+    public bool HasMotionState { get; set; }
+    public double RefreshTravelElapsedSeconds { get; set; }
+
+    public void CopyContentFrom(FloatingGraphViewModel source)
+    {
+        LastText = source.LastText;
+        ChangeText = source.ChangeText;
+        AccentBrush = source.AccentBrush;
+        PathData = source.PathData;
+        RangeText = source.RangeText;
+        MaxScaleText = source.MaxScaleText;
+        MidScaleText = source.MidScaleText;
+        MinScaleText = source.MinScaleText;
+        LeftTimeScaleText = source.LeftTimeScaleText;
+        MiddleTimeScaleText = source.MiddleTimeScaleText;
+        RightTimeScaleText = source.RightTimeScaleText;
+        OverlayText = source.OverlayText;
+    }
 }

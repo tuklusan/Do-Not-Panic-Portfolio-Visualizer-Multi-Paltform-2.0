@@ -26,20 +26,13 @@ public sealed class HistoricalGraphBuilder
         decimal? changePercent,
         int sequence)
     {
-        const double width = 150d;
-        const double height = 54d;
-        double anchorX = 4 + ((sequence % 4) * 228);
-        double anchorY = 2 + ((sequence / 4) * 45);
+        const double width = FloatingGraphViewModel.ChartWidth;
+        const double height = FloatingGraphViewModel.ChartHeight;
         FloatingGraphViewModel graph = new()
         {
             Symbol = snapshot.Symbol,
             TapeName = tapeName,
-            X = anchorX,
-            Y = anchorY,
-            AnchorX = anchorX,
-            AnchorY = anchorY,
-            VelocityX = sequence % 2 == 0 ? 0.6d : -0.6d,
-            VelocityY = sequence % 3 == 0 ? 0.25d : -0.25d
+            OverlayText = $"{tapeName} | {snapshot.LookbackDays}D"
         };
 
         if (snapshot.Points.Count == 0)
@@ -71,6 +64,12 @@ public sealed class HistoricalGraphBuilder
             _ => "#D4DEE5"
         };
         graph.RangeText = $"{min:0.##} - {max:0.##}";
+        graph.MaxScaleText = max.ToString("0.##", CultureInfo.InvariantCulture);
+        graph.MidScaleText = ((min + max) / 2m).ToString("0.##", CultureInfo.InvariantCulture);
+        graph.MinScaleText = min.ToString("0.##", CultureInfo.InvariantCulture);
+        graph.LeftTimeScaleText = snapshot.Points[0].TimestampUtc.ToLocalTime().ToString("MM/dd", CultureInfo.InvariantCulture);
+        graph.MiddleTimeScaleText = snapshot.Points[snapshot.Points.Count / 2].TimestampUtc.ToLocalTime().ToString("MM/dd", CultureInfo.InvariantCulture);
+        graph.RightTimeScaleText = snapshot.Points[^1].TimestampUtc.ToLocalTime().ToString("MM/dd", CultureInfo.InvariantCulture);
         return graph;
     }
 }

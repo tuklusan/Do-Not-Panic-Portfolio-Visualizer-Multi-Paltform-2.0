@@ -165,7 +165,7 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
-    public void HistoricalGraphBuilder_KeepsSixteenthCardInsideGraphStage()
+    public void HistoricalGraphBuilder_UsesAuditedCardAndPlotGeometry()
     {
         TickerHistorySnapshot snapshot = new()
         {
@@ -173,12 +173,138 @@ public sealed class AmbientSceneServicesTests
             Points = [new HistoricalPricePoint { TimestampUtc = DateTimeOffset.UtcNow, Close = 42m }]
         };
 
-        var graph = new HistoricalGraphBuilder().Build("Satellite", snapshot, 0.5m, 15);
+        FloatingGraphViewModel graph = new HistoricalGraphBuilder().Build("Satellite", snapshot, 0.5m, 15);
 
-        Assert.InRange(graph.AnchorX, 0, 700);
-        Assert.InRange(graph.AnchorY, 0, 138);
-        Assert.InRange(graph.AnchorX + 216 + 3, 0, 920);
-        Assert.InRange(graph.AnchorY + 42 + 1, 0, 184);
+        Assert.Equal(186d, graph.Width);
+        Assert.Equal(78d, graph.Height);
+        Assert.Equal(132d, graph.PlotWidth);
+        Assert.Equal(40d, graph.PlotHeight);
+        Assert.NotEmpty(graph.LeftTimeScaleText);
+        Assert.NotEmpty(graph.RightTimeScaleText);
+    }
+
+    [Fact]
+    public void FloatingGraphMotion_SeedsSixteenCardsInsideFullSceneAtAuditedVelocity()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 17);
+        List<FloatingGraphViewModel> graphs = Enumerable.Range(0, 16)
+            .Select(index => new FloatingGraphViewModel
+            {
+                Symbol = $"T{index}",
+                TapeName = $"Tape{index % 4}"
+            })
+            .ToList();
+
+        controller.ConfigureViewport(1024d, 746d, graphs);
+
+        Assert.All(graphs, graph =>
+        {
+            Assert.True(graph.HasMotionState);
+            Assert.InRange(graph.X, controller.Bounds.Left, controller.Bounds.Right - graph.Width);
+            Assert.InRange(graph.Y, controller.Bounds.Top, controller.Bounds.Bottom - graph.Height);
+            Assert.InRange(Math.Abs(graph.VelocityX), 22d, 48d);
+            Assert.InRange(Math.Abs(graph.VelocityY), 22d, 48d);
+        });
+    }
+
+    [Fact]
+    public void FloatingGraphMotion_BouncesAndResolvesCollisions()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 2);
+        FloatingGraphViewModel first = new()
+        {
+            Symbol = "ONE",
+            TapeName = "Tape",
+            X = 12d,
+            Y = 12d,
+            VelocityX = -30d,
+            VelocityY = -25d,
+            NominalVelocityX = -30d,
+            NominalVelocityY = -25d,
+            HasMotionState = true
+        };
+        FloatingGraphViewModel second = new()
+        {
+            Symbol = "TWO",
+            TapeName = "Tape",
+            X = 80d,
+            Y = 20d,
+            VelocityX = -28d,
+            VelocityY = 24d,
+            NominalVelocityX = -28d,
+            NominalVelocityY = 24d,
+            HasMotionState = true
+        };
+        List<FloatingGraphViewModel> graphs = [first, second];
+
+        controller.ConfigureViewport(800d, 500d, graphs);
+        controller.Step(graphs, TimeSpan.FromMilliseconds(100));
+
+        Assert.True(first.VelocityX > 0d);
+        Assert.InRange(first.X, controller.Bounds.Left, controller.Bounds.Right - first.Width);
+        Assert.InRange(second.X, controller.Bounds.Left, controller.Bounds.Right - second.Width);
+        Assert.False(
+            first.X < second.X + second.Width && first.X + first.Width > second.X &&
+            first.Y < second.Y + second.Height && first.Y + first.Height > second.Y);
+    }
+
+    [Fact]
+    public void FloatingGraphMotion_RisingAndFallingQuotesTravelToOppositeBoundsThenResume()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 3);
+        FloatingGraphViewModel rising = new() { Symbol = "UP", TapeName = "Tape" };
+        FloatingGraphViewModel falling = new() { Symbol = "DOWN", TapeName = "Tape" };
+        List<FloatingGraphViewModel> graphs = [rising, falling];
+        controller.ConfigureViewport(1000d, 700d, graphs);
+        controller.ApplyQuote(rising, 100m, 1m, suppressMotionCue: true);
+        controller.ApplyQuote(falling, 100m, -1m, suppressMotionCue: true);
+
+        Assert.True(controller.ApplyQuote(rising, 101m, 1.2m));
+        Assert.True(controller.ApplyQuote(falling, 99m, -1.2m));
+        controller.Step(graphs, TimeSpan.FromMilliseconds(100));
+        Assert.Equal(0d, rising.VelocityX);
+        Assert.True(rising.VelocityY <= -FloatingGraphMotionController.RefreshTravelMinimumVelocity);
+        Assert.Equal(0d, falling.VelocityX);
+        Assert.True(falling.VelocityY >= FloatingGraphMotionController.RefreshTravelMinimumVelocity);
+
+        for (int index = 0; index < 50; index++)
+            controller.Step(graphs, TimeSpan.FromMilliseconds(100));
+
+        Assert.False(rising.IsRefreshTravelFlashActive);
+        Assert.False(falling.IsRefreshTravelFlashActive);
+        Assert.Null(rising.RefreshTravelTargetY);
+        Assert.Null(falling.RefreshTravelTargetY);
+        Assert.True(rising.VelocityY > 0d);
+        Assert.True(falling.VelocityY < 0d);
+    }
+
+    [Fact]
+    public void FloatingGraphMotion_HydrationAndContentReplacementPreserveMotionWithoutImpulse()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 4);
+        FloatingGraphViewModel graph = new() { Symbol = "KEEP", TapeName = "Tape" };
+        controller.ConfigureViewport(900d, 600d, [graph]);
+        controller.ApplyQuote(graph, 10m, 0.5m, suppressMotionCue: true);
+        double x = graph.X;
+        double y = graph.Y;
+        double velocityX = graph.VelocityX;
+        double velocityY = graph.VelocityY;
+        FloatingGraphViewModel replacement = new()
+        {
+            Symbol = "KEEP",
+            TapeName = "Tape",
+            PathData = "M 0,0 L 1,1",
+            RangeText = "9 - 11"
+        };
+
+        graph.CopyContentFrom(replacement);
+
+        Assert.Equal(x, graph.X);
+        Assert.Equal(y, graph.Y);
+        Assert.Equal(velocityX, graph.VelocityX);
+        Assert.Equal(velocityY, graph.VelocityY);
+        Assert.False(graph.IsRefreshTravelFlashActive);
+        Assert.Equal(replacement.PathData, graph.PathData);
     }
 
     [Fact]

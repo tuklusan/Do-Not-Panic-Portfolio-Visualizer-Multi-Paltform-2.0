@@ -66,7 +66,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private AppSettings _settings = new();
     private IReadOnlyList<string> _backgrounds = [];
     private BackgroundCinemaController? _backgroundCinema;
+    private FloatingGraphMotionController? _graphMotion;
     private DateTimeOffset _nextBackgroundChangeUtc;
+    private double _graphViewportWidth = 1280d;
+    private double _graphViewportHeight = 720d;
     private Task? _refreshLoop;
     private Task? _ambientLoop;
 
@@ -198,6 +201,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         _backgroundCinema = new BackgroundCinemaController(_backgrounds, _settings.ShuffleBackgrounds);
+        _graphMotion = new FloatingGraphMotionController(
+            _settings.FloatingGraphVelocityMin,
+            _settings.FloatingGraphVelocityMax,
+            _settings.EnableBouncingGraphCards);
+        _graphMotion.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
         SceneDimOpacity = Math.Clamp(_settings.DimOpacity, 0d, 1d);
         ApplyBackgroundCinemaState();
         _nextBackgroundChangeUtc = DateTimeOffset.UtcNow.AddSeconds(_settings.BackgroundChangeSeconds);
@@ -266,6 +274,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 await InvokeOnUiAsync(() =>
                 {
                     apply(quote);
+                    ApplyQuoteToGraph(quote);
                     LastUpdatedText = "Last Updated: " + TickerFormatter.FormatUpdatedSymbol(quote);
                     MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
                     DataFreshnessText = quote.IsStale ? "DELAYED - cached market data" : "LIVE quote feed";
@@ -356,21 +365,48 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _settings.HistoricalLookbackDays,
             cancellationToken);
         HistoricalGraphBuilder builder = new();
-        List<FloatingGraphViewModel> resolvedGraphs = [];
+        List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent)> resolvedGraphs = [];
         for (int index = 0; index < movers.Count; index++)
         {
             (string tapeName, TickerQuoteViewModel quote) = movers[index];
             TickerHistorySnapshot? history = histories.FirstOrDefault(candidate =>
                 string.Equals(candidate.Symbol, quote.Symbol, StringComparison.OrdinalIgnoreCase));
             if (history is not null)
-                resolvedGraphs.Add(builder.Build(tapeName, history, quote.ChangePercent, index));
+            {
+                resolvedGraphs.Add((
+                    builder.Build(tapeName, history, quote.ChangePercent, index),
+                    quote.Last,
+                    quote.ChangePercent));
+            }
         }
 
         await InvokeOnUiAsync(() =>
         {
-            Graphs.Clear();
-            foreach (FloatingGraphViewModel graph in resolvedGraphs)
+            HashSet<string> selectedKeys = resolvedGraphs
+                .Select(static item => GetGraphKey(item.Graph))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            for (int index = Graphs.Count - 1; index >= 0; index--)
+            {
+                if (!selectedKeys.Contains(GetGraphKey(Graphs[index])))
+                    Graphs.RemoveAt(index);
+            }
+
+            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent) in resolvedGraphs)
+            {
+                FloatingGraphViewModel? existing = Graphs.FirstOrDefault(candidate =>
+                    string.Equals(GetGraphKey(candidate), GetGraphKey(graph), StringComparison.OrdinalIgnoreCase));
+                if (existing is not null)
+                {
+                    existing.CopyContentFrom(graph);
+                    _graphMotion?.ApplyQuote(existing, last, changePercent, suppressMotionCue: false);
+                    continue;
+                }
+
+                _graphMotion?.ApplyQuote(graph, last, changePercent, suppressMotionCue: true);
                 Graphs.Add(graph);
+            }
+
+            _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
         }, cancellationToken);
     }
 
@@ -435,24 +471,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         foreach (TickerLaneViewModel lane in Lanes)
             lane.Step(elapsed);
 
-        foreach (FloatingGraphViewModel graph in Graphs)
-        {
-            double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, 0.25d);
-            double nextX = graph.X + (graph.VelocityX * seconds);
-            double nextY = graph.Y + (graph.VelocityY * seconds);
-            if (nextX < graph.AnchorX - 3 || nextX > graph.AnchorX + 3)
-            {
-                graph.VelocityX = -graph.VelocityX;
-                nextX = graph.X + (graph.VelocityX * seconds);
-            }
-            if (nextY < graph.AnchorY - 1 || nextY > graph.AnchorY + 1)
-            {
-                graph.VelocityY = -graph.VelocityY;
-                nextY = graph.Y + (graph.VelocityY * seconds);
-            }
-            graph.X = Math.Clamp(nextX, graph.AnchorX - 3, graph.AnchorX + 3);
-            graph.Y = Math.Clamp(nextY, graph.AnchorY - 1, graph.AnchorY + 1);
-        }
+        _graphMotion?.Step(Graphs, elapsed);
 
         NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - (22d * elapsed.TotalSeconds);
 
@@ -464,6 +483,24 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
         ApplyBackgroundCinemaState();
     }
+
+    public void ConfigureGraphViewport(double width, double height)
+    {
+        _graphViewportWidth = Math.Max(1d, width);
+        _graphViewportHeight = Math.Max(1d, height);
+        _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
+    }
+
+    private void ApplyQuoteToGraph(QuoteSnapshot quote)
+    {
+        FloatingGraphViewModel? graph = Graphs.FirstOrDefault(candidate =>
+            string.Equals(candidate.Symbol, quote.Symbol, StringComparison.OrdinalIgnoreCase));
+        if (graph is not null)
+            _graphMotion?.ApplyQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent);
+    }
+
+    private static string GetGraphKey(FloatingGraphViewModel graph)
+        => graph.TapeName + "\u001f" + graph.Symbol;
 
     private void ApplyBackgroundCinemaState()
     {
