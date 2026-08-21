@@ -72,6 +72,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private double _graphViewportHeight = 720d;
     private Task? _refreshLoop;
     private Task? _ambientLoop;
+    private readonly bool _graphImpulseFixtureEnabled =
+        string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
+    private readonly string? _graphImpulseTracePath =
+        Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_TRACE");
+    private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
+    private DateTimeOffset? _nextGraphFixtureImpulseUtc;
 
     [ObservableProperty]
     private string _marketStatusText = "Market: New York -- loading";
@@ -407,6 +413,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
 
             _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
+            ArmGraphImpulseFixture();
         }, cancellationToken);
     }
 
@@ -471,7 +478,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         foreach (TickerLaneViewModel lane in Lanes)
             lane.Step(elapsed);
 
+        TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
+        TraceCompletedGraphFixtureImpulses();
 
         NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - (22d * elapsed.TotalSeconds);
 
@@ -501,6 +510,80 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private static string GetGraphKey(FloatingGraphViewModel graph)
         => graph.TapeName + "\u001f" + graph.Symbol;
+
+    private void ArmGraphImpulseFixture()
+    {
+        if (!_graphImpulseFixtureEnabled || Graphs.Count < 2 || _nextGraphFixtureImpulseUtc.HasValue)
+            return;
+
+        _nextGraphFixtureImpulseUtc = DateTimeOffset.UtcNow.AddSeconds(2);
+        WriteGraphFixtureTrace($"READY;GRAPH_COUNT={Graphs.Count}");
+    }
+
+    private void TriggerGraphImpulseFixture(DateTimeOffset now)
+    {
+        if (!_graphImpulseFixtureEnabled || Graphs.Count < 2 ||
+            !_nextGraphFixtureImpulseUtc.HasValue || now < _nextGraphFixtureImpulseUtc.Value)
+        {
+            return;
+        }
+
+        FloatingGraphViewModel rising = Graphs[0];
+        FloatingGraphViewModel falling = Graphs[1];
+        if (rising.IsRefreshTravelFlashActive || falling.IsRefreshTravelFlashActive)
+            return;
+
+        decimal risingStart = rising.RawLastValue ?? 100m;
+        decimal fallingStart = falling.RawLastValue ?? 100m;
+        _graphMotion?.ApplyQuote(rising, risingStart + 1m, 1m, suppressMotionCue: rising.RawLastValue is null);
+        _graphMotion?.ApplyQuote(falling, fallingStart - 1m, -1m, suppressMotionCue: falling.RawLastValue is null);
+        if (!rising.IsRefreshTravelFlashActive || !falling.IsRefreshTravelFlashActive)
+        {
+            _graphMotion?.ApplyQuote(rising, risingStart + 2m, 1m);
+            _graphMotion?.ApplyQuote(falling, fallingStart - 2m, -1m);
+        }
+
+        TraceFixtureImpulseStart(rising, "UP");
+        TraceFixtureImpulseStart(falling, "DOWN");
+        _fixtureActiveSymbols.Add(rising.Symbol);
+        _fixtureActiveSymbols.Add(falling.Symbol);
+        _nextGraphFixtureImpulseUtc = now.AddSeconds(6);
+    }
+
+    private void TraceCompletedGraphFixtureImpulses()
+    {
+        if (_fixtureActiveSymbols.Count == 0)
+            return;
+
+        foreach (FloatingGraphViewModel graph in Graphs.Where(graph =>
+                     _fixtureActiveSymbols.Contains(graph.Symbol) && !graph.IsRefreshTravelFlashActive).ToArray())
+        {
+            WriteGraphFixtureTrace(
+                $"COMPLETE;SYMBOL={graph.Symbol};Y={graph.Y:0.00};VX={graph.VelocityX:0.00};VY={graph.VelocityY:0.00}");
+            _fixtureActiveSymbols.Remove(graph.Symbol);
+        }
+    }
+
+    private void TraceFixtureImpulseStart(FloatingGraphViewModel graph, string direction)
+        => WriteGraphFixtureTrace(
+            $"START;SYMBOL={graph.Symbol};DIRECTION={direction};Y={graph.Y:0.00};TARGET_Y={graph.RefreshTravelTargetY:0.00};MIN_VELOCITY={FloatingGraphMotionController.RefreshTravelMinimumVelocity:0}");
+
+    private void WriteGraphFixtureTrace(string message)
+    {
+        if (string.IsNullOrWhiteSpace(_graphImpulseTracePath))
+            return;
+
+        try
+        {
+            File.AppendAllText(
+                _graphImpulseTracePath,
+                $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Acceptance tracing cannot interfere with the product scene.
+        }
+    }
 
     private void ApplyBackgroundCinemaState()
     {

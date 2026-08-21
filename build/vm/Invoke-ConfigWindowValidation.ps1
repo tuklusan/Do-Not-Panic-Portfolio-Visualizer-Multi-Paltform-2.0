@@ -53,7 +53,10 @@ param(
     [string]$WindowsTaskName = 'DNPPV_CR007_ConfigWindow',
 
     [Parameter()]
-    [switch]$ProductScene
+    [switch]$ProductScene,
+
+    [Parameter()]
+    [switch]$GraphImpulseFixture
 )
 
 Set-StrictMode -Version Latest
@@ -269,7 +272,8 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
-        [Parameter(Mandatory = $true)][bool]$CaptureProductScene
+        [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
+        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
@@ -382,6 +386,12 @@ function Invoke-LinuxValidation {
         'echo "VALIDATION_DONE" >> step.log'
     )
     if ($CaptureProductScene) {
+        $launchLine = if ($CaptureGraphImpulseFixture) {
+            'DNPPV_GRAPH_IMPULSE_FIXTURE=1 DNPPV_GRAPH_IMPULSE_TRACE="$ART/graph-impulse.log" ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        }
+        else {
+            './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        }
         $scriptLines = @(
             '#!/usr/bin/env bash',
             'set -euo pipefail',
@@ -391,8 +401,8 @@ function Invoke-LinuxValidation {
             "ART=$remotePublishDirLiteral",
             'cd "$ART"',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png motion.png run.log step.log',
-            './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
+            'rm -f general.png validation.png motion.png graph-impulse.log run.log step.log',
+            $launchLine,
             'APPPID=$!',
             'echo "APPPID=$APPPID" >> step.log',
             'cleanup() {',
@@ -456,6 +466,9 @@ function Invoke-LinuxValidation {
     else {
         @('general.png', 'validation.png', 'run.log', 'step.log')
     }
+    if ($CaptureGraphImpulseFixture) {
+        $artifactNames += 'graph-impulse.log'
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -472,7 +485,8 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
         [Parameter(Mandatory = $true)][string]$TaskName,
-        [Parameter(Mandatory = $true)][bool]$CaptureProductScene
+        [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
+        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
@@ -651,6 +665,18 @@ function Invoke-WindowsValidation {
         '}'
     )
     if ($CaptureProductScene) {
+        $fixtureEnabledLine = if ($CaptureGraphImpulseFixture) {
+            '$env:DNPPV_GRAPH_IMPULSE_FIXTURE = ''1'''
+        }
+        else {
+            'Remove-Item Env:DNPPV_GRAPH_IMPULSE_FIXTURE -ErrorAction SilentlyContinue'
+        }
+        $fixtureTraceLine = if ($CaptureGraphImpulseFixture) {
+            '$env:DNPPV_GRAPH_IMPULSE_TRACE = Join-Path $artifactDir ''graph-impulse.log'''
+        }
+        else {
+            'Remove-Item Env:DNPPV_GRAPH_IMPULSE_TRACE -ErrorAction SilentlyContinue'
+        }
         $scriptLines = @(
             'Add-Type -AssemblyName System.Drawing',
             'Add-Type -AssemblyName System.Windows.Forms',
@@ -668,7 +694,7 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png'')',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''graph-impulse.log'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -680,6 +706,8 @@ function Invoke-WindowsValidation {
             '    }',
             '    finally { $graphics.Dispose(); $bitmap.Dispose() }',
             '}',
+            $fixtureEnabledLine,
+            $fixtureTraceLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
             '$proc = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
             'try {',
@@ -728,7 +756,7 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'step.log')
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'step.log')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
@@ -770,6 +798,9 @@ finally {
     else {
         @('general.png', 'validation.png', 'step.log', 'done.txt')
     }
+    if ($CaptureGraphImpulseFixture) {
+        $artifactNames += 'graph-impulse.log'
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -778,6 +809,10 @@ finally {
 Assert-RequiredTool -Name 'sshpass'
 Assert-RequiredTool -Name 'ssh'
 Assert-RequiredTool -Name 'scp'
+
+if ($GraphImpulseFixture -and -not $ProductScene) {
+    throw '-GraphImpulseFixture requires -ProductScene.'
+}
 
 $resolvedPublishDir = (Resolve-Path -LiteralPath $LocalPublishDir -ErrorAction Stop).Path
 if (-not (Test-Path -LiteralPath (Join-Path $resolvedPublishDir 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf) -and
@@ -791,11 +826,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent
         break
     }
     default {
