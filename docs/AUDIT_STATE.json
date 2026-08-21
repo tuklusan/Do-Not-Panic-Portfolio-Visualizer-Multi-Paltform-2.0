@@ -517,7 +517,7 @@
       "id": "CR-010B",
       "phase": "Phase 3",
       "title": "Port viewport-relative scene geometry and background cinema",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010A"
       ],
@@ -532,13 +532,24 @@
         "Smallest/wider viewport physical captures",
         "Trace and lifecycle cleanup review"
       ],
-      "started_on": "2026-08-20"
+      "started_on": "2026-08-20",
+      "completed_on": "2026-08-20",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "closure_notes": [
+        "Ported the upstream two-layer 450 ms cubic cross-fade, Fill stretching, configurable dim overlay, and bounded 1.00-1.05 slow zoom using elapsed-time state with three retained upstream exchange backgrounds.",
+        "Passed 67 tests, a warning-free build, license and PowerShell gates, mandatory CODE reviews, and serial self-contained publishing for all six target RIDs.",
+        "Physical production-scene acceptance passed at 1024x768 Windows 10, 1280x768 Lubuntu, and 2560x1600 high-DPI Windows 11 in both maximized and F11 fullscreen states; paired captures, traces, and zero-process cleanup checks passed the mandatory TEST_ARTIFACT review."
+      ]
     },
     {
       "id": "CR-010C",
       "phase": "Phase 3",
       "title": "Port continuous cinematic ticker tapes and quote cues",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010B"
       ],
@@ -552,7 +563,8 @@
         "Wrap, speed, direction, update-preservation, and pause/resume tests",
         "Timestamped physical displacement captures on all three machines",
         "Mandatory review and artifact second opinion"
-      ]
+      ],
+      "started_on": "2026-08-20"
     },
     {
       "id": "CR-010D",
@@ -826,6 +838,23 @@
         "Closed CR-009 with real port-14871 runtime integration, live macro/ticker surfaces, six-target publish proof, and live visual acceptance on all three physical machines.",
         "Physical Linux acceptance discovered and drove corrections for native-service permissions, extensionless executable selection, and rooted Yahoo API path resolution.",
         "Passed mandatory CODE and TEST_ARTIFACT reviews, reconciled the previously incomplete CR-005 integration claim, and promoted CR-010 as the remaining Phase 3 scene-composition work item."
+      ]
+    },
+    {
+      "date": "2026-08-20",
+      "scope": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Assets/ExchangeBackgrounds/",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-010B with source-derived background cinema, all three retained upstream exchange images, and real viewport-relative production-scene evidence.",
+        "Validated maximized-to-F11 transitions without clipping at 1024x768, 1280x768, and 2560x1600; every physical harness run cleaned up the application and YFinance service.",
+        "Passed mandatory CODE and TEST_ARTIFACT reviews and promoted CR-010C for continuous ticker motion."
       ]
     }
   ]
