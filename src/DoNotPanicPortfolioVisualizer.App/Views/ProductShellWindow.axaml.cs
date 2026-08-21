@@ -72,6 +72,7 @@ public partial class ProductShellWindow : Window
         scene.ConfigureGraphViewport(
             Math.Max(1d, e.NewSize.Width - 32d),
             Math.Max(1d, e.NewSize.Height - 22d));
+        scene.ConfigureCinematicViewport(e.NewSize.Width);
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)
@@ -117,11 +118,19 @@ public partial class ProductShellWindow : Window
             return;
         }
 
+        if (DataContext is ProductSceneViewModel scene)
+            scene.PauseCinematicPlayback();
+
         _settingsWindow = new MainWindow
         {
             DataContext = new MainViewModel(),
         };
-        _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+        _settingsWindow.Closed += (_, _) =>
+        {
+            _settingsWindow = null;
+            if (DataContext is ProductSceneViewModel activeScene)
+                activeScene.ResumeCinematicPlayback();
+        };
         _settingsWindow.Show(this);
     }
 

@@ -74,6 +74,78 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void GlobalMarketsMotion_DuplicatesForViewportAndWrapsWithoutResumeJump()
+    {
+        GlobalMarketsMotionController motion = new();
+
+        Assert.True(motion.Configure(700d, 7));
+        Assert.Equal(1246d, motion.SequenceWidth);
+        Assert.Equal(2, motion.RequiredCopies);
+        for (int index = 0; index < 10; index++)
+            motion.Step(TimeSpan.FromMilliseconds(100));
+        Assert.Equal(-30d, motion.Offset, 6);
+
+        double beforeResize = motion.Offset;
+        Assert.True(motion.Configure(2500d, 7));
+        Assert.Equal(4, motion.RequiredCopies);
+        Assert.Equal(beforeResize, motion.Offset, 6);
+
+        motion.Step(TimeSpan.FromSeconds(30));
+        Assert.Equal(beforeResize - 3d, motion.Offset, 6);
+        for (int index = 0; index < 500; index++)
+            motion.Step(TimeSpan.FromMilliseconds(100));
+        Assert.InRange(motion.Offset, -motion.SequenceWidth, 0d);
+    }
+
+    [Fact]
+    public void NewsPlayback_VisitsTelegraphPhasesAndAdvancesHeadline()
+    {
+        NewsPlaybackController playback = new();
+        playback.ConfigureViewport(192d);
+        playback.SetHeadlines(
+        [
+            "Markets rally as a deliberately long headline crosses several wrapped lines",
+            "Second headline"
+        ]);
+        HashSet<NewsPlaybackPhase> visited = [];
+        double minimumOffset = 0d;
+
+        for (int index = 0; index < 1000 && playback.HeadlineIndex == 0; index++)
+        {
+            playback.Step(TimeSpan.FromMilliseconds(40));
+            visited.Add(playback.Phase);
+            minimumOffset = Math.Min(minimumOffset, playback.VerticalOffset);
+        }
+
+        Assert.Contains(NewsPlaybackPhase.Typing, visited);
+        Assert.Contains(NewsPlaybackPhase.PauseBeforeScroll, visited);
+        Assert.Contains(NewsPlaybackPhase.Scrolling, visited);
+        Assert.Contains(NewsPlaybackPhase.PauseAfterScroll, visited);
+        Assert.Contains(NewsPlaybackPhase.PauseBetweenHeadlines, visited);
+        Assert.Contains(NewsPlaybackPhase.AdvanceHeadline, visited);
+        Assert.InRange(minimumOffset, -NewsPlaybackController.VisibleLineHeight, -18.9d);
+        Assert.Equal(1, playback.HeadlineIndex);
+    }
+
+    [Fact]
+    public void NewsPlayback_EquivalentRefreshPreservesCurrentPlayback()
+    {
+        NewsPlaybackController playback = new();
+        playback.ConfigureViewport(400d);
+        playback.SetHeadlines(["Mixed case headline for the teleprinter"]);
+        for (int index = 0; index < 8; index++)
+            playback.Step(TimeSpan.FromMilliseconds(40));
+
+        NewsPlaybackPhase phase = playback.Phase;
+        string text = playback.DisplayText;
+        playback.SetHeadlines(["Mixed case headline for the teleprinter"]);
+
+        Assert.Equal(phase, playback.Phase);
+        Assert.Equal(text, playback.DisplayText);
+        Assert.Equal(text, text.ToUpperInvariant());
+    }
+
+    [Fact]
     public void TickerQuote_FlashesOnlyAfterHydrationAndThenClears()
     {
         TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });

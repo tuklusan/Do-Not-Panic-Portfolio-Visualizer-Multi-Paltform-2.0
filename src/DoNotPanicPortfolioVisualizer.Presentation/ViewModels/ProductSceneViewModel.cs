@@ -67,10 +67,18 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private IReadOnlyList<string> _backgrounds = [];
     private BackgroundCinemaController? _backgroundCinema;
     private FloatingGraphMotionController? _graphMotion;
+    private readonly GlobalMarketsMotionController _globalMarketsMotion = new();
+    private readonly NewsPlaybackController _newsPlayback = new();
     private DateTimeOffset _nextBackgroundChangeUtc;
+    private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
     private double _graphViewportWidth = 1280d;
     private double _graphViewportHeight = 720d;
-    private Task? _refreshLoop;
+    private double _globalMarketsViewportWidth = 900d;
+    private Task? _portfolioQuoteLoop;
+    private Task? _macroQuoteLoop;
+    private Task? _worldMarketsLoop;
+    private Task? _graphRefreshLoop;
+    private Task? _newsRefreshLoop;
     private Task? _ambientLoop;
     private readonly bool _graphImpulseFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
@@ -78,6 +86,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_TRACE");
     private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
+    private volatile bool _cinematicPlaybackActive = true;
 
     [ObservableProperty]
     private string _marketStatusText = "Market: New York -- loading";
@@ -122,7 +131,16 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private string _newsText = "Loading France 24 business headlines...";
 
     [ObservableProperty]
-    private double _newsOffset;
+    private double _newsVerticalOffset;
+
+    [ObservableProperty]
+    private string _newsPhaseText = NewsPlaybackPhase.Idle.ToString();
+
+    [ObservableProperty]
+    private double _globalMarketsTrackOffset;
+
+    [ObservableProperty]
+    private double _globalMarketsTrackWidth;
 
     private ProductSceneViewModel(
         SettingsFileService settingsService,
@@ -152,6 +170,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }));
         MacroQuotes = new ObservableCollection<MacroQuoteViewModel>(
             MacroSymbols.Select(static item => new MacroQuoteViewModel(item.Label, item.Symbol)));
+        PinnedGlobalMarket = GlobalMarkets[0];
+        GlobalMarketTrackItems = [];
+        ConfigureGlobalMarketViewport(_globalMarketsViewportWidth);
+        _newsPlayback.SetHeadlines(["Loading France 24 business headlines..."]);
         LoadSettings();
     }
 
@@ -159,6 +181,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     public ObservableCollection<MacroQuoteViewModel> MacroQuotes { get; }
     public ObservableCollection<FloatingGraphViewModel> Graphs { get; }
     public ObservableCollection<GlobalMarketViewModel> GlobalMarkets { get; }
+    public GlobalMarketViewModel PinnedGlobalMarket { get; }
+    public ObservableCollection<GlobalMarketViewModel> GlobalMarketTrackItems { get; }
 
     public static ProductSceneViewModel CreateDefault()
     {
@@ -181,7 +205,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public Task InitializeAsync()
     {
-        _refreshLoop ??= RunRefreshLoopAsync(_lifetimeCts.Token);
+        _portfolioQuoteLoop ??= RunPortfolioQuoteLoopAsync(_lifetimeCts.Token);
+        _macroQuoteLoop ??= RunMacroQuoteLoopAsync(_lifetimeCts.Token);
+        _worldMarketsLoop ??= RunWorldMarketsLoopAsync(_lifetimeCts.Token);
+        _graphRefreshLoop ??= RunGraphRefreshLoopAsync(_lifetimeCts.Token);
+        _newsRefreshLoop ??= RunNewsRefreshLoopAsync(_lifetimeCts.Token);
         _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
         return Task.CompletedTask;
     }
@@ -223,6 +251,13 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         TimeSpan prior = clock.Elapsed;
         while (!cancellationToken.IsCancellationRequested)
         {
+            if (!_cinematicPlaybackActive)
+            {
+                prior = clock.Elapsed;
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                continue;
+            }
+
             TimeSpan current = clock.Elapsed;
             TimeSpan elapsed = current - prior;
             prior = current;
@@ -242,16 +277,74 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
     }
 
-    private async Task RunRefreshLoopAsync(CancellationToken cancellationToken)
+    private async Task RunPortfolioQuoteLoopAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await RefreshClockAndQuotesAsync(cancellationToken);
-            await Task.Delay(TimeSpan.FromMinutes(5), cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await RefreshPortfolioQuotesAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
         }
     }
 
-    private async Task RefreshClockAndQuotesAsync(CancellationToken cancellationToken)
+    private async Task RunMacroQuoteLoopAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await RefreshMacroQuotesAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+        }
+    }
+
+    private async Task RunWorldMarketsLoopAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await RefreshGlobalMarketsAsync(cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+        }
+    }
+
+    private async Task RunGraphRefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            try
+            {
+                await RefreshGraphsAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // History failure degrades the graph lane without terminating its scheduler.
+            }
+            await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+        }
+    }
+
+    private async Task RunNewsRefreshLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await RefreshNewsAsync(cancellationToken);
+            int refreshMinutes = Math.Clamp(_settings.NewsRefreshMinutes, 30, 240);
+            await Task.Delay(TimeSpan.FromMinutes(refreshMinutes), cancellationToken);
+        }
+    }
+
+    private async Task WaitUntilCinematicPlaybackActiveAsync(CancellationToken cancellationToken)
+    {
+        while (!_cinematicPlaybackActive)
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+    }
+
+    private async Task RefreshPortfolioQuotesAsync(CancellationToken cancellationToken)
     {
         await InvokeOnUiAsync(() =>
         {
@@ -261,10 +354,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             FreshnessBrush = "#F4C95D";
         }, cancellationToken);
 
-        List<(string Symbol, Action<QuoteSnapshot> Apply)> targets = [];
-        targets.AddRange(MacroQuotes.Select(macro => (macro.Symbol, (Action<QuoteSnapshot>)macro.Apply)));
-        targets.AddRange(Lanes.SelectMany(static lane => lane.Quotes)
-            .Select(ticker => (ticker.Symbol, (Action<QuoteSnapshot>)ticker.Apply)));
+        List<(string Symbol, Action<QuoteSnapshot> Apply)> targets = Lanes.SelectMany(static lane => lane.Quotes)
+            .Select(ticker => (ticker.Symbol, (Action<QuoteSnapshot>)ticker.Apply))
+            .ToList();
 
         int successCount = 0;
         foreach ((string symbol, Action<QuoteSnapshot> apply) in targets)
@@ -304,10 +396,30 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
         if (successCount == 0)
             await InvokeOnUiAsync(() => MarketStatusText = "Market: New York -- unavailable", cancellationToken);
+    }
 
-        await RefreshGlobalMarketsAsync(cancellationToken);
-        await RefreshGraphsAsync(cancellationToken);
-        await RefreshNewsAsync(cancellationToken);
+    private async Task RefreshMacroQuotesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            IReadOnlyList<QuoteSnapshot> quotes = await _quoteProvider.GetQuotesAsync(
+                MacroQuotes.Select(static macro => macro.Symbol),
+                cancellationToken);
+            await InvokeOnUiAsync(() =>
+            {
+                foreach (MacroQuoteViewModel macro in MacroQuotes)
+                {
+                    QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
+                        string.Equals(candidate.Symbol, macro.Symbol, StringComparison.OrdinalIgnoreCase));
+                    if (quote is not null)
+                        macro.Apply(quote);
+                }
+            }, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // The macro lane degrades independently from portfolio quote playback.
+        }
     }
 
     private async Task RefreshGlobalMarketsAsync(CancellationToken cancellationToken)
@@ -330,7 +442,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            // World-market quote failure does not stop clocks, weather, or other scene lanes.
         }
+
+        if (DateTimeOffset.UtcNow < _nextWeatherRefreshUtc)
+            return;
 
         Task<(GlobalMarketViewModel Market, string Text)>[] weatherTasks = GlobalMarkets.Select(async market =>
         {
@@ -349,6 +465,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             foreach ((GlobalMarketViewModel market, string text) in weather)
                 market.WeatherText = text;
+            _nextWeatherRefreshUtc = DateTimeOffset.UtcNow.AddMinutes(10);
         }, cancellationToken);
     }
 
@@ -421,13 +538,13 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
-            string text = await _newsService.GetNewsTextAsync(_settings, cancellationToken);
-            await InvokeOnUiAsync(() => NewsText = text, cancellationToken);
+            IReadOnlyList<string> headlines = await _newsService.GetPlaybackHeadlinesAsync(_settings, cancellationToken);
+            await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(headlines), cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await InvokeOnUiAsync(
-                () => NewsText = "France 24 business headlines are temporarily unavailable",
+                () => _newsPlayback.SetHeadlines(["France 24 business headlines are temporarily unavailable"]),
                 cancellationToken);
         }
     }
@@ -482,7 +599,13 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         _graphMotion?.Step(Graphs, elapsed);
         TraceCompletedGraphFixtureImpulses();
 
-        NewsOffset = NewsOffset < -1800 ? 1000 : NewsOffset - (22d * elapsed.TotalSeconds);
+        _globalMarketsMotion.Step(elapsed);
+        GlobalMarketsTrackOffset = _globalMarketsMotion.Offset;
+
+        _newsPlayback.Step(elapsed);
+        NewsText = _newsPlayback.DisplayText;
+        NewsVerticalOffset = _newsPlayback.VerticalOffset;
+        NewsPhaseText = _newsPlayback.Phase.ToString();
 
         _backgroundCinema?.Step(elapsed);
         if (_backgroundCinema is not null && now >= _nextBackgroundChangeUtc)
@@ -498,6 +621,35 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         _graphViewportWidth = Math.Max(1d, width);
         _graphViewportHeight = Math.Max(1d, height);
         _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
+    }
+
+    public void PauseCinematicPlayback() => _cinematicPlaybackActive = false;
+
+    public void ResumeCinematicPlayback() => _cinematicPlaybackActive = true;
+
+    public void ConfigureCinematicViewport(double width)
+    {
+        ConfigureGlobalMarketViewport(Math.Max(1d, width - 356d));
+        _newsPlayback.ConfigureViewport(Math.Max(1d, width - 220d));
+    }
+
+    private void ConfigureGlobalMarketViewport(double width)
+    {
+        _globalMarketsViewportWidth = Math.Max(1d, width);
+        int scrollingMarketCount = Math.Max(0, GlobalMarkets.Count - 1);
+        if (_globalMarketsMotion.Configure(_globalMarketsViewportWidth, scrollingMarketCount))
+        {
+            GlobalMarketTrackItems.Clear();
+            IReadOnlyList<GlobalMarketViewModel> scrollingMarkets = GlobalMarkets.Skip(1).ToList();
+            for (int copy = 0; copy < _globalMarketsMotion.RequiredCopies; copy++)
+            {
+                foreach (GlobalMarketViewModel market in scrollingMarkets)
+                    GlobalMarketTrackItems.Add(market);
+            }
+        }
+
+        GlobalMarketsTrackWidth = _globalMarketsMotion.TrackWidth;
+        GlobalMarketsTrackOffset = _globalMarketsMotion.Offset;
     }
 
     private void ApplyQuoteToGraph(QuoteSnapshot quote)
@@ -611,22 +763,20 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     public async ValueTask DisposeAsync()
     {
         await _lifetimeCts.CancelAsync();
-        if (_refreshLoop is not null)
+        Task?[] loops =
+        [
+            _portfolioQuoteLoop,
+            _macroQuoteLoop,
+            _worldMarketsLoop,
+            _graphRefreshLoop,
+            _newsRefreshLoop,
+            _ambientLoop
+        ];
+        foreach (Task loop in loops.Where(static loop => loop is not null).Cast<Task>())
         {
             try
             {
-                await _refreshLoop;
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        if (_ambientLoop is not null)
-        {
-            try
-            {
-                await _ambientLoop;
+                await loop;
             }
             catch (Exception)
             {

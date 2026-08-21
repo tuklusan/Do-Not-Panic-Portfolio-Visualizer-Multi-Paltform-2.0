@@ -52,28 +52,34 @@ public sealed class FinanceNewsService : IDisposable
     }
 
     public async Task<string> GetNewsTextAsync(AppSettings settings, CancellationToken cancellationToken)
+        => string.Join("     |     ", await GetPlaybackHeadlinesAsync(settings, cancellationToken).ConfigureAwait(false));
+
+    public async Task<IReadOnlyList<string>> GetPlaybackHeadlinesAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
         IReadOnlyList<string> headlines = await GetHeadlinesAsync(settings.NewsFeedUrl, cancellationToken)
             .ConfigureAwait(false);
-        string rssText = headlines.Count == 0
-            ? "France 24 business feed returned no headlines"
-            : string.Join("     |     ", headlines);
+        IReadOnlyList<string> rssHeadlines = headlines.Count == 0
+            ? ["France 24 business feed returned no headlines"]
+            : headlines;
 
         if (settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
             string.IsNullOrWhiteSpace(settings.AiApiKey) ||
             string.IsNullOrWhiteSpace(settings.AiModelId))
         {
-            return rssText;
+            return rssHeadlines;
         }
 
         try
         {
-            return await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false) ?? rssText;
+            string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary];
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return rssText;
+            return rssHeadlines;
         }
     }
 
