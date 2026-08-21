@@ -56,7 +56,10 @@ param(
     [switch]$ProductScene,
 
     [Parameter()]
-    [switch]$GraphImpulseFixture
+    [switch]$GraphImpulseFixture,
+
+    [Parameter()]
+    [switch]$CinematicPlaybackTrace
 )
 
 Set-StrictMode -Version Latest
@@ -273,7 +276,8 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
-        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
+        [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
@@ -386,12 +390,16 @@ function Invoke-LinuxValidation {
         'echo "VALIDATION_DONE" >> step.log'
     )
     if ($CaptureProductScene) {
-        $launchLine = if ($CaptureGraphImpulseFixture) {
-            'DNPPV_GRAPH_IMPULSE_FIXTURE=1 DNPPV_GRAPH_IMPULSE_TRACE="$ART/graph-impulse.log" ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        $launchEnvironment = @()
+        if ($CaptureGraphImpulseFixture) {
+            $launchEnvironment += 'DNPPV_GRAPH_IMPULSE_FIXTURE=1'
+            $launchEnvironment += 'DNPPV_GRAPH_IMPULSE_TRACE="$ART/graph-impulse.log"'
         }
-        else {
-            './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        if ($CaptureCinematicPlaybackTrace) {
+            $launchEnvironment += 'DNPPV_CINEMATIC_TRACE="$ART/cinematic-playback.log"'
         }
+        $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
+        $launchLine = $launchPrefix + './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
         $scriptLines = @(
             '#!/usr/bin/env bash',
             'set -euo pipefail',
@@ -401,7 +409,7 @@ function Invoke-LinuxValidation {
             "ART=$remotePublishDirLiteral",
             'cd "$ART"',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png motion.png graph-impulse.log run.log step.log',
+            'rm -f general.png validation.png motion.png graph-impulse.log cinematic-playback.log run.log step.log',
             $launchLine,
             'APPPID=$!',
             'echo "APPPID=$APPPID" >> step.log',
@@ -469,6 +477,9 @@ function Invoke-LinuxValidation {
     if ($CaptureGraphImpulseFixture) {
         $artifactNames += 'graph-impulse.log'
     }
+    if ($CaptureCinematicPlaybackTrace) {
+        $artifactNames += 'cinematic-playback.log'
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -486,7 +497,8 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][int]$Warmup,
         [Parameter(Mandatory = $true)][string]$TaskName,
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
-        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
+        [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
@@ -677,6 +689,12 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_GRAPH_IMPULSE_TRACE -ErrorAction SilentlyContinue'
         }
+        $cinematicTraceLine = if ($CaptureCinematicPlaybackTrace) {
+            '$env:DNPPV_CINEMATIC_TRACE = Join-Path $artifactDir ''cinematic-playback.log'''
+        }
+        else {
+            'Remove-Item Env:DNPPV_CINEMATIC_TRACE -ErrorAction SilentlyContinue'
+        }
         $scriptLines = @(
             'Add-Type -AssemblyName System.Drawing',
             'Add-Type -AssemblyName System.Windows.Forms',
@@ -694,7 +712,7 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''graph-impulse.log'')',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -708,6 +726,7 @@ function Invoke-WindowsValidation {
             '}',
             $fixtureEnabledLine,
             $fixtureTraceLine,
+            $cinematicTraceLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
             '$startInfo = [System.Diagnostics.ProcessStartInfo]::new()',
             '$startInfo.FileName = $exePath',
@@ -762,7 +781,7 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'step.log')
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
@@ -807,6 +826,9 @@ finally {
     if ($CaptureGraphImpulseFixture) {
         $artifactNames += 'graph-impulse.log'
     }
+    if ($CaptureCinematicPlaybackTrace) {
+        $artifactNames += 'cinematic-playback.log'
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -818,6 +840,9 @@ Assert-RequiredTool -Name 'scp'
 
 if ($GraphImpulseFixture -and -not $ProductScene) {
     throw '-GraphImpulseFixture requires -ProductScene.'
+}
+if ($CinematicPlaybackTrace -and -not $ProductScene) {
+    throw '-CinematicPlaybackTrace requires -ProductScene.'
 }
 
 $resolvedPublishDir = (Resolve-Path -LiteralPath $LocalPublishDir -ErrorAction Stop).Path
@@ -832,11 +857,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent
         break
     }
     default {

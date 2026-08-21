@@ -84,8 +84,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
     private readonly string? _graphImpulseTracePath =
         Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_TRACE");
+    private readonly string? _cinematicTracePath =
+        Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
     private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
+    private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
+    private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private volatile bool _cinematicPlaybackActive = true;
 
     [ObservableProperty]
@@ -606,6 +610,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         NewsText = _newsPlayback.DisplayText;
         NewsVerticalOffset = _newsPlayback.VerticalOffset;
         NewsPhaseText = _newsPlayback.Phase.ToString();
+        TraceCinematicPlayback(now);
 
         _backgroundCinema?.Step(elapsed);
         if (_backgroundCinema is not null && now >= _nextBackgroundChangeUtc)
@@ -729,6 +734,37 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             File.AppendAllText(
                 _graphImpulseTracePath,
+                $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
+        }
+        catch
+        {
+            // Acceptance tracing cannot interfere with the product scene.
+        }
+    }
+
+    private void TraceCinematicPlayback(DateTimeOffset now)
+    {
+        if (string.IsNullOrWhiteSpace(_cinematicTracePath))
+            return;
+
+        bool phaseChanged = _newsPlayback.Phase != _lastTracedNewsPhase;
+        if (!phaseChanged && now < _nextCinematicTraceUtc)
+            return;
+
+        _lastTracedNewsPhase = _newsPlayback.Phase;
+        _nextCinematicTraceUtc = now.AddSeconds(1);
+        WriteCinematicTrace(
+            $"NEWS;PHASE={_newsPlayback.Phase};HEADLINE={_newsPlayback.HeadlineIndex};SEGMENT={_newsPlayback.SegmentIndex};Y={_newsPlayback.VerticalOffset:0.00};TEXT_LENGTH={_newsPlayback.DisplayText.Length}");
+        WriteCinematicTrace(
+            $"MARKETS;X={_globalMarketsMotion.Offset:0.00};SEQUENCE_WIDTH={_globalMarketsMotion.SequenceWidth:0.00};COPIES={_globalMarketsMotion.RequiredCopies}");
+    }
+
+    private void WriteCinematicTrace(string message)
+    {
+        try
+        {
+            File.AppendAllText(
+                _cinematicTracePath!,
                 $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
         }
         catch
