@@ -143,6 +143,7 @@ public sealed class FloatingGraphMotionController
             return;
 
         double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, MaximumFrameSeconds);
+        ResolveOverlaps(graphs);
         foreach (FloatingGraphViewModel graph in graphs)
         {
             if (!graph.HasMotionState)
@@ -156,8 +157,6 @@ public sealed class FloatingGraphMotionController
             BounceAndClamp(graph);
             CompleteRefreshTravelAtBoundary(graph);
         }
-
-        ResolveOverlaps(graphs);
     }
 
     public void ResolveOverlaps(IReadOnlyList<FloatingGraphViewModel> graphs)
@@ -174,6 +173,9 @@ public sealed class FloatingGraphMotionController
                 {
                     FloatingGraphViewModel first = graphs[firstIndex];
                     FloatingGraphViewModel second = graphs[secondIndex];
+                    if (first.IsRefreshTravelFlashActive || second.IsRefreshTravelFlashActive)
+                        continue;
+
                     GraphRect firstRect = GetRect(first);
                     GraphRect secondRect = GetRect(second);
                     if (!firstRect.Intersects(secondRect))

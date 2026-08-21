@@ -279,6 +279,56 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void FloatingGraphMotion_DirectedImpulseCrossesCrowdedSceneWithoutTimingOut()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 8);
+        FloatingGraphViewModel falling = new()
+        {
+            Symbol = "DOWN",
+            TapeName = "Tape",
+            X = 180d,
+            Y = 80d,
+            VelocityX = 25d,
+            VelocityY = 25d,
+            NominalVelocityX = 25d,
+            NominalVelocityY = 25d,
+            HasMotionState = true
+        };
+        List<FloatingGraphViewModel> graphs = [falling];
+        for (int index = 0; index < 6; index++)
+        {
+            graphs.Add(new FloatingGraphViewModel
+            {
+                Symbol = $"BLOCK{index}",
+                TapeName = "Tape",
+                X = 180d,
+                Y = 170d + (index * 82d),
+                VelocityX = index % 2 == 0 ? 22d : -22d,
+                VelocityY = 22d,
+                NominalVelocityX = index % 2 == 0 ? 22d : -22d,
+                NominalVelocityY = 22d,
+                HasMotionState = true
+            });
+        }
+
+        controller.ConfigureViewport(1000d, 700d, graphs);
+        controller.ApplyQuote(falling, 100m, -1m, suppressMotionCue: true);
+        Assert.True(controller.ApplyQuote(falling, 99m, -1m));
+
+        int frames = 0;
+        while (falling.IsRefreshTravelFlashActive && frames < 30)
+        {
+            controller.Step(graphs, TimeSpan.FromMilliseconds(100));
+            frames++;
+        }
+
+        Assert.InRange(frames, 1, 15);
+        Assert.Equal(controller.Bounds.Bottom - falling.Height, falling.Y, 6);
+        Assert.False(falling.IsRefreshTravelFlashActive);
+        Assert.True(falling.VelocityY < 0d);
+    }
+
+    [Fact]
     public void FloatingGraphMotion_HydrationAndContentReplacementPreserveMotionWithoutImpulse()
     {
         FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 4);
