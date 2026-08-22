@@ -76,7 +76,7 @@ public sealed class BackgroundFrameLoader : IDisposable
 
     private static Stream OpenSourceStream(string source)
     {
-        if (source.StartsWith('/', StringComparison.Ordinal))
+        if (source.StartsWith("/", StringComparison.Ordinal))
             return AssetLoader.Open(new Uri("avares://DoNotPanicPortfolioVisualizer.App" + source));
         return File.OpenRead(source);
     }
