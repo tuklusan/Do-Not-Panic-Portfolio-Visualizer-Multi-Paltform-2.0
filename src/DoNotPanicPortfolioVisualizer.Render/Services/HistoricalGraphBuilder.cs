@@ -42,17 +42,39 @@ public sealed class HistoricalGraphBuilder
         decimal max = snapshot.Points.Max(static point => point.Close);
         decimal range = Math.Max(0.0001m, max - min);
         StringBuilder path = new();
+        List<(double X, double Y)> points = [];
         for (int index = 0; index < snapshot.Points.Count; index++)
         {
             double x = snapshot.Points.Count == 1 ? width / 2 : width * index / (snapshot.Points.Count - 1d);
             double y = height - ((double)((snapshot.Points[index].Close - min) / range) * height);
+            points.Add((x, y));
             path.Append(index == 0 ? "M " : " L ")
                 .Append(x.ToString("0.##", CultureInfo.InvariantCulture)).Append(',')
                 .Append(y.ToString("0.##", CultureInfo.InvariantCulture));
         }
 
+        List<string> greenSegments = [];
+        List<string> redSegments = [];
+        for (int index = 1; index < points.Count; index++)
+        {
+            string segment = FormatSegment(points[index - 1], points[index]);
+            if (snapshot.Points[index].Close >= snapshot.Points[index - 1].Close)
+                greenSegments.Add(segment);
+            else
+                redSegments.Add(segment);
+        }
+
         decimal latest = snapshot.Points[^1].Close;
         graph.PathData = path.ToString();
+        graph.GreenSegmentPaths = greenSegments;
+        graph.RedSegmentPaths = redSegments;
+        if (points.Count >= 2)
+        {
+            graph.LatestSegmentPath = FormatSegment(points[^2], points[^1]);
+            graph.LatestSegmentBrush = snapshot.Points[^1].Close >= snapshot.Points[^2].Close
+                ? "#39E75F"
+                : "#FF5A36";
+        }
         graph.LastText = latest.ToString("0.00", CultureInfo.InvariantCulture);
         graph.ChangeText = changePercent.HasValue
             ? $"{(changePercent >= 0 ? "+" : string.Empty)}{changePercent:0.00}%"
@@ -72,4 +94,7 @@ public sealed class HistoricalGraphBuilder
         graph.RightTimeScaleText = snapshot.Points[^1].TimestampUtc.ToLocalTime().ToString("MM/dd", CultureInfo.InvariantCulture);
         return graph;
     }
+
+    private static string FormatSegment((double X, double Y) start, (double X, double Y) end)
+        => $"M {start.X.ToString("0.##", CultureInfo.InvariantCulture)},{start.Y.ToString("0.##", CultureInfo.InvariantCulture)} L {end.X.ToString("0.##", CultureInfo.InvariantCulture)},{end.Y.ToString("0.##", CultureInfo.InvariantCulture)}";
 }

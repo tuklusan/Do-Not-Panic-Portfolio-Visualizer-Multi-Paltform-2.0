@@ -50,6 +50,9 @@ not evidence that motion behavior passes.
 - Global markets and finance news form a bottom vertical overlay.
 - The centered product identity, version, copyright/image attribution, and
   delayed-data notices remain overlay watermarks with explicit z-order.
+- An unavailable-network state uses the branded bouncing waiting overlay while
+  any retained scene data remains stable. Upstream's market-critter path is
+  compiled but explicitly disabled and is not an active parity requirement.
 - The scene scales from actual viewport dimensions. Fixed design-canvas widths
   must not clip supported 1024x768 or larger displays.
 
@@ -65,12 +68,16 @@ not evidence that motion behavior passes.
   `0.00075`, reversing at each limit.
 - Rotation, transition, decode, cancellation, attribution, and missing-source
   recovery remain non-blocking and traceable.
+- The default rotation interval remains five minutes. Large images are decoded
+  to a bounded width; changed catalogs rotate only as needed, preserve a valid
+  current image, and select a different next image when possible.
 
 ## Status And Macro Surface
 
 - The status surface has a minimum height of 92 pixels.
 - It preserves market/session state, last-updated ticker, freshness/network
-  state, UTC/date information, and the seven macro meters.
+  state, UTC/date information, and the eight upstream macro meters: VIX,
+  NASDAQ, UST10Y, UST3M, GOLD, CRUDE, DXY, and BTC.
 - Macro meters preserve their compact `96x50` geometry and independent refresh
   lane. Macro refresh is not coupled to the four portfolio tape animations.
 - The left status stack is capped at 248 pixels, the last-updated field reserves
@@ -97,11 +104,21 @@ not evidence that motion behavior passes.
   rebuilding or resetting the tape track.
 - Quote-change cues, loading glyphs, missing-data glyphs, and trend colors are
   preserved.
+- Empty or unmeasured tracks stay stopped; measured tracks start, data changes
+  restart safely, unload prevents restart, and cached fixed-width measurement
+  determines the exact cycle distance.
+- Runtime quote dispatch remains one interleaved quote per second. Visual
+  refresh settings govern freshness rather than dispatch cadence, and only
+  recently fetched closed world-market symbols receive the closed-market
+  slowdown.
 
 ## Floating Graph Cards
 
-- Up to 16 selected mover cards appear, with the upstream per-tape cap and
-  selection/refresh behavior.
+- Up to 16 unique selected mover cards appear, ranked globally by available
+  absolute quote movement with configured tape and ticker order as stable
+  fallback ordering. The retained `MaxFloatingGraphsPerTape` settings field is
+  not applied by the current upstream selector and must not be invented as an
+  active per-tape cap.
 - Each card is `186x78`; each plot is `132x40`. Scale labels, time labels,
   green/red historical segments, and the emphasized latest segment remain.
 - Cards are compact overlays on the full cinematic scene, not fixed grid cells.
@@ -125,21 +142,40 @@ not evidence that motion behavior passes.
   auto-reversing pulse capped at four seconds.
 - Initial hydration and structural graph replacement suppress false quote-change
   impulses.
+- Stale quotes preserve last-known mover values. First-live and stale-to-live
+  graph transitions flash, while percent-only or fetch-token-only changes do
+  not create a raw-price impulse; ticker stale-to-live hydration does not flash.
+- Graph history/build caches and in-flight warmup survive refresh ticks and
+  batch synchronous layout work.
 
 ## Global Markets And News
 
-- The global-market lane preserves all upstream centers, local exchange clocks,
-  index value/direction, session state, and weather, with its own refresh lane.
+- The global-market lane preserves the local-desk summary and all 18 upstream
+  exchange centers, bundled flags, local exchange clocks, index
+  value/direction, exchange-calendar session state, and weather, with its own
+  refresh lane and recent NTP offset when available.
 - It remains a continuously animated tape, not eight static squeezed cells.
   New York/NASDAQ is pinned in a 150-pixel card; the other 164x54 cards move
   through a 68-pixel clipped viewport with duplicated sequences, edge fades,
   and shrouds. It must fit supported viewport widths without clipping the pinned
   card, viewport, or text.
+- Clocks tick every second without forcing every ancillary market redraw.
+  Pinned New York status uses exchange-calendar truth when quote-session state
+  lags and shows an explicit placeholder if the calendar is unavailable.
 - Finance news preserves the upstream telegraph-style headline state machine:
   preparation, pause before scroll, vertical scrolling, pause after scroll, and
   transition to the next headline.
 - RSS remains the default source. Optional styled AI summaries and RSS fallback
   remain supported without changing playback behavior.
+- Playback debounces headline bursts, cancels pending restarts on unload,
+  preserves the index for equivalent refreshes, recovers the current headline
+  after viewport readiness, preserves explicit line breaks, carries the prior
+  bottom line without retyping, and caches width measurements.
+- Optional AI news fetches feeds in parallel with partial-feed tolerance,
+  fences untrusted headline text, resolves applicable OpenRouter models,
+  enforces retry/timeout budgets, parses structured responses, keys caches by
+  writing style and response contract, and distinguishes credential, HTTP,
+  malformed, timeout, RSS-backed, structured, and no-feed fallbacks.
 
 ## Lifecycle And Recovery
 
@@ -147,6 +183,8 @@ not evidence that motion behavior passes.
   pause during validation/settings transitions, and are detached at shutdown.
 - Render motion uses a heartbeat, startup grace period, bounded recovery
   attempts, and trace events for missing or recovered render callbacks.
+- Bounded displayed-tape sample and lane traces support soak comparison without
+  turning frame-rate work into unbounded diagnostics.
 - Fullscreen, maximize, restore, and viewport resize preserve moving positions
   where possible and clamp every overlay to the new safe bounds.
 - Background, quote, history, weather, market, and news failures degrade their

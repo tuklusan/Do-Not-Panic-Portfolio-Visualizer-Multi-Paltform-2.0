@@ -163,6 +163,31 @@
       "artifacts": [
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "README.md",
+          "docs/RELEASE_1_0_BASELINE.md",
+          "docs/MANUAL_UI_QA_SUITE.md"
+        ],
+        "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "README.md",
+          "docs/RELEASE_1_0_BASELINE.md",
+          "docs/MANUAL_UI_QA_SUITE.md",
+          "src",
+          "tests/PortfolioSaver.Tests"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "Reviewed the upstream README, release baseline, manual UI QA suite, real production screenshots, and key shell/scene/settings source files.",
         "Captured the real production screen composition and user-visible workflow inventory.",
@@ -197,6 +222,29 @@
         "src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj",
         "tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "DoNotPanicPortfolioVisualizer.sln",
+          "src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj",
+          "src/PortfolioSaver.Core/PortfolioSaver.Core.csproj"
+        ],
+        "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "DoNotPanicPortfolioVisualizer.sln",
+          "src/PortfolioSaver.Core/PortfolioSaver.Core.csproj",
+          "src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "Installed the official Avalonia templates at version 12.1.1 and scaffolded a .NET 10 Avalonia MVVM app plus portable library/test projects.",
         "Added a repository-local NuGet.Config that clears the broken machine-wide Visual Studio fallback folder and pins package resolution to nuget.org.",
@@ -207,7 +255,7 @@
       "id": "CR-003",
       "phase": "Phase 0",
       "title": "Define cross-platform app identity, local-data roots, and YFinance loopback contract",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-002"
       ],
@@ -233,6 +281,17 @@
         "src/DoNotPanicPortfolioVisualizer.Shared/Storage/LocalDataRootResolver.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Shared/AppIdentity.cs",
+          "src/PortfolioSaver.Shared/Helpers/AppDataRootResolver.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Added the portable product-identity constants, the current and deprecated local-data override names, and the approved YFinance loopback port contract.",
         "Implemented a cross-platform local-data root resolver for Windows, Linux, and macOS with deterministic subdirectory mapping.",
@@ -243,7 +302,7 @@
       "id": "CR-004",
       "phase": "Phase 1",
       "title": "Port shared domain models, settings contracts, diagnostics, and service interfaces",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-003"
       ],
@@ -271,6 +330,17 @@
         "tests/DoNotPanicPortfolioVisualizer.Tests/FoundationSettingsTests.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Core",
+          "src/PortfolioSaver.Shared",
+          "tests/PortfolioSaver.Tests"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Ported the first shared foundation slice from upstream into portable Core, Shared, and Data projects, including settings models, enums, diagnostics helpers, and service interfaces.",
         "Moved the local-data resolver into Core so portable defaults and storage contracts no longer depend on Shared, while keeping Shared as a consumer layer over Core.",
@@ -281,7 +351,7 @@
       "id": "CR-005",
       "phase": "Phase 1",
       "title": "Port YFinance process management and quote/history provider pipeline",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-004"
       ],
@@ -309,6 +379,17 @@
         "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceInfrastructureTests.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceProviderPipelineTests.cs"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Data",
+          "YFinance.net",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Added a portable owned-server process manager for the YFinance loopback lane, using the approved DNPPV-2.0 port 14871 and portable bundle resolution rules.",
         "Ported the first managed runtime-client abstractions plus quote/history providers, symbol mapping, and historical-cache storage into the new Data and Shared projects.",
@@ -320,7 +401,7 @@
       "id": "CR-006",
       "phase": "Phase 2",
       "title": "Port settings persistence, validation, and configuration workflow services",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-005"
       ],
@@ -346,6 +427,17 @@
         "src/DoNotPanicPortfolioVisualizer.Data/Services/YahooSymbolValidationService.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Core/Models/AppSettings.cs",
+          "src/PortfolioSaver.Settings",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Ported portable settings persistence, protected provider-secret storage, RSS feed validation, and Yahoo symbol validation into the new Data layer.",
         "Added portable override-path validation, Windows ACL and Unix mode hardening for the settings-protection key path, and atomic settings-file replacement behavior.",
@@ -356,7 +448,7 @@
       "id": "CR-007",
       "phase": "Phase 2",
       "title": "Port the configuration window to Avalonia",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-006"
       ],
@@ -382,6 +474,17 @@
         "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml",
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Replaced the placeholder Avalonia window with a real configuration surface that edits portable background, portfolio-tape, and news/provider settings and surfaces pre-save validation feedback.",
         "Validated the CR-007 slice from clean pushed checkpoints with a zero-warning Debug build, a 49-test suite, a local UI smoke run, and physical-machine evidence across Lubuntu, Windows 10, and Windows 11.",
@@ -392,7 +495,7 @@
       "id": "CR-008",
       "phase": "Phase 3",
       "title": "Port the main Avalonia shell and fullscreen lifecycle",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-007"
       ],
@@ -415,6 +518,17 @@
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr008-win10/general.png",
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr008-win11/general.png"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopShellMigrationTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "The startup window is now the real full-scene Avalonia product shell, while the CR-007 editor remains available through Options > Settings.",
         "Maximized startup, F11 fullscreen, Escape restoration, double-tap fullscreen, menu suppression, Exit, Settings, and About paths are implemented.",
@@ -426,7 +540,7 @@
       "id": "CR-009",
       "phase": "Phase 3",
       "title": "Port ticker tapes, macro ribbon, and scene status surfaces",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-008"
       ],
@@ -451,8 +565,19 @@
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr009-acceptance-win10/validation.png",
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr009-acceptance-win11/validation.png"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
-        "Restored four settings-driven ticker lanes, the seven-symbol macro-market ribbon, market-session state, last-update state, and live/stale/degraded feed status in the real Avalonia product shell.",
+        "The initial slice restored four settings-driven ticker lanes and seven macro symbols; the upstream-gate retrofit identified the missing eighth gauge and reopened this CR for correction together with the remaining ticker/runtime gaps.",
         "Integrated the retained YFinance implementation as a self-contained owned service on port 14871 and added the real protocol runtime adapter, lifecycle cleanup, and six-RID publish bundling.",
         "Physical acceptance found and corrected Unix execute-bit, extensionless-native-launch, and rooted-URI resolution defects; final live screenshots passed on Lubuntu, Windows 10, and Windows 11.",
         "Closed from pushed checkpoint 5c9d6b7 after a zero-warning Release build, 54 passing tests, six successful target publishes, verified remote process cleanup, mandatory CODE reviews, and a PASS from the TEST_ARTIFACT second-opinion gate."
@@ -507,6 +632,31 @@
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
         "docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render",
+          "src/PortfolioSaver.Media"
+        ],
+        "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render",
+          "src/PortfolioSaver.Media",
+          "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "Audited upstream commit 2e2fab0 across the scene control, startup coordinator, ticker/graph/global-market/news/status controls, motion services and view models, release screenshot, and manual UI QA suite.",
         "Recorded source-derived scene geometry, tape travel, graph dimensions and physics, quote rise/drop impulses and flash timing, background cross-fade/zoom, independently animated global markets, telegraph news playback, lifecycle, recovery, and dynamic evidence requirements.",
@@ -517,7 +667,7 @@
       "id": "CR-010B",
       "phase": "Phase 3",
       "title": "Port viewport-relative scene geometry and background cinema",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-010A"
       ],
@@ -539,6 +689,17 @@
         "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs",
+          "src/PortfolioSaver.Media/Services/ExchangePhotoCacheService.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Ported the upstream two-layer 450 ms cubic cross-fade, Fill stretching, configurable dim overlay, and bounded 1.00-1.05 slow zoom using elapsed-time state with three retained upstream exchange backgrounds.",
         "Passed 67 tests, a warning-free build, license and PowerShell gates, mandatory CODE reviews, and serial self-contained publishing for all six target RIDs.",
@@ -549,7 +710,7 @@
       "id": "CR-010C",
       "phase": "Phase 3",
       "title": "Port continuous cinematic ticker tapes and quote cues",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-010B"
       ],
@@ -573,6 +734,17 @@
         "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/TapeAnimationController.cs",
+          "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Ported four continuously wrapped duplicated ticker tracks with upstream-derived 72x speed scaling, an 18 pixel-per-second floor, independent direction, fixed 230-pixel quote geometry, and exact sequence spacing.",
         "Preserved track position across quote refresh and viewport resize, suppressed hydration flashes, bounded pause/resume frame deltas, and restored rising/falling multi-pulse quote cues without rebuilding tracks.",
@@ -583,7 +755,7 @@
       "id": "CR-010D",
       "phase": "Phase 3",
       "title": "Port full-scene floating graph physics and quote impulses",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-010C"
       ],
@@ -607,6 +779,17 @@
         "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Restored up to 16 source-sized floating graph cards across the full scene with viewport bounds, bounce, collision separation, resize handling, and motion continuity across live-history refresh.",
         "Restored quote-driven rise and drop impulses at the migrated minimum speed, boundary arrival, sustained change cue, and subsequent nominal motion; 75 deterministic tests passed with zero build warnings.",
@@ -617,13 +800,13 @@
       "id": "CR-010E",
       "phase": "Phase 3",
       "title": "Port cinematic status, macro, global-market, and news playback",
-      "status": "closed",
+      "status": "open",
       "depends_on": [
         "CR-010D"
       ],
       "objective": "Recreate the independently refreshed status/macro and world-market lanes plus the upstream telegraph-style news state machine.",
       "acceptance_criteria": [
-        "Status and seven macro meters preserve upstream geometry, state, and independent refresh behavior.",
+        "Status and eight macro meters preserve upstream geometry, state, and independent refresh behavior.",
         "All world-market centers fit with clocks, session, index, direction, and weather at supported viewport sizes.",
         "News visibly cycles through prepare, pre-scroll pause, vertical scroll, post-scroll pause, and next-headline phases for RSS and optional AI text."
       ],
@@ -642,6 +825,17 @@
         "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Render/Services/FloatingClockBuilder.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml.cs"
+        ],
+        "zero_known_gaps": true
+      },
       "closure_notes": [
         "Ported independently scheduled portfolio, macro, world-market, history, weather, and news refresh lanes plus the source-derived 68-pixel global-market strip with pinned New York state and a continuously wrapped 30-pixel-per-second world-market track.",
         "Ported the telegraph news state machine with 50-character-per-second typing, source-derived vertical scrolling and pause timing, structured RSS headline playback, optional AI summary playback, and RSS fallback while preserving active playback across equivalent refreshes.",
@@ -667,7 +861,25 @@
         "Six-target publish and three-machine dynamic acceptance",
         "Mandatory TEST_ARTIFACT second-opinion review"
       ],
-      "started_on": "2026-08-21"
+      "started_on": "2026-08-21",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-010F-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs",
+          "src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs",
+          "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs"
+        ],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-011",

@@ -22,6 +22,7 @@ public sealed class FloatingGraphMotionController
     public const double RefreshTravelMinimumVelocity = 260d;
     public const double RefreshTravelTargetSeconds = 1.4d;
     public const double RefreshTravelMaximumSeconds = 4d;
+    public const double CardFlashDurationSeconds = 1.68d;
     private const double MaximumFrameSeconds = 0.1d;
     private readonly Random _random;
     private readonly double _minimumVelocity;
@@ -122,30 +123,49 @@ public sealed class FloatingGraphMotionController
             < 0m => "#FF5A36",
             _ => "#D4DEE5"
         };
+        graph.LatestSegmentBrush = graph.AccentBrush;
 
-        if (!changed || suppressMotionCue || changePercent is null or 0m ||
-            graph.IsRefreshTravelFlashActive || !_bounds.IsUsable)
+        if (!changed || suppressMotionCue || graph.IsRefreshTravelFlashActive)
         {
             return false;
+        }
+
+        graph.FlashBrush = changePercent switch
+        {
+            > 0m => "#F039E75F",
+            < 0m => "#F0FF5A36",
+            _ => "#F0D4DEE5"
+        };
+        if (changePercent is null or 0m || !_bounds.IsUsable)
+        {
+            graph.CardFlashElapsedSeconds = 0d;
+            graph.IsCardFlashActive = true;
+            graph.FlashOpacity = 0d;
+            return true;
         }
 
         graph.RefreshTravelDirection = changePercent > 0m ? -1 : 1;
         graph.RefreshTravelTargetY = GetTravelTarget(graph, graph.RefreshTravelDirection);
         graph.RefreshTravelElapsedSeconds = 0d;
+        graph.CardFlashElapsedSeconds = 0d;
+        graph.IsCardFlashActive = false;
         graph.IsRefreshTravelFlashActive = true;
-        graph.FlashBrush = changePercent > 0m ? "#F039E75F" : "#F0FF5A36";
         return true;
     }
 
     public void Step(IReadOnlyList<FloatingGraphViewModel> graphs, TimeSpan elapsed)
     {
-        if (!_bounds.IsUsable)
-            return;
-
         double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, MaximumFrameSeconds);
-        ResolveOverlaps(graphs);
+        if (_bounds.IsUsable)
+            ResolveOverlaps(graphs);
         foreach (FloatingGraphViewModel graph in graphs)
         {
+            if (graph.IsCardFlashActive)
+                ApplyCardFlash(graph, seconds);
+
+            if (!_bounds.IsUsable)
+                continue;
+
             if (!graph.HasMotionState)
                 continue;
 
@@ -157,6 +177,32 @@ public sealed class FloatingGraphMotionController
             BounceAndClamp(graph);
             CompleteRefreshTravelAtBoundary(graph);
         }
+    }
+
+    private static void ApplyCardFlash(FloatingGraphViewModel graph, double seconds)
+    {
+        graph.CardFlashElapsedSeconds += seconds;
+        double elapsed = graph.CardFlashElapsedSeconds;
+        graph.FlashOpacity = elapsed switch
+        {
+            <= 0.18d => Interpolate(elapsed, 0d, 0.18d, 0d, 0.925d),
+            <= 0.62d => Interpolate(elapsed, 0.18d, 0.62d, 0.925d, 0d),
+            <= 0.98d => Interpolate(elapsed, 0.62d, 0.98d, 0d, 0.925d),
+            <= CardFlashDurationSeconds => Interpolate(elapsed, 0.98d, CardFlashDurationSeconds, 0.925d, 0d),
+            _ => 0d
+        };
+        if (elapsed < CardFlashDurationSeconds)
+            return;
+
+        graph.CardFlashElapsedSeconds = 0d;
+        graph.IsCardFlashActive = false;
+        graph.FlashOpacity = 0d;
+    }
+
+    private static double Interpolate(double value, double start, double end, double from, double to)
+    {
+        double progress = Math.Clamp((value - start) / (end - start), 0d, 1d);
+        return from + ((to - from) * progress);
     }
 
     public void ResolveOverlaps(IReadOnlyList<FloatingGraphViewModel> graphs)

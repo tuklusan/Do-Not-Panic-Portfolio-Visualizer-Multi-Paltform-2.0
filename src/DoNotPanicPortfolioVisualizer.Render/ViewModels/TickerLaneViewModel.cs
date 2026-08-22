@@ -38,6 +38,7 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         Title = group.Name;
         Direction = group.Direction;
         Speed = group.Speed;
+        RowHeight = group.RowHeight <= 0d ? 56d : group.RowHeight;
         Quotes = new ObservableCollection<TickerQuoteViewModel>(
             group.Tickers.Where(static ticker => ticker.Enabled && !string.IsNullOrWhiteSpace(ticker.Symbol))
                 .Select(static ticker => new TickerQuoteViewModel(ticker)));
@@ -48,6 +49,7 @@ public sealed partial class TickerLaneViewModel : ObservableObject
     public string Title { get; }
     public ScrollDirection Direction { get; }
     public double Speed { get; }
+    public double RowHeight { get; }
     public ObservableCollection<TickerQuoteViewModel> Quotes { get; }
     public ObservableCollection<TickerTrackItemViewModel> TrackItems { get; }
     public double MotionProgress => _motion.Progress;

@@ -30,15 +30,16 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisposable
 {
-    private static readonly (string Label, string Symbol)[] MacroSymbols =
+    private static readonly (string Label, string Symbol, decimal Maximum, bool InvertRiskColors)[] MacroSymbols =
     [
-        ("VIX", "^VIX"),
-        ("NASDAQ", "^IXIC"),
-        ("US10Y", "^TNX"),
-        ("GOLD", "GC=F"),
-        ("CRUDE", "CL=F"),
-        ("DXY", "DX-Y.NYB"),
-        ("BTC", "BTC-USD")
+        ("VIX", "^VIX", 60m, true),
+        ("NASDAQ", "^IXIC", 25000m, false),
+        ("UST10Y", "^TNX", 6m, false),
+        ("UST3M", "^IRX", 6m, false),
+        ("GOLD", "GC=F", 4000m, false),
+        ("CRUDE", "BZ=F", 160m, false),
+        ("DXY", "DX-Y.NYB", 120m, true),
+        ("BTC", "BTC-USD", 200000m, false)
     ];
 
     private static readonly (string Key, string City, string Exchange, string Symbol, string TimeZone, double Latitude, double Longitude)[] WorldMarkets =
@@ -52,6 +53,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         ("Sydney", "Sydney", "ASX 200", "^AXJO", "Australia/Sydney", -33.8688, 151.2093),
         ("SaoPaulo", "Sao Paulo", "IBOVESPA", "^BVSP", "America/Sao_Paulo", -23.5505, -46.6333)
     ];
+
+    private static readonly IReadOnlyDictionary<string, string> BackgroundAttributions =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg"] = "Jean-Christophe BENOIST, CC BY 3.0",
+            ["/Assets/ExchangeBackgrounds/london-skyline-public-domain.jpg"] = "Rodrigo.Argenton, CC0",
+            ["/Assets/ExchangeBackgrounds/shanghai-skyline-public-domain.jpg"] = "Pxfuel, CC0"
+        };
 
     private readonly CancellationTokenSource _lifetimeCts = new();
     private readonly SettingsFileService _settingsService;
@@ -69,6 +78,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private FloatingGraphMotionController? _graphMotion;
     private readonly GlobalMarketsMotionController _globalMarketsMotion = new();
     private readonly NewsPlaybackController _newsPlayback = new();
+    private readonly RenderSurfaceHeartbeatController _renderHeartbeat = new();
+    private readonly object _renderHeartbeatGate = new();
     private DateTimeOffset _nextBackgroundChangeUtc;
     private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
     private double _graphViewportWidth = 1280d;
@@ -79,13 +90,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private Task? _worldMarketsLoop;
     private Task? _graphRefreshLoop;
     private Task? _newsRefreshLoop;
+    private Task? _tickerMotionLoop;
+    private Task? _newsPlaybackLoop;
     private Task? _ambientLoop;
+    private Task? _renderHeartbeatLoop;
     private readonly bool _graphImpulseFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
     private readonly string? _graphImpulseTracePath =
         Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_TRACE");
     private readonly string? _cinematicTracePath =
         Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
+    private readonly bool _renderHeartbeatFixtureEnabled =
+        string.Equals(Environment.GetEnvironmentVariable("DNPPV_RENDER_HEARTBEAT_FIXTURE"), "1", StringComparison.Ordinal);
+    private DateTimeOffset _renderHeartbeatFixtureStartedUtc;
     private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
@@ -147,6 +164,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     [ObservableProperty]
     private double _globalMarketsTrackWidth;
 
+    [ObservableProperty]
+    private string _backgroundAttributionText = "© Supratim Sanyal. SANYALnet Labs.";
+
     private ProductSceneViewModel(
         SettingsFileService settingsService,
         IQuoteProvider quoteProvider,
@@ -174,7 +194,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             Longitude = market.Longitude
         }));
         MacroQuotes = new ObservableCollection<MacroQuoteViewModel>(
-            MacroSymbols.Select(static item => new MacroQuoteViewModel(item.Label, item.Symbol)));
+            MacroSymbols.Select(static item => new MacroQuoteViewModel(
+                item.Label,
+                item.Symbol,
+                item.Maximum,
+                item.InvertRiskColors)));
         PinnedGlobalMarket = GlobalMarkets[0];
         GlobalMarketTrackItems = [];
         ConfigureGlobalMarketViewport(_globalMarketsViewportWidth);
@@ -188,6 +212,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     public ObservableCollection<GlobalMarketViewModel> GlobalMarkets { get; }
     public GlobalMarketViewModel PinnedGlobalMarket { get; }
     public ObservableCollection<GlobalMarketViewModel> GlobalMarketTrackItems { get; }
+    public event Action? RenderSurfaceRecoveryRequested;
 
     public static ProductSceneViewModel CreateDefault()
     {
@@ -210,12 +235,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public Task InitializeAsync()
     {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        lock (_renderHeartbeatGate)
+            _renderHeartbeat.Start(now);
+        _renderHeartbeatFixtureStartedUtc = now;
         _portfolioQuoteLoop ??= RunPortfolioQuoteLoopAsync(_lifetimeCts.Token);
         _macroQuoteLoop ??= RunMacroQuoteLoopAsync(_lifetimeCts.Token);
         _worldMarketsLoop ??= RunWorldMarketsLoopAsync(_lifetimeCts.Token);
         _graphRefreshLoop ??= RunGraphRefreshLoopAsync(_lifetimeCts.Token);
         _newsRefreshLoop ??= RunNewsRefreshLoopAsync(_lifetimeCts.Token);
+        _tickerMotionLoop ??= RunTickerMotionLoopAsync(_lifetimeCts.Token);
+        _newsPlaybackLoop ??= RunNewsPlaybackLoopAsync(_lifetimeCts.Token);
         _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
+        _renderHeartbeatLoop ??= RunRenderHeartbeatLoopAsync(_lifetimeCts.Token);
         return Task.CompletedTask;
     }
 
@@ -269,6 +301,18 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             try
             {
                 await InvokeOnUiAsync(() => UpdateClockAndMotion(elapsed), cancellationToken);
+                DateTimeOffset acceptedAt = DateTimeOffset.UtcNow;
+                TimeSpan fixtureElapsed = acceptedAt - _renderHeartbeatFixtureStartedUtc;
+                bool suppressFixtureFrame = _renderHeartbeatFixtureEnabled &&
+                    fixtureElapsed >= TimeSpan.FromSeconds(12) &&
+                    fixtureElapsed < TimeSpan.FromSeconds(19);
+                if (!suppressFixtureFrame)
+                {
+                    RenderSurfaceHeartbeatResult heartbeat;
+                    lock (_renderHeartbeatGate)
+                        heartbeat = _renderHeartbeat.AcceptFrame(acceptedAt);
+                    TraceRenderHeartbeat(heartbeat);
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -279,6 +323,99 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 // Keep clocks and motion alive if one optional background is malformed.
             }
             await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
+        }
+    }
+
+    private async Task RunTickerMotionLoopAsync(CancellationToken cancellationToken)
+    {
+        Stopwatch clock = Stopwatch.StartNew();
+        TimeSpan prior = clock.Elapsed;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            if (!_cinematicPlaybackActive)
+            {
+                prior = clock.Elapsed;
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                continue;
+            }
+
+            TimeSpan current = clock.Elapsed;
+            TimeSpan elapsed = current - prior;
+            prior = current;
+            try
+            {
+                await InvokeOnUiAsync(() =>
+                {
+                    foreach (TickerLaneViewModel lane in Lanes)
+                        lane.Step(elapsed);
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch
+            {
+                // A single lane failure must not permanently stop tape motion.
+            }
+            await Task.Delay(TimeSpan.FromMilliseconds(33), cancellationToken);
+        }
+    }
+
+    private async Task RunNewsPlaybackLoopAsync(CancellationToken cancellationToken)
+    {
+        Stopwatch clock = Stopwatch.StartNew();
+        TimeSpan prior = clock.Elapsed;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            if (!_cinematicPlaybackActive)
+            {
+                prior = clock.Elapsed;
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                continue;
+            }
+
+            TimeSpan current = clock.Elapsed;
+            TimeSpan elapsed = current - prior;
+            prior = current;
+            try
+            {
+                await InvokeOnUiAsync(() =>
+                {
+                    _newsPlayback.Step(elapsed);
+                    NewsText = _newsPlayback.DisplayText;
+                    NewsVerticalOffset = _newsPlayback.VerticalOffset;
+                    NewsPhaseText = _newsPlayback.Phase.ToString();
+                    TraceCinematicPlayback(DateTimeOffset.UtcNow);
+                }, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch
+            {
+                // Playback recovers on the next tick without affecting other scene lanes.
+            }
+            await Task.Delay(TimeSpan.FromMilliseconds(40), cancellationToken);
+        }
+    }
+
+    private async Task RunRenderHeartbeatLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            RenderSurfaceHeartbeatResult heartbeat;
+            lock (_renderHeartbeatGate)
+                heartbeat = _renderHeartbeat.Inspect(DateTimeOffset.UtcNow, _cinematicPlaybackActive);
+            if (heartbeat.Signal != RenderSurfaceHeartbeatSignal.RecoveryRequested)
+                continue;
+
+            TraceRenderHeartbeat(heartbeat);
+            await InvokeOnUiAsync(
+                () => RenderSurfaceRecoveryRequested?.Invoke(),
+                cancellationToken);
         }
     }
 
@@ -614,21 +751,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
         }
 
-        foreach (TickerLaneViewModel lane in Lanes)
-            lane.Step(elapsed);
-
         TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
         TraceCompletedGraphFixtureImpulses();
 
         _globalMarketsMotion.Step(elapsed);
         GlobalMarketsTrackOffset = _globalMarketsMotion.Offset;
-
-        _newsPlayback.Step(elapsed);
-        NewsText = _newsPlayback.DisplayText;
-        NewsVerticalOffset = _newsPlayback.VerticalOffset;
-        NewsPhaseText = _newsPlayback.Phase.ToString();
-        TraceCinematicPlayback(now);
 
         _backgroundCinema?.Step(elapsed);
         if (_backgroundCinema is not null && now >= _nextBackgroundChangeUtc)
@@ -646,9 +774,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
     }
 
-    public void PauseCinematicPlayback() => _cinematicPlaybackActive = false;
+    public void PauseCinematicPlayback()
+    {
+        _cinematicPlaybackActive = false;
+        lock (_renderHeartbeatGate)
+            _renderHeartbeat.Pause();
+    }
 
-    public void ResumeCinematicPlayback() => _cinematicPlaybackActive = true;
+    public void ResumeCinematicPlayback()
+    {
+        lock (_renderHeartbeatGate)
+            _renderHeartbeat.Resume(DateTimeOffset.UtcNow);
+        _cinematicPlaybackActive = true;
+    }
 
     public void ConfigureCinematicViewport(double width)
     {
@@ -779,6 +917,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private void WriteCinematicTrace(string message)
     {
+        if (string.IsNullOrWhiteSpace(_cinematicTracePath))
+            return;
+
         try
         {
             File.AppendAllText(
@@ -789,6 +930,15 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             // Acceptance tracing cannot interfere with the product scene.
         }
+    }
+
+    private void TraceRenderHeartbeat(RenderSurfaceHeartbeatResult heartbeat)
+    {
+        if (heartbeat.Signal == RenderSurfaceHeartbeatSignal.None)
+            return;
+
+        WriteCinematicTrace(
+            $"RENDER;SIGNAL={heartbeat.Signal};ELAPSED_SECONDS={heartbeat.ElapsedSinceFrame.TotalSeconds:0.00};FRAMES={heartbeat.AcceptedFrameCount};RECOVERY_COUNT={heartbeat.RecoveryCount};EPISODE_ATTEMPT={heartbeat.EpisodeAttempt}");
     }
 
     private void ApplyBackgroundCinemaState()
@@ -802,6 +952,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         BackgroundOpacityB = _backgroundCinema.OpacityB;
         BackgroundScaleA = _backgroundCinema.ScaleA;
         BackgroundScaleB = _backgroundCinema.ScaleB;
+        BackgroundAttributionText = BackgroundAttributions.TryGetValue(
+            _backgroundCinema.CurrentSource,
+            out string? attribution)
+            ? $"© Supratim Sanyal. SANYALnet Labs. | Image: {attribution}"
+            : "© Supratim Sanyal. SANYALnet Labs.";
     }
 
     private static string FormatMarketSession(MarketSession session)
@@ -816,6 +971,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public async ValueTask DisposeAsync()
     {
+        lock (_renderHeartbeatGate)
+            _renderHeartbeat.Stop();
         await _lifetimeCts.CancelAsync();
         Task?[] loops =
         [
@@ -824,7 +981,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _worldMarketsLoop,
             _graphRefreshLoop,
             _newsRefreshLoop,
-            _ambientLoop
+            _tickerMotionLoop,
+            _newsPlaybackLoop,
+            _ambientLoop,
+            _renderHeartbeatLoop
         ];
         foreach (Task loop in loops.Where(static loop => loop is not null).Cast<Task>())
         {

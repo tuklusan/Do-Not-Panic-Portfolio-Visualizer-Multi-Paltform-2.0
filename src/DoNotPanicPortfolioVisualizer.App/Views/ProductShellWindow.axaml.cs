@@ -2,10 +2,13 @@
 // Based on original work by Supratim Sanyal of SANYALnet Labs.
 // Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
 
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
+using DoNotPanicPortfolioVisualizer.App.Services;
+using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 using DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
@@ -15,6 +18,14 @@ public partial class ProductShellWindow : Window
 {
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
     private MainWindow? _settingsWindow;
+    private readonly BackgroundFrameLoader _backgroundFrameLoader = new();
+    private readonly CancellationTokenSource _backgroundLoadCts = new();
+    private Task _backgroundLoadA = Task.CompletedTask;
+    private Task _backgroundLoadB = Task.CompletedTask;
+    private int _backgroundGenerationA;
+    private int _backgroundGenerationB;
+    private double _backgroundPresentationOpacityA = BackgroundPresentationOpacityPolicy.FallbackOpacity;
+    private double _backgroundPresentationOpacityB = BackgroundPresentationOpacityPolicy.FallbackOpacity;
     private bool _shutdownStarted;
 
     public ProductShellWindow()
@@ -57,8 +68,94 @@ public partial class ProductShellWindow : Window
     private async void OnWindowOpened(object? sender, EventArgs e)
     {
         if (DataContext is ProductSceneViewModel scene)
+        {
+            scene.RenderSurfaceRecoveryRequested += OnRenderSurfaceRecoveryRequested;
+            scene.PropertyChanged += OnScenePropertyChanged;
             await scene.InitializeAsync();
+            _backgroundLoadA = LoadBackgroundLayerAsync(scene.BackgroundSourceA, BackgroundLayerA, true, ++_backgroundGenerationA);
+            _backgroundLoadB = LoadBackgroundLayerAsync(scene.BackgroundSourceB, BackgroundLayerB, false, ++_backgroundGenerationB);
+            await Task.WhenAll(_backgroundLoadA, _backgroundLoadB);
+        }
     }
+
+    private void OnScenePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not ProductSceneViewModel scene)
+            return;
+
+        if (e.PropertyName == nameof(ProductSceneViewModel.BackgroundSourceA))
+            _backgroundLoadA = LoadBackgroundLayerAsync(scene.BackgroundSourceA, BackgroundLayerA, true, ++_backgroundGenerationA);
+        else if (e.PropertyName == nameof(ProductSceneViewModel.BackgroundSourceB))
+            _backgroundLoadB = LoadBackgroundLayerAsync(scene.BackgroundSourceB, BackgroundLayerB, false, ++_backgroundGenerationB);
+
+        if (e.PropertyName is nameof(ProductSceneViewModel.BackgroundOpacityA) or
+            nameof(ProductSceneViewModel.BackgroundOpacityB))
+        {
+            UpdateBackgroundLayerOpacities(scene);
+        }
+    }
+
+    private async Task LoadBackgroundLayerAsync(string? source, Image layer, bool isLayerA, int generation)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+            return;
+
+        try
+        {
+            BackgroundFrame frame = await _backgroundFrameLoader.LoadAsync(source, _backgroundLoadCts.Token);
+            if (_backgroundLoadCts.IsCancellationRequested ||
+                generation != (isLayerA ? _backgroundGenerationA : _backgroundGenerationB))
+            {
+                return;
+            }
+
+            layer.Source = frame.Bitmap;
+            if (isLayerA)
+                _backgroundPresentationOpacityA = frame.PresentationOpacity;
+            else
+                _backgroundPresentationOpacityB = frame.PresentationOpacity;
+
+            if (DataContext is ProductSceneViewModel scene)
+                UpdateBackgroundLayerOpacities(scene);
+            WriteBackgroundTrace($"BACKGROUND;SIGNAL=COMMITTED;LAYER={(isLayerA ? "A" : "B")};SOURCE={source};PRESENTATION_OPACITY={frame.PresentationOpacity:0.00}");
+        }
+        catch (OperationCanceledException) when (_backgroundLoadCts.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            WriteBackgroundTrace($"BACKGROUND;SIGNAL=RETAINED;LAYER={(isLayerA ? "A" : "B")};SOURCE={source};ERROR={ex.GetType().Name}");
+        }
+    }
+
+    private void UpdateBackgroundLayerOpacities(ProductSceneViewModel scene)
+    {
+        BackgroundLayerA.Opacity = ScaleBackgroundOpacity(scene.BackgroundOpacityA, _backgroundPresentationOpacityA);
+        BackgroundLayerB.Opacity = ScaleBackgroundOpacity(scene.BackgroundOpacityB, _backgroundPresentationOpacityB);
+    }
+
+    private static double ScaleBackgroundOpacity(double transitionOpacity, double presentationOpacity)
+        => Math.Clamp(
+            presentationOpacity * transitionOpacity / BackgroundPresentationOpacityPolicy.FallbackOpacity,
+            0d,
+            1d);
+
+    private static void WriteBackgroundTrace(string message)
+    {
+        string? path = Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        try
+        {
+            File.AppendAllText(path, $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
+        }
+        catch
+        {
+        }
+    }
+
+    private void OnRenderSurfaceRecoveryRequested() => SceneRoot.InvalidateVisual();
 
     private void OnSceneRootSizeChanged(object? sender, SizeChangedEventArgs e)
     {
@@ -82,6 +179,18 @@ public partial class ProductShellWindow : Window
 
         e.Cancel = true;
         _shutdownStarted = true;
+        scene.RenderSurfaceRecoveryRequested -= OnRenderSurfaceRecoveryRequested;
+        scene.PropertyChanged -= OnScenePropertyChanged;
+        _backgroundLoadCts.Cancel();
+        try
+        {
+            await Task.WhenAll(_backgroundLoadA, _backgroundLoadB);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        _backgroundFrameLoader.Dispose();
+        _backgroundLoadCts.Dispose();
         await scene.DisposeAsync();
         Close();
     }

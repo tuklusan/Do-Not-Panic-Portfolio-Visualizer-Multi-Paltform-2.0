@@ -41,6 +41,7 @@ public sealed class TickerPresentationTests
         Assert.Equal(source.Name, lane.Title);
         Assert.Equal(source.Direction, lane.Direction);
         Assert.Equal(source.Speed, lane.Speed);
+        Assert.Equal(source.RowHeight, lane.RowHeight);
         Assert.Equal(source.Tickers.Count - 1, lane.Quotes.Count);
         Assert.DoesNotContain(lane.Quotes, quote => quote.Symbol == source.Tickers[0].Symbol);
     }
@@ -56,7 +57,7 @@ public sealed class TickerPresentationTests
             IsStale = true
         };
         TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO", DisplayName = "VOO" });
-        MacroQuoteViewModel macro = new("S&P 500", "VOO");
+        MacroQuoteViewModel macro = new("S&P 500", "VOO", 1000m);
 
         ticker.Apply(quote);
         macro.Apply(quote);
@@ -67,6 +68,18 @@ public sealed class TickerPresentationTests
         Assert.True(ticker.IsStale);
         Assert.Equal(ticker.PriceText, macro.ValueText);
         Assert.Equal(ticker.ChangeText, macro.ChangeText);
-        Assert.Equal(ticker.TrendBrush, macro.AccentBrush);
+        Assert.Equal("#F4C95D", macro.AccentBrush);
+        Assert.StartsWith("M ", macro.TrackPath, StringComparison.Ordinal);
+        Assert.StartsWith("M ", macro.ArcPath, StringComparison.Ordinal);
+        Assert.StartsWith("M 12,12 L ", macro.NeedlePath, StringComparison.Ordinal);
+
+        MacroQuoteViewModel invertedRisk = new("VIX", "^VIX", 60m, invertRiskColors: true);
+        invertedRisk.Apply(new QuoteSnapshot
+        {
+            Symbol = "^VIX",
+            Last = 30m,
+            ChangePercent = 1m
+        });
+        Assert.Equal("#FF5A36", invertedRisk.AccentBrush);
     }
 }

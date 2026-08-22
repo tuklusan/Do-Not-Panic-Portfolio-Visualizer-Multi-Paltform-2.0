@@ -203,11 +203,22 @@ Exit criteria:
 Every change request follows this lifecycle:
 
 1. define the CR in `docs/AUDIT_STATE.json`;
-2. implement only that scoped increment;
-3. run the required review and validation workflow for the increment;
-4. commit and push the reviewed result;
-5. update the CR record with evidence and closure status;
-6. only then begin the next CR.
+2. deeply scan the related upstream implementation, record a source-cited
+   inventory of every functional behavior, and pass the mandatory
+   `PreDevelopment` migration behavior gate;
+3. implement only that scoped increment;
+4. run the required review and validation workflow for the increment;
+5. independently rescan upstream after implementation, reconcile every behavior
+   and newly discovered detail, and obtain two successive zero-gap scans;
+6. pass the mandatory `Closure` migration behavior gate;
+7. commit and push the reviewed result;
+8. update the CR record with evidence and closure status;
+9. only then begin the next CR.
+
+The executable requirements and tracker fields for both hard gates are defined
+in `docs/MIGRATION_BEHAVIOR_GATES.md`. A missing behavior restarts the complete
+scan; it cannot be dismissed merely because an existing 2.0 implementation
+already appears similar.
 
 ## 8. What We Will Not Do
 

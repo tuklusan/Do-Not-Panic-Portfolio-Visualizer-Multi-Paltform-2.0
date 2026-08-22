@@ -98,6 +98,43 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void RenderHeartbeat_UsesAuditedGraceThresholdCadenceAndAttemptLimit()
+    {
+        DateTimeOffset started = new(2026, 8, 21, 12, 0, 0, TimeSpan.Zero);
+        RenderSurfaceHeartbeatController controller = new();
+        controller.Start(started);
+
+        Assert.Equal(RenderSurfaceHeartbeatSignal.None, controller.Inspect(started.AddSeconds(9), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.RecoveryRequested, controller.Inspect(started.AddSeconds(10), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.None, controller.Inspect(started.AddSeconds(39), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.RecoveryRequested, controller.Inspect(started.AddSeconds(40), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.RecoveryRequested, controller.Inspect(started.AddSeconds(70), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.None, controller.Inspect(started.AddSeconds(100), true).Signal);
+        Assert.Equal(3, controller.RecoveryCount);
+        Assert.Equal(RenderSurfaceHeartbeatController.MaximumRecoveryAttemptsPerEpisode, controller.EpisodeAttempts);
+    }
+
+    [Fact]
+    public void RenderHeartbeat_RecoveryAndPauseResetTheMissingFrameEpisode()
+    {
+        DateTimeOffset started = new(2026, 8, 21, 12, 0, 0, TimeSpan.Zero);
+        RenderSurfaceHeartbeatController controller = new();
+        controller.Start(started);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.RecoveryRequested, controller.Inspect(started.AddSeconds(10), true).Signal);
+
+        RenderSurfaceHeartbeatResult recovered = controller.AcceptFrame(started.AddSeconds(11));
+        Assert.Equal(RenderSurfaceHeartbeatSignal.Recovered, recovered.Signal);
+        Assert.False(controller.IsHeartbeatMissing);
+        Assert.Equal(0, controller.EpisodeAttempts);
+
+        controller.Pause();
+        Assert.Equal(RenderSurfaceHeartbeatSignal.None, controller.Inspect(started.AddMinutes(1), true).Signal);
+        controller.Resume(started.AddMinutes(1));
+        Assert.Equal(RenderSurfaceHeartbeatSignal.None, controller.Inspect(started.AddMinutes(1).AddSeconds(9), true).Signal);
+        Assert.Equal(RenderSurfaceHeartbeatSignal.RecoveryRequested, controller.Inspect(started.AddMinutes(1).AddSeconds(10), true).Signal);
+    }
+
+    [Fact]
     public void NewsPlayback_VisitsTelegraphPhasesAndAdvancesHeadline()
     {
         NewsPlaybackController playback = new();
@@ -212,6 +249,32 @@ public sealed class AmbientSceneServicesTests
         Assert.NotEqual(upperScale, controller.ScaleA);
     }
 
+    [Theory]
+    [InlineData(0.09d, 0.78d)]
+    [InlineData(0.10d, 0.68d)]
+    [InlineData(0.15d, 0.68d)]
+    [InlineData(0.16d, 0.58d)]
+    [InlineData(0.23d, 0.58d)]
+    [InlineData(0.24d, 0.45d)]
+    public void BackgroundPresentationOpacity_UsesAuditedLuminanceThresholds(
+        double luminance,
+        double expectedOpacity)
+        => Assert.Equal(expectedOpacity, BackgroundPresentationOpacityPolicy.FromAverageLuminance(luminance));
+
+    [Fact]
+    public void BackgroundPresentationOpacity_IgnoresTransparentPixelsAndFallsBackForEmptySamples()
+    {
+        byte[] pixels =
+        [
+            0, 0, 0, 0,
+            25, 25, 25, 255
+        ];
+
+        Assert.Equal(0.78d, BackgroundPresentationOpacityPolicy.FromBgra32(pixels, 2, 1, 8));
+        Assert.Equal(0.45d, BackgroundPresentationOpacityPolicy.FromBgra32([0, 0, 0, 0], 1, 1, 4));
+        Assert.Equal(0.45d, BackgroundPresentationOpacityPolicy.FromBgra32([], 1, 1, 4));
+    }
+
     [Fact]
     public void HistoricalGraphBuilder_ProducesPortablePathAndTrendState()
     {
@@ -231,6 +294,10 @@ public sealed class AmbientSceneServicesTests
 
         Assert.StartsWith("M ", graph.PathData, StringComparison.Ordinal);
         Assert.Contains(" L ", graph.PathData, StringComparison.Ordinal);
+        Assert.Single(graph.GreenSegmentPaths);
+        Assert.Single(graph.RedSegmentPaths);
+        Assert.Equal(graph.RedSegmentPaths[0], graph.LatestSegmentPath);
+        Assert.Equal("#FF5A36", graph.LatestSegmentBrush);
         Assert.Equal("100.00", graph.LastText);
         Assert.Equal("-1.25%", graph.ChangeText);
         Assert.Equal("#FF5A36", graph.AccentBrush);
@@ -348,6 +415,34 @@ public sealed class AmbientSceneServicesTests
         Assert.Null(falling.RefreshTravelTargetY);
         Assert.True(rising.VelocityY > 0d);
         Assert.True(falling.VelocityY < 0d);
+    }
+
+    [Fact]
+    public void FloatingGraphMotion_NeutralQuoteUsesUpstreamMultiPulseFlashTiming()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 3);
+        FloatingGraphViewModel graph = new() { Symbol = "FLAT", TapeName = "Tape" };
+        controller.ApplyQuote(graph, 100m, 0m, suppressMotionCue: true);
+
+        Assert.True(controller.ApplyQuote(graph, 101m, 0m));
+        Assert.True(graph.IsCardFlashActive);
+        Assert.False(graph.IsRefreshTravelFlashActive);
+
+        controller.Step([graph], TimeSpan.FromMilliseconds(100));
+        controller.Step([graph], TimeSpan.FromMilliseconds(80));
+        Assert.InRange(graph.FlashOpacity, 0.92d, 0.93d);
+        controller.Step([graph], TimeSpan.FromMilliseconds(100));
+        controller.Step([graph], TimeSpan.FromMilliseconds(100));
+        controller.Step([graph], TimeSpan.FromMilliseconds(100));
+        controller.Step([graph], TimeSpan.FromMilliseconds(100));
+        controller.Step([graph], TimeSpan.FromMilliseconds(40));
+        Assert.InRange(graph.FlashOpacity, 0d, 0.05d);
+
+        for (int index = 0; index < 12; index++)
+            controller.Step([graph], TimeSpan.FromMilliseconds(100));
+
+        Assert.False(graph.IsCardFlashActive);
+        Assert.Equal(0d, graph.FlashOpacity);
     }
 
     [Fact]

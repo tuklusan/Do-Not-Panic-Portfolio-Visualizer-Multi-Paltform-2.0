@@ -28,6 +28,10 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
     [ObservableProperty] private string _changeText = "--";
     [ObservableProperty] private string _accentBrush = "#D4DEE5";
     [ObservableProperty] private string _pathData = string.Empty;
+    [ObservableProperty] private IReadOnlyList<string> _greenSegmentPaths = [];
+    [ObservableProperty] private IReadOnlyList<string> _redSegmentPaths = [];
+    [ObservableProperty] private string _latestSegmentPath = string.Empty;
+    [ObservableProperty] private string _latestSegmentBrush = "#D4DEE5";
     [ObservableProperty] private string _rangeText = string.Empty;
     [ObservableProperty] private double _velocityX;
     [ObservableProperty] private double _velocityY;
@@ -37,6 +41,7 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
     [ObservableProperty] private double? _refreshTravelTargetY;
     [ObservableProperty] private int _refreshTravelDirection;
     [ObservableProperty] private bool _isRefreshTravelFlashActive;
+    [ObservableProperty] private bool _isCardFlashActive;
     [ObservableProperty] private string _flashBrush = "#00FFFFFF";
     [ObservableProperty] private double _flashOpacity;
     [ObservableProperty] private string _maxScaleText = string.Empty;
@@ -55,6 +60,7 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
     public double PlotHeight => ChartHeight;
     public bool HasMotionState { get; set; }
     public double RefreshTravelElapsedSeconds { get; set; }
+    public double CardFlashElapsedSeconds { get; set; }
 
     public void CopyContentFrom(FloatingGraphViewModel source)
     {
@@ -62,6 +68,10 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
         ChangeText = source.ChangeText;
         AccentBrush = source.AccentBrush;
         PathData = source.PathData;
+        GreenSegmentPaths = source.GreenSegmentPaths;
+        RedSegmentPaths = source.RedSegmentPaths;
+        LatestSegmentPath = source.LatestSegmentPath;
+        LatestSegmentBrush = source.LatestSegmentBrush;
         RangeText = source.RangeText;
         MaxScaleText = source.MaxScaleText;
         MidScaleText = source.MidScaleText;

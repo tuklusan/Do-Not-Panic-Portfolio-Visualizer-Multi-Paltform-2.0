@@ -78,12 +78,21 @@ View, Options, and Help entries.
 
 Required preserved behaviors:
 
+- a product-specific single-instance guard blocks a duplicate launch and shows
+  the user that the visualizer is already active;
 - startup produces the real visualizer scene, not a placeholder screen;
 - the scene keeps running while quotes, backgrounds, and news fill in
   progressively;
 - an Options path exists for opening configuration;
-- a Help path exists for About;
-- application exit is available from the menu.
+- a Help path exists for About, including product/publisher/author/license
+  metadata, transparent-corner brand artwork, suitable platform icon sizes, and
+  the complete bundled/project license text;
+- application exit is available from the menu;
+- startup and shutdown own the local YFinance process and release the
+  single-instance guard without affecting an upstream 1.0 process;
+- non-Debug packaged startup validates the release manifest asynchronously,
+  bounds reported integrity errors, and visibly reports a missing, malformed,
+  escaped, size-mismatched, or checksum-mismatched release file.
 
 Primary upstream evidence:
 
@@ -119,8 +128,11 @@ Required preserved behaviors:
 - a latest-updated symbol field exists;
 - a data-freshness field distinguishes loading, live, stale, and offline cases;
 - the top-right clock is pinned to UTC;
-- the macro ribbon contains compact cards for indicators such as VIX, NASDAQ,
-  Treasury yields, gold, crude oil, DXY, and Bitcoin.
+- the macro ribbon contains eight compact gauges for VIX, NASDAQ, UST10Y,
+  UST3M, gold, Brent crude, DXY, and Bitcoin, including normalized arcs,
+  needles, stale state, and inverse risk colors for VIX and DXY;
+- stable dash placeholders and public automation identifiers keep loading,
+  live, stale, offline, and missing states accessible and testable.
 
 Primary upstream evidence:
 
@@ -139,7 +151,13 @@ Required preserved behaviors:
   ticker list;
 - quote updates visibly reflect positive, negative, and unchanged movement;
 - the scene can duplicate/expand tape items to maintain visual density;
-- invalid or missing data remains readable rather than collapsing the lane.
+- invalid or missing data remains readable rather than collapsing the lane;
+- waiting and missing glyphs remain distinct, track position survives quote
+  updates, and empty/unmeasured/data-transition/unload states start or stop
+  animation without stale subscriptions;
+- cached fixed-width measurements define wrap distance, and runtime quote
+  dispatch remains one interleaved symbol per second with separate freshness
+  and closed-world-market slowdown policy.
 
 Primary upstream evidence:
 
@@ -158,7 +176,15 @@ Required preserved behaviors:
 - cards use compact floating overlays rather than large dashboard panels;
 - cards reflect intraday or fallback recent-day history;
 - cards visually distinguish upward and downward movement;
-- motion and placement feel ambient rather than frantic.
+- motion and placement feel ambient rather than frantic;
+- stale cards retain last-known values; first-live and stale-to-live transitions
+  flash, while percent-only or fetch-token-only changes do not create a price
+  impulse;
+- graph history/build caches and in-flight progressive warmup survive refreshes;
+- fallback order includes current-session points seeded from previous close,
+  the latest five distinct exchange-local daily closes, and quote-memory
+  fallback; labels use exchange-local intraday/day values and the keyed graph
+  cache is case-insensitive, collision-safe, change-sensitive, and bounded LRU.
 
 Primary upstream evidence:
 
@@ -173,10 +199,20 @@ The product includes a dedicated bottom-lane global market summary.
 Required preserved behaviors:
 
 - major financial centers appear with local exchange time;
+- one local-desk summary plus all 18 upstream exchange cards and their bundled
+  flags are represented;
 - local index name/value/direction are shown;
-- session state is shown;
+- session state uses exchange timing/calendar data, including holidays and
+  pre/post-market windows where available;
 - weather is shown when available;
-- the strip updates independently from the main quote flow.
+- weather fetches cities with bounded parallelism, uses cached/offline fallback,
+  omits uncached failed cities, trims unrequested stale entries, and releases
+  concurrency gates on cancellation;
+- NTP-adjusted UTC is used while a recent synchronization remains valid;
+- the strip updates independently from the main quote flow;
+- clocks remain live at one-second cadence while ancillary market redraws are
+  throttled, and pinned New York uses calendar truth when quote session state
+  lags.
 
 Primary upstream evidence:
 
@@ -194,6 +230,21 @@ Required preserved behaviors:
 - optional AI summarization exists when configured;
 - writing-style options include Douglas Adams and William Shakespeare;
 - the product can fall back to RSS when AI access is unavailable.
+- summarized mode gathers its upstream multi-feed context, treats headlines as
+  untrusted input, produces the structured style-specific item format and
+  closing quotation, retries within a bounded budget, and caches by mode/style;
+- summarized-news refresh has a 30-minute minimum even when legacy settings
+  request a shorter cadence;
+- invalid credentials use plain RSS fallback, while transient/empty/malformed
+  AI results use the upstream structured local fallback and remain retryable on
+  the next refresh;
+- feed fetches run in parallel with partial-feed tolerance, and playback
+  preserves debounce, unload cancellation, equivalent-refresh index,
+  pre-layout/viewport recovery, explicit line breaks, prior-line carry, and
+  cached width measurement behavior;
+- startup preserves the actual headline count without synthetic duplication,
+  shows the waiting message for an empty set, and emits a style closing quote
+  only once per playback sequence.
 
 Primary upstream evidence:
 
@@ -209,8 +260,16 @@ Required preserved behaviors:
 
 - built-in curated backgrounds exist;
 - managed/downloaded exchange or city photography can be used;
+- the managed cache warms asynchronously from the upstream manifest, validates
+  completed images, removes stale partial downloads, and records full/footer
+  attribution;
 - a user can select a custom image directory instead;
+- custom image discovery includes subdirectories, while the managed-cache path
+  remains visible and read-only in configuration;
 - background change interval is configurable;
+- the default interval is five minutes;
+- large images decode to a bounded width, and catalog changes retain a valid
+  current frame while selecting a different next image when possible;
 - the background remains full-scene and dimmed under overlays.
 
 Primary upstream evidence:
@@ -227,12 +286,49 @@ Required preserved behaviors:
 
 - a General tab exists for background and tape configuration;
 - an Advanced tab exists for news and AI-provider options;
+- General exposes bounded portfolio/off-hours refresh and background-interval
+  sliders plus the YFinance.NET-only runtime summary; provider secret fields
+  remain on Advanced only;
+- each tape exposes name, enabled state, direction, speed, add/remove ticker,
+  and each ticker exposes symbol, display name, enabled state, validation
+  badge/message, and removal;
+- editor/model conversion enforces the upstream maximum ticker count per tape;
+- ticker display names are provider-filled and read-only; unused benchmark,
+  asset-class, exchange, currency, and provider-id editors are not exposed;
+- key sections have nonempty help tooltips, both tabs remain scrollable and
+  responsive at supported sizes, and the validated footer keeps primary
+  `OK`/`Cancel` actions visible;
+- configuration text remains visually intact on every target; upstream's
+  WPF-specific software-rendering workaround is migrated as that behavioral
+  outcome, not as a Windows-only rendering implementation;
+- news mode controls enable only their applicable RSS or AI-style fields;
 - `Validate` is the deliberate trigger for validation rather than background
   auto-validation;
 - successful validation transitions the dialog into save/close controls;
 - `Cancel` abandons pending changes;
 - network lockout is explicit when connectivity is required;
 - a validation progress experience exists during active validation.
+- validation performs a fresh connectivity probe, validates RSS or optional AI
+  access before symbols, handles rate-limited symbols as deferred, and
+  preserves trusted symbol profiles;
+- AI validation uses the explicitly configured key (never an environment-key
+  fallback), validates compatible chat completions, treats rate limiting as a
+  deferred/transient result, reports malformed endpoints and timeouts, and
+  avoids repeating a still-valid probe for unchanged saved AI settings;
+- successful validation changes the primary actions to `OK` and `Cancel`, and
+  any persisted edit invalidates the validated snapshot;
+- invalid RSS resets to the project default only in RSS mode, summarized mode
+  does not require a valid RSS URL, an offline check does not overwrite the
+  configured RSS URL, and invalid symbols are visibly disabled;
+- apply saves settings, publishes validated quote seeds, and requests close;
+  cancellation publishes neither candidate settings nor quote seeds and does
+  not surface cancellation as an unexpected error;
+- the scene pauses throughout the configuration session and resumes after the
+  single owned configuration window closes;
+- normalization deep-clones the settings graph, caps four tapes and eight
+  symbols per tape, restores approved defaults for an empty portfolio, preserves
+  explicit direction/speed choices, clears placeholder secrets, defaults RSS
+  and AI fields, and canonicalizes a chat-completions URL to its provider base.
 
 Primary upstream evidence:
 
@@ -250,8 +346,26 @@ Required preserved behaviors:
   `YFinance.NET` service;
 - quote updates are paced one symbol at a time rather than as giant scene-wide
   refresh bursts;
+- the configuration runtime summary states the one-second pacing and ten-minute
+  cache/metadata freshness ceiling;
 - the UI progressively fills instead of blocking on the full data set;
 - historical and quote caches exist;
+- cache defaults remain ten minutes, expired memory entries are removed with
+  bounded LRU eviction, and failed live history may fall back to stale cache;
+- provider parsing distinguishes null/empty, malformed, and explicit upstream
+  errors; quote change/percentage values are normalized from previous close;
+- partial quote responses preserve every resolved requested symbol, distinguish
+  partial compatibility exceptions from total failure, deduplicate input, and
+  propagate intentional cancellation;
+- authentication/crumb failures alone refresh the Yahoo session, rate limits
+  honor Retry-After or exponential backoff, and transient server errors retry
+  only within a bounded budget;
+- shared client access, in-flight timeout/stale completion, recovery reset,
+  shutdown, and cancellation are serialized without blocking the UI thread;
+- the YFinance lane writes its own bounded redacted circular trace and performs
+  a nonfatal, cancellable, disableable upstream-sync metadata check;
+- initial runtime order is macro symbols, world-market symbols, then configured
+  tape symbols, and validated quote seeds are consumed once;
 - delayed-data messaging remains visible to the user.
 
 Primary upstream evidence:
@@ -269,8 +383,19 @@ Required preserved behaviors:
 - the scene can show loading and offline states without collapsing;
 - stale-data labeling exists;
 - network-wait overlays are explicit when applicable;
+- the network-wait overlay preserves upstream branding and bounce motion;
 - local cached values can still be shown in degraded operation;
 - logs/traces support diagnosis of runtime problems.
+- structured trace fields redact secrets, writes are asynchronous and bounded,
+  and circular/capped logs recover from corrupt cursors or write failures;
+- burst trace writes retain order, avoid per-line disk sync, restart their
+  worker after loop failure, and resolve network metadata lazily rather than in
+  static initialization;
+- recovery-state storage prefers the product data root, falls back through
+  writable platform locations, and still returns an absolute last-resort path;
+- an abnormal prior render run can select a software-rendering recovery mode,
+  while a clean run returns to the normal hardware path;
+- bounded displayed-tape samples and lane traces support soak comparison.
 
 Primary upstream evidence:
 

@@ -40,6 +40,15 @@ were deliberately removed.
 This repository is the under-development migration line for the public upstream
 DNPPV 1.0 release. Work here must not mutate the upstream repository.
 
+## Migration Behavior Gates
+
+Before product-code work begins on any CR, complete a source-cited inventory of
+all related upstream behavior and pass
+`build/Test-MigrationBehaviorGate.ps1 -CrId CR-NNN -Stage PreDevelopment`.
+Before closure, independently rescan the upstream implementation and pass the
+same gate with `-Stage Closure`. Missing or unmapped behavior hard-stops work or
+closure as applicable. Follow `docs/MIGRATION_BEHAVIOR_GATES.md`.
+
 ## DeepSeek Review Gate
 
 Before executing a newly composed multi-line PowerShell command, a command with
