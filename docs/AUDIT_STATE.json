@@ -41,14 +41,14 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek code review passed for the CR-005 YFinance lifecycle and provider-pipeline port, including follow-up fixes for compile, warning, and test issues.",
+      "DeepSeek code review passed for the abstraction-level CR-005 YFinance lifecycle and provider slice then available; the real protocol client and bundled-server integration remained deferred and was completed and physically validated during CR-009.",
       "dotnet build DoNotPanicPortfolioVisualizer.sln -c Debug passed with 0 warnings and 0 errors from pushed HEAD 014dd17.",
       "dotnet test tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj -c Debug --no-build passed with 33 tests from pushed HEAD 014dd17."
     ]
   },
   "latest_recorded_validation_state": {
-    "date": "2026-08-20",
-    "git_head": "5c9d6b7",
+    "date": "2026-08-21",
+    "git_head": "0fc7f74",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -58,10 +58,10 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek code review passed for the CR-009 live YFinance integration, market surfaces, Linux native-service launch correction, and cross-platform Yahoo URI correction.",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Release passed with 0 warnings and 0 errors, and dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 54 tests.",
+      "DeepSeek CODE review passed for the CR-010E world-market and finance-news cinematic implementation plus its final acceptance corrections.",
+      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Release passed with 0 warnings and 0 errors, and dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 78 tests.",
       "Self-contained publishes passed for win-x64, linux-x64, osx-x64, osx-arm64, linux-arm64, and win-arm64 with a matching YFinance server bundle in every output.",
-      "Live macro and ticker evidence was captured on Lubuntu, Windows 10, and Windows 11; process cleanup was verified; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
+      "Dynamic production-scene evidence for 16 graph cards, continuous world-market movement and wrap, and 24-headline news playback was captured on Lubuntu, Windows 10, and Windows 11; process cleanup was verified; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -617,7 +617,7 @@
       "id": "CR-010E",
       "phase": "Phase 3",
       "title": "Port cinematic status, macro, global-market, and news playback",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010D"
       ],
@@ -632,27 +632,42 @@
         "Physical timed capture sequence",
         "Failure-isolation and cleanup review"
       ],
-      "started_on": "2026-08-21"
+      "started_on": "2026-08-21",
+      "completed_on": "2026-08-21",
+      "evidence_files": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/GlobalMarketsMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/NewsPlaybackController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/FinanceNewsService.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "closure_notes": [
+        "Ported independently scheduled portfolio, macro, world-market, history, weather, and news refresh lanes plus the source-derived 68-pixel global-market strip with pinned New York state and a continuously wrapped 30-pixel-per-second world-market track.",
+        "Ported the telegraph news state machine with 50-character-per-second typing, source-derived vertical scrolling and pause timing, structured RSS headline playback, optional AI summary playback, and RSS fallback while preserving active playback across equivalent refreshes.",
+        "Closed from pushed checkpoint 0fc7f74 after a zero-warning build, 78 passing tests, six self-contained publishes, and live production-scene acceptance on Lubuntu, Windows 10, and Windows 11; every machine reached 16 graph cards, traversed and wrapped the market sequence, advanced through 24 headlines, cleaned up all product processes, and passed mandatory CODE and TEST_ARTIFACT reviews."
+      ]
     },
     {
       "id": "CR-010F",
       "phase": "Phase 3",
       "title": "Close cinematic parity with dynamic multi-platform evidence",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010E"
       ],
-      "objective": "Reconcile the completed Avalonia scene against every cinematic contract item and close the CR-010 umbrella only with dynamic evidence.",
+      "objective": "As the final child work item, reconcile the completed Avalonia scene against every cinematic contract item and close the CR-010 umbrella only after CR-010F itself is verified and closed.",
       "acceptance_criteria": [
         "Every cinematic contract line maps to implementation, deterministic tests, and reviewed evidence.",
-        "Six target publishes pass and dynamic acceptance passes on Lubuntu, Windows 10, and Windows 11.",
+        "Six target publishes pass; timed captures and traces on Lubuntu, Windows 10, and Windows 11 prove background transition, ticker displacement, graph displacement and quote impulses, world-market displacement and wrap, news phase/headline advance, fullscreen integrity, and zero post-run product processes.",
         "No clipping, static-lane substitution, fixed-grid graph substitution, lifecycle leak, or unowned parity gap remains."
       ],
       "validation_plan": [
         "Full contract traceability audit",
         "Six-target publish and three-machine dynamic acceptance",
         "Mandatory TEST_ARTIFACT second-opinion review"
-      ]
+      ],
+      "started_on": "2026-08-21"
     },
     {
       "id": "CR-011",
@@ -716,7 +731,7 @@
     }
   ],
   "remaining_validation_gaps": [
-    "CR-010A through CR-010F must replace the current static ticker and fixed-grid graph scaffolding with the source-traceable cinematic behavior in docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md; current still screenshots are integration evidence, not Phase 3 closure evidence.",
+    "CR-010F must reconcile every line of docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md against the completed implementation, deterministic coverage, and dynamic physical evidence before CR-010 and Phase 3 may close.",
     "Hosted execution and release-quality acceptance across the non-local target architectures remain assigned to later queue items."
   ],
   "current_operational_recommendations": [
@@ -871,6 +886,21 @@
     {
       "date": "2026-08-20",
       "scope": [
+        "docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md",
+        "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+        "docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-010A after a source-first audit of the upstream scene, controls, animation services, lifecycle paths, tests, release screenshot, and manual UI QA suite.",
+        "Established source-derived numeric and behavioral contracts for scene geometry, backgrounds, ticker tapes, floating graphs, quote impulses, status and macro data, world markets, weather, and telegraph news playback.",
+        "Repeated migration-document and tracker reconciliation reached zero gaps before the reviewed CR-010A checkpoint was pushed and CR-010B was activated."
+      ]
+    },
+    {
+      "date": "2026-08-20",
+      "scope": [
         "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs",
         "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
         "src/DoNotPanicPortfolioVisualizer.App/Assets/ExchangeBackgrounds/",
@@ -917,6 +947,24 @@
         "Closed CR-010D with full-scene source-sized floating graph cards, nominal bounce/collision physics, and quote-driven top/bottom impulses while preserving motion across live refresh.",
         "Passed 75 tests, a warning-free build, six-target publishing, and production-scene screenshot/trace acceptance on Lubuntu, Windows 10, and Windows 11 at the exact pushed checkpoint.",
         "Mandatory CODE and TEST_ARTIFACT reviews passed, all physical processes were absent after capture, and CR-010E was promoted for status, macro, world-market, and news playback parity."
+      ]
+    },
+    {
+      "date": "2026-08-21",
+      "scope": [
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/GlobalMarketsMotionController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/NewsPlaybackController.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/FinanceNewsService.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "verdict": "pass",
+      "notes": [
+        "Closed CR-010E with independent source-derived status, macro, world-market, history, weather, and news schedulers plus continuous global-market and telegraph-news playback.",
+        "Passed 78 tests, a warning-free build, six-target publishing, and production-scene screenshot/trace acceptance on Lubuntu, Windows 10, and Windows 11 from pushed checkpoint 0fc7f74.",
+        "Mandatory CODE and TEST_ARTIFACT reviews passed, all physical processes were absent after capture, and CR-010F was activated for complete cinematic-contract reconciliation."
       ]
     }
   ]
