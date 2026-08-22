@@ -62,7 +62,10 @@ param(
     [switch]$CinematicPlaybackTrace,
 
     [Parameter()]
-    [switch]$RenderHeartbeatFixture
+    [switch]$RenderHeartbeatFixture,
+
+    [Parameter()]
+    [switch]$DuplicateInstanceFixture
 )
 
 Set-StrictMode -Version Latest
@@ -281,7 +284,8 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
-        [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
+        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
@@ -407,6 +411,36 @@ function Invoke-LinuxValidation {
         }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
         $launchLine = $launchPrefix + './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
+            @(
+                ': > duplicate.log',
+                './DoNotPanicPortfolioVisualizer.App > duplicate.log 2>&1 &',
+                'DUPPID=$!',
+                'echo "DUPPID=$DUPPID" >> step.log',
+                'DUPWID=""',
+                'for i in $(seq 1 10); do',
+                '  DUPWID=$(xdotool search --pid "$DUPPID" | tail -n 1 || true)',
+                '  if [ -n "${DUPWID:-}" ]; then break; fi',
+                '  sleep 1',
+                'done',
+                'if [ -z "${DUPWID:-}" ]; then echo "DUPLICATE_WINDOW_NOT_FOUND" >> step.log; exit 1; fi',
+                'if ! kill -0 "$APPPID" 2>/dev/null; then echo "PRIMARY_EXITED_DURING_DUPLICATE" >> step.log; exit 1; fi',
+                'xdotool windowactivate --sync "$DUPWID" || true',
+                'xdotool windowraise "$DUPWID" || true',
+                'scrot -o duplicate.png',
+                'echo "DUPLICATE_CAPTURED" >> step.log',
+                'for i in $(seq 1 10); do',
+                '  if ! kill -0 "$DUPPID" 2>/dev/null; then break; fi',
+                '  sleep 1',
+                'done',
+                'if kill -0 "$DUPPID" 2>/dev/null; then echo "DUPLICATE_DID_NOT_EXIT" >> step.log; exit 1; fi',
+                'if ! kill -0 "$APPPID" 2>/dev/null; then echo "PRIMARY_DID_NOT_SURVIVE" >> step.log; exit 1; fi',
+                'echo "DUPLICATE_EXITED_PRIMARY_ALIVE" >> step.log'
+            )
+        }
+        else {
+            @()
+        }
         $scriptLines = @(
             '#!/usr/bin/env bash',
             'set -euo pipefail',
@@ -416,11 +450,17 @@ function Invoke-LinuxValidation {
             "ART=$remotePublishDirLiteral",
             'cd "$ART"',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png motion.png graph-impulse.log cinematic-playback.log run.log step.log',
+            'rm -f general.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log step.log',
             $launchLine,
             'APPPID=$!',
+            'DUPPID=""',
             'echo "APPPID=$APPPID" >> step.log',
             'cleanup() {',
+            '  if [ -n "${DUPPID:-}" ] && kill -0 "$DUPPID" 2>/dev/null; then',
+            '    kill "$DUPPID" 2>/dev/null || true',
+            '    sleep 1',
+            '    kill -9 "$DUPPID" 2>/dev/null || true',
+            '  fi',
             '  if kill -0 "$APPPID" 2>/dev/null; then',
             '    kill "$APPPID" 2>/dev/null || true',
             '    sleep 2',
@@ -440,7 +480,8 @@ function Invoke-LinuxValidation {
             'eval "$(xdotool getwindowgeometry --shell "$WID")"',
             'echo "WINDOW=$WID X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
             'scrot -o general.png',
-            'echo "GENERAL_CAPTURED" >> step.log',
+            'echo "GENERAL_CAPTURED" >> step.log'
+        ) + $duplicateLines + @(
             'xdotool key F11',
             'echo "FULLSCREEN_REQUESTED" >> step.log',
             'sleep 8',
@@ -487,6 +528,9 @@ function Invoke-LinuxValidation {
     if ($CaptureCinematicPlaybackTrace) {
         $artifactNames += 'cinematic-playback.log'
     }
+    if ($CaptureDuplicateInstanceFixture) {
+        $artifactNames += @('duplicate.png', 'duplicate.log')
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -506,7 +550,8 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
-        [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
+        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
@@ -709,6 +754,30 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_RENDER_HEARTBEAT_FIXTURE -ErrorAction SilentlyContinue'
         }
+        $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
+            @(
+                '    $duplicate = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
+                '    Add-Content -Path $stepPath -Value (''DUPPID={0}'' -f $duplicate.Id)',
+                '    for ($attempt = 0; $attempt -lt 10; $attempt++) {',
+                '        Start-Sleep -Seconds 1',
+                '        $duplicate.Refresh()',
+                '        if ($duplicate.HasExited -or $duplicate.MainWindowHandle -ne 0) { break }',
+                '    }',
+                '    if ($duplicate.HasExited -or $duplicate.MainWindowHandle -eq 0) { throw ''Duplicate notice window was not detected.'' }',
+                '    if ($proc.HasExited) { throw ''Primary process exited during duplicate launch.'' }',
+                '    [DnppvSceneNative]::ShowWindow($duplicate.MainWindowHandle, 5) | Out-Null',
+                '    [DnppvSceneNative]::SetForegroundWindow($duplicate.MainWindowHandle) | Out-Null',
+                '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''duplicate.png'')',
+                '    Add-Content -Path $stepPath -Value ''DUPLICATE_CAPTURED''',
+                '    if (-not $duplicate.WaitForExit(10000)) { throw ''Duplicate process did not exit after its notice timeout.'' }',
+                '    $proc.Refresh()',
+                '    if ($proc.HasExited) { throw ''Primary process did not survive duplicate launch.'' }',
+                '    Add-Content -Path $stepPath -Value ''DUPLICATE_EXITED_PRIMARY_ALIVE'''
+            )
+        }
+        else {
+            @()
+        }
         $scriptLines = @(
             'Add-Type -AssemblyName System.Drawing',
             'Add-Type -AssemblyName System.Windows.Forms',
@@ -726,7 +795,7 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''duplicate.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -747,6 +816,7 @@ function Invoke-WindowsValidation {
             '$startInfo.FileName = $exePath',
             '$startInfo.WorkingDirectory = $artifactDir',
             '$startInfo.UseShellExecute = $true',
+            '$duplicate = $null',
             '$proc = [System.Diagnostics.Process]::Start($startInfo)',
             'if ($null -eq $proc) { throw ''Product process launch returned no process handle.'' }',
             'try {',
@@ -764,7 +834,8 @@ function Invoke-WindowsValidation {
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
             '    Add-Content -Path $stepPath -Value (''SCREEN={0},{1}'' -f $bounds.Width, $bounds.Height)',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''general.png'')',
-            '    Add-Content -Path $stepPath -Value ''GENERAL_CAPTURED''',
+            '    Add-Content -Path $stepPath -Value ''GENERAL_CAPTURED'''
+        ) + $duplicateLines + @(
             '    [System.Windows.Forms.SendKeys]::SendWait(''{F11}'')',
             '    Add-Content -Path $stepPath -Value ''FULLSCREEN_REQUESTED''',
             '    Start-Sleep -Seconds 8',
@@ -777,6 +848,10 @@ function Invoke-WindowsValidation {
             '}',
             'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
             'finally {',
+            '    if ($duplicate -and -not $duplicate.HasExited) {',
+            '        $duplicate.Kill()',
+            '        $duplicate.WaitForExit()',
+            '    }',
             '    if ($proc -and -not $proc.HasExited) {',
             '        $proc.CloseMainWindow() | Out-Null',
             '        Start-Sleep -Seconds 2',
@@ -844,6 +919,9 @@ finally {
     if ($CaptureCinematicPlaybackTrace) {
         $artifactNames += 'cinematic-playback.log'
     }
+    if ($CaptureDuplicateInstanceFixture) {
+        $artifactNames += 'duplicate.png'
+    }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
@@ -862,6 +940,9 @@ if ($CinematicPlaybackTrace -and -not $ProductScene) {
 if ($RenderHeartbeatFixture -and -not $ProductScene) {
     throw '-RenderHeartbeatFixture requires -ProductScene.'
 }
+if ($DuplicateInstanceFixture -and -not $ProductScene) {
+    throw '-DuplicateInstanceFixture requires -ProductScene.'
+}
 
 $resolvedPublishDir = (Resolve-Path -LiteralPath $LocalPublishDir -ErrorAction Stop).Path
 if (-not (Test-Path -LiteralPath (Join-Path $resolvedPublishDir 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf) -and
@@ -875,11 +956,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent
         break
     }
     default {
