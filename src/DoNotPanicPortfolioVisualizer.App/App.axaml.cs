@@ -2,12 +2,15 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using DoNotPanicPortfolioVisualizer.App.Views;
+using DoNotPanicPortfolioVisualizer.Core;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.App;
 
 public partial class App : Application
 {
+    private SingleInstanceLease? _singleInstanceLease;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -17,12 +20,35 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new ProductShellWindow
+            if (!SingleInstanceLease.TryAcquireForCurrentUser(
+                    AppIdentity.DesktopSingleInstanceName,
+                    out _singleInstanceLease))
             {
-                DataContext = ProductSceneViewModel.CreateDefault(),
-            };
+                desktop.MainWindow = new DuplicateInstanceWindow();
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
+            try
+            {
+                desktop.MainWindow = new ProductShellWindow
+                {
+                    DataContext = ProductSceneViewModel.CreateDefault(),
+                };
+                desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
+            }
+            catch
+            {
+                ReleaseSingleInstanceLease();
+                throw;
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ReleaseSingleInstanceLease()
+    {
+        Interlocked.Exchange(ref _singleInstanceLease, null)?.Dispose();
     }
 }

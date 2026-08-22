@@ -7,6 +7,7 @@ public static class AppIdentity
     public const string PublisherName = "SANYALnet Labs";
     public const string AuthorName = "Supratim Sanyal";
     public const string LicenseName = "SANYALnet Labs Non-Commercial License";
+    public const string DesktopSingleInstanceName = "DoNotPanicPortfolioVisualizer2.Desktop";
 
     public const string LocalDataFolderName = "DoNotPanicPortfolioVisualizer2";
     public const string LegacyProductLocalDataFolderName = "DoNotPanicPortfolioVisualizer";

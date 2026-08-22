@@ -7,6 +7,55 @@ namespace DoNotPanicPortfolioVisualizer.Tests;
 public sealed class RuntimeContractsTests
 {
     [Fact]
+    public void SingleInstanceLease_BlocksDuplicateAndAllowsAcquireAfterRelease()
+    {
+        string name = $"{AppIdentity.DesktopSingleInstanceName}.Test.{Guid.NewGuid():N}";
+
+        Assert.True(SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? first));
+        Assert.NotNull(first);
+        bool duplicateAcquired = Task.Run(() =>
+        {
+            bool acquired = SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? duplicate);
+            duplicate?.Dispose();
+            return acquired;
+        }).GetAwaiter().GetResult();
+        Assert.False(duplicateAcquired);
+
+        first.Dispose();
+
+        Assert.True(SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? reacquired));
+        reacquired!.Dispose();
+    }
+
+    [Fact]
+    public void SingleInstanceIdentity_IsDistinctFromUpstream10()
+    {
+        Assert.Equal("DoNotPanicPortfolioVisualizer2.Desktop", AppIdentity.DesktopSingleInstanceName);
+        Assert.DoesNotContain("PortfolioSaver.Desktop", AppIdentity.DesktopSingleInstanceName, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SingleInstanceIdentity_IsSessionScopedOnWindowsAndUserScopedElsewhere()
+    {
+        string windowsName = SingleInstanceLease.ResolvePlatformName(
+            AppIdentity.DesktopSingleInstanceName,
+            isWindows: true,
+            userName: "tester");
+        string unixNameA = SingleInstanceLease.ResolvePlatformName(
+            AppIdentity.DesktopSingleInstanceName,
+            isWindows: false,
+            userName: "tester-a");
+        string unixNameB = SingleInstanceLease.ResolvePlatformName(
+            AppIdentity.DesktopSingleInstanceName,
+            isWindows: false,
+            userName: "tester-b");
+
+        Assert.StartsWith($"Local\\{AppIdentity.DesktopSingleInstanceName}.", windowsName, StringComparison.Ordinal);
+        Assert.StartsWith(AppIdentity.DesktopSingleInstanceName + ".", unixNameA, StringComparison.Ordinal);
+        Assert.NotEqual(unixNameA, unixNameB);
+    }
+
+    [Fact]
     public void ResolveFirstOverride_PrefersCurrentOverrideOverDeprecatedAliases()
     {
         Dictionary<string, string?> values = new(StringComparer.OrdinalIgnoreCase)
