@@ -13,12 +13,24 @@ public sealed class RuntimeContractsTests
 
         Assert.True(SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? first));
         Assert.NotNull(first);
-        bool duplicateAcquired = Task.Run(() =>
+        bool duplicateAcquired = false;
+        Exception? duplicateException = null;
+        Thread duplicateThread = new(() =>
         {
-            bool acquired = SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? duplicate);
-            duplicate?.Dispose();
-            return acquired;
-        }).GetAwaiter().GetResult();
+            try
+            {
+                duplicateAcquired = SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? duplicate);
+                duplicate?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                duplicateException = ex;
+            }
+        });
+        duplicateThread.Start();
+        duplicateThread.Join();
+
+        Assert.Null(duplicateException);
         Assert.False(duplicateAcquired);
 
         first.Dispose();
