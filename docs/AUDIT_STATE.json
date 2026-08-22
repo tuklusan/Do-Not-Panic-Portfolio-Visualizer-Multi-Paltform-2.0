@@ -47,8 +47,8 @@
     ]
   },
   "latest_recorded_validation_state": {
-    "date": "2026-08-21",
-    "git_head": "0fc7f74",
+    "date": "2026-08-22",
+    "git_head": "016ec0b",
     "git_sync_state": "clean; validation run started from HEAD matching origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
@@ -58,10 +58,10 @@
       "validation checkpoint script available"
     ],
     "validation_results": [
-      "DeepSeek CODE review passed for the CR-010E world-market and finance-news cinematic implementation plus its final acceptance corrections.",
-      "dotnet build DoNotPanicPortfolioVisualizer.sln -c Release passed with 0 warnings and 0 errors, and dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 78 tests.",
+      "DeepSeek CODE reviews passed for the CR-003 desktop and YFinance portable single-instance implementation and final acceptance-harness corrections.",
+      "dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 93 tests and no failures or skips.",
       "Self-contained publishes passed for win-x64, linux-x64, osx-x64, osx-arm64, linux-arm64, and win-arm64 with a matching YFinance server bundle in every output.",
-      "Dynamic production-scene evidence for 16 graph cards, continuous world-market movement and wrap, and 24-headline news playback was captured on Lubuntu, Windows 10, and Windows 11; process cleanup was verified; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
+      "Live production-scene and duplicate-instance evidence passed on Lubuntu and Windows 10; all three physical machines had zero residual product processes; Windows 11 fresh unsigned-build execution is explicitly excepted by enforced Smart App Control pending trusted-provider signing; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
     ]
   },
   "post_remote_recovery_replay": [],
@@ -255,7 +255,7 @@
       "id": "CR-003",
       "phase": "Phase 0",
       "title": "Define cross-platform app identity, local-data roots, and YFinance loopback contract",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-002"
       ],
@@ -271,14 +271,19 @@
         "Review of local and remote machine assumptions"
       ],
       "started_on": "2026-08-13",
-      "completed_on": "2026-08-13",
+      "completed_on": "2026-08-22",
       "artifacts": [
         "docs/PORTABLE_RUNTIME_CONTRACT.md",
         "src/DoNotPanicPortfolioVisualizer.Core/AppIdentity.cs",
         "src/DoNotPanicPortfolioVisualizer.Core/DesktopPlatformKind.cs",
         "src/DoNotPanicPortfolioVisualizer.Core/YFinanceLoopbackContract.cs",
-        "src/DoNotPanicPortfolioVisualizer.Shared/Storage/LocalDataPaths.cs",
-        "src/DoNotPanicPortfolioVisualizer.Shared/Storage/LocalDataRootResolver.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Storage/LocalDataPaths.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/Storage/LocalDataRootResolver.cs",
+        "src/DoNotPanicPortfolioVisualizer.Core/SingleInstanceLease.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/App.axaml.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/DuplicateInstanceWindow.cs",
+        "src/YFinance/YFinance.NET.Protocol/Constants/ProtocolConstants.cs",
+        "src/YFinance/YFinance.NET.Server/Hosting/YFinanceServerProgram.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
       ],
       "upstream_behavior_inventory": {
@@ -292,10 +297,29 @@
         ],
         "zero_known_gaps": true
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Shared/AppIdentity.cs",
+          "src/PortfolioSaver.Shared/Helpers/AppDataRootResolver.cs",
+          "YFinance.net/YFinance.NET.Protocol/Constants/ProtocolConstants.cs",
+          "YFinance.net/YFinance.NET.Server/Hosting/YFinanceServerProgram.cs",
+          "tests/PortfolioSaver.Tests/Services/AppDataRootResolverTests.cs",
+          "tests/PortfolioSaver.Tests/Services/YFinanceClientServerProtocolTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "Added the portable product-identity constants, the current and deprecated local-data override names, and the approved YFinance loopback port contract.",
         "Implemented a cross-platform local-data root resolver for Windows, Linux, and macOS with deterministic subdirectory mapping.",
-        "Validated the pushed commit with a clean-checkpoint local build and a 7-test runtime-contract suite."
+        "Implemented upstream-equivalent desktop duplicate blocking with a five-second notice, Windows session scoping, per-user Unix scoping, crash-safe file-handle ownership, and distinct 2.0 storage identity.",
+        "Replaced the bundled YFinance server's Unix-incompatible named mutex with a port-keyed lock beneath the 2.0 product root and physically proved a LIVE quote feed on Linux and Windows 10.",
+        "Validated the pushed checkpoints with 93 passing Release tests, six successful self-contained RID publishes, readable duplicate-notice screenshots, primary-survival assertions, zero residual processes, and a PASS from the TEST_ARTIFACT review gate.",
+        "Recorded the Windows 11 Smart App Control enforcement exception for fresh unsigned development assemblies without weakening host security; trusted-provider signing is required before that physical lane resumes."
       ]
     },
     {

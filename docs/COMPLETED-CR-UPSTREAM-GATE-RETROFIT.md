@@ -80,10 +80,13 @@ data/cache/log/secret roots; absolute override validation; owned-server bundle
 resolution and cleanup; duplicate-server protection; app duplicate-instance
 notice; loopback-only endpoint at project-approved 2.0 port 14871.
 
-Unresolved gaps: the local app has no product single-instance guard or duplicate
-notice. Deprecated 1.0 override aliases are accepted but legacy file migration
-is intentionally excluded by the user's no-history/no-traceback direction.
-CR-003 is reopened.
+Closure: the desktop and bundled YFinance service now use portable,
+product-specific exclusive locks; the five-second duplicate notice and Windows
+session scope match upstream behavior; physical Linux and Windows 10 evidence
+proves live service operation and duplicate rejection. Deprecated 1.0 override
+aliases remain accepted, while legacy file migration is intentionally excluded
+by the user's no-history/no-traceback direction. Two fresh zero-gap upstream
+closure scans and the mandatory closure gate passed on 2026-08-22.
 
 ## CR-004 - Portable Foundations And Diagnostics
 
