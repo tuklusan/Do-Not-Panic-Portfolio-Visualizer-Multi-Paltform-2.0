@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Core\DoNotPanicPortfolioVisualizer.Core.csproj" />
+    <EmbeddedResource Include="..\..\LICENSE" LogicalName="DoNotPanicPortfolioVisualizer.LICENSE" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -107,11 +107,13 @@ placeholders, accessible state text, and durable automation identifiers.
 Recovery-state storage prefers the product root and falls back through writable
 platform locations to an absolute last-resort path.
 
-Unresolved gaps: models/enums and basic redaction are present, but active
-TraceLog/capped logging, portable internet probing, render-run recovery state,
-exchange time-zone helpers, symbol normalization/profile heuristics, and
-OpenRouter model resolution are absent. Packaged release-manifest validation
-and complete project-license loading are also absent. CR-004 is reopened.
+Closure: active TraceLog/capped logging, portable internet probing, render-run
+recovery state, exchange time-zone and market-session helpers, NYSE fallback
+calendar rules, symbol normalization/profile heuristics, OpenRouter model
+resolution, packaged release-manifest validation, embedded project-license
+loading, and instance-owned sidecar shutdown are present. Windows-only behavior
+was adapted to Avalonia-neutral renderer state and platform-correct storage and
+path rules. Two fresh zero-gap upstream closure scans passed on 2026-08-22.
 
 ## CR-005 - Quote/History Provider And YFinance Pipeline
 

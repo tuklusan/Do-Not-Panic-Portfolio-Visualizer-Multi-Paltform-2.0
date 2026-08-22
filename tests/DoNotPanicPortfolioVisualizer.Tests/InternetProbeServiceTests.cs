@@ -1,0 +1,140 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using System.Net;
+using DoNotPanicPortfolioVisualizer.Shared.Services;
+using Xunit;
+
+namespace DoNotPanicPortfolioVisualizer.Tests.Services;
+
+public sealed class InternetProbeServiceTests
+{
+    [Fact]
+    public void Constructor_DefaultsToHttpProbeEndpointsAndTwoAttempts()
+    {
+        InternetProbeService service = new();
+
+        Assert.Equal(2, service.AttemptsForTests);
+        Assert.Equal(2, service.ProbeUrlsForTests.Count);
+        Assert.Contains("https://www.msftconnecttest.com/connecttest.txt", service.ProbeUrlsForTests);
+    }
+
+    [Fact]
+    public void IsInternetAvailable_UsesCachedResult_WhenCacheIsFresh()
+    {
+        InternetProbeService service = new(
+            probeUrls: ["https://invalid.invalid"],
+            attempts: 1,
+            timeoutMilliseconds: 250,
+            cacheDuration: TimeSpan.FromHours(1));
+
+        service.SetCacheForTests(DateTimeOffset.UtcNow, lastProbeResult: true);
+
+        bool available = service.IsInternetAvailable();
+
+        Assert.True(available);
+    }
+
+    [Fact]
+    public void InvalidateCache_ClearsCacheAndForcesFreshProbe()
+    {
+        InternetProbeService service = new(
+            probeUrls: ["https://invalid.invalid"],
+            attempts: 1,
+            timeoutMilliseconds: 250,
+            cacheDuration: TimeSpan.FromHours(1));
+
+        service.SetCacheForTests(DateTimeOffset.UtcNow, lastProbeResult: true);
+
+        service.InvalidateCache();
+        bool available = service.IsInternetAvailable();
+
+        Assert.False(available);
+    }
+
+    [Fact]
+    public void Constructor_NormalizesBareHostsToHttpsUrls()
+    {
+        InternetProbeService service = new(
+            probeUrls: ["example.com"],
+            attempts: 1,
+            timeoutMilliseconds: 250,
+            cacheDuration: TimeSpan.FromHours(1));
+
+        Assert.Equal(new[] { "https://example.com" }, service.ProbeUrlsForTests);
+    }
+
+
+    [Fact]
+    public void DefaultProbePath_ReusesSharedHttpClient()
+    {
+        HttpClient first = InternetProbeService.SharedProbeClientForTests;
+        HttpClient second = InternetProbeService.SharedProbeClientForTests;
+
+        Assert.Same(first, second);
+        Assert.Equal(Timeout.InfiniteTimeSpan, first.Timeout);
+    }
+
+    [Fact]
+    public async Task IsInternetAvailableAsync_CollapsesConcurrentCacheMissesToSingleProbe()
+    {
+        int requestCount = 0;
+        InternetProbeService service = new(
+            probeUrls: ["https://probe.test"],
+            attempts: 1,
+            timeoutMilliseconds: 1000,
+            cacheDuration: TimeSpan.FromMinutes(1),
+            messageHandlerFactory: () => new FakeProbeHandler(async (_, cancellationToken) =>
+            {
+                Interlocked.Increment(ref requestCount);
+                await Task.Delay(100, cancellationToken);
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }));
+
+        bool[] results = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => service.IsInternetAvailableAsync()));
+
+        Assert.All(results, Assert.True);
+        Assert.Equal(1, requestCount);
+    }
+
+    [Fact]
+    public async Task IsInternetAvailableAsync_CollapsesConcurrentExpiredCacheRefreshesToSingleProbe()
+    {
+        int requestCount = 0;
+        InternetProbeService service = new(
+            probeUrls: ["https://probe.test"],
+            attempts: 1,
+            timeoutMilliseconds: 1000,
+            cacheDuration: TimeSpan.FromMilliseconds(1),
+            messageHandlerFactory: () => new FakeProbeHandler(async (_, cancellationToken) =>
+            {
+                Interlocked.Increment(ref requestCount);
+                await Task.Delay(100, cancellationToken);
+                return new HttpResponseMessage(HttpStatusCode.NoContent);
+            }));
+        service.SetCacheForTests(DateTimeOffset.UtcNow.AddMinutes(-1), lastProbeResult: false);
+
+        bool[] results = await Task.WhenAll(Enumerable.Range(0, 12).Select(_ => service.IsInternetAvailableAsync()));
+
+        Assert.All(results, Assert.True);
+        Assert.Equal(1, requestCount);
+    }
+
+    private sealed class FakeProbeHandler(
+        Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responder) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => responder(request, cancellationToken);
+    }
+}
+

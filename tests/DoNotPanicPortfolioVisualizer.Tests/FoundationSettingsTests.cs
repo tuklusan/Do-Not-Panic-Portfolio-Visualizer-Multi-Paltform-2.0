@@ -8,6 +8,7 @@ using DoNotPanicPortfolioVisualizer.Shared.Helpers;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
+[Collection("EnvironmentSerial")]
 public sealed class FoundationSettingsTests
 {
     [Fact]
