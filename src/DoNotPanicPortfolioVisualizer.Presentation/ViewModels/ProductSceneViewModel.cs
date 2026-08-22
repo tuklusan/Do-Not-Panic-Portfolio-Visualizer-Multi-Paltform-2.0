@@ -91,6 +91,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private volatile bool _cinematicPlaybackActive = true;
+    private volatile int _resolvedGraphCount;
 
     [ObservableProperty]
     private string _marketStatusText = "Market: New York -- loading";
@@ -318,15 +319,31 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
-            try
+            if (!_settings.EnableFloatingGraphs)
             {
-                await RefreshGraphsAsync(cancellationToken);
+                await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+                continue;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+
+            int desiredGraphCount = Math.Min(
+                16,
+                Math.Max(1, _settings.MaxFloatingGraphsPerTape * Math.Max(1, Lanes.Count)));
+            for (int attempt = 0; attempt < 6 && _resolvedGraphCount < desiredGraphCount; attempt++)
             {
-                // History failure degrades the graph lane without terminating its scheduler.
+                await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+                try
+                {
+                    await RefreshGraphsAsync(cancellationToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // History failure degrades the graph lane without terminating its scheduler.
+                }
+
+                if (_resolvedGraphCount < desiredGraphCount && attempt < 5)
+                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
             }
+
             await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
         }
     }
@@ -534,6 +551,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
 
             _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
+            _resolvedGraphCount = Graphs.Count;
             ArmGraphImpulseFixture();
         }, cancellationToken);
     }
@@ -634,7 +652,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public void ConfigureCinematicViewport(double width)
     {
-        ConfigureGlobalMarketViewport(Math.Max(1d, width - 356d));
+        ConfigureGlobalMarketViewport(Math.Max(1d, width - 376d));
         _newsPlayback.ConfigureViewport(Math.Max(1d, width - 220d));
     }
 
@@ -756,7 +774,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         WriteCinematicTrace(
             $"NEWS;PHASE={_newsPlayback.Phase};HEADLINE={_newsPlayback.HeadlineIndex};SEGMENT={_newsPlayback.SegmentIndex};Y={_newsPlayback.VerticalOffset:0.00};TEXT_LENGTH={_newsPlayback.DisplayText.Length}");
         WriteCinematicTrace(
-            $"MARKETS;X={_globalMarketsMotion.Offset:0.00};SEQUENCE_WIDTH={_globalMarketsMotion.SequenceWidth:0.00};COPIES={_globalMarketsMotion.RequiredCopies}");
+            $"MARKETS;X={_globalMarketsMotion.Offset:0.00};SEQUENCE_WIDTH={_globalMarketsMotion.SequenceWidth:0.00};COPIES={_globalMarketsMotion.RequiredCopies};GRAPH_COUNT={_resolvedGraphCount}");
     }
 
     private void WriteCinematicTrace(string message)

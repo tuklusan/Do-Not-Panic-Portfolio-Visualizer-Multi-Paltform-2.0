@@ -363,7 +363,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         BorderBrush="#314B5F"
                         BorderThickness="1"
                         Padding="0">
-                    <Grid ColumnDefinitions="120,158,*" Height="68">
+                    <Grid ColumnDefinitions="140,158,*" Height="68">
                         <Border Background="#F0162A3A"
                                 BorderBrush="#445C90AA"
                                 BorderThickness="0,0,1,0"
@@ -371,6 +371,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                             <TextBlock Text="GLOBAL MARKETS"
                                        VerticalAlignment="Center"
                                        FontFamily="Consolas"
+                                       FontSize="12"
                                        FontWeight="Bold"
                                        Foreground="#EAF7FF" />
                         </Border>
