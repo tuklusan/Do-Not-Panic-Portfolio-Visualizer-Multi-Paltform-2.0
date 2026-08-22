@@ -125,14 +125,12 @@ As verified on 2026-08-11, the reference integration uses:
 Base URL:           https://api.deepseek.com
 Endpoint:           POST /chat/completions
 Model:              deepseek-v4-pro
-Thinking:           enabled
-Discovery effort:   high
-Falsification:      max
+Thinking:           disabled explicitly
 Streaming:          false
 Output format:      JSON object
 ```
 
-DeepSeek currently documents `deepseek-v4-pro` and `deepseek-v4-flash` for the Chat Completions endpoint. Thinking mode supports `reasoning_effort` values `high` and `max`. JSON Output requires both `response_format={"type":"json_object"}` and an instruction to produce JSON. Thinking mode does not use the usual sampling controls such as `temperature` or `top_p`.
+DeepSeek currently documents `deepseek-v4-pro` and `deepseek-v4-flash` for the Chat Completions endpoint. For this reviewer integration, every `deepseek-v4-pro` request must include `thinking={"type":"disabled"}` and must omit `reasoning_effort`; otherwise the model can spend the output allowance in reasoning content and return empty final content. JSON Output requires both `response_format={"type":"json_object"}` and an instruction to produce JSON.
 
 Do **not** set the model's maximum possible output allowance as the routine default. Use bounded per-phase output budgets and shard work when necessary. A huge output allowance reduces available context headroom and encourages unnecessarily large responses.
 
@@ -665,7 +663,9 @@ Rules:
 
 After discovery, validation, deduplication, and context completion, submit the candidate batch to an independent DeepSeek falsification call. If every mandatory discovery pass completes successfully and the validated candidate set is empty, no falsification call is needed; the harness may proceed to final PASS checks.
 
-Use `reasoning_effort=max` for this phase by default.
+Keep thinking explicitly disabled for this phase. The hostile-falsification
+discipline comes from the prompt and independent pass structure, not hidden
+reasoning controls that can consume the final JSON output allowance.
 
 The primary instruction is:
 
@@ -1578,20 +1578,15 @@ class DeepSeekClient:
         *,
         system: str,
         user: str,
-        reasoning_effort: str,
         max_tokens: int,
     ) -> dict[str, Any]:
-        if reasoning_effort not in {"high", "max"}:
-            raise ValueError("reasoning_effort must be high or max")
-
         payload = {
             "model": MODEL,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "thinking": {"type": "enabled"},
-            "reasoning_effort": reasoning_effort,
+            "thinking": {"type": "disabled"},
             "stream": False,
             "response_format": {"type": "json_object"},
             "max_tokens": max_tokens,
@@ -1896,7 +1891,7 @@ A minimal bootstrap script may:
 
 1. validate a clean committed candidate;
 2. construct its own simple diff + full changed-file packet;
-3. call `deepseek-v4-pro` once at `reasoning_effort=max`;
+3. call `deepseek-v4-pro` once with thinking explicitly disabled;
 4. require exact requirement evidence and concrete failure scenarios;
 5. return `PASS`, `FAIL`, or `INCONCLUSIVE`;
 6. fail closed on API/output error.

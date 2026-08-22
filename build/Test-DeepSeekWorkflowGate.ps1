@@ -59,6 +59,10 @@ $body = @{
     )
     max_tokens = 128
     temperature = 0
+    stream = $false
+    # deepseek-v4-pro may exhaust its output allowance in reasoning_content and
+    # return empty final content unless thinking is disabled explicitly.
+    thinking = @{ type = 'disabled' }
 } | ConvertTo-Json -Depth 8
 
 $response = $null
