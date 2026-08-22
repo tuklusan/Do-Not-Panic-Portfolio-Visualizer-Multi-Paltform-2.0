@@ -21,6 +21,6 @@ public static class ProtocolConstants
     public const int LengthPrefixBytes = 4;
     public const int MaxMessageBytes = 4 * 1024 * 1024;
 
-    public static string GetMutexName(int port)
-        => $"Global\\DNPPV2.YFinance.NET.Server.{port}";
+    public static string GetLockFileName(int port)
+        => $"yfinance-server-{port}.lock";
 }

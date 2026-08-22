@@ -52,6 +52,14 @@ and passwords remain in the operator password manager.
   inventory
 - OS: Windows 11
 - Notes: no `D:\SW_DEV\DO-NOT-PANIC-2.0` requirement on this machine
+- Smart App Control: enforcement mode currently rejects newly built unsigned
+  DNPPV 1.0 and 2.0 managed assemblies with Code Integrity event `3077` and
+  policy ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`. This is a test-machine
+  exception, not a product pass. Do not disable or weaken Smart App Control.
+  Resume physical acceptance here when the release lane has a certificate from
+  a trusted code-signing provider. Until then, use the Windows 10 physical
+  machine for interactive Windows evidence and the hosted Windows lanes for
+  build/test coverage.
 
 ## GitHub-Hosted Build/Test Lanes
 

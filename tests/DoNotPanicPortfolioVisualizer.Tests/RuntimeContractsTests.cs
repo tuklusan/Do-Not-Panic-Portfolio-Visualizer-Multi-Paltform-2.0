@@ -227,5 +227,6 @@ public sealed class RuntimeContractsTests
         Assert.Equal(14871, YFinanceLoopbackContract.DefaultPort);
         Assert.Equal(YFinanceLoopbackContract.DefaultPort, ProtocolConstants.DefaultPort);
         Assert.Equal("http://127.0.0.1:14871/", YFinanceLoopbackContract.BaseUri.AbsoluteUri);
+        Assert.Equal("yfinance-server-14871.lock", ProtocolConstants.GetLockFileName(ProtocolConstants.DefaultPort));
     }
 }

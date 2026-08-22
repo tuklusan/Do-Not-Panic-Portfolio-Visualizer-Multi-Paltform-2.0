@@ -92,6 +92,13 @@ DNPPV-2.0 uses a locally managed loopback endpoint for YFinance integration.
 
 This port is the active migration baseline and replaces older local assumptions.
 
+The desktop and the bundled YFinance service use OS-enforced exclusive lock
+files beneath the resolved 2.0 product root. The desktop lock preserves the
+upstream per-session scope on Windows and is per-user on Linux and macOS. The
+YFinance lock is keyed by loopback port. Existing unlocked files are harmless
+crash remnants; ownership is the live file handle, which the OS releases when
+the owning process exits.
+
 ## 7. Migration Guidance
 
 The 2.0 line must use the portable resolver and loopback contract above for

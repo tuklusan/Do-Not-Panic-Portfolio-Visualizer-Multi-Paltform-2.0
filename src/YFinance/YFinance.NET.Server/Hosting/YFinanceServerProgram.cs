@@ -51,8 +51,8 @@ internal static class YFinanceServerProgram
             return -1;
         }
 
-        using Mutex singleInstanceMutex = new(false, ProtocolConstants.GetMutexName(options.Port), out bool createdNew);
-        if (!createdNew)
+        using FileStream? singleInstanceLease = TryAcquireSingleInstanceLease(options.Port);
+        if (singleInstanceLease is null)
         {
             YFinanceCircularTraceSink.Instance.WarnState("YFinanceServer", "DuplicateServerStartRejected",
             [new("port", options.Port), new("bind_address", options.BindAddress.ToString()), new("owned_mode", options.OwnedMode), new("owner_pid", options.OwnerProcessId)]);
@@ -102,6 +102,27 @@ internal static class YFinanceServerProgram
         catch (ObjectDisposedException)
         {
             YFinanceCircularTraceSink.Instance.WarnState("YFinanceServer", "ShutdownCancellationAfterDispose", []);
+        }
+    }
+
+    private static FileStream? TryAcquireSingleInstanceLease(int port)
+    {
+        string lockRoot = Path.Combine(TraceRoot, "Locks");
+        Directory.CreateDirectory(lockRoot);
+        string lockPath = Path.Combine(lockRoot, ProtocolConstants.GetLockFileName(port));
+        try
+        {
+            return new FileStream(
+                lockPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 1,
+                FileOptions.None);
+        }
+        catch (IOException)
+        {
+            return null;
         }
     }
 
