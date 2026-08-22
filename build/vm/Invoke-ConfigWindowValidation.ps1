@@ -774,6 +774,7 @@ function Invoke-WindowsValidation {
                 '    if ($proc.HasExited) { throw ''Primary process exited during duplicate launch.'' }',
                 '    [DnppvSceneNative]::ShowWindow($duplicateWindow, 5) | Out-Null',
                 '    [DnppvSceneNative]::SetForegroundWindow($duplicateWindow) | Out-Null',
+                '    Start-Sleep -Milliseconds 750',
                 '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''duplicate.png'')',
                 '    Add-Content -Path $stepPath -Value ''DUPLICATE_CAPTURED''',
                 '    if (-not $duplicate.WaitForExit(10000)) { throw ''Duplicate process did not exit after its notice timeout.'' }',
