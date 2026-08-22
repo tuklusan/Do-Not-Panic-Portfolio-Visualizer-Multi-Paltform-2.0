@@ -74,7 +74,8 @@ Sources: `PortfolioSaver.Shared/AppIdentity.cs`,
 `Helpers/AppDataRootResolver.cs`, desktop `App.xaml.cs`,
 `YFinanceServerProcessManager.cs`, and YFinance protocol/server constants.
 
-Inventory: distinct 2.0 product/storage/mutex identity; Windows/Linux/macOS
+Inventory: distinct 2.0 product/storage/single-instance identity; upstream-equivalent
+Windows session scoping; Windows/Linux/macOS
 data/cache/log/secret roots; absolute override validation; owned-server bundle
 resolution and cleanup; duplicate-server protection; app duplicate-instance
 notice; loopback-only endpoint at project-approved 2.0 port 14871.

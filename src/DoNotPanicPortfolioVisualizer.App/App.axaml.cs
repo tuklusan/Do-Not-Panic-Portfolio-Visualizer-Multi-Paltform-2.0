@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using System.Diagnostics;
 using DoNotPanicPortfolioVisualizer.App.Views;
 using DoNotPanicPortfolioVisualizer.Core;
+using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.App;
@@ -20,8 +22,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (!SingleInstanceLease.TryAcquireForCurrentUser(
-                    AppIdentity.DesktopSingleInstanceName,
+            LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
+            string lockFileName = SingleInstanceLease.ResolveLockFileName(
+                AppIdentity.DesktopSingleInstanceLockFileName,
+                OperatingSystem.IsWindows(),
+                OperatingSystem.IsWindows() ? Process.GetCurrentProcess().SessionId : 0);
+            if (!SingleInstanceLease.TryAcquire(
+                    Path.Combine(localDataPaths.Root, lockFileName),
                     out _singleInstanceLease))
             {
                 desktop.MainWindow = new DuplicateInstanceWindow();

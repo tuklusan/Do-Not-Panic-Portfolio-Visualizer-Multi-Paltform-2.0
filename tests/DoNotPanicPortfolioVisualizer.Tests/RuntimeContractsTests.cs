@@ -9,62 +9,90 @@ public sealed class RuntimeContractsTests
     [Fact]
     public void SingleInstanceLease_BlocksDuplicateAndAllowsAcquireAfterRelease()
     {
-        string name = $"{AppIdentity.DesktopSingleInstanceName}.Test.{Guid.NewGuid():N}";
+        string root = Path.Combine(Path.GetTempPath(), $"dnppv2-single-instance-{Guid.NewGuid():N}");
+        string lockFile = Path.Combine(root, AppIdentity.DesktopSingleInstanceLockFileName);
 
-        Assert.True(SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? first));
+        Assert.True(SingleInstanceLease.TryAcquire(lockFile, out SingleInstanceLease? first));
         Assert.NotNull(first);
-        bool duplicateAcquired = false;
-        Exception? duplicateException = null;
-        Thread duplicateThread = new(() =>
+        try
         {
-            try
-            {
-                duplicateAcquired = SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? duplicate);
-                duplicate?.Dispose();
-            }
-            catch (Exception ex)
-            {
-                duplicateException = ex;
-            }
-        });
-        duplicateThread.Start();
-        duplicateThread.Join();
+            Assert.False(SingleInstanceLease.TryAcquire(lockFile, out SingleInstanceLease? duplicate));
+            Assert.Null(duplicate);
 
-        Assert.Null(duplicateException);
-        Assert.False(duplicateAcquired);
+            first.Dispose();
 
-        first.Dispose();
-
-        Assert.True(SingleInstanceLease.TryAcquire(name, out SingleInstanceLease? reacquired));
-        reacquired!.Dispose();
+            Assert.True(SingleInstanceLease.TryAcquire(lockFile, out SingleInstanceLease? reacquired));
+            reacquired!.Dispose();
+        }
+        finally
+        {
+            first.Dispose();
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [Fact]
     public void SingleInstanceIdentity_IsDistinctFromUpstream10()
     {
-        Assert.Equal("DoNotPanicPortfolioVisualizer2.Desktop", AppIdentity.DesktopSingleInstanceName);
-        Assert.DoesNotContain("PortfolioSaver.Desktop", AppIdentity.DesktopSingleInstanceName, StringComparison.Ordinal);
+        Assert.Equal("desktop-instance.lock", AppIdentity.DesktopSingleInstanceLockFileName);
+        Assert.DoesNotContain("PortfolioSaver", AppIdentity.DesktopSingleInstanceLockFileName, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void SingleInstanceIdentity_IsSessionScopedOnWindowsAndUserScopedElsewhere()
+    public void SingleInstanceIdentity_IsScopedByThePlatformSpecific20DataRoot()
     {
-        string windowsName = SingleInstanceLease.ResolvePlatformName(
-            AppIdentity.DesktopSingleInstanceName,
-            isWindows: true,
-            userName: "tester");
-        string unixNameA = SingleInstanceLease.ResolvePlatformName(
-            AppIdentity.DesktopSingleInstanceName,
-            isWindows: false,
-            userName: "tester-a");
-        string unixNameB = SingleInstanceLease.ResolvePlatformName(
-            AppIdentity.DesktopSingleInstanceName,
-            isWindows: false,
-            userName: "tester-b");
+        LocalDataPaths windowsPaths = LocalDataRootResolver.Resolve(
+            DesktopPlatformKind.Windows,
+            environmentLookup: _ => null,
+            windowsLocalAppData: @"C:\Users\Tester\AppData\Local");
+        LocalDataPaths linuxPaths = LocalDataRootResolver.Resolve(
+            DesktopPlatformKind.Linux,
+            environmentLookup: _ => null,
+            userHomeDirectory: "/home/tester");
 
-        Assert.StartsWith($"Local\\{AppIdentity.DesktopSingleInstanceName}.", windowsName, StringComparison.Ordinal);
-        Assert.StartsWith(AppIdentity.DesktopSingleInstanceName + ".", unixNameA, StringComparison.Ordinal);
-        Assert.NotEqual(unixNameA, unixNameB);
+        string windowsFileName = SingleInstanceLease.ResolveLockFileName(
+            AppIdentity.DesktopSingleInstanceLockFileName,
+            isWindows: true,
+            sessionId: 7);
+        string linuxFileName = SingleInstanceLease.ResolveLockFileName(
+            AppIdentity.DesktopSingleInstanceLockFileName,
+            isWindows: false,
+            sessionId: 0);
+        string windowsLock = windowsPaths.Root + "\\" + windowsFileName;
+        string linuxLock = linuxPaths.Root + "/" + linuxFileName;
+
+        Assert.Equal(@"C:\Users\Tester\AppData\Local\DoNotPanicPortfolioVisualizer2\desktop-instance.session-7.lock", windowsLock);
+        Assert.Equal("/home/tester/.local/share/DoNotPanicPortfolioVisualizer2/desktop-instance.lock", linuxLock);
+    }
+
+    [Fact]
+    public void SingleInstanceLease_AcquiresAnExistingButUnlockedCrashRemnant()
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"dnppv2-stale-lock-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        string lockFile = Path.Combine(root, AppIdentity.DesktopSingleInstanceLockFileName);
+        File.WriteAllText(lockFile, string.Empty);
+
+        try
+        {
+            Assert.True(SingleInstanceLease.TryAcquire(lockFile, out SingleInstanceLease? lease));
+            lease!.Dispose();
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ResolveLockFileName_RejectsTraversalAndInvalidSessions()
+    {
+        Assert.Throws<ArgumentException>(
+            () => SingleInstanceLease.ResolveLockFileName("../desktop.lock", isWindows: false, sessionId: 0));
+        Assert.Throws<ArgumentException>(
+            () => SingleInstanceLease.ResolveLockFileName(@"..\desktop.lock", isWindows: true, sessionId: 0));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => SingleInstanceLease.ResolveLockFileName("desktop.lock", isWindows: true, sessionId: -1));
     }
 
     [Fact]

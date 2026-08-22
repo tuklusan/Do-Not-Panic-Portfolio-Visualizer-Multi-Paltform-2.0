@@ -16,81 +16,60 @@ namespace DoNotPanicPortfolioVisualizer.Core;
 
 public sealed class SingleInstanceLease : IDisposable
 {
-    private Mutex? _mutex;
-    private bool _ownsMutex;
+    private FileStream? _lockStream;
 
-    private SingleInstanceLease(Mutex mutex, bool ownsMutex)
+    private SingleInstanceLease(FileStream lockStream)
     {
-        _mutex = mutex;
-        _ownsMutex = ownsMutex;
+        _lockStream = lockStream;
     }
 
-    public static bool TryAcquire(string name, out SingleInstanceLease? lease)
+    public static bool TryAcquire(string lockFilePath, out SingleInstanceLease? lease)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(lockFilePath);
 
-        Mutex mutex = new(initiallyOwned: true, name, out bool createdNew);
-        bool acquired = createdNew;
-        if (!acquired)
+        string fullPath = Path.GetFullPath(lockFilePath);
+        string? directory = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrWhiteSpace(directory))
+            throw new ArgumentException("The lock file must have a parent directory.", nameof(lockFilePath));
+
+        Directory.CreateDirectory(directory);
+        try
         {
-            try
-            {
-                acquired = mutex.WaitOne(0);
-            }
-            catch (AbandonedMutexException)
-            {
-                acquired = true;
-            }
+            FileStream stream = new(
+                fullPath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                bufferSize: 1,
+                FileOptions.None);
+            lease = new SingleInstanceLease(stream);
+            return true;
         }
-
-        if (!acquired)
+        catch (IOException)
         {
-            mutex.Dispose();
             lease = null;
             return false;
         }
-
-        lease = new SingleInstanceLease(mutex, ownsMutex: true);
-        return true;
     }
 
-    public static bool TryAcquireForCurrentUser(string baseName, out SingleInstanceLease? lease)
-        => TryAcquire(
-            ResolvePlatformName(baseName, OperatingSystem.IsWindows(), Environment.UserName),
-            out lease);
-
-    public static string ResolvePlatformName(string baseName, bool isWindows, string userName)
+    public static string ResolveLockFileName(string baseFileName, bool isWindows, int sessionId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(baseName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(userName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseFileName);
+        if (baseFileName.IndexOfAny(['/', '\\']) >= 0)
+            throw new ArgumentException("The lock file name cannot contain path separators.", nameof(baseFileName));
+        if (sessionId < 0)
+            throw new ArgumentOutOfRangeException(nameof(sessionId));
 
-        byte[] userHash = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(userName));
-        string userSuffix = Convert.ToHexString(userHash.AsSpan(0, 8));
-        return isWindows
-            ? $"Local\\{baseName}.{userSuffix}"
-            : $"{baseName}.{userSuffix}";
+        if (!isWindows)
+            return baseFileName;
+
+        string extension = Path.GetExtension(baseFileName);
+        string stem = Path.GetFileNameWithoutExtension(baseFileName);
+        return $"{stem}.session-{sessionId}{extension}";
     }
 
     public void Dispose()
     {
-        Mutex? mutex = Interlocked.Exchange(ref _mutex, null);
-        if (mutex is null)
-            return;
-
-        if (_ownsMutex)
-        {
-            _ownsMutex = false;
-            try
-            {
-                mutex.ReleaseMutex();
-            }
-            catch (ApplicationException)
-            {
-                // A process-abort path may have already relinquished ownership.
-            }
-        }
-
-        mutex.Dispose();
+        Interlocked.Exchange(ref _lockStream, null)?.Dispose();
     }
 }
