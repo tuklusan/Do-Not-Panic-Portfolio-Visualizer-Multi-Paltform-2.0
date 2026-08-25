@@ -65,7 +65,10 @@ param(
     [switch]$RenderHeartbeatFixture,
 
     [Parameter()]
-    [switch]$DuplicateInstanceFixture
+    [switch]$DuplicateInstanceFixture,
+
+    [Parameter()]
+    [switch]$SkipDeployment
 )
 
 Set-StrictMode -Version Latest
@@ -285,11 +288,38 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
-        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
+        [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
     $xAuthorityLiteral = Convert-ToBashSingleQuotedLiteral -Value ("/home/{0}/.Xauthority" -f $User)
+    if (-not $SkipRemoteDeployment) {
+        $previous = $env:SSHPASS
+        $env:SSHPASS = $Secret
+        try {
+            Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+                '-e',
+                'ssh',
+                '-o',
+                'StrictHostKeyChecking=no',
+                "$User@$HostName",
+                "mkdir -p -- $remotePublishDirLiteral"
+            )
+        }
+        finally {
+            if ($null -eq $previous) {
+                Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue
+            }
+            else {
+                $env:SSHPASS = $previous
+            }
+        }
+
+        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/")
+    }
+
+    $linuxExecutableLiteral = Convert-ToBashSingleQuotedLiteral -Value "$TargetPublishDir/DoNotPanicPortfolioVisualizer.App"
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
@@ -299,8 +329,12 @@ function Invoke-LinuxValidation {
             '-o',
             'StrictHostKeyChecking=no',
             "$User@$HostName",
-            "mkdir -p -- $remotePublishDirLiteral"
+            "test -f $linuxExecutableLiteral"
         )
+    }
+    catch {
+        $context = if ($SkipRemoteDeployment) { ' after deployment was skipped' } else { ' after deployment' }
+        throw "Remote Linux publish executable is missing${context}: $TargetPublishDir"
     }
     finally {
         if ($null -eq $previous) {
@@ -310,8 +344,6 @@ function Invoke-LinuxValidation {
             $env:SSHPASS = $previous
         }
     }
-
-    Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/")
 
     $localScriptPath = New-TemporaryScriptPath -LeafName 'dnppv2-linux-config-window-validation.sh'
     $remoteScriptPath = "$TargetPublishDir/run-validation.sh"
@@ -555,14 +587,19 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
-        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture
+        [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
+        [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
-    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
-    Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
-    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirPsLiteral 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf)) { throw 'Remote publish deployment did not complete.' }"
+    if (-not $SkipRemoteDeployment) {
+        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
+        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
+    }
+    $deploymentFailureMessage = if ($SkipRemoteDeployment) { 'Remote publish executable is missing after deployment was skipped.' } else { 'Remote publish deployment did not complete.' }
+    $deploymentFailureMessagePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $deploymentFailureMessage
+    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirPsLiteral 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf)) { throw $deploymentFailureMessagePsLiteral }"
 
     $localScriptPath = New-TemporaryScriptPath -LeafName 'dnppv2-windows-config-window-validation.ps1'
     $remoteScriptPath = Join-Path $TargetPublishDir 'run-validation.ps1'
@@ -986,11 +1023,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     default {
