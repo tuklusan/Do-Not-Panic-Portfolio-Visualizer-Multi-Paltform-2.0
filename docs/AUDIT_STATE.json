@@ -708,7 +708,21 @@
         "Logs and screenshots captured for review",
         "Tracker evidence tied to upstream screenshots and README behavior"
       ],
-      "started_on": "2026-08-20"
+      "started_on": "2026-08-20",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-010F-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml"
+        ],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-010A",
