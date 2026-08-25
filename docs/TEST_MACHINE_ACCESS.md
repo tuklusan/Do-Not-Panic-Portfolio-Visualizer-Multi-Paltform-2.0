@@ -16,13 +16,17 @@ patent, trademark, and governing-law provisions.
 
 # Test Machine Access Details
 
-Current working record: 2026-08-20
+Current working record: 2026-08-24
 
 This repository is in migration-baseline mode.
 
 Exact live credentials are intentionally not committed. Operators may keep a
 local ignored endpoint inventory such as `build/vm/remote-test-machines.local.txt`,
 and passwords remain in the operator password manager.
+
+The three physical endpoints were refreshed and SSH-verified on 2026-08-24.
+Update only the ignored local endpoint inventory when DHCP or network topology
+changes; do not commit live addresses or credentials.
 
 ## Physical Machines
 

@@ -65,6 +65,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly CancellationTokenSource _lifetimeCts = new();
     private readonly SettingsFileService _settingsService;
     private readonly IQuoteProvider _quoteProvider;
+    private readonly ProgressiveQuoteRefreshPipeline _portfolioQuotePipeline = new();
     private readonly HybridHistoricalDataProvider _historicalProvider;
     private readonly YFinanceProtocolRuntimeClient _protocolClient;
     private readonly YFinanceServerProcessManager _serverManager;
@@ -425,7 +426,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
             await RefreshPortfolioQuotesAsync(cancellationToken);
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            await Task.Delay(QuoteRefreshPolicy.GetRefreshPollingInterval(_settings, DateTimeOffset.UtcNow), cancellationToken);
         }
     }
 
@@ -512,48 +513,46 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             FreshnessBrush = "#F4C95D";
         }, cancellationToken);
 
-        List<(string Symbol, Action<QuoteSnapshot> Apply)> targets = Lanes.SelectMany(static lane => lane.Quotes)
-            .Select(ticker => (ticker.Symbol, (Action<QuoteSnapshot>)ticker.Apply))
-            .ToList();
+        Dictionary<string, List<Action<QuoteSnapshot>>> targets = Lanes
+            .SelectMany(static lane => lane.Quotes)
+            .GroupBy(static ticker => ticker.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(ticker => (Action<QuoteSnapshot>)ticker.Apply).ToList(),
+                StringComparer.OrdinalIgnoreCase);
+        ProgressiveQuoteRefreshResult result = await _portfolioQuotePipeline.RefreshAsync(
+            targets.Keys,
+            _quoteProvider,
+            cancellationToken);
 
-        int successCount = 0;
-        foreach ((string symbol, Action<QuoteSnapshot> apply) in targets)
+        foreach (QuoteSnapshot quote in result.UpdatedQuotes)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                IReadOnlyList<QuoteSnapshot> quotes = await _quoteProvider.GetQuotesAsync([symbol], cancellationToken);
-                QuoteSnapshot? quote = quotes.FirstOrDefault();
-                if (quote is null)
-                    continue;
+            if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
+                continue;
 
-                await InvokeOnUiAsync(() =>
-                {
+            await InvokeOnUiAsync(() =>
+            {
+                foreach (Action<QuoteSnapshot> apply in applyActions)
                     apply(quote);
-                    ApplyQuoteToGraph(quote);
-                    LastUpdatedText = "Last Updated: " + TickerFormatter.FormatUpdatedSymbol(quote);
-                    MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
-                    DataFreshnessText = quote.IsStale ? "DELAYED - cached market data" : "LIVE quote feed";
-                    FreshnessBrush = quote.IsStale ? "#F4C95D" : "#39E75F";
-                }, cancellationToken);
-                successCount++;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                await InvokeOnUiAsync(() =>
-                {
-                    DataFreshnessText = successCount == 0
-                        ? "OFFLINE - waiting for local market service"
-                        : $"DEGRADED - {successCount} symbols updated";
-                    FreshnessBrush = "#FF8A55";
-                }, cancellationToken);
-            }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
+                ApplyQuoteToGraph(quote);
+                LastUpdatedText = "Last Updated: " + TickerFormatter.FormatUpdatedSymbol(quote);
+                MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
+                bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
+                DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
+                FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
+            }, cancellationToken);
         }
 
-        if (successCount == 0)
-            await InvokeOnUiAsync(() => MarketStatusText = "Market: New York -- unavailable", cancellationToken);
+        if (!result.ProviderHealth.IsHealthy && result.CachedQuotes.Count == 0)
+        {
+            await InvokeOnUiAsync(() =>
+            {
+                DataFreshnessText = "OFFLINE - waiting for local market service";
+                FreshnessBrush = "#FF8A55";
+                MarketStatusText = "Market: New York -- unavailable";
+            }, cancellationToken);
+        }
     }
 
     private async Task RefreshMacroQuotesAsync(CancellationToken cancellationToken)
@@ -1002,6 +1001,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         _newsService.Dispose();
         _weatherService.Dispose();
         _historicalProvider.Dispose();
+        _portfolioQuotePipeline.Dispose();
         if (_quoteProvider is IDisposable disposableQuoteProvider)
             disposableQuoteProvider.Dispose();
         _serverManager.Dispose();
