@@ -927,7 +927,8 @@ try {
         Get-Content `$donePath
     }
     else {
-        'DONE_FILE_MISSING'
+        'DONE_FILE_MISSING' | Set-Content -Path `$donePath
+        Get-Content `$donePath
     }
 }
 finally {
