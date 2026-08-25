@@ -207,7 +207,9 @@
                                                                               Margin="0,0,0,6">
                                                                             <TextBox Text="{Binding Symbol}" />
                                                                             <TextBox Grid.Column="1"
-                                                                                     Text="{Binding DisplayName}" />
+                                                                                     Text="{Binding DisplayName, Mode=OneWay}"
+                                                                                     IsReadOnly="True"
+                                                                                     ToolTip.Tip="Filled by YFinance.NET after validation." />
                                                                             <TextBox Grid.Column="2"
                                                                                      Text="{Binding QuantityText}" />
                                                                             <TextBox Grid.Column="3"
@@ -360,7 +362,7 @@
                 BorderThickness="1"
                 CornerRadius="8"
                 Padding="14">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto"
                   ColumnSpacing="12">
                 <StackPanel Grid.Column="0"
                             Spacing="4">
@@ -394,9 +396,13 @@
                         IsEnabled="{Binding CanSave}"
                         MinWidth="96" />
                 <Button Grid.Column="4"
-                        Content="Cancel"
+                        Content="Stop validation"
                         Command="{Binding CancelValidationCommand}"
                         IsEnabled="{Binding CanCancelValidation}"
+                        MinWidth="96" />
+                <Button Grid.Column="5"
+                        Content="Cancel"
+                        Command="{Binding CancelCommand}"
                         MinWidth="96" />
             </Grid>
         </Border>

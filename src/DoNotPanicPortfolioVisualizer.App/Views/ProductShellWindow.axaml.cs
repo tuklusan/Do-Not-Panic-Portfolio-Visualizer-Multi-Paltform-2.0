@@ -230,10 +230,12 @@ public partial class ProductShellWindow : Window
         if (DataContext is ProductSceneViewModel scene)
             scene.PauseCinematicPlayback();
 
+        MainViewModel configuration = new();
         _settingsWindow = new MainWindow
         {
-            DataContext = new MainViewModel(),
+            DataContext = configuration,
         };
+        configuration.CloseRequested += () => _settingsWindow?.Close();
         _settingsWindow.Closed += (_, _) =>
         {
             _settingsWindow = null;
