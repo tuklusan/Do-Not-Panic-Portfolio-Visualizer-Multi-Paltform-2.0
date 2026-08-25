@@ -294,6 +294,36 @@ public sealed class SettingsPersistenceAndValidationTests
         Assert.Equal(symbols.OrderBy(symbol => symbol, StringComparer.OrdinalIgnoreCase), result.DeferredSymbols);
     }
 
+    [Fact]
+    public async Task AiNewsAccessValidationService_DefersRateLimitedProbeWithoutRejectingSettings()
+    {
+        AppSettings settings = Defaults.CreateSettings();
+        settings.NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews;
+        settings.AiApiKey = "test-key";
+        settings.AiEndpointUrl = "https://example.com/v1";
+        settings.AiModelId = "test-model";
+        AiNewsAccessValidationService service = new(_ => new HttpClient(new StatusResponseHandler(HttpStatusCode.TooManyRequests)));
+
+        AiNewsAccessValidationResult result = await service.ValidateAsync(settings, networkAvailable: true);
+
+        Assert.True(result.IsValid);
+        Assert.True(result.ValidationSkipped);
+        Assert.Contains("rate-limited", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task AiNewsAccessValidationService_RequiresKeyOnlyForSummarizedNews()
+    {
+        AppSettings settings = Defaults.CreateSettings();
+        settings.NewsScrollerMode = NewsScrollerMode.RssFeed;
+        AiNewsAccessValidationService service = new();
+
+        AiNewsAccessValidationResult result = await service.ValidateAsync(settings, networkAvailable: false);
+
+        Assert.True(result.IsValid);
+        Assert.True(result.ValidationSkipped);
+    }
+
     private static HttpClient CreateHttpClient(string content)
         => new(new FixedResponseHandler(content)) { Timeout = TimeSpan.FromSeconds(5) };
 
@@ -304,6 +334,12 @@ public sealed class SettingsPersistenceAndValidationTests
             {
                 Content = new StringContent(content, Encoding.UTF8, "application/xml")
             });
+    }
+
+    private sealed class StatusResponseHandler(HttpStatusCode statusCode) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(statusCode));
     }
 
     private sealed class TemporaryDirectoryScope : IDisposable
