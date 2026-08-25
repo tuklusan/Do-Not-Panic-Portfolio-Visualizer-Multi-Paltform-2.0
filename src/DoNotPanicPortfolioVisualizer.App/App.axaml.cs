@@ -1,12 +1,14 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using System.Diagnostics;
 using DoNotPanicPortfolioVisualizer.App.Views;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.Core;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
+using DoNotPanicPortfolioVisualizer.Shared.Services;
 
 namespace DoNotPanicPortfolioVisualizer.App;
 
@@ -27,6 +29,7 @@ public partial class App : Application
                 Environment.GetEnvironmentVariable("DNPPV_CONFIGURATION_VALIDATION_MODE"),
                 "1",
                 StringComparison.Ordinal);
+            bool startFullScreen = StartupOptions.RequestsFullScreen(Environment.GetCommandLineArgs());
             LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
             string lockFileName = SingleInstanceLease.ResolveLockFileName(
                 AppIdentity.DesktopSingleInstanceLockFileName,
@@ -49,10 +52,27 @@ public partial class App : Application
                 }
                 else
                 {
-                    desktop.MainWindow = new ProductShellWindow
+                    ProductShellWindow shell = new()
                     {
                         DataContext = ProductSceneViewModel.CreateDefault(),
                     };
+                    if (startFullScreen)
+                    {
+                        EventHandler? enterFullScreenAfterOpen = null;
+                        enterFullScreenAfterOpen = (_, _) =>
+                        {
+                            shell.Opened -= enterFullScreenAfterOpen;
+                            Dispatcher.UIThread.Post(
+                                () =>
+                                {
+                                    if (shell.IsVisible)
+                                        shell.EnterFullScreen();
+                                },
+                                DispatcherPriority.ApplicationIdle);
+                        };
+                        shell.Opened += enterFullScreenAfterOpen;
+                    }
+                    desktop.MainWindow = shell;
                 }
                 if (!configurationValidationMode)
                     desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
