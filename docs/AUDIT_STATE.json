@@ -406,7 +406,7 @@
       "id": "CR-005",
       "phase": "Phase 1",
       "title": "Port YFinance process management and quote/history provider pipeline",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-004"
       ],
@@ -422,7 +422,7 @@
         "Tracker evidence for port 14871 and process isolation"
       ],
       "started_on": "2026-08-13",
-      "completed_on": null,
+      "completed_on": "2026-08-25",
       "artifacts": [
         "src/DoNotPanicPortfolioVisualizer.Shared/Services/YFinanceServerProcessManager.cs",
         "src/DoNotPanicPortfolioVisualizer.Data/Runtime/YFinanceRuntimeContracts.cs",
@@ -447,6 +447,23 @@
           "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs"
         ],
         "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Providers",
+          "src/PortfolioSaver.Data/Services",
+          "YFinance.net/YFinance.NET",
+          "YFinance.net/YFinance.NET.Client",
+          "YFinance.net/YFinance.NET.Server",
+          "tests/PortfolioSaver.Tests/Providers",
+          "tests/PortfolioSaver.Tests/Services/YFinanceClientServerProtocolTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "closure_notes": [
         "Added a portable owned-server process manager for the YFinance loopback lane, using the approved DNPPV-2.0 port 14871 and portable bundle resolution rules.",
