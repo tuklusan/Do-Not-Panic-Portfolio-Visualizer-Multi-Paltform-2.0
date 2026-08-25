@@ -20,9 +20,11 @@ using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Core.Services;
 using DoNotPanicPortfolioVisualizer.Core.Validation;
+using DoNotPanicPortfolioVisualizer.Data.Runtime;
 using DoNotPanicPortfolioVisualizer.Data.Services;
 using DoNotPanicPortfolioVisualizer.Shared;
 using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
+using DoNotPanicPortfolioVisualizer.Shared.Services;
 
 namespace DoNotPanicPortfolioVisualizer.App.ViewModels;
 
@@ -365,6 +367,14 @@ public sealed class MainViewModel : ViewModelBase
                     : aiMessage;
             }
 
+            YahooSymbolValidationResult? symbolValidation = null;
+            if (errors.Count == 0)
+            {
+                symbolValidation = await ValidateSymbolsAsync(candidate).ConfigureAwait(false);
+                foreach (string invalidSymbol in symbolValidation.InvalidSymbols)
+                    errors.Add($"YFinance.NET does not recognize '{invalidSymbol}'.");
+            }
+
             if (errors.Count > 0)
             {
                 ResetTickerValidationStates(SymbolValidationState.Invalid, "Fix validation issues");
@@ -375,7 +385,7 @@ public sealed class MainViewModel : ViewModelBase
                 return;
             }
 
-            MarkTickerValidationStatesFromCandidate(candidate);
+            MarkTickerValidationStatesFromCandidate(candidate, symbolValidation);
             _validatedSettings = candidate.Clone();
             IsValidated = true;
             StatusMessage = "Validation passed. Review the settings and click Save to persist them.";
@@ -618,7 +628,26 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    private void MarkTickerValidationStatesFromCandidate(AppSettings candidate)
+    private async Task<YahooSymbolValidationResult> ValidateSymbolsAsync(AppSettings candidate)
+    {
+        string[] symbols = candidate.Groups
+            .SelectMany(static group => group.Tickers)
+            .Where(static ticker => ticker.Enabled && !string.IsNullOrWhiteSpace(ticker.Symbol))
+            .Select(static ticker => ticker.Symbol)
+            .ToArray();
+        if (symbols.Length == 0)
+            return new YahooSymbolValidationResult([]);
+
+        using YFinanceServerProcessManager manager = new();
+        await using YFinanceProtocolRuntimeClient protocolClient = new();
+        ManagedYFinanceRuntimeClient managedClient = new(manager, protocolClient, "DNPPV-2.0-Configuration");
+        YahooSymbolValidationService validator = new(managedClient);
+        return await validator.ValidateAsync(symbols, candidate.HttpTimeoutSeconds).ConfigureAwait(false);
+    }
+
+    private void MarkTickerValidationStatesFromCandidate(
+        AppSettings candidate,
+        YahooSymbolValidationResult? symbolValidation)
     {
         foreach (TickerItemEditorViewModel ticker in Groups.SelectMany(group => group.Tickers))
         {
@@ -629,10 +658,19 @@ public sealed class MainViewModel : ViewModelBase
                 continue;
             }
 
-            ticker.ValidationState = SymbolValidationState.Valid;
-            ticker.ValidationMessage = candidate.NewsScrollerMode == NewsScrollerMode.RssFeed
-                ? "Structure and RSS checks passed."
-                : "Structure checks passed. Live AI/symbol validation is queued for a later CR.";
+            if (symbolValidation is not null && symbolValidation.Entries.TryGetValue(ticker.Symbol, out YahooSymbolValidationEntry? entry))
+            {
+                ticker.ValidationState = entry.IsValid
+                    ? SymbolValidationState.Valid
+                    : entry.WasChecked ? SymbolValidationState.Invalid : SymbolValidationState.Pending;
+                ticker.ValidationMessage = entry.IsValid
+                    ? "Validated via YFinance.NET."
+                    : entry.WasChecked ? entry.FailureReason : "Validation deferred; the runtime will retry.";
+                continue;
+            }
+
+            ticker.ValidationState = SymbolValidationState.Pending;
+            ticker.ValidationMessage = "Validation deferred; the runtime will retry.";
         }
     }
 
