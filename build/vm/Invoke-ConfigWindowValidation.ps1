@@ -177,6 +177,10 @@ function Invoke-RemotePowerShell {
             'ssh',
             '-o',
             'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=15',
             "$User@$HostName",
             'powershell',
             '-NoProfile',
@@ -212,6 +216,10 @@ function Copy-ToRemote {
             '-r',
             '-o',
             'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=15',
             $SourcePath,
             "${User}@${HostName}:$DestinationPath"
         )
@@ -243,6 +251,10 @@ function Copy-FromRemote {
             'scp',
             '-o',
             'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=15',
             "${User}@${HostName}:$SourcePath",
             $DestinationPath
         )
@@ -303,6 +315,10 @@ function Invoke-LinuxValidation {
                 'ssh',
                 '-o',
                 'StrictHostKeyChecking=no',
+                '-o',
+                'BatchMode=no',
+                '-o',
+                'ConnectTimeout=15',
                 "$User@$HostName",
                 "mkdir -p -- $remotePublishDirLiteral"
             )
@@ -328,6 +344,10 @@ function Invoke-LinuxValidation {
             'ssh',
             '-o',
             'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=15',
             "$User@$HostName",
             "test -f $linuxExecutableLiteral"
         )
@@ -539,6 +559,10 @@ function Invoke-LinuxValidation {
             'ssh',
             '-o',
             'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=15',
             "$User@$HostName",
             "bash $remoteScriptPath"
         )
