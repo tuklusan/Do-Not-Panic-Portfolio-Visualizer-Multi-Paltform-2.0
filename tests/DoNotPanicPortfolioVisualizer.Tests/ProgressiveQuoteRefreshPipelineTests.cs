@@ -34,7 +34,7 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         provider.Complete("BBB", Quote("BBB", 202m));
         await provider.WaitForCompletionsAsync();
 
-        ProgressiveQuoteRefreshResult drained = await pipeline.RefreshAsync(["AAA", "BBB"], provider);
+        ProgressiveQuoteRefreshResult drained = await WaitForCompletedQuotesAsync(pipeline, provider);
 
         Assert.Equal(2, drained.UpdatedQuotes.Count);
         Assert.Equal(101m, drained.CachedQuotes["AAA"].Last);
@@ -98,6 +98,22 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
             PreviousClose = last - 1m,
             FetchTimestampUtc = fetchedAt ?? DateTimeOffset.UtcNow
         };
+
+    private static async Task<ProgressiveQuoteRefreshResult> WaitForCompletedQuotesAsync(
+        ProgressiveQuoteRefreshPipeline pipeline,
+        IQuoteProvider provider)
+    {
+        for (int attempt = 0; attempt < 20; attempt++)
+        {
+            ProgressiveQuoteRefreshResult result = await pipeline.RefreshAsync(["AAA", "BBB"], provider);
+            if (result.UpdatedQuotes.Count == 2)
+                return result;
+
+            await Task.Delay(10);
+        }
+
+        return await pipeline.RefreshAsync(["AAA", "BBB"], provider);
+    }
 
     private sealed class ControlledQuoteProvider : IQuoteProvider
     {
