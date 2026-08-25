@@ -14,7 +14,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Net.NetworkInformation;
 using CommunityToolkit.Mvvm.Input;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
@@ -23,6 +22,7 @@ using DoNotPanicPortfolioVisualizer.Core.Services;
 using DoNotPanicPortfolioVisualizer.Core.Validation;
 using DoNotPanicPortfolioVisualizer.Data.Services;
 using DoNotPanicPortfolioVisualizer.Shared;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.App.ViewModels;
 
@@ -31,6 +31,8 @@ public sealed class MainViewModel : ViewModelBase
     private readonly SettingsFileService _settingsFileService;
     private readonly SettingsValidator _settingsValidator;
     private readonly NewsFeedValidationService _newsFeedValidationService;
+    private readonly AiNewsAccessValidationService _aiNewsAccessValidationService;
+    private readonly SemaphoreSlim _validationGate = new(1, 1);
     private AppSettings _loadedSettings;
     private AppSettings? _validatedSettings;
     private bool _isBusy;
@@ -55,6 +57,7 @@ public sealed class MainViewModel : ViewModelBase
         _settingsFileService = new SettingsFileService();
         _settingsValidator = new SettingsValidator();
         _newsFeedValidationService = new NewsFeedValidationService();
+        _aiNewsAccessValidationService = new AiNewsAccessValidationService();
         _loadedSettings = _settingsFileService.Load();
         _statusMessage = $"{PortfolioVersion.DisplayName} configuration ready";
         _validationSummary = "Validate before saving changes.";
@@ -314,12 +317,15 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task ValidateAsync()
     {
-        if (IsBusy)
-            return;
+        bool gateHeld = false;
 
-        IsBusy = true;
         try
         {
+            gateHeld = await _validationGate.WaitAsync(0).ConfigureAwait(false);
+            if (!gateHeld)
+                return;
+
+            IsBusy = true;
             ResetTickerValidationStates(SymbolValidationState.Checking, "Validation in progress");
 
             List<string> errors = [];
@@ -327,12 +333,15 @@ public sealed class MainViewModel : ViewModelBase
             errors.AddRange(_settingsValidator.Validate(candidate));
 
             string feedNote = string.Empty;
+            using ConfigConnectivityService connectivity = new();
+            bool networkAvailable = errors.Count == 0 &&
+                await connectivity.IsInternetAvailableAsync().ConfigureAwait(false);
             if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.RssFeed)
             {
                 NewsFeedValidationResult feedValidation = await _newsFeedValidationService.ValidateAsync(
                     candidate.NewsFeedUrl,
                     candidate.HttpTimeoutSeconds,
-                    NetworkInterface.GetIsNetworkAvailable()).ConfigureAwait(false);
+                    networkAvailable).ConfigureAwait(false);
 
                 candidate.NewsFeedUrl = feedValidation.ResolvedFeedUrl;
                 if (!string.Equals(NewsFeedUrl, candidate.NewsFeedUrl, StringComparison.Ordinal))
@@ -342,9 +351,18 @@ public sealed class MainViewModel : ViewModelBase
                     ? "RSS feed check passed."
                     : feedValidation.Message;
             }
-            else if (errors.Count == 0)
+            else if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews)
             {
-                feedNote = "Summarized mode selected. Live AI-access validation is queued for a later CR; structural settings checks passed.";
+                AiNewsAccessValidationResult aiValidation = await _aiNewsAccessValidationService.ValidateAsync(
+                    candidate,
+                    networkAvailable).ConfigureAwait(false);
+                string aiMessage = SensitiveDataRedactor.RedactSensitivePatterns(aiValidation.Message);
+                if (!aiValidation.IsValid)
+                    errors.Add(aiMessage);
+
+                feedNote = string.IsNullOrWhiteSpace(aiMessage)
+                    ? "AI access check passed."
+                    : aiMessage;
             }
 
             if (errors.Count > 0)
@@ -363,9 +381,25 @@ public sealed class MainViewModel : ViewModelBase
             StatusMessage = "Validation passed. Review the settings and click Save to persist them.";
             ValidationSummary = feedNote;
         }
+        catch (Exception exception)
+        {
+            TraceLog.WarnState(
+                "Config.Validation",
+                "ValidationServiceUnavailable",
+                [new("exception_type", exception.GetType().Name)]);
+            ResetTickerValidationStates(SymbolValidationState.Invalid, "Validation unavailable");
+            _validatedSettings = null;
+            IsValidated = false;
+            StatusMessage = "Validation could not complete.";
+            ValidationSummary = "A configuration validation service was unavailable. Review the settings and try again.";
+        }
         finally
         {
-            IsBusy = false;
+            if (gateHeld)
+            {
+                IsBusy = false;
+                _validationGate.Release();
+            }
         }
     }
 
