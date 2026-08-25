@@ -59,6 +59,20 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
     }
 
     [Fact]
+    public async Task RefreshAsync_CapsInitialProgressiveDispatchAtFourRequests()
+    {
+        CountingPendingQuoteProvider provider = new();
+        using ProgressiveQuoteRefreshPipeline pipeline = new();
+
+        ProgressiveQuoteRefreshResult result = await pipeline.RefreshAsync(
+            ["AAA", "BBB", "CCC", "DDD", "EEE"],
+            provider);
+
+        Assert.Equal(ProgressiveQuoteRefreshPipeline.MaximumInFlightRequests, result.InFlightRequestCount);
+        Assert.Equal(ProgressiveQuoteRefreshPipeline.MaximumInFlightRequests, provider.RequestCount);
+    }
+
+    [Fact]
     public async Task RefreshAsync_PrunesTimedOutRequestsAndFreesTheSymbolForRetry()
     {
         CancellationAwareQuoteProvider provider = new();
@@ -145,5 +159,22 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
 
         public Task WaitForCancellationAsync()
             => _cancelled.Task;
+    }
+
+    private sealed class CountingPendingQuoteProvider : IQuoteProvider
+    {
+        public int RequestCount { get; private set; }
+
+        public Task<IReadOnlyList<QuoteSnapshot>> GetQuotesAsync(
+            IEnumerable<string> symbols,
+            CancellationToken cancellationToken = default)
+        {
+            RequestCount++;
+            return new TaskCompletionSource<IReadOnlyList<QuoteSnapshot>>(
+                TaskCreationOptions.RunContinuationsAsynchronously).Task;
+        }
+
+        public Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
     }
 }
