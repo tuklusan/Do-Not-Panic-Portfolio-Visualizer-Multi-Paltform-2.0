@@ -562,6 +562,7 @@ function Invoke-WindowsValidation {
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
     Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
+    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "if (-not (Test-Path -LiteralPath (Join-Path $targetPublishDirPsLiteral 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf)) { throw 'Remote publish deployment did not complete.' }"
 
     $localScriptPath = New-TemporaryScriptPath -LeafName 'dnppv2-windows-config-window-validation.ps1'
     $remoteScriptPath = Join-Path $TargetPublishDir 'run-validation.ps1'
