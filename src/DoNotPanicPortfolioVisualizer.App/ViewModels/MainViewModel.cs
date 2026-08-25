@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Avalonia.Threading;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
@@ -35,6 +36,8 @@ public sealed class MainViewModel : ViewModelBase
     private readonly NewsFeedValidationService _newsFeedValidationService;
     private readonly AiNewsAccessValidationService _aiNewsAccessValidationService;
     private readonly SemaphoreSlim _validationGate = new(1, 1);
+    private readonly object _validationCancellationGate = new();
+    private CancellationTokenSource? _validationCancellation;
     private AppSettings _loadedSettings;
     private AppSettings? _validatedSettings;
     private bool _isBusy;
@@ -42,6 +45,7 @@ public sealed class MainViewModel : ViewModelBase
     private bool _isLoadingState;
     private string _statusMessage;
     private string _validationSummary;
+    private string _validationLogText;
     private bool _useCustomBackgroundImageFolder;
     private string _customBackgroundImageFolder;
     private bool _backgroundIncludeSubfolders;
@@ -63,6 +67,7 @@ public sealed class MainViewModel : ViewModelBase
         _loadedSettings = _settingsFileService.Load();
         _statusMessage = $"{PortfolioVersion.DisplayName} configuration ready";
         _validationSummary = "Validate before saving changes.";
+        _validationLogText = string.Empty;
         _customBackgroundImageFolder = string.Empty;
         _newsFeedUrl = Defaults.DefaultNewsFeedUrl;
         _aiApiKey = string.Empty;
@@ -70,6 +75,7 @@ public sealed class MainViewModel : ViewModelBase
         _aiModelId = Defaults.DefaultAiModelId;
         Groups = [];
         ValidateCommand = new AsyncRelayCommand(ValidateAsync, () => CanValidate);
+        CancelValidationCommand = new RelayCommand(CancelValidation, () => CanCancelValidation);
         SaveCommand = new RelayCommand(Save, () => CanSave);
         RevertCommand = new RelayCommand(Revert, () => CanRevert);
         AddGroupCommand = new RelayCommand(AddGroup, () => CanAddGroup);
@@ -83,6 +89,7 @@ public sealed class MainViewModel : ViewModelBase
     public ObservableCollection<TickerGroupEditorViewModel> Groups { get; }
 
     public IAsyncRelayCommand ValidateCommand { get; }
+    public IRelayCommand CancelValidationCommand { get; }
     public IRelayCommand SaveCommand { get; }
     public IRelayCommand RevertCommand { get; }
     public IRelayCommand AddGroupCommand { get; }
@@ -99,6 +106,7 @@ public sealed class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(CanSave));
             OnPropertyChanged(nameof(CanRevert));
             OnPropertyChanged(nameof(CanAddGroup));
+            OnPropertyChanged(nameof(CanCancelValidation));
             RefreshCommandStates();
         }
     }
@@ -120,6 +128,7 @@ public sealed class MainViewModel : ViewModelBase
     public bool CanSave => !IsBusy && IsValidated && _validatedSettings is not null;
     public bool CanRevert => !IsBusy;
     public bool CanAddGroup => !IsBusy && Groups.Count < Defaults.MaxTapeCount;
+    public bool CanCancelValidation => IsBusy;
 
     public string StatusMessage
     {
@@ -131,6 +140,12 @@ public sealed class MainViewModel : ViewModelBase
     {
         get => _validationSummary;
         private set => SetProperty(ref _validationSummary, value);
+    }
+
+    public string ValidationLogText
+    {
+        get => _validationLogText;
+        private set => SetProperty(ref _validationLogText, value);
     }
 
     public bool UseCustomBackgroundImageFolder
@@ -320,6 +335,7 @@ public sealed class MainViewModel : ViewModelBase
     private async Task ValidateAsync()
     {
         bool gateHeld = false;
+        CancellationTokenSource? cancellation = null;
 
         try
         {
@@ -328,6 +344,11 @@ public sealed class MainViewModel : ViewModelBase
                 return;
 
             IsBusy = true;
+            cancellation = new CancellationTokenSource();
+            lock (_validationCancellationGate)
+                _validationCancellation = cancellation;
+            CancellationToken cancellationToken = cancellation.Token;
+            ValidationLogText = "VALIDATION STARTED";
             ResetTickerValidationStates(SymbolValidationState.Checking, "Validation in progress");
 
             List<string> errors = [];
@@ -337,13 +358,15 @@ public sealed class MainViewModel : ViewModelBase
             string feedNote = string.Empty;
             using ConfigConnectivityService connectivity = new();
             bool networkAvailable = errors.Count == 0 &&
-                await connectivity.IsInternetAvailableAsync().ConfigureAwait(false);
+                await connectivity.IsInternetAvailableAsync(cancellationToken).ConfigureAwait(false);
             if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.RssFeed)
             {
+                AppendValidationLog("RSS FEED CHECK...");
                 NewsFeedValidationResult feedValidation = await _newsFeedValidationService.ValidateAsync(
                     candidate.NewsFeedUrl,
                     candidate.HttpTimeoutSeconds,
-                    networkAvailable).ConfigureAwait(false);
+                    networkAvailable,
+                    cancellationToken).ConfigureAwait(false);
 
                 candidate.NewsFeedUrl = feedValidation.ResolvedFeedUrl;
                 if (!string.Equals(NewsFeedUrl, candidate.NewsFeedUrl, StringComparison.Ordinal))
@@ -352,12 +375,15 @@ public sealed class MainViewModel : ViewModelBase
                 feedNote = string.IsNullOrWhiteSpace(feedValidation.Message)
                     ? "RSS feed check passed."
                     : feedValidation.Message;
+                AppendValidationLog(feedValidation.ValidationSkipped ? "RSS FEED CHECK SKIPPED" : "RSS FEED CHECK COMPLETE");
             }
             else if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews)
             {
+                AppendValidationLog("AI NEWS ACCESS CHECK...");
                 AiNewsAccessValidationResult aiValidation = await _aiNewsAccessValidationService.ValidateAsync(
                     candidate,
-                    networkAvailable).ConfigureAwait(false);
+                    networkAvailable,
+                    cancellationToken).ConfigureAwait(false);
                 string aiMessage = SensitiveDataRedactor.RedactSensitivePatterns(aiValidation.Message);
                 if (!aiValidation.IsValid)
                     errors.Add(aiMessage);
@@ -365,12 +391,14 @@ public sealed class MainViewModel : ViewModelBase
                 feedNote = string.IsNullOrWhiteSpace(aiMessage)
                     ? "AI access check passed."
                     : aiMessage;
+                AppendValidationLog(aiValidation.ValidationSkipped ? "AI NEWS ACCESS CHECK SKIPPED" : "AI NEWS ACCESS CHECK COMPLETE");
             }
 
             YahooSymbolValidationResult? symbolValidation = null;
             if (errors.Count == 0)
             {
-                symbolValidation = await ValidateSymbolsAsync(candidate).ConfigureAwait(false);
+                AppendValidationLog("TICKER VALIDATION...");
+                symbolValidation = await ValidateSymbolsAsync(candidate, cancellationToken).ConfigureAwait(false);
                 foreach (string invalidSymbol in symbolValidation.InvalidSymbols)
                     errors.Add($"YFinance.NET does not recognize '{invalidSymbol}'.");
             }
@@ -382,6 +410,7 @@ public sealed class MainViewModel : ViewModelBase
                 IsValidated = false;
                 StatusMessage = errors[0];
                 ValidationSummary = string.Join(Environment.NewLine, errors);
+                AppendValidationLog("VALIDATION FAILED");
                 return;
             }
 
@@ -390,6 +419,16 @@ public sealed class MainViewModel : ViewModelBase
             IsValidated = true;
             StatusMessage = "Validation passed. Review the settings and click Save to persist them.";
             ValidationSummary = feedNote;
+            AppendValidationLog("VALIDATION PASSED");
+        }
+        catch (OperationCanceledException) when (cancellation?.IsCancellationRequested == true)
+        {
+            MarkUncheckedTickersAsCancelled();
+            _validatedSettings = null;
+            IsValidated = false;
+            StatusMessage = "Validation cancelled.";
+            ValidationSummary = "No changed settings were saved.";
+            AppendValidationLog("VALIDATION CANCELLED");
         }
         catch (Exception exception)
         {
@@ -407,6 +446,12 @@ public sealed class MainViewModel : ViewModelBase
         {
             if (gateHeld)
             {
+                lock (_validationCancellationGate)
+                {
+                    if (ReferenceEquals(_validationCancellation, cancellation))
+                        _validationCancellation = null;
+                }
+                cancellation?.Dispose();
                 IsBusy = false;
                 _validationGate.Release();
             }
@@ -628,7 +673,9 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    private async Task<YahooSymbolValidationResult> ValidateSymbolsAsync(AppSettings candidate)
+    private async Task<YahooSymbolValidationResult> ValidateSymbolsAsync(
+        AppSettings candidate,
+        CancellationToken cancellationToken)
     {
         string[] symbols = candidate.Groups
             .SelectMany(static group => group.Tickers)
@@ -642,7 +689,57 @@ public sealed class MainViewModel : ViewModelBase
         await using YFinanceProtocolRuntimeClient protocolClient = new();
         ManagedYFinanceRuntimeClient managedClient = new(manager, protocolClient, "DNPPV-2.0-Configuration");
         YahooSymbolValidationService validator = new(managedClient);
-        return await validator.ValidateAsync(symbols, candidate.HttpTimeoutSeconds).ConfigureAwait(false);
+        IProgress<YahooSymbolValidationProgress> progress = new Progress<YahooSymbolValidationProgress>(UpdateTickerValidationProgress);
+        return await validator.ValidateAsync(symbols, candidate.HttpTimeoutSeconds, progress, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void UpdateTickerValidationProgress(YahooSymbolValidationProgress progress)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => UpdateTickerValidationProgress(progress));
+            return;
+        }
+
+        foreach (TickerItemEditorViewModel ticker in Groups.SelectMany(group => group.Tickers)
+                     .Where(ticker => string.Equals(ticker.Symbol, progress.Symbol, StringComparison.OrdinalIgnoreCase)))
+        {
+            ticker.ValidationState = progress.IsValid ? SymbolValidationState.Valid : SymbolValidationState.Pending;
+            ticker.ValidationMessage = progress.Message;
+        }
+
+        AppendValidationLog($"TICKER {progress.Symbol}: {progress.Message}");
+    }
+
+    private void CancelValidation()
+    {
+        CancellationTokenSource? cancellation;
+        lock (_validationCancellationGate)
+            cancellation = _validationCancellation;
+        if (cancellation is not { IsCancellationRequested: false })
+            return;
+
+        StatusMessage = "Cancelling validation...";
+        AppendValidationLog("CANCELLATION REQUESTED");
+        cancellation.Cancel();
+    }
+
+    private void MarkUncheckedTickersAsCancelled()
+    {
+        foreach (TickerItemEditorViewModel ticker in Groups.SelectMany(group => group.Tickers)
+                     .Where(ticker => ticker.ValidationState == SymbolValidationState.Checking))
+        {
+            ticker.ValidationState = SymbolValidationState.Pending;
+            ticker.ValidationMessage = "Validation cancelled before this ticker was checked.";
+        }
+    }
+
+    private void AppendValidationLog(string entry)
+    {
+        string safeEntry = SensitiveDataRedactor.RedactSensitivePatterns(entry);
+        ValidationLogText = string.IsNullOrWhiteSpace(ValidationLogText)
+            ? safeEntry
+            : $"{ValidationLogText}{Environment.NewLine}{safeEntry}";
     }
 
     private void MarkTickerValidationStatesFromCandidate(
@@ -680,5 +777,6 @@ public sealed class MainViewModel : ViewModelBase
         SaveCommand.NotifyCanExecuteChanged();
         RevertCommand.NotifyCanExecuteChanged();
         AddGroupCommand.NotifyCanExecuteChanged();
+        CancelValidationCommand.NotifyCanExecuteChanged();
     }
 }

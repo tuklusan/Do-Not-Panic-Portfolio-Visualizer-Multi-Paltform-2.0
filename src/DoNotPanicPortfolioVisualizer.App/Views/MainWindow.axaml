@@ -360,7 +360,7 @@
                 BorderThickness="1"
                 CornerRadius="8"
                 Padding="14">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto"
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
                   ColumnSpacing="12">
                 <StackPanel Grid.Column="0"
                             Spacing="4">
@@ -371,6 +371,12 @@
                     <TextBlock Text="{Binding ValidationSummary}"
                                Foreground="#A8BDCF"
                                TextWrapping="Wrap" />
+                    <TextBox Text="{Binding ValidationLogText}"
+                             IsReadOnly="True"
+                             IsVisible="{Binding IsBusy}"
+                             MaxHeight="72"
+                             TextWrapping="Wrap"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto" />
                 </StackPanel>
                 <Button Grid.Column="1"
                         Content="Revert"
@@ -386,6 +392,11 @@
                         Content="Save"
                         Command="{Binding SaveCommand}"
                         IsEnabled="{Binding CanSave}"
+                        MinWidth="96" />
+                <Button Grid.Column="4"
+                        Content="Cancel"
+                        Command="{Binding CancelValidationCommand}"
+                        IsEnabled="{Binding CanCancelValidation}"
                         MinWidth="96" />
             </Grid>
         </Border>
