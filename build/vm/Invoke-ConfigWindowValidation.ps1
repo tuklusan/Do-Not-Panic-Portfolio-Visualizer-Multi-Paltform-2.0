@@ -564,7 +564,7 @@ function Invoke-LinuxValidation {
             '-o',
             'ConnectTimeout=15',
             "$User@$HostName",
-            "bash $remoteScriptPath"
+            "timeout --kill-after=10s 90s bash $remoteScriptPath"
         )
     }
     finally {
