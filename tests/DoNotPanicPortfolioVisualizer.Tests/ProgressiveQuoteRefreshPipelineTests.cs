@@ -58,6 +58,24 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
             Quote("AAA", 1m, now.AddMinutes(-16)), settings, now));
     }
 
+    [Fact]
+    public async Task RefreshAsync_PrunesTimedOutRequestsAndFreesTheSymbolForRetry()
+    {
+        CancellationAwareQuoteProvider provider = new();
+        using ProgressiveQuoteRefreshPipeline pipeline = new(requestTimeout: TimeSpan.FromMilliseconds(10));
+
+        ProgressiveQuoteRefreshResult first = await pipeline.RefreshAsync(["AAA"], provider);
+        await Task.Delay(TimeSpan.FromMilliseconds(30));
+        ProgressiveQuoteRefreshResult retried = await pipeline.RefreshAsync(["AAA"], provider);
+
+        Assert.Equal(1, first.InFlightRequestCount);
+        Assert.Contains("AAA", retried.FailedSymbols);
+        Assert.Equal(1, retried.InFlightRequestCount);
+        Assert.Equal(2, provider.RequestCount);
+        Assert.False(retried.ProviderHealth.IsHealthy);
+        await provider.WaitForCancellationAsync();
+    }
+
     private static QuoteSnapshot Quote(string symbol, decimal last, DateTimeOffset? fetchedAt = null)
         => new()
         {
@@ -102,5 +120,30 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
             await _allInitialRequestsCompleted.Task;
             await Task.Yield();
         }
+    }
+
+    private sealed class CancellationAwareQuoteProvider : IQuoteProvider
+    {
+        private readonly TaskCompletionSource _cancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int RequestCount { get; private set; }
+
+        public Task<IReadOnlyList<QuoteSnapshot>> GetQuotesAsync(IEnumerable<string> symbols, CancellationToken cancellationToken = default)
+        {
+            RequestCount++;
+            TaskCompletionSource<IReadOnlyList<QuoteSnapshot>> request = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            cancellationToken.Register(() =>
+            {
+                request.TrySetCanceled(cancellationToken);
+                _cancelled.TrySetResult();
+            });
+            return request.Task;
+        }
+
+        public Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task WaitForCancellationAsync()
+            => _cancelled.Task;
     }
 }
