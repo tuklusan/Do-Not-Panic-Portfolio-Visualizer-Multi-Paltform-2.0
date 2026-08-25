@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using System.Diagnostics;
 using DoNotPanicPortfolioVisualizer.App.Views;
+using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.Core;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
@@ -22,12 +23,16 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            bool configurationValidationMode = string.Equals(
+                Environment.GetEnvironmentVariable("DNPPV_CONFIGURATION_VALIDATION_MODE"),
+                "1",
+                StringComparison.Ordinal);
             LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
             string lockFileName = SingleInstanceLease.ResolveLockFileName(
                 AppIdentity.DesktopSingleInstanceLockFileName,
                 OperatingSystem.IsWindows(),
                 OperatingSystem.IsWindows() ? Process.GetCurrentProcess().SessionId : 0);
-            if (!SingleInstanceLease.TryAcquire(
+            if (!configurationValidationMode && !SingleInstanceLease.TryAcquire(
                     Path.Combine(localDataPaths.Root, lockFileName),
                     out _singleInstanceLease))
             {
@@ -38,11 +43,19 @@ public partial class App : Application
 
             try
             {
-                desktop.MainWindow = new ProductShellWindow
+                if (configurationValidationMode)
                 {
-                    DataContext = ProductSceneViewModel.CreateDefault(),
-                };
-                desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
+                    desktop.MainWindow = new MainWindow { DataContext = new MainViewModel() };
+                }
+                else
+                {
+                    desktop.MainWindow = new ProductShellWindow
+                    {
+                        DataContext = ProductSceneViewModel.CreateDefault(),
+                    };
+                }
+                if (!configurationValidationMode)
+                    desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
             }
             catch
             {
