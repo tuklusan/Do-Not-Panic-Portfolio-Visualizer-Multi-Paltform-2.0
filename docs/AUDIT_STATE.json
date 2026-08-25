@@ -558,6 +558,7 @@
       "acceptance_criteria": [
         "The user can edit portfolio tapes, news options, and backgrounds in Avalonia.",
         "Validation feedback is visible before settings are applied.",
+        "The configuration dialog opens on its owner's monitor and remains fully usable within that monitor's working area at the active DPI scale.",
         "The configuration flow is physically exercised on the three SSH-accessed machines."
       ],
       "validation_plan": [
@@ -696,6 +697,7 @@
       "objective": "Restore the remainder of the real scene composition and ambient experience.",
       "acceptance_criteria": [
         "The complete docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md is implemented without substituting a fixed dashboard layout.",
+        "The screen-aware scene preserves the upstream centered ticker-lane intent at compact working-area sizes while retaining the upstream 188-pixel lead-in on roomy displays.",
         "Ticker tapes continuously cycle at upstream-derived speeds and preserve position during quote updates.",
         "Up to 16 186x78 graph cards wander over the full scene, bounce, resolve collisions, flash, and travel up or down on raw quote changes.",
         "Global markets, clocks, weather, telegraph-style news playback, cross-fading/zooming backgrounds, and render recovery are integrated.",

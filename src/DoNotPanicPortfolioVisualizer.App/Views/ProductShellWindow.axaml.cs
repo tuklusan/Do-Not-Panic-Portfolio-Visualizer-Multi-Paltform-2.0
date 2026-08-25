@@ -3,6 +3,7 @@
 // Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
 
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -16,6 +17,7 @@ namespace DoNotPanicPortfolioVisualizer.App.Views;
 
 public partial class ProductShellWindow : Window
 {
+    private const double UpstreamTickerTopOffset = 188d;
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
     private MainWindow? _settingsWindow;
     private readonly BackgroundFrameLoader _backgroundFrameLoader = new();
@@ -170,6 +172,30 @@ public partial class ProductShellWindow : Window
             Math.Max(1d, e.NewSize.Width - 32d),
             Math.Max(1d, e.NewSize.Height - 22d));
         scene.ConfigureCinematicViewport(e.NewSize.Width);
+        PositionTickerLanes(scene);
+    }
+
+    private void PositionTickerLanes(ProductSceneViewModel scene)
+    {
+        double laneHeight = TickerLanesHost.Bounds.Height;
+        if (laneHeight <= 0d)
+            laneHeight = scene.Lanes.Sum(static lane => lane.RowHeight);
+
+        // The upstream scene reserves a 188-pixel lead-in on roomy displays.  On
+        // compact working areas, center the four live lanes in their middle region
+        // instead of letting that fixed offset push them into the lower overlays.
+        double laneRowTop = TickerLanesHost.Bounds.Y - TickerLanesHost.Margin.Top;
+        double laneRowHeight = GlobalMarketsHost.Bounds.Y - laneRowTop;
+        if (laneRowHeight <= 0d || laneHeight <= 0d)
+            return;
+
+        double topOffset = Math.Min(
+            UpstreamTickerTopOffset,
+            Math.Max(0d, (laneRowHeight - laneHeight) / 2d));
+        if (Math.Abs(TickerLanesHost.Margin.Top - topOffset) <= 0.5d)
+            return;
+
+        TickerLanesHost.Margin = new Thickness(8d, topOffset, 8d, 0d);
     }
 
     private async void OnWindowClosing(object? sender, WindowClosingEventArgs e)

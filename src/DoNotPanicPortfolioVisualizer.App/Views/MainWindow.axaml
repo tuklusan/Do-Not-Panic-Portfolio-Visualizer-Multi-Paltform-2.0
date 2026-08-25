@@ -11,8 +11,9 @@
         Icon="/Assets/dnppv-icon.ico"
         Width="1280"
         Height="820"
-        MinWidth="1080"
-        MinHeight="700"
+        MinWidth="760"
+        MinHeight="600"
+        WindowStartupLocation="CenterOwner"
         Background="#14191F"
         Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0 Configuration">
 
@@ -39,7 +40,7 @@
         <TabControl Grid.Row="1"
                     Background="#14191F">
             <TabItem Header="General">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="8"
                                 Spacing="16">

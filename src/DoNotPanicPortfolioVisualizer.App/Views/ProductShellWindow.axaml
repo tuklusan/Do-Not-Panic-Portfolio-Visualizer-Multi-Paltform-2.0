@@ -340,10 +340,12 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="1" RowDefinitions="Auto,*" ClipToBounds="True">
-                    <ItemsControl Grid.Row="0"
-                                  ItemsSource="{Binding Lanes}"
-                                  Margin="8,188,8,0">
+                <ItemsControl x:Name="TickerLanesHost"
+                              Grid.Row="1"
+                              ItemsSource="{Binding Lanes}"
+                              Margin="8,188,8,0"
+                              VerticalAlignment="Top"
+                              ClipToBounds="True">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel />
@@ -425,10 +427,10 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
+                </ItemsControl>
 
-                <Border Grid.Row="2"
+                <Border x:Name="GlobalMarketsHost"
+                        Grid.Row="2"
                         Background="#E20B1116"
                         BorderBrush="#314B5F"
                         BorderThickness="1"
