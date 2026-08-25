@@ -5,8 +5,10 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.App.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
@@ -237,8 +239,25 @@ public partial class ProductShellWindow : Window
 
     private void OnWindowDoubleTapped(object? sender, TappedEventArgs e)
     {
+        if (IsInteractiveInputTarget(e.Source))
+            return;
+
         ToggleFullScreen();
         e.Handled = true;
+    }
+
+    private static bool IsInteractiveInputTarget(object? source)
+    {
+        for (Visual? current = source as Visual; current is not null; current = current.GetVisualParent())
+        {
+            if (current is Menu or MenuItem or Button or TextBox or
+                SelectingItemsControl or Slider or ScrollBar or ToggleButton)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void OnFullScreenClick(object? sender, RoutedEventArgs e) => ToggleFullScreen();
