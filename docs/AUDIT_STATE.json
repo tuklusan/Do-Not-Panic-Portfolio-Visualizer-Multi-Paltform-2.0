@@ -478,7 +478,7 @@
       "id": "CR-006",
       "phase": "Phase 2",
       "title": "Port settings persistence, validation, and configuration workflow services",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-005"
       ],
@@ -494,7 +494,7 @@
         "Tracker evidence tied to upstream configuration workflows"
       ],
       "started_on": "2026-08-13",
-      "completed_on": "2026-08-13",
+      "completed_on": "2026-08-25",
       "artifacts": [
         "src/DoNotPanicPortfolioVisualizer.Data/Services/NewsFeedValidationService.cs",
         "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs",
@@ -502,6 +502,9 @@
         "src/DoNotPanicPortfolioVisualizer.Data/Services/SettingsProtectionService.cs",
         "src/DoNotPanicPortfolioVisualizer.Data/Services/StorageOverridePathValidator.cs",
         "src/DoNotPanicPortfolioVisualizer.Data/Services/YahooSymbolValidationService.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/AiNewsAccessValidationService.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/ConfigConnectivityService.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/SymbolProfileStore.cs",
         "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"
       ],
       "upstream_behavior_inventory": {
@@ -515,10 +518,32 @@
         ],
         "zero_known_gaps": true
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Core/Models/AppSettings.cs",
+          "src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs",
+          "src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs",
+          "src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs",
+          "src/PortfolioSaver.Data/Services/SettingsProtectionService.cs",
+          "src/PortfolioSaver.Settings/Services/AiNewsAccessValidationService.cs",
+          "src/PortfolioSaver.Settings/Services/ConfigConnectivityService.cs",
+          "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs",
+          "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "Ported portable settings persistence, protected provider-secret storage, RSS feed validation, and Yahoo symbol validation into the new Data layer.",
         "Added portable override-path validation, Windows ACL and Unix mode hardening for the settings-protection key path, and atomic settings-file replacement behavior.",
-        "Validated the pushed CR-006 slice from clean upstream-matching checkpoints with DeepSeek review, a zero-warning solution build, and a 49-test suite."
+        "Validated the pushed CR-006 slice from clean upstream-matching checkpoints with DeepSeek review, a zero-warning solution build, and a 49-test suite.",
+        "Added fresh connectivity probing, OpenAI-compatible AI access validation, OpenRouter model discovery/attribution, timeout and cancellation handling, rate-limit deferral, and redacted diagnostics; the focused settings/validation suite passed 17 tests.",
+        "The staged validation UI, buffered presentation progress, and validated apply/rollback user interaction remain owned by CR-007 rather than being silently claimed by this service-layer closure."
       ]
     },
     {
