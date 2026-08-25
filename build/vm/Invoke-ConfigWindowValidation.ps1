@@ -327,14 +327,14 @@ function Invoke-LinuxValidation {
         'cd "$ART"',
         'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
         'rm -f general.png validation.png run.log step.log',
-        './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
+        'setsid ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
         'APPPID=$!',
         'echo "APPPID=$APPPID" >> step.log',
         'cleanup() {',
         '  if kill -0 "$APPPID" 2>/dev/null; then',
-        '    kill "$APPPID" 2>/dev/null || true',
+        '    pkill -TERM -s "$APPPID" 2>/dev/null || true',
         '    sleep 2',
-        '    kill -9 "$APPPID" 2>/dev/null || true',
+        '    pkill -KILL -s "$APPPID" 2>/dev/null || true',
         '  fi',
         '}',
         'trap cleanup EXIT',
@@ -412,7 +412,7 @@ function Invoke-LinuxValidation {
             $launchEnvironment += 'DNPPV_RENDER_HEARTBEAT_FIXTURE=1'
         }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
-        $launchLine = $launchPrefix + './DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
             @(
                 ': > duplicate.log',
@@ -466,9 +466,9 @@ function Invoke-LinuxValidation {
             '    kill -9 "$DUPPID" 2>/dev/null || true',
             '  fi',
             '  if kill -0 "$APPPID" 2>/dev/null; then',
-            '    kill "$APPPID" 2>/dev/null || true',
+            '    pkill -TERM -s "$APPPID" 2>/dev/null || true',
             '    sleep 2',
-            '    kill -9 "$APPPID" 2>/dev/null || true',
+            '    pkill -KILL -s "$APPPID" 2>/dev/null || true',
             '  fi',
             '}',
             'trap cleanup EXIT',
