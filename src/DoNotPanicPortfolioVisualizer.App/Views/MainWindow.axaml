@@ -43,6 +43,7 @@ patent, trademark, and governing-law provisions.
             <TextBlock Text="{Binding ProductTitle}"
                        FontSize="28"
                        FontWeight="SemiBold"
+                       TextWrapping="Wrap"
                        Foreground="#F4FAFF" />
             <TextBlock Text="{Binding WindowSubtitle}"
                        FontSize="16"
