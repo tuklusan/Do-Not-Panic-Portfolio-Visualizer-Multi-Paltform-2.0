@@ -613,7 +613,7 @@
       "id": "CR-008",
       "phase": "Phase 3",
       "title": "Port the main Avalonia shell and fullscreen lifecycle",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-007"
       ],
@@ -629,7 +629,7 @@
         "GitHub smoke publish for supported RIDs"
       ],
       "started_on": "2026-08-13",
-      "completed_on": "2026-08-20",
+      "completed_on": "2026-08-26",
       "evidence_files": [
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr008-local-fullscreen.png",
         "C:/Users/vagab/AppData/Local/Temp/dnppv2-cr008-linux/general.png",
@@ -647,9 +647,23 @@
         ],
         "zero_known_gaps": true
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml",
+          "src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopShellMigrationTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
         "The startup window is now the real full-scene Avalonia product shell, while the CR-007 editor remains available through Options > Settings.",
-        "Maximized startup, F11 fullscreen, Escape restoration, double-tap fullscreen, menu suppression, Exit, Settings, and About paths are implemented.",
+        "Maximized startup, F11 fullscreen, Escape restoration, double-tap fullscreen, menu suppression, Exit, Settings, and About paths are implemented. The About window now uses the packaged cross-platform license service and restores the upstream product identity, ambient-use disclaimer, and complete license disclosure.",
         "All six target publishes passed and visible shell runs completed on the three physical machines.",
         "The validation harness temporary-script collision found during parallel execution was corrected with unique generated filenames."
       ]

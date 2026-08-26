@@ -292,29 +292,7 @@ public partial class ProductShellWindow : Window
 
     private async void OnAboutClick(object? sender, RoutedEventArgs e)
     {
-        Window dialog = new()
-        {
-            Title = "About DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
-            Width = 520,
-            Height = 230,
-            CanResize = false,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Content = new StackPanel
-            {
-                Margin = new Avalonia.Thickness(24),
-                Spacing = 12,
-                Children =
-                {
-                    new TextBlock { Text = "DO NOT PANIC PORTFOLIO VISUALIZER 2.0", FontSize = 20 },
-                    new TextBlock { Text = "Cross-platform Avalonia migration under development." },
-                    new TextBlock { Text = "Based on original work by Supratim Sanyal of SANYALnet Labs.", TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                    new Button { Content = "OK", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right },
-                },
-            },
-        };
-
-        Button closeButton = (Button)((StackPanel)dialog.Content).Children[^1];
-        closeButton.Click += (_, _) => dialog.Close();
+        AboutWindow dialog = new();
         await dialog.ShowDialog(this);
     }
 }

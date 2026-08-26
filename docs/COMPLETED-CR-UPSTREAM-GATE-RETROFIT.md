@@ -210,12 +210,15 @@ license; asynchronous packaged-release integrity notice; cross-platform
 render-surface recovery; shutdown cleanup. Brand artwork preserves transparent
 corners and target-appropriate icon sizes.
 
-Unresolved gaps: basic Avalonia fullscreen and settings ownership work, but any
-double tap currently toggles even over interactive/menu content, direct
-fullscreen startup is absent, About omits upstream branding/license detail, and
-render-run recovery is incomplete. Windows-native composition nudges are not
-ported literally; their cross-platform behavioral requirement is a healthy,
-recoverable render surface. CR-008 is reopened.
+Closure mapping: the Avalonia shell now provides maximized and optional
+fullscreen startup, F11/Escape and guarded double-tap transitions, menu
+visibility and state restoration, settings pause/resume with a single owner,
+full product About branding and bundled license disclosure, asynchronous
+integrity reporting, render-surface recovery, and shutdown cleanup. The native
+WPF composition nudge remains intentionally unported: its portable behavioral
+equivalent is the existing healthy, recoverable Avalonia render surface. Two
+independent closure scans of the cited upstream files found zero unmapped
+behaviors; CR-008 is closed.
 
 ## CR-009 - Tapes, Macro Ribbon, Status, Runtime Integration
 
