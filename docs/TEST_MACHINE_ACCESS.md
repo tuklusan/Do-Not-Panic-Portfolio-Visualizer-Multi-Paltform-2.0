@@ -56,14 +56,13 @@ changes; do not commit live addresses or credentials.
   inventory
 - OS: Windows 11
 - Notes: no `D:\SW_DEV\DO-NOT-PANIC-2.0` requirement on this machine
-- Smart App Control: enforcement mode currently rejects newly built unsigned
-  DNPPV 1.0 and 2.0 managed assemblies with Code Integrity event `3077` and
-  policy ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`. This is a test-machine
-  exception, not a product pass. Do not disable or weaken Smart App Control.
-  Resume physical acceptance here when the release lane has a certificate from
-  a trusted code-signing provider. Until then, use the Windows 10 physical
-  machine for interactive Windows evidence and the hosted Windows lanes for
-  build/test coverage.
+- SmartScreen: the test-machine owner disabled the SmartScreen filter on
+  2026-08-25 so unsigned DNPPV-2.0 development bundles can be physically
+  exercised here. This is a temporary, isolated local test-environment
+  exception only, not a signed-release acceptance result or a practice for
+  any other machine. Re-enable the filter after this testing session; restore
+  a protected release posture and use a trusted code-signing certificate before
+  any public release acceptance.
 
 ## GitHub-Hosted Build/Test Lanes
 
