@@ -722,7 +722,7 @@ function Invoke-WindowsValidation {
         '    [DnppvRemoteNative]::ShowWindow($proc.MainWindowHandle, 5) | Out-Null',
         '    [DnppvRemoteNative]::SetForegroundWindow($proc.MainWindowHandle) | Out-Null',
         "    Start-Sleep -Seconds $Warmup",
-        '    [DnppvRemoteNative]::MoveWindow($proc.MainWindowHandle, 40, 40, 1100, 720, $true) | Out-Null',
+        '    [DnppvRemoteNative]::MoveWindow($proc.MainWindowHandle, 32, 32, 960, 640, $true) | Out-Null',
         '    Start-Sleep -Seconds 1',
         '    [DnppvRemoteNative]::ShowWindow($proc.MainWindowHandle, 5) | Out-Null',
         '    [DnppvRemoteNative]::SetForegroundWindow($proc.MainWindowHandle) | Out-Null',
