@@ -39,19 +39,22 @@ patent, trademark, and governing-law provisions.
     <Grid RowDefinitions="Auto,*,Auto"
           Margin="24"
           RowSpacing="18">
-        <StackPanel Spacing="4">
+        <Grid RowDefinitions="Auto,Auto,Auto"
+              RowSpacing="4">
             <TextBlock Text="{Binding ProductTitle}"
                        FontSize="28"
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
                        Foreground="#F4FAFF" />
             <TextBlock Text="{Binding WindowSubtitle}"
+                       Grid.Row="1"
                        FontSize="16"
                        Foreground="#96B3CD" />
             <TextBlock Text="{Binding RuntimeLine}"
+                       Grid.Row="2"
                        FontSize="13"
                        Foreground="#6D869C" />
-        </StackPanel>
+        </Grid>
 
         <TabControl Grid.Row="1"
                     Background="#14191F"
