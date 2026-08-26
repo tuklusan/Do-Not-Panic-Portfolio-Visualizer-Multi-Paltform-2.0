@@ -452,6 +452,8 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
                 symbolValidation = await ValidateSymbolsAsync(candidate, cancellationToken);
                 foreach (string invalidSymbol in symbolValidation.InvalidSymbols)
                     errors.Add($"YFinance.NET does not recognize '{invalidSymbol}'.");
+
+                DisableInvalidTickerEditors(symbolValidation.InvalidSymbols);
             }
 
             if (errors.Count > 0)
@@ -973,6 +975,19 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
 
             ticker.ValidationState = SymbolValidationState.Pending;
             ticker.ValidationMessage = "Validation deferred; the runtime will retry.";
+        }
+    }
+
+    private void DisableInvalidTickerEditors(IEnumerable<string> invalidSymbols)
+    {
+        HashSet<string> invalid = new(invalidSymbols, StringComparer.OrdinalIgnoreCase);
+        if (invalid.Count == 0)
+            return;
+
+        foreach (TickerItemEditorViewModel ticker in Groups.SelectMany(group => group.Tickers))
+        {
+            if (!string.IsNullOrWhiteSpace(ticker.Symbol) && invalid.Contains(ticker.Symbol.Trim()))
+                ticker.Enabled = false;
         }
     }
 
