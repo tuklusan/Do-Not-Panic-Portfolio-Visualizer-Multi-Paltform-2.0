@@ -189,12 +189,14 @@ retired ticker metadata editors are absent; help badges/tooltips, responsive
 scrolling/shared columns, and a persistent compact primary-action footer are
 part of the visible workflow.
 
-Unresolved gaps: the local editor covers basic fields and structural/RSS checks
-but explicitly defers AI validation. It lacks network lock/retry, validation
-progress/log, trusted/deferred symbol handling, and upstream validated OK/Cancel
-workflow semantics. It must also enforce the per-tape symbol cap, invalidate on
-all persisted collection/property edits, publish validated quote seeds only on
-apply, and treat user cancellation as an ordinary close. CR-007 is reopened.
+Closure scan: the Avalonia editor now maps the complete inventory. It has the
+General/Advanced editors, four-tape and per-tape symbol bounds, background and
+news/AI settings, validation invalidation, network lock/retry, staged RSS/AI/
+symbol validation, cancellation and progress feedback, trusted/deferred symbol
+results, automatic provider display names, invalid-symbol disabling, validated
+seed publication only on Save, rollback on Cancel, compact action footer,
+read-only provider display fields, responsive scroll access, and contextual
+help/tooltips. Fresh source scans must remain part of the CR closure gate.
 
 ## CR-008 - Shell And Fullscreen Lifecycle
 

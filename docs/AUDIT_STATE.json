@@ -550,7 +550,7 @@
       "id": "CR-007",
       "phase": "Phase 2",
       "title": "Port the configuration window to Avalonia",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-006"
       ],
@@ -567,7 +567,7 @@
         "Artifact review before closure"
       ],
       "started_on": "2026-08-13",
-      "completed_on": "2026-08-13",
+      "completed_on": "2026-08-26",
       "evidence_files": [
         "src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj",
         "src/DoNotPanicPortfolioVisualizer.App/ViewModels/MainViewModel.cs",
@@ -588,10 +588,25 @@
         ],
         "zero_known_gaps": true
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs",
+          "src/PortfolioSaver.Settings/ViewModels/TickerGroupEditorViewModel.cs",
+          "src/PortfolioSaver.Settings/ViewModels/TickerItemEditorViewModel.cs",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
-        "Replaced the placeholder Avalonia window with a real configuration surface that edits portable background, portfolio-tape, and news/provider settings and surfaces pre-save validation feedback.",
-        "Validated the CR-007 slice from clean pushed checkpoints with a zero-warning Debug build, a 49-test suite, a local UI smoke run, and physical-machine evidence across Lubuntu, Windows 10, and Windows 11.",
-        "Closed the CR only after a DeepSeek TEST_ARTIFACT second-opinion review passed on the final mixed evidence set, with later harness-only commits explicitly verified not to change product code."
+        "The Avalonia configuration editor now preserves the upstream validation, deferred-symbol, cancellation, invalid-symbol, settings-publication, contextual-help, and responsive-layout behavior while using portable services.",
+        "Fresh local build and focused configuration validation tests passed; code reviews passed for the responsive layout and help-affordance changes. The earlier advisory reviewer finding on invalid-symbol re-enable was retained as an upstream-contract decision rather than a product gap.",
+        "Physical evidence from the logged-in Linux, Windows 10, and Windows 11 desktops shows the real configuration window opening inside the working area. Linux additionally exercised portfolio-tape and Advanced/RSS edits; Windows captures validated compact high-DPI title fit after the responsive correction."
       ]
     },
     {
