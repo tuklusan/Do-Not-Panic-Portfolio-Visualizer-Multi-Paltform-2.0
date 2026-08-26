@@ -412,7 +412,7 @@ function Invoke-LinuxValidation {
         'BG_X=$((X + (WIDTH * 384 / 1000)))',
         'BG_Y=$((Y + (HEIGHT * 349 / 1000)))',
         'GROUP_X=$((X + (WIDTH * 300 / 1000)))',
-        'GROUP_Y=$((Y + (HEIGHT * 585 / 1000)))',
+        'GROUP_Y=$((Y + (HEIGHT * 715 / 1000)))',
         'ADVANCED_X=$((X + (WIDTH * 145 / 1000)))',
         'ADVANCED_Y=$((Y + (HEIGHT * 150 / 1000)))',
         'RSS_X=$((X + (WIDTH * 408 / 1000)))',
