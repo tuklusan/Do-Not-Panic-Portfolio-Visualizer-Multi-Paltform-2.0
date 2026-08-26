@@ -1,3 +1,18 @@
+<!--
+============================================================================
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Proprietary rights reserved except as expressly licensed herein.
+
+DO NOT PANIC PORTFOLIO VISUALIZER
+This file is governed by the SANYALnet Labs Non-Commercial License in the
+root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+for AI/ML model training are prohibited unless separately authorized.
+
+Attribution is required: "Based on original work by Supratim Sanyal of
+SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+patent, trademark, and governing-law provisions.
+============================================================================
+-->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:DoNotPanicPortfolioVisualizer.App.ViewModels"
@@ -38,7 +53,8 @@
         </StackPanel>
 
         <TabControl Grid.Row="1"
-                    Background="#14191F">
+                    Background="#14191F"
+                    IsEnabled="{Binding IsConfigActive}">
             <TabItem Header="General">
                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
@@ -363,7 +379,7 @@
                 BorderThickness="1"
                 CornerRadius="8"
                 Padding="14">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto"
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto"
                   ColumnSpacing="12">
                 <StackPanel Grid.Column="0"
                             Spacing="4">
@@ -382,26 +398,31 @@
                              ScrollViewer.VerticalScrollBarVisibility="Auto" />
                 </StackPanel>
                 <Button Grid.Column="1"
+                        Content="Retry network"
+                        Command="{Binding RetryNetworkCommand}"
+                        IsVisible="{Binding ShowNetworkLockOverlay}"
+                        MinWidth="116" />
+                <Button Grid.Column="2"
                         Content="Revert"
                         Command="{Binding RevertCommand}"
                         IsEnabled="{Binding CanRevert}"
                         MinWidth="96" />
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Content="Validate"
                         Command="{Binding ValidateCommand}"
                         IsEnabled="{Binding CanValidate}"
                         MinWidth="104" />
-                <Button Grid.Column="3"
+                <Button Grid.Column="4"
                         Content="Save"
                         Command="{Binding SaveCommand}"
                         IsEnabled="{Binding CanSave}"
                         MinWidth="96" />
-                <Button Grid.Column="4"
+                <Button Grid.Column="5"
                         Content="Stop validation"
                         Command="{Binding CancelValidationCommand}"
                         IsEnabled="{Binding CanCancelValidation}"
                         MinWidth="96" />
-                <Button Grid.Column="5"
+                <Button Grid.Column="6"
                         Content="Cancel"
                         Command="{Binding CancelCommand}"
                         MinWidth="96" />

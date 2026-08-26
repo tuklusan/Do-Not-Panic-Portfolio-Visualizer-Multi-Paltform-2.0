@@ -29,12 +29,14 @@ using DoNotPanicPortfolioVisualizer.Shared.Services;
 
 namespace DoNotPanicPortfolioVisualizer.App.ViewModels;
 
-public sealed class MainViewModel : ViewModelBase
+public sealed class MainViewModel : ViewModelBase, IDisposable
 {
     private readonly SettingsFileService _settingsFileService;
     private readonly SettingsValidator _settingsValidator;
     private readonly NewsFeedValidationService _newsFeedValidationService;
     private readonly AiNewsAccessValidationService _aiNewsAccessValidationService;
+    private readonly IConnectivityService _connectivityService;
+    private readonly bool _ownsConnectivityService;
     private readonly SemaphoreSlim _validationGate = new(1, 1);
     private readonly object _validationCancellationGate = new();
     private CancellationTokenSource? _validationCancellation;
@@ -46,6 +48,9 @@ public sealed class MainViewModel : ViewModelBase
     private bool _isBusy;
     private bool _isValidated;
     private bool _isLoadingState;
+    private bool _isNetworkAvailable;
+    private int _connectivityRefreshRunning;
+    private bool _disposed;
     private string _statusMessage;
     private string _validationSummary;
     private string _validationLogText;
@@ -62,11 +67,18 @@ public sealed class MainViewModel : ViewModelBase
     private AiWritingStyle _aiWritingStyle;
 
     public MainViewModel()
+        : this(connectivityService: null)
+    {
+    }
+
+    internal MainViewModel(IConnectivityService? connectivityService)
     {
         _settingsFileService = new SettingsFileService();
         _settingsValidator = new SettingsValidator();
         _newsFeedValidationService = new NewsFeedValidationService();
         _aiNewsAccessValidationService = new AiNewsAccessValidationService();
+        _connectivityService = connectivityService ?? new ConfigConnectivityService();
+        _ownsConnectivityService = connectivityService is null;
         _loadedSettings = _settingsFileService.Load();
         _statusMessage = $"{PortfolioVersion.DisplayName} configuration ready";
         _validationSummary = "Validate before saving changes.";
@@ -83,7 +95,12 @@ public sealed class MainViewModel : ViewModelBase
         CancelCommand = new RelayCommand(Cancel);
         RevertCommand = new RelayCommand(Revert, () => CanRevert);
         AddGroupCommand = new RelayCommand(AddGroup, () => CanAddGroup);
+        RetryNetworkCommand = new AsyncRelayCommand(
+            RetryConnectivityAsync,
+            () => !IsBusy && Volatile.Read(ref _connectivityRefreshRunning) == 0);
         ApplyLoadedSettings(_loadedSettings);
+        _connectivityService.ConnectivityChanged += OnConnectivityChanged;
+        _ = RefreshConnectivityAsync(forceProbe: false);
     }
 
     public string ProductTitle => PortfolioVersion.DisplayName;
@@ -100,6 +117,7 @@ public sealed class MainViewModel : ViewModelBase
     public IRelayCommand CancelCommand { get; }
     public IRelayCommand RevertCommand { get; }
     public IRelayCommand AddGroupCommand { get; }
+    public IAsyncRelayCommand RetryNetworkCommand { get; }
 
     public bool IsBusy
     {
@@ -131,7 +149,24 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    public bool CanValidate => !IsBusy;
+    public bool IsNetworkAvailable
+    {
+        get => _isNetworkAvailable;
+        private set
+        {
+            if (!SetProperty(ref _isNetworkAvailable, value))
+                return;
+
+            OnPropertyChanged(nameof(IsConfigActive));
+            OnPropertyChanged(nameof(ShowNetworkLockOverlay));
+            OnPropertyChanged(nameof(CanValidate));
+            RefreshCommandStates();
+        }
+    }
+
+    public bool IsConfigActive => IsNetworkAvailable && !IsBusy;
+    public bool ShowNetworkLockOverlay => !IsNetworkAvailable;
+    public bool CanValidate => IsConfigActive;
     public bool CanSave => !IsBusy && IsValidated && _validatedSettings is not null;
     public bool CanRevert => !IsBusy;
     public bool CanAddGroup => !IsBusy && Groups.Count < Defaults.MaxTapeCount;
@@ -346,6 +381,13 @@ public sealed class MainViewModel : ViewModelBase
 
         try
         {
+            if (!IsNetworkAvailable)
+            {
+                StatusMessage = "Internet connection is required before validation can run.";
+                ValidationSummary = "Restore connectivity and select Retry network.";
+                return;
+            }
+
             gateHeld = await _validationGate.WaitAsync(0);
             if (!gateHeld)
                 return;
@@ -364,9 +406,10 @@ public sealed class MainViewModel : ViewModelBase
             errors.AddRange(_settingsValidator.Validate(candidate));
 
             string feedNote = string.Empty;
-            using ConfigConnectivityService connectivity = new();
             bool networkAvailable = errors.Count == 0 &&
-                await connectivity.IsInternetAvailableAsync(cancellationToken);
+                await _connectivityService.IsInternetAvailableAsync(cancellationToken);
+            if (errors.Count == 0 && !networkAvailable)
+                errors.Add("Internet connection is required before configuration validation can run. Retry when connectivity is restored.");
             if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.RssFeed)
             {
                 AppendValidationLog("RSS FEED CHECK...");
@@ -413,12 +456,15 @@ public sealed class MainViewModel : ViewModelBase
 
             if (errors.Count > 0)
             {
+                List<string> safeErrors = errors
+                    .Select(SensitiveDataRedactor.RedactSensitivePatterns)
+                    .ToList();
                 ResetTickerValidationStates(SymbolValidationState.Invalid, "Fix validation issues");
                 _validatedSettings = null;
                 _validatedQuoteSeeds = [];
                 IsValidated = false;
-                StatusMessage = errors[0];
-                ValidationSummary = string.Join(Environment.NewLine, errors);
+                StatusMessage = safeErrors[0];
+                ValidationSummary = string.Join(Environment.NewLine, safeErrors);
                 AppendValidationLog("VALIDATION FAILED");
                 return;
             }
@@ -803,6 +849,90 @@ public sealed class MainViewModel : ViewModelBase
             : $"{ValidationLogText}{Environment.NewLine}{safeEntry}";
     }
 
+    private async Task RetryConnectivityAsync()
+        => await RefreshConnectivityAsync(forceProbe: true);
+
+    private async Task RefreshConnectivityAsync(bool forceProbe)
+    {
+        if (_disposed || Interlocked.CompareExchange(ref _connectivityRefreshRunning, 1, 0) != 0)
+            return;
+
+        RefreshRetryNetworkCommandState();
+        try
+        {
+            if (forceProbe)
+                _connectivityService.ForceProbe();
+
+            bool available = await _connectivityService.IsInternetAvailableAsync();
+            ApplyConnectivityResult(available);
+        }
+        catch (Exception exception)
+        {
+            TraceLog.WarnState(
+                "Config.Connectivity",
+                "ProbeUnavailable",
+                [new("exception_type", exception.GetType().Name)]);
+            ApplyConnectivityResult(false);
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _connectivityRefreshRunning, 0);
+            RefreshRetryNetworkCommandState();
+        }
+    }
+
+    private void OnConnectivityChanged(object? sender, EventArgs eventArgs)
+        => _ = RefreshConnectivityAsync(forceProbe: false);
+
+    private void ApplyConnectivityResult(bool available)
+    {
+        if (_disposed)
+            return;
+
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => ApplyConnectivityResult(available));
+            return;
+        }
+
+        IsNetworkAvailable = available;
+        if (available)
+        {
+            if (!IsBusy)
+                StatusMessage = "Internet connection available. Configure settings, then validate.";
+            return;
+        }
+
+        if (!IsBusy)
+        {
+            StatusMessage = "Internet connection is required before validation can run.";
+            ValidationSummary = "Configuration is temporarily locked. Restore connectivity and select Retry network.";
+        }
+    }
+
+    private void RefreshRetryNetworkCommandState()
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            RetryNetworkCommand.NotifyCanExecuteChanged();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(RetryNetworkCommand.NotifyCanExecuteChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _connectivityService.ConnectivityChanged -= OnConnectivityChanged;
+        if (_ownsConnectivityService && _connectivityService is IDisposable disposable)
+            disposable.Dispose();
+        CancelValidation();
+    }
+
     private void RequestClose()
     {
         if (Interlocked.Exchange(ref _closeRequested, 1) != 0)
@@ -887,5 +1017,6 @@ public sealed class MainViewModel : ViewModelBase
         RevertCommand.NotifyCanExecuteChanged();
         AddGroupCommand.NotifyCanExecuteChanged();
         CancelValidationCommand.NotifyCanExecuteChanged();
+        RefreshRetryNetworkCommandState();
     }
 }
