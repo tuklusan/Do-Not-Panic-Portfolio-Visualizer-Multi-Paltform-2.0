@@ -70,10 +70,18 @@ patent, trademark, and governing-law provisions.
                                 CornerRadius="8"
                                 Padding="16">
                             <StackPanel Spacing="12">
-                                <TextBlock Text="Background"
-                                           FontSize="20"
-                                           FontWeight="SemiBold"
-                                           Foreground="#F4FAFF" />
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="8">
+                                    <TextBlock Text="Background"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="#F4FAFF" />
+                                    <Button Content="?"
+                                            Width="20"
+                                            Height="20"
+                                            Padding="0"
+                                            ToolTip.Tip="Choose an image folder, or leave this off to use the built-in background rotation." />
+                                </StackPanel>
                                 <CheckBox Content="Use my image folder"
                                           IsChecked="{Binding UseCustomBackgroundImageFolder}"
                                           Foreground="#DAE6F2" />
@@ -116,11 +124,19 @@ patent, trademark, and governing-law provisions.
                                 Padding="16">
                             <StackPanel Spacing="14">
                                 <DockPanel LastChildFill="False">
-                                    <TextBlock Text="Portfolio Tapes"
-                                               FontSize="20"
-                                               FontWeight="SemiBold"
-                                               Foreground="#F4FAFF"
-                                               DockPanel.Dock="Left" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="8"
+                                                DockPanel.Dock="Left">
+                                        <TextBlock Text="Portfolio Tapes"
+                                                   FontSize="20"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#F4FAFF" />
+                                        <Button Content="?"
+                                                Width="20"
+                                                Height="20"
+                                                Padding="0"
+                                                ToolTip.Tip="Ticker names are filled during validation when the provider supplies them." />
+                                    </StackPanel>
                                     <Button Content="Add Tape"
                                             Command="{Binding AddGroupCommand}"
                                             DockPanel.Dock="Right"
@@ -226,7 +242,8 @@ patent, trademark, and governing-law provisions.
                                                                         <Grid ColumnDefinitions="2*,2*,*,*,*,Auto,Auto,Auto"
                                                                               ColumnSpacing="8"
                                                                               Margin="0,0,0,6">
-                                                                            <TextBox Text="{Binding Symbol}" />
+                                                                            <TextBox Text="{Binding Symbol}"
+                                                                                     ToolTip.Tip="Ticker, fund, index, futures, or other supported market symbol." />
                                                                             <TextBox Grid.Column="1"
                                                                                      Text="{Binding DisplayName, Mode=OneWay}"
                                                                                      IsReadOnly="True"
@@ -244,7 +261,8 @@ patent, trademark, and governing-law provisions.
                                                                             <Border Grid.Column="6"
                                                                                     Background="#253242"
                                                                                     CornerRadius="999"
-                                                                                    Padding="8,3">
+                                                                                    Padding="8,3"
+                                                                                    ToolTip.Tip="{Binding ValidationMessage}">
                                                                                 <TextBlock Text="{Binding ValidationBadgeText}"
                                                                                            Foreground="#EAF3FA"
                                                                                            FontSize="11"
@@ -287,10 +305,18 @@ patent, trademark, and governing-law provisions.
                                 CornerRadius="8"
                                 Padding="16">
                             <StackPanel Spacing="12">
-                                <TextBlock Text="News"
-                                           FontSize="20"
-                                           FontWeight="SemiBold"
-                                           Foreground="#F4FAFF" />
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="8">
+                                    <TextBlock Text="News"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="#F4FAFF" />
+                                    <Button Content="?"
+                                            Width="20"
+                                            Height="20"
+                                            Padding="0"
+                                            ToolTip.Tip="RSS mode reads the configured feed directly. Summarized Financial News requires a compatible personal AI API key." />
+                                </StackPanel>
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="24">
                                     <RadioButton Content="Summarized Financial News"
