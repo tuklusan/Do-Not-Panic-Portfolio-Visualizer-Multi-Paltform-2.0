@@ -42,7 +42,7 @@ patent, trademark, and governing-law provisions.
         <Grid RowDefinitions="Auto,Auto,Auto"
               RowSpacing="4">
             <TextBlock Text="{Binding ProductTitle}"
-                       FontSize="28"
+                       FontSize="20"
                        FontWeight="SemiBold"
                        TextWrapping="Wrap"
                        Foreground="#F4FAFF" />
