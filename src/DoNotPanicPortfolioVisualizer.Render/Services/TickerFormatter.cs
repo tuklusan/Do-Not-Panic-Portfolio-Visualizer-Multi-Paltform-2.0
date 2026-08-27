@@ -19,9 +19,12 @@ namespace DoNotPanicPortfolioVisualizer.Render.Services;
 public static class TickerFormatter
 {
     public static string FormatPrice(QuoteSnapshot? quote)
-        => quote?.Last is decimal value
-            ? value.ToString(value >= 1000m ? "N0.##" : "N2", CultureInfo.InvariantCulture)
+    {
+        decimal? value = quote?.Last ?? quote?.PreviousClose;
+        return value is decimal formatted
+            ? formatted.ToString(formatted >= 1000m ? "N0.##" : "N2", CultureInfo.InvariantCulture)
             : "--";
+    }
 
     public static string FormatChange(QuoteSnapshot? quote)
         => quote?.ChangePercent is decimal value

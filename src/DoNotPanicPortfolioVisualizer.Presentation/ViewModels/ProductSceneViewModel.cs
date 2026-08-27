@@ -89,6 +89,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private Task? _portfolioQuoteLoop;
     private Task? _macroQuoteLoop;
     private Task? _worldMarketsLoop;
+    private Task? _initialQuoteSequence;
     private Task? _graphRefreshLoop;
     private Task? _newsRefreshLoop;
     private Task? _tickerMotionLoop;
@@ -110,6 +111,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private volatile bool _cinematicPlaybackActive = true;
     private volatile int _resolvedGraphCount;
+    private readonly TaskCompletionSource _initialQuoteSequenceCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     [ObservableProperty]
     private string _marketStatusText = "Market: New York -- loading";
@@ -240,6 +242,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         lock (_renderHeartbeatGate)
             _renderHeartbeat.Start(now);
         _renderHeartbeatFixtureStartedUtc = now;
+        _initialQuoteSequence ??= RunInitialQuoteSequenceAsync(_lifetimeCts.Token);
         _portfolioQuoteLoop ??= RunPortfolioQuoteLoopAsync(_lifetimeCts.Token);
         _macroQuoteLoop ??= RunMacroQuoteLoopAsync(_lifetimeCts.Token);
         _worldMarketsLoop ??= RunWorldMarketsLoopAsync(_lifetimeCts.Token);
@@ -422,6 +425,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunPortfolioQuoteLoopAsync(CancellationToken cancellationToken)
     {
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
@@ -432,7 +436,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunMacroQuoteLoopAsync(CancellationToken cancellationToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
@@ -443,7 +447,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunWorldMarketsLoopAsync(CancellationToken cancellationToken)
     {
-        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
@@ -501,6 +505,31 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         while (!_cinematicPlaybackActive)
             await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+    }
+
+    private async Task RunInitialQuoteSequenceAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+
+            // Upstream primes the scene in macro, world-market, then user-tape order.
+            // Do this only once; the independent loops resume their normal cadence after it.
+            await RefreshMacroQuotesAsync(cancellationToken);
+            await RefreshGlobalMarketsAsync(cancellationToken);
+            await RefreshPortfolioQuotesAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch
+        {
+            // Each recurring loop remains responsible for retrying its own optional source.
+        }
+        finally
+        {
+            _initialQuoteSequenceCompleted.TrySetResult();
+        }
     }
 
     private async Task RefreshPortfolioQuotesAsync(CancellationToken cancellationToken)
@@ -975,6 +1004,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         await _lifetimeCts.CancelAsync();
         Task?[] loops =
         [
+            _initialQuoteSequence,
             _portfolioQuoteLoop,
             _macroQuoteLoop,
             _worldMarketsLoop,

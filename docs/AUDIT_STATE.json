@@ -146,7 +146,7 @@
       "id": "CR-001",
       "phase": "Phase 0",
       "title": "Capture authoritative upstream workflow inventory and acceptance baseline",
-      "status": "closed",
+      "status": "open",
       "depends_on": [],
       "objective": "Document every upstream user-visible workflow, configuration path, and runtime surface that DNPPV-2.0 must preserve.",
       "acceptance_criteria": [
@@ -672,7 +672,7 @@
       "id": "CR-009",
       "phase": "Phase 3",
       "title": "Port ticker tapes, macro ribbon, and scene status surfaces",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-008"
       ],
@@ -688,7 +688,7 @@
         "Artifact review against the upstream workflow inventory"
       ],
       "started_on": "2026-08-20",
-      "completed_on": "2026-08-20",
+      "completed_on": "2026-08-26",
       "evidence_files": [
         "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
         "src/DoNotPanicPortfolioVisualizer.Data/Runtime/YFinanceProtocolRuntimeClient.cs",
@@ -708,11 +708,25 @@
         ],
         "zero_known_gaps": true
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "tests/PortfolioSaver.Tests/Services/StartupCoordinatorTapeItemTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "closure_notes": [
-        "The initial slice restored four settings-driven ticker lanes and seven macro symbols; the upstream-gate retrofit identified the missing eighth gauge and reopened this CR for correction together with the remaining ticker/runtime gaps.",
+        "The four settings-driven ticker lanes now preserve the upstream fixed-field geometry, minimum 18-item visual sequence, seamless copies, waiting/missing-data glyph distinction, stable quote models, trend colors, and quote flashes. The status and macro surfaces contain all eight upstream gauges and the market/latest/freshness/UTC fields.",
         "Integrated the retained YFinance implementation as a self-contained owned service on port 14871 and added the real protocol runtime adapter, lifecycle cleanup, and six-RID publish bundling.",
         "Physical acceptance found and corrected Unix execute-bit, extensionless-native-launch, and rooted-URI resolution defects; final live screenshots passed on Lubuntu, Windows 10, and Windows 11.",
-        "Closed from pushed checkpoint 5c9d6b7 after a zero-warning Release build, 54 passing tests, six successful target publishes, verified remote process cleanup, mandatory CODE reviews, and a PASS from the TEST_ARTIFACT second-opinion gate."
+        "The minimum visual-sequence and waiting/missing ticker-state gaps are corrected and review-tested. CR-009 remains open until the initial runtime refresh order is macro symbols, then world-market symbols, then configured tape symbols."
       ]
     },
     {

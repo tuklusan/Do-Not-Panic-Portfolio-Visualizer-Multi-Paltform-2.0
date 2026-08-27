@@ -21,6 +21,7 @@ namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
 public sealed partial class TickerLaneViewModel : ObservableObject
 {
+    public const int MinimumSequenceItemCount = 18;
     public const double ItemWidth = 230d;
     public const double CopySpacing = 20d;
 
@@ -64,7 +65,8 @@ public sealed partial class TickerLaneViewModel : ObservableObject
             return;
         }
 
-        double sequenceWidth = Quotes.Count * ItemWidth;
+        IReadOnlyList<TickerQuoteViewModel> sequence = BuildVisualSequence();
+        double sequenceWidth = sequence.Count * ItemWidth;
         double cycleDistance = sequenceWidth + CopySpacing;
         int sideCopies = Math.Max(2, (int)Math.Ceiling(Math.Max(1d, viewportWidth) / cycleDistance) + 2);
         if (sideCopies != _sideCopies || TrackItems.Count == 0)
@@ -73,10 +75,10 @@ public sealed partial class TickerLaneViewModel : ObservableObject
             TrackItems.Clear();
             for (int copy = 0; copy < (sideCopies * 2) + 1; copy++)
             {
-                for (int index = 0; index < Quotes.Count; index++)
+                for (int index = 0; index < sequence.Count; index++)
                 {
-                    double width = ItemWidth + (index == Quotes.Count - 1 ? CopySpacing : 0d);
-                    TrackItems.Add(new TickerTrackItemViewModel(Quotes[index], width));
+                    double width = ItemWidth + (index == sequence.Count - 1 ? CopySpacing : 0d);
+                    TrackItems.Add(new TickerTrackItemViewModel(sequence[index], width));
                 }
             }
         }
@@ -92,6 +94,16 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         TrackOffset = _motion.Offset;
         foreach (TickerQuoteViewModel quote in Quotes)
             quote.StepVisuals(elapsed);
+    }
+
+    private IReadOnlyList<TickerQuoteViewModel> BuildVisualSequence()
+    {
+        int count = Math.Max(MinimumSequenceItemCount, Quotes.Count);
+        List<TickerQuoteViewModel> sequence = new(count);
+        for (int index = 0; index < count; index++)
+            sequence.Add(Quotes[index % Quotes.Count]);
+
+        return sequence;
     }
 }
 

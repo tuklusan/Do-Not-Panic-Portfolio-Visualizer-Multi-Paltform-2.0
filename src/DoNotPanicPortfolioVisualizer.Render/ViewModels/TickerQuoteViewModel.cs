@@ -32,6 +32,18 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
     private bool _isStale;
 
     [ObservableProperty]
+    private bool _isWaitingOnData = true;
+
+    [ObservableProperty]
+    private bool _hasMissingData;
+
+    [ObservableProperty]
+    private string _waitingGlyphText = "🕒";
+
+    [ObservableProperty]
+    private string _waitingGlyphBrush = "#DAA520";
+
+    [ObservableProperty]
     private decimal? _last;
 
     [ObservableProperty]
@@ -59,7 +71,8 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
 
     public void Apply(QuoteSnapshot quote)
     {
-        bool changed = Last.HasValue && quote.Last.HasValue && Last.Value != quote.Last.Value;
+        decimal? usableLast = quote.Last ?? quote.PreviousClose;
+        bool changed = Last.HasValue && usableLast.HasValue && Last.Value != usableLast.Value;
         PriceText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
         TrendBrush = quote.ChangePercent switch
@@ -69,8 +82,12 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
             _ => "#D4DEE5"
         };
         IsStale = quote.IsStale;
-        Last = quote.Last;
+        Last = usableLast;
         ChangePercent = quote.ChangePercent;
+        IsWaitingOnData = !usableLast.HasValue;
+        HasMissingData = !usableLast.HasValue;
+        WaitingGlyphText = HasMissingData ? "◌" : string.Empty;
+        WaitingGlyphBrush = HasMissingData ? "#FF8C00" : "#DAA520";
         if (changed)
         {
             FlashBrush = quote.ChangePercent switch

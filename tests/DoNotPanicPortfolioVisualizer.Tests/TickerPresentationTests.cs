@@ -26,6 +26,7 @@ public sealed class TickerPresentationTests
         Assert.Equal("123.46", TickerFormatter.FormatPrice(new QuoteSnapshot { Last = 123.456m }));
         Assert.Equal("+1.25%", TickerFormatter.FormatChange(new QuoteSnapshot { ChangePercent = 1.25m }));
         Assert.Equal("-0.75%", TickerFormatter.FormatChange(new QuoteSnapshot { ChangePercent = -0.75m }));
+        Assert.Equal("99.50", TickerFormatter.FormatPrice(new QuoteSnapshot { PreviousClose = 99.5m }));
         Assert.Equal("--", TickerFormatter.FormatPrice(null));
         Assert.Equal("--", TickerFormatter.FormatChange(new QuoteSnapshot()));
     }
@@ -44,6 +45,30 @@ public sealed class TickerPresentationTests
         Assert.Equal(source.RowHeight, lane.RowHeight);
         Assert.Equal(source.Tickers.Count - 1, lane.Quotes.Count);
         Assert.DoesNotContain(lane.Quotes, quote => quote.Symbol == source.Tickers[0].Symbol);
+        Assert.True(lane.TrackItems.Count >= TickerLaneViewModel.MinimumSequenceItemCount * 5);
+    }
+
+    [Fact]
+    public void TickerLane_RepeatsTheConfiguredQuotesThroughTheMinimumSequence()
+    {
+        TickerGroup source = new()
+        {
+            Tickers =
+            [
+                new TickerItem { Symbol = "AAA", Enabled = true },
+                new TickerItem { Symbol = "BBB", Enabled = true }
+            ]
+        };
+        TickerLaneViewModel lane = new(source);
+
+        Assert.True(lane.TrackItems.Count >= TickerLaneViewModel.MinimumSequenceItemCount * 5);
+        Assert.Equal(0, lane.TrackItems.Count % TickerLaneViewModel.MinimumSequenceItemCount);
+        Assert.Equal("AAA", lane.TrackItems[0].Quote.Symbol);
+        Assert.Equal("BBB", lane.TrackItems[1].Quote.Symbol);
+        Assert.Equal("BBB", lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount - 1].Quote.Symbol);
+        Assert.Equal(TickerLaneViewModel.ItemWidth + TickerLaneViewModel.CopySpacing,
+            lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount - 1].Width);
+        Assert.Equal("AAA", lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount].Quote.Symbol);
     }
 
     [Fact]
@@ -72,6 +97,8 @@ public sealed class TickerPresentationTests
         Assert.StartsWith("M ", macro.TrackPath, StringComparison.Ordinal);
         Assert.StartsWith("M ", macro.ArcPath, StringComparison.Ordinal);
         Assert.StartsWith("M 12,12 L ", macro.NeedlePath, StringComparison.Ordinal);
+        Assert.False(ticker.IsWaitingOnData);
+        Assert.False(ticker.HasMissingData);
 
         MacroQuoteViewModel invertedRisk = new("VIX", "^VIX", 60m, invertRiskColors: true);
         invertedRisk.Apply(new QuoteSnapshot
@@ -81,5 +108,28 @@ public sealed class TickerPresentationTests
             ChangePercent = 1m
         });
         Assert.Equal("#FF5A36", invertedRisk.AccentBrush);
+    }
+
+    [Fact]
+    public void TickerQuote_DistinguishesWaitingAndMissingQuoteStates()
+    {
+        TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO", DisplayName = "VOO" });
+
+        Assert.True(ticker.IsWaitingOnData);
+        Assert.Equal("🕒", ticker.WaitingGlyphText);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO" });
+
+        Assert.True(ticker.IsWaitingOnData);
+        Assert.True(ticker.HasMissingData);
+        Assert.Equal("◌", ticker.WaitingGlyphText);
+        Assert.Equal("#FF8C00", ticker.WaitingGlyphBrush);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", PreviousClose = 99.5m });
+
+        Assert.False(ticker.IsWaitingOnData);
+        Assert.False(ticker.HasMissingData);
+        Assert.Equal(string.Empty, ticker.WaitingGlyphText);
+        Assert.Equal(99.5m, ticker.Last);
     }
 }

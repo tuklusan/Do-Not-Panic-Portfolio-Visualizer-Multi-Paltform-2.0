@@ -5,7 +5,9 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
 -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DoNotPanicPortfolioVisualizer.App.Views"
         x:Class="DoNotPanicPortfolioVisualizer.App.Views.AboutWindow"
+        x:DataType="local:AboutWindow"
         Title="About DO NOT PANIC PORTFOLIO VISUALIZER 2.0"
         Width="720"
         Height="560"

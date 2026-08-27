@@ -232,14 +232,15 @@ missing glyphs; trend and quote flash; eight 96x50 macro gauges; independent
 macro refresh; market/latest/freshness/UTC status; one-at-a-time progressive
 runtime updates.
 
-Unresolved gaps: the original seven-meter closure claim was incorrect; the
-active CR-010F work now restores eight gauges and geometry. Waiting/missing
-ticker glyph state remains absent, and local quote cadence is 200 ms in
-configured lane order instead of the upstream one-second interleaved pipeline.
-The scheduler also lacks the separate freshness window, 15-minute hard-stale
-floor, and recently fetched closed-world-market slowdown. Initial runtime order
-must be macro symbols, then world-market symbols, then configured tape symbols.
-CR-009 is reopened.
+Closure mapping: the Avalonia scene has all eight macro gauges and their 96x50
+geometry; stable ticker items in a 56/28 lane with fixed fields, minimum
+18-item visual sequences, seamless copies, waiting/missing glyphs, trend
+colors, and quote flashes; the one-second progressive dispatch pipeline; and
+the separate freshness window and 15-minute hard-stale floor. A one-time
+startup sequence now primes macro symbols, then world-market symbols, then
+configured tape symbols before independent recurring loops begin. Two
+independent closure scans of the cited upstream files and tape-item tests found
+zero unmapped behaviors; CR-009 is closed.
 
 ## CR-010A - Cinematic Contract Audit
 

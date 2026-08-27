@@ -394,12 +394,22 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                                             Background="{Binding Quote.FlashBrush}"
                                                             Opacity="{Binding Quote.FlashOpacity}"
                                                             CornerRadius="4" />
-                                                    <TextBlock Text="{Binding Quote.DisplayName}"
-                                                               FontFamily="Consolas"
-                                                               FontWeight="Bold"
-                                                               TextTrimming="CharacterEllipsis"
-                                                               VerticalAlignment="Center"
-                                                               Foreground="{Binding Quote.TrendBrush}" />
+                                                    <Grid Width="62" ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="{Binding Quote.DisplayName}"
+                                                                   FontFamily="Consolas"
+                                                                   FontWeight="Bold"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{Binding Quote.TrendBrush}" />
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Quote.WaitingGlyphText}"
+                                                                   IsVisible="{Binding Quote.IsWaitingOnData}"
+                                                                   FontFamily="Segoe UI Emoji"
+                                                                   FontSize="11"
+                                                                   Opacity="0.82"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{Binding Quote.WaitingGlyphBrush}" />
+                                                    </Grid>
                                                     <TextBlock Grid.Column="1"
                                                                Text="{Binding Quote.PriceText}"
                                                                FontFamily="Consolas"
