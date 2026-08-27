@@ -106,6 +106,11 @@ public partial class ProductShellWindow : Window
 
         try
         {
+            // A rotation begins in the scene state before the next bitmap is decoded.
+            // Keep a committed frame in the incoming layer during that asynchronous gap.
+            if (layer.Source is null)
+                layer.Source = isLayerA ? BackgroundLayerB.Source : BackgroundLayerA.Source;
+
             BackgroundFrame frame = await _backgroundFrameLoader.LoadAsync(source, _backgroundLoadCts.Token);
             if (_backgroundLoadCts.IsCancellationRequested ||
                 generation != (isLayerA ? _backgroundGenerationA : _backgroundGenerationB))
