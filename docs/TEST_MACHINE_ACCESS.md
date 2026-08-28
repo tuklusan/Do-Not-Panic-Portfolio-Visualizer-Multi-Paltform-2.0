@@ -96,3 +96,7 @@ For the initial viewport the Windows driver launches the ordinary product with
 in its normal state before the physical geometry assertion. The default product
 startup remains maximized; this option exists to make the required small-screen
 acceptance state reproducible rather than to alter the cinematic default.
+
+Windows native rectangles can be DPI virtualized. The driver records those
+pixels diagnostically and instead polls for the product's fail-closed logical
+viewport trace: `WINDOWED_STARTUP_APPLIED;STATE=Normal;WIDTH=1024;HEIGHT=768`.
