@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -29,7 +30,9 @@ public partial class App : Application
                 Environment.GetEnvironmentVariable("DNPPV_CONFIGURATION_VALIDATION_MODE"),
                 "1",
                 StringComparison.Ordinal);
-            bool startFullScreen = StartupOptions.RequestsFullScreen(Environment.GetCommandLineArgs());
+            string[] startupArguments = Environment.GetCommandLineArgs();
+            bool startFullScreen = StartupOptions.RequestsFullScreen(startupArguments);
+            bool startsWindowed = StartupOptions.TryGetWindowedStartupSize(startupArguments, out StartupWindowSize windowedSize);
             LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
             string lockFileName = SingleInstanceLease.ResolveLockFileName(
                 AppIdentity.DesktopSingleInstanceLockFileName,
@@ -56,6 +59,12 @@ public partial class App : Application
                     {
                         DataContext = ProductSceneViewModel.CreateDefault(),
                     };
+                    if (startsWindowed)
+                    {
+                        shell.WindowState = WindowState.Normal;
+                        shell.Width = windowedSize.Width;
+                        shell.Height = windowedSize.Height;
+                    }
                     if (startFullScreen)
                     {
                         EventHandler? enterFullScreenAfterOpen = null;

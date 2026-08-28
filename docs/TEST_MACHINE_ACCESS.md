@@ -90,3 +90,9 @@ application cleanup. On Windows it captures an explicit `1024x768` viewport,
 then a wider maximized viewport, followed by fullscreen motion. It deliberately
 does not enable the graph-impulse fixture: fixtures are focused diagnostic
 inputs, never the product demonstration used for acceptance.
+
+For the initial viewport the Windows driver launches the ordinary product with
+`--windowed=1024x768`, a bounded startup option that places the Avalonia window
+in its normal state before the physical geometry assertion. The default product
+startup remains maximized; this option exists to make the required small-screen
+acceptance state reproducible rather than to alter the cinematic default.

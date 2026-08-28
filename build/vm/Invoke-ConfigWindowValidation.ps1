@@ -931,6 +931,7 @@ function Invoke-WindowsValidation {
             '$startInfo.FileName = $exePath',
             '$startInfo.WorkingDirectory = $artifactDir',
             '$startInfo.UseShellExecute = $true',
+            '$startInfo.Arguments = ''--windowed=1024x768''',
             '$duplicate = $null',
             '$proc = [System.Diagnostics.Process]::Start($startInfo)',
             'if ($null -eq $proc) { throw ''Product process launch returned no process handle.'' }',
