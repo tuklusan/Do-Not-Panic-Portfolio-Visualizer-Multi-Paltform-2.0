@@ -91,6 +91,9 @@ then a wider maximized viewport, followed by fullscreen motion. It deliberately
 does not enable the graph-impulse fixture: fixtures are focused diagnostic
 inputs, never the product demonstration used for acceptance.
 
+Product-scene capture enforces at least a 30-second warmup so the live scene,
+including all four ticker lanes, settles before any acceptance screenshot.
+
 For the initial viewport the Windows driver launches the ordinary product with
 `--windowed=1024x768`, a bounded startup option that places the Avalonia window
 in its normal state before the physical geometry assertion. The default product

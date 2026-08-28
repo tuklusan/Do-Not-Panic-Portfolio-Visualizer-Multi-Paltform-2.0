@@ -46,7 +46,7 @@ param(
 
     [Parameter()]
     [ValidateRange(2, 180)]
-    [int]$SceneWarmupSeconds = 12,
+    [int]$SceneWarmupSeconds = 30,
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -61,6 +61,11 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# The scene needs time to populate all four lanes and live overlays before a
+# screenshot becomes visual acceptance evidence. Never shorten that readiness
+# period through an individual invocation.
+$SceneWarmupSeconds = [Math]::Max(30, $SceneWarmupSeconds)
 
 $enginePath = Join-Path $PSScriptRoot 'Invoke-ConfigWindowValidation.ps1'
 if (-not (Test-Path -LiteralPath $enginePath -PathType Leaf)) {
