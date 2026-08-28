@@ -33,6 +33,7 @@ public partial class App : Application
             string[] startupArguments = desktop.Args ?? Environment.GetCommandLineArgs();
             bool startFullScreen = StartupOptions.RequestsFullScreen(startupArguments);
             bool startsWindowed = StartupOptions.TryGetWindowedStartupSize(startupArguments, out StartupWindowSize windowedSize);
+            WriteStartupTrace(startupArguments, startsWindowed, startFullScreen);
             LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
             string lockFileName = SingleInstanceLease.ResolveLockFileName(
                 AppIdentity.DesktopSingleInstanceLockFileName,
@@ -99,5 +100,21 @@ public partial class App : Application
     private void ReleaseSingleInstanceLease()
     {
         Interlocked.Exchange(ref _singleInstanceLease, null)?.Dispose();
+    }
+
+    private static void WriteStartupTrace(IEnumerable<string> arguments, bool startsWindowed, bool startsFullScreen)
+    {
+        string? path = Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
+        if (string.IsNullOrWhiteSpace(path))
+            return;
+
+        try
+        {
+            string serializedArguments = string.Join("|", arguments.Select(static argument => argument.Replace("|", "%7C", StringComparison.Ordinal)));
+            File.AppendAllText(path, $"{DateTimeOffset.UtcNow:O};STARTUP;WINDOWED={startsWindowed};FULLSCREEN={startsFullScreen};ARGS={serializedArguments}{Environment.NewLine}");
+        }
+        catch
+        {
+        }
     }
 }
