@@ -787,7 +787,7 @@
         "Documentation and tracker consistency review"
       ],
       "started_on": "2026-08-20",
-      "completed_on": "2026-08-20",
+      "completed_on": null,
       "evidence_files": [
         "docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md",
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
@@ -862,9 +862,9 @@
         "zero_known_gaps": true
       },
       "closure_notes": [
-        "Ported the upstream two-layer 450 ms cubic cross-fade, Fill stretching, configurable dim overlay, and bounded 1.00-1.05 slow zoom using elapsed-time state with three retained upstream exchange backgrounds.",
-        "Passed 67 tests, a warning-free build, license and PowerShell gates, mandatory CODE reviews, and serial self-contained publishing for all six target RIDs.",
-        "Physical production-scene acceptance passed at 1024x768 Windows 10, 1280x768 Lubuntu, and 2560x1600 high-DPI Windows 11 in both maximized and F11 fullscreen states; paired captures, traces, and zero-process cleanup checks passed the mandatory TEST_ARTIFACT review."
+        "Reopened: prior closure evidence is not retained as current evidence.",
+        "Current Windows 11 real-product evidence proves the Avalonia logical 1024x768 startup state, wide/maximized and F11 fullscreen captures, background commit, motion trace, and process cleanup.",
+        "CR remains open until current cross-machine physical acceptance and artifact review satisfy every criterion."
       ]
     },
     {
