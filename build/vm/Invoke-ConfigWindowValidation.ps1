@@ -865,6 +865,7 @@ function Invoke-WindowsValidation {
             '    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);',
             '    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();',
             '    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);',
+            '    [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);',
             '    [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool repaint);',
             '    [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);',
             '    [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }',
@@ -943,6 +944,8 @@ function Invoke-WindowsValidation {
             '    }',
             '    if ($proc.MainWindowHandle -eq 0) { throw ''Main window handle was not detected.'' }',
             '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null',
+            '    [DnppvSceneNative]::SendMessage($proc.MainWindowHandle, 0x0112, ([IntPtr]0xF120), [IntPtr]::Zero) | Out-Null',
+            '    Start-Sleep -Seconds 1',
             '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''small-viewport positioning''',
             "    Start-Sleep -Seconds $Warmup",
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -1045,6 +1048,19 @@ try {
     }
 
     if (Test-Path `$donePath) {
+        for (`$cleanupAttempt = 0; `$cleanupAttempt -lt 30; `$cleanupAttempt++) {
+            `$taskState = (Get-ScheduledTask -TaskName `$taskName -ErrorAction SilentlyContinue).State
+            if (`$taskState -ne 'Running') {
+                break
+            }
+
+            Start-Sleep -Seconds 1
+        }
+
+        if ((Get-ScheduledTask -TaskName `$taskName -ErrorAction SilentlyContinue).State -eq 'Running') {
+            throw 'Validation task did not complete its cleanup after writing done.txt.'
+        }
+
         Get-Content `$donePath
     }
     else {
