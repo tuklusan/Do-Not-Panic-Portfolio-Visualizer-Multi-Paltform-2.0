@@ -944,11 +944,14 @@ function Invoke-WindowsValidation {
             '        if ($proc.MainWindowHandle -ne 0) { break }',
             '    }',
             '    if ($proc.MainWindowHandle -eq 0) { throw ''Main window handle was not detected.'' }',
-            '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null',
-            '    [DnppvSceneNative]::SendMessage($proc.MainWindowHandle, 0x0112, ([IntPtr]0xF120), [IntPtr]::Zero) | Out-Null',
+            # Product-scene runs start with the Avalonia-owned --windowed state.
+            # Do not subsequently restore it through Win32, which can reapply the
+            # XAML default maximized state after startup.
             '    Start-Sleep -Seconds 1',
             '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''small-viewport positioning''',
             "    Start-Sleep -Seconds $Warmup",
+            '    $startupBounds = Get-WindowBounds -WindowHandle $proc.MainWindowHandle',
+            '    Add-Content -Path $stepPath -Value (''STARTUP_VIEWPORT={0},{1}'' -f ($startupBounds.Right - $startupBounds.Left), ($startupBounds.Bottom - $startupBounds.Top))',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
             '    if ($bounds.Width -lt 1024 -or $bounds.Height -lt 768) {',
             '        throw (''Primary screen is too small for required 1024x768 capture: {0}x{1}.'' -f $bounds.Width, $bounds.Height)',
