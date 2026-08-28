@@ -942,7 +942,7 @@ function Invoke-WindowsValidation {
             '        if ($proc.MainWindowHandle -ne 0) { break }',
             '    }',
             '    if ($proc.MainWindowHandle -eq 0) { throw ''Main window handle was not detected.'' }',
-            '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 5) | Out-Null',
+            '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null',
             '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''small-viewport positioning''',
             "    Start-Sleep -Seconds $Warmup",
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
