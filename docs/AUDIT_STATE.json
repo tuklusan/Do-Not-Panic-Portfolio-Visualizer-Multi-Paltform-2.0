@@ -868,12 +868,47 @@
       ]
     },
     {
+      "id": "CR-010G",
+      "phase": "Phase 3",
+      "title": "Stabilize staged production-scene startup",
+      "status": "open",
+      "depends_on": [
+        "CR-010B"
+      ],
+      "objective": "Restore the upstream bootstrap-first startup sequence so the real Avalonia scene settles before independent quote, weather, history, and news-refresh work fans out.",
+      "acceptance_criteria": [
+        "A visible settings-driven product scene and background bootstrap before deferred live work starts.",
+        "Initial quote work remains macro, world-market, then portfolio; portfolio is not blocked behind the first full weather fan-out.",
+        "Recurring quote, graph-history, and news-refresh lanes start once after the initial sequence, remain cancellable, and do not produce an initial UI-work burst.",
+        "Physical runs on Lubuntu, Windows 10, and Windows 11 show a settled four-lane scene after the documented warmup period with bounded startup traces."
+      ],
+      "validation_plan": [
+        "Deterministic startup-order and once-only activation tests.",
+        "Mandatory reviewer pass from a clean staged snapshot.",
+        "Fresh real-product physical captures and traces after at least 30 seconds of warmup on all local machines.",
+        "Artifact and process-cleanup review."
+      ],
+      "started_on": "2026-08-28",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-010G-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Render/Services/TapeAnimationController.cs",
+          "src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs"
+        ],
+        "zero_known_gaps": true
+      }
+    },
+    {
       "id": "CR-010C",
       "phase": "Phase 3",
       "title": "Port continuous cinematic ticker tapes and quote cues",
       "status": "open",
       "depends_on": [
-        "CR-010B"
+        "CR-010G"
       ],
       "objective": "Port upstream duplicated-track ticker controls, elapsed-time animation, independent speeds/directions, and surgical quote-update cues to Avalonia.",
       "acceptance_criteria": [

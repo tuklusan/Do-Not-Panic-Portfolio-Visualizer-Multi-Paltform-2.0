@@ -63,6 +63,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         };
 
     private readonly CancellationTokenSource _lifetimeCts = new();
+    private readonly object _sceneStartupGate = new();
     private readonly SettingsFileService _settingsService;
     private readonly IQuoteProvider _quoteProvider;
     private readonly ProgressiveQuoteRefreshPipeline _portfolioQuotePipeline = new();
@@ -72,6 +73,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly FinanceNewsService _newsService = new();
     private readonly WorldWeatherService _weatherService = new();
     private readonly BackgroundImageService _backgroundService = new();
+    private readonly StagedSceneStartupCoordinator _sceneStartupCoordinator = new();
     private readonly SynchronizationContext _uiContext;
     private AppSettings _settings = new();
     private IReadOnlyList<string> _backgrounds = [];
@@ -86,16 +88,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private double _graphViewportWidth = 1280d;
     private double _graphViewportHeight = 720d;
     private double _globalMarketsViewportWidth = 900d;
-    private Task? _portfolioQuoteLoop;
-    private Task? _macroQuoteLoop;
-    private Task? _worldMarketsLoop;
     private Task? _initialQuoteSequence;
-    private Task? _graphRefreshLoop;
-    private Task? _newsRefreshLoop;
+    private Task? _deferredSceneLoops;
     private Task? _tickerMotionLoop;
     private Task? _newsPlaybackLoop;
     private Task? _ambientLoop;
     private Task? _renderHeartbeatLoop;
+    private bool _deferredSceneLoopsStarted;
+    private bool _sceneDisposalStarted;
     private readonly bool _graphImpulseFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
     private readonly string? _graphImpulseTracePath =
@@ -238,20 +238,23 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public Task InitializeAsync()
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
-        lock (_renderHeartbeatGate)
-            _renderHeartbeat.Start(now);
-        _renderHeartbeatFixtureStartedUtc = now;
-        _initialQuoteSequence ??= RunInitialQuoteSequenceAsync(_lifetimeCts.Token);
-        _portfolioQuoteLoop ??= RunPortfolioQuoteLoopAsync(_lifetimeCts.Token);
-        _macroQuoteLoop ??= RunMacroQuoteLoopAsync(_lifetimeCts.Token);
-        _worldMarketsLoop ??= RunWorldMarketsLoopAsync(_lifetimeCts.Token);
-        _graphRefreshLoop ??= RunGraphRefreshLoopAsync(_lifetimeCts.Token);
-        _newsRefreshLoop ??= RunNewsRefreshLoopAsync(_lifetimeCts.Token);
-        _tickerMotionLoop ??= RunTickerMotionLoopAsync(_lifetimeCts.Token);
-        _newsPlaybackLoop ??= RunNewsPlaybackLoopAsync(_lifetimeCts.Token);
-        _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
-        _renderHeartbeatLoop ??= RunRenderHeartbeatLoopAsync(_lifetimeCts.Token);
+        lock (_sceneStartupGate)
+        {
+            if (_sceneDisposalStarted)
+                return Task.CompletedTask;
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            lock (_renderHeartbeatGate)
+                _renderHeartbeat.Start(now);
+            _renderHeartbeatFixtureStartedUtc = now;
+            _initialQuoteSequence ??= RunInitialQuoteSequenceAsync(_lifetimeCts.Token);
+            // The upstream scene first presents its bootstrap state and completes its
+            // initial quote ordering before its independent background lanes fan out.
+            _tickerMotionLoop ??= RunTickerMotionLoopAsync(_lifetimeCts.Token);
+            _newsPlaybackLoop ??= RunNewsPlaybackLoopAsync(_lifetimeCts.Token);
+            _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
+            _renderHeartbeatLoop ??= RunRenderHeartbeatLoopAsync(_lifetimeCts.Token);
+        }
         return Task.CompletedTask;
     }
 
@@ -458,6 +461,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunGraphRefreshLoopAsync(CancellationToken cancellationToken)
     {
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
         await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -492,6 +496,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunNewsRefreshLoopAsync(CancellationToken cancellationToken)
     {
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
@@ -512,12 +517,30 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         try
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            WriteCinematicTrace("STARTUP;SIGNAL=BOOTSTRAP_READY");
 
-            // Upstream primes the scene in macro, world-market, then user-tape order.
-            // Do this only once; the independent loops resume their normal cadence after it.
-            await RefreshMacroQuotesAsync(cancellationToken);
-            await RefreshGlobalMarketsAsync(cancellationToken);
-            await RefreshPortfolioQuotesAsync(cancellationToken);
+            // The upstream live scene primes macro, world-market, then user-tape
+            // symbols. Do this once before history, news, and recurring lanes fan out.
+            await _sceneStartupCoordinator.RunAsync(async (stage, token) =>
+            {
+                WriteCinematicTrace($"STARTUP;STAGE={stage};SIGNAL=STARTED");
+                switch (stage)
+                {
+                    case SceneStartupStage.MacroQuotes:
+                        await RefreshMacroQuotesAsync(token);
+                        break;
+                    case SceneStartupStage.WorldMarketQuotes:
+                        await RefreshGlobalMarketsAsync(token, refreshWeather: false);
+                        break;
+                    case SceneStartupStage.PortfolioQuotes:
+                        await RefreshPortfolioQuotesAsync(token);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported scene startup stage: {stage}.");
+                }
+
+                WriteCinematicTrace($"STARTUP;STAGE={stage};SIGNAL=COMPLETED");
+            }, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -529,6 +552,27 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         finally
         {
             _initialQuoteSequenceCompleted.TrySetResult();
+            // This method owns the cancellation/disposal decision under the
+            // same lock used by DisposeAsync when it snapshots every started task.
+            StartDeferredSceneLoops();
+        }
+    }
+
+    private void StartDeferredSceneLoops()
+    {
+        lock (_sceneStartupGate)
+        {
+            if (_sceneDisposalStarted || _lifetimeCts.IsCancellationRequested || _deferredSceneLoopsStarted)
+                return;
+
+            _deferredSceneLoopsStarted = true;
+            _deferredSceneLoops = Task.WhenAll(
+                RunPortfolioQuoteLoopAsync(_lifetimeCts.Token),
+                RunMacroQuoteLoopAsync(_lifetimeCts.Token),
+                RunWorldMarketsLoopAsync(_lifetimeCts.Token),
+                RunGraphRefreshLoopAsync(_lifetimeCts.Token),
+                RunNewsRefreshLoopAsync(_lifetimeCts.Token));
+            WriteCinematicTrace("STARTUP;SIGNAL=DEFERRED_LANES_STARTED");
         }
     }
 
@@ -608,7 +652,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
     }
 
-    private async Task RefreshGlobalMarketsAsync(CancellationToken cancellationToken)
+    private async Task RefreshGlobalMarketsAsync(CancellationToken cancellationToken, bool refreshWeather = true)
     {
         try
         {
@@ -631,7 +675,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             // World-market quote failure does not stop clocks, weather, or other scene lanes.
         }
 
-        if (DateTimeOffset.UtcNow < _nextWeatherRefreshUtc)
+        if (!refreshWeather || DateTimeOffset.UtcNow < _nextWeatherRefreshUtc)
             return;
 
         Task<(GlobalMarketViewModel Market, string Text)>[] weatherTasks = GlobalMarkets.Select(async market =>
@@ -999,22 +1043,24 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public async ValueTask DisposeAsync()
     {
+        lock (_sceneStartupGate)
+            _sceneDisposalStarted = true;
         lock (_renderHeartbeatGate)
             _renderHeartbeat.Stop();
         await _lifetimeCts.CancelAsync();
-        Task?[] loops =
-        [
-            _initialQuoteSequence,
-            _portfolioQuoteLoop,
-            _macroQuoteLoop,
-            _worldMarketsLoop,
-            _graphRefreshLoop,
-            _newsRefreshLoop,
-            _tickerMotionLoop,
-            _newsPlaybackLoop,
-            _ambientLoop,
-            _renderHeartbeatLoop
-        ];
+        Task?[] loops;
+        lock (_sceneStartupGate)
+        {
+            loops =
+            [
+                _initialQuoteSequence,
+                _deferredSceneLoops,
+                _tickerMotionLoop,
+                _newsPlaybackLoop,
+                _ambientLoop,
+                _renderHeartbeatLoop
+            ];
+        }
         foreach (Task loop in loops.Where(static loop => loop is not null).Cast<Task>())
         {
             try
