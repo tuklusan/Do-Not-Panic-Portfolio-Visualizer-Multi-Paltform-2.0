@@ -30,7 +30,7 @@ public partial class App : Application
                 Environment.GetEnvironmentVariable("DNPPV_CONFIGURATION_VALIDATION_MODE"),
                 "1",
                 StringComparison.Ordinal);
-            string[] startupArguments = Environment.GetCommandLineArgs();
+            string[] startupArguments = desktop.Args;
             bool startFullScreen = StartupOptions.RequestsFullScreen(startupArguments);
             bool startsWindowed = StartupOptions.TryGetWindowedStartupSize(startupArguments, out StartupWindowSize windowedSize);
             LocalDataPaths localDataPaths = LocalDataRootResolver.ResolveForCurrentPlatform();
