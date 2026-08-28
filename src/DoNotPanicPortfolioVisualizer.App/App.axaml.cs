@@ -62,9 +62,23 @@ public partial class App : Application
                     };
                     if (startsWindowed)
                     {
-                        shell.WindowState = WindowState.Normal;
-                        shell.Width = windowedSize.Width;
-                        shell.Height = windowedSize.Height;
+                        EventHandler? applyWindowedSizeAfterOpen = null;
+                        applyWindowedSizeAfterOpen = (_, _) =>
+                        {
+                            shell.Opened -= applyWindowedSizeAfterOpen;
+                            Dispatcher.UIThread.Post(
+                                () =>
+                                {
+                                    if (!shell.IsVisible)
+                                        return;
+
+                                    shell.WindowState = WindowState.Normal;
+                                    shell.Width = windowedSize.Width;
+                                    shell.Height = windowedSize.Height;
+                                },
+                                DispatcherPriority.ApplicationIdle);
+                        };
+                        shell.Opened += applyWindowedSizeAfterOpen;
                     }
                     if (startFullScreen)
                     {
