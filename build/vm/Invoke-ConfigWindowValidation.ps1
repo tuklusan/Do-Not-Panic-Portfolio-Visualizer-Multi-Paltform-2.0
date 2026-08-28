@@ -180,7 +180,7 @@ function Invoke-RemotePowerShell {
             '-o',
             'BatchMode=no',
             '-o',
-            'ConnectTimeout=15',
+            'ConnectTimeout=60',
             "$User@$HostName",
             'powershell',
             '-NoProfile',
@@ -219,7 +219,7 @@ function Copy-ToRemote {
             '-o',
             'BatchMode=no',
             '-o',
-            'ConnectTimeout=15',
+            'ConnectTimeout=60',
             $SourcePath,
             "${User}@${HostName}:$DestinationPath"
         )
@@ -254,7 +254,7 @@ function Copy-FromRemote {
             '-o',
             'BatchMode=no',
             '-o',
-            'ConnectTimeout=15',
+            'ConnectTimeout=60',
             "${User}@${HostName}:$SourcePath",
             $DestinationPath
         )
@@ -318,7 +318,7 @@ function Invoke-LinuxValidation {
                 '-o',
                 'BatchMode=no',
                 '-o',
-                'ConnectTimeout=15',
+                'ConnectTimeout=60',
                 "$User@$HostName",
                 "mkdir -p -- $remotePublishDirLiteral"
             )
@@ -347,7 +347,7 @@ function Invoke-LinuxValidation {
             '-o',
             'BatchMode=no',
             '-o',
-            'ConnectTimeout=15',
+            'ConnectTimeout=60',
             "$User@$HostName",
             "test -f $linuxExecutableLiteral"
         )
@@ -564,7 +564,7 @@ function Invoke-LinuxValidation {
             '-o',
             'BatchMode=no',
             '-o',
-            'ConnectTimeout=15',
+            'ConnectTimeout=60',
             "$User@$HostName",
             "timeout --kill-after=10s 90s bash $remoteScriptPath"
         )
