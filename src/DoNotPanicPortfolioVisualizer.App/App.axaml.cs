@@ -61,25 +61,7 @@ public partial class App : Application
                         DataContext = ProductSceneViewModel.CreateDefault(),
                     };
                     if (startsWindowed)
-                    {
-                        EventHandler? applyWindowedSizeAfterOpen = null;
-                        applyWindowedSizeAfterOpen = (_, _) =>
-                        {
-                            shell.Opened -= applyWindowedSizeAfterOpen;
-                            Dispatcher.UIThread.Post(
-                                () =>
-                                {
-                                    if (!shell.IsVisible)
-                                        return;
-
-                                    shell.WindowState = WindowState.Normal;
-                                    shell.Width = windowedSize.Width;
-                                    shell.Height = windowedSize.Height;
-                                },
-                                DispatcherPriority.ApplicationIdle);
-                        };
-                        shell.Opened += applyWindowedSizeAfterOpen;
-                    }
+                        shell.WindowedStartupSize = new Size(windowedSize.Width, windowedSize.Height);
                     if (startFullScreen)
                     {
                         EventHandler? enterFullScreenAfterOpen = null;

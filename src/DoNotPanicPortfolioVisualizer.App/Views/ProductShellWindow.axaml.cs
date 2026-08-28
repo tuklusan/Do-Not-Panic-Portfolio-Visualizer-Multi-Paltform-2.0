@@ -39,6 +39,8 @@ public partial class ProductShellWindow : Window
 
     public bool IsFullScreen => WindowState == WindowState.FullScreen;
 
+    public Size? WindowedStartupSize { get; set; }
+
     public void ToggleFullScreen()
     {
         if (IsFullScreen)
@@ -71,6 +73,13 @@ public partial class ProductShellWindow : Window
 
     private async void OnWindowOpened(object? sender, EventArgs e)
     {
+        if (WindowedStartupSize is Size requestedSize)
+        {
+            WindowState = WindowState.Normal;
+            Width = requestedSize.Width;
+            Height = requestedSize.Height;
+        }
+
         if (DataContext is ProductSceneViewModel scene)
         {
             scene.RenderSurfaceRecoveryRequested += OnRenderSurfaceRecoveryRequested;
