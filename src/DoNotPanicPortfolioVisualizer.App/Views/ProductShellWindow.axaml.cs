@@ -78,6 +78,7 @@ public partial class ProductShellWindow : Window
             WindowState = WindowState.Normal;
             Width = requestedSize.Width;
             Height = requestedSize.Height;
+            WriteBackgroundTrace($"WINDOW;SIGNAL=WINDOWED_STARTUP_APPLIED;STATE={WindowState};WIDTH={Width:0.##};HEIGHT={Height:0.##};CLIENT_WIDTH={ClientSize.Width:0.##};CLIENT_HEIGHT={ClientSize.Height:0.##}");
         }
 
         if (DataContext is ProductSceneViewModel scene)
