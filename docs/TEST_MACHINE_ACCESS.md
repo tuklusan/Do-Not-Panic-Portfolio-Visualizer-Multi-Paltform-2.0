@@ -56,6 +56,10 @@ changes; do not commit live addresses or credentials.
   inventory
 - OS: Windows 11
 - Notes: no `D:\SW_DEV\DO-NOT-PANIC-2.0` requirement on this machine
+- SSH: interactive login can take noticeably longer than the other two physical
+  machines. Treat the endpoint as available when the SSH session completes;
+  validation drivers must allow an extended connection budget before declaring
+  a transport failure.
 - SmartScreen: the test-machine owner disabled the SmartScreen filter on
   2026-08-25 so unsigned DNPPV-2.0 development bundles can be physically
   exercised here. This is a temporary, isolated local test-environment
@@ -76,3 +80,12 @@ changes; do not commit live addresses or credentials.
 
 These are the retained environment details for the fresh DNPPV-2.0 migration
 repository.
+
+## Product-Scene Acceptance
+
+Use `build/vm/Invoke-ProductSceneValidation.ps1` for physical cinematic-product
+acceptance. It launches the normal product shell, captures its ordinary
+background/ticker/card behavior and a cinematic playback trace, and guarantees
+application cleanup. It deliberately does not enable the graph-impulse fixture:
+fixtures are focused diagnostic inputs, never the product demonstration used
+for acceptance.
