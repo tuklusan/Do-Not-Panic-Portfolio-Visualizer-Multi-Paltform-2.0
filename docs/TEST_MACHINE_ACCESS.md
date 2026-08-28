@@ -86,6 +86,7 @@ repository.
 Use `build/vm/Invoke-ProductSceneValidation.ps1` for physical cinematic-product
 acceptance. It launches the normal product shell, captures its ordinary
 background/ticker/card behavior and a cinematic playback trace, and guarantees
-application cleanup. It deliberately does not enable the graph-impulse fixture:
-fixtures are focused diagnostic inputs, never the product demonstration used
-for acceptance.
+application cleanup. On Windows it captures an explicit `1024x768` viewport,
+then a wider maximized viewport, followed by fullscreen motion. It deliberately
+does not enable the graph-impulse fixture: fixtures are focused diagnostic
+inputs, never the product demonstration used for acceptance.
