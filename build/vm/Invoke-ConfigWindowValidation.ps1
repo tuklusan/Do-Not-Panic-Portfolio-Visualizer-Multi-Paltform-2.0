@@ -540,8 +540,11 @@ function Invoke-LinuxValidation {
             'scrot -o general.png',
             'echo "GENERAL_CAPTURED" >> step.log'
         ) + $duplicateLines + @(
-            'xdotool key F11',
-            'echo "FULLSCREEN_REQUESTED" >> step.log',
+            'if xdotool key --window "$WID" F11; then',
+            '  echo "FULLSCREEN_REQUESTED" >> step.log',
+            'else',
+            '  echo "FULLSCREEN_REQUEST_FAILED" >> step.log',
+            'fi',
             'sleep 8',
             'scrot -o validation.png',
             'echo "VALIDATION_CAPTURED" >> step.log',
