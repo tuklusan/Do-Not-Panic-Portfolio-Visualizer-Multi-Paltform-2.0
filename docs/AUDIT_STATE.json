@@ -903,6 +903,39 @@
       }
     },
     {
+      "id": "CR-010H",
+      "phase": "Phase 3",
+      "title": "Restore readable cross-platform product menu contrast",
+      "status": "open",
+      "depends_on": [
+        "CR-008"
+      ],
+      "objective": "Restore a visible, accessible dark-shell menu across Avalonia desktop targets without changing the upstream menu workflow or fullscreen lifecycle.",
+      "acceptance_criteria": [
+        "File, View, Options, and Help are legible against the product menu surface in normal and maximized modes.",
+        "Top-level and submenu item normal, hover, and open states maintain readable foreground/background contrast.",
+        "Exit, Full Screen, Settings, and About actions, F11 behavior, and fullscreen menu hiding/restoration are unchanged.",
+        "Fresh real-product physical captures show the repaired menu after the documented scene-settling interval."
+      ],
+      "validation_plan": [
+        "Focused source-level assertion for explicit scoped menu palette/state declarations.",
+        "Mandatory reviewer pass and pushed checkpoint before physical execution.",
+        "Fresh Windows 11, Windows 10, and Lubuntu real-product captures with menu-state inspection."
+      ],
+      "started_on": "2026-08-29",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-010H-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs"
+        ],
+        "zero_known_gaps": true
+      }
+    },
+    {
       "id": "CR-010C",
       "phase": "Phase 3",
       "title": "Port continuous cinematic ticker tapes and quote cues",

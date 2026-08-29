@@ -23,6 +23,30 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
               Grid.Row="0"
               Background="#171B1F"
               Foreground="#E7EDF2">
+            <Menu.Resources>
+                <SolidColorBrush x:Key="MenuFlyoutPresenterBackground">#1D252C</SolidColorBrush>
+                <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush">#5A7890</SolidColorBrush>
+            </Menu.Resources>
+            <Menu.Styles>
+                <Style Selector="MenuItem /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#E7EDF2" />
+                </Style>
+                <Style Selector="MenuItem:selected /template/ Border#PART_LayoutRoot">
+                    <Setter Property="Background" Value="#2C4656" />
+                </Style>
+                <Style Selector="MenuItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+                <Style Selector="MenuItem:open /template/ Border#PART_LayoutRoot">
+                    <Setter Property="Background" Value="#2C4656" />
+                </Style>
+                <Style Selector="MenuItem:open /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+                <Style Selector="MenuItem:pressed /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+            </Menu.Styles>
             <MenuItem Header="_File">
                 <MenuItem Header="E_xit" Click="OnExitClick" />
             </MenuItem>
