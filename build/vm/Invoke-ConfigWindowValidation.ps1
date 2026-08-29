@@ -894,7 +894,7 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''small-viewport.png''), (Join-Path $artifactDir ''wide-viewport.png''), (Join-Path $artifactDir ''fullscreen.png''), (Join-Path $artifactDir ''fullscreen-motion.png''), (Join-Path $artifactDir ''duplicate.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''small-viewport.png''), (Join-Path $artifactDir ''menu-open.png''), (Join-Path $artifactDir ''wide-viewport.png''), (Join-Path $artifactDir ''fullscreen.png''), (Join-Path $artifactDir ''fullscreen-motion.png''), (Join-Path $artifactDir ''duplicate.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -974,7 +974,14 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value ''LOGICAL_SMALL_VIEWPORT=1024,768''',
             '    Add-Content -Path $stepPath -Value (''SMALL_WINDOW_RECT_PIXELS={0},{1}'' -f $smallWidth, $smallHeight)',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''small-viewport.png'')',
-            '    Add-Content -Path $stepPath -Value ''SMALL_VIEWPORT_CAPTURED'''
+            '    Add-Content -Path $stepPath -Value ''SMALL_VIEWPORT_CAPTURED''',
+            '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''menu-open capture''',
+            '    [System.Windows.Forms.SendKeys]::SendWait(''%f'')',
+            '    Start-Sleep -Milliseconds 500',
+            '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''menu-open.png'')',
+            '    Add-Content -Path $stepPath -Value ''MENU_OPEN_CAPTURED''',
+            '    [System.Windows.Forms.SendKeys]::SendWait(''{ESC}'')',
+            '    Start-Sleep -Milliseconds 300'
         ) + $duplicateLines + @(
             '    [DnppvSceneNative]::ShowWindow($proc.MainWindowHandle, 3) | Out-Null',
             '    Start-Sleep -Seconds 2',
@@ -1083,7 +1090,7 @@ finally {
     Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
 
     $artifactNames = if ($CaptureProductScene) {
-        @('small-viewport.png', 'wide-viewport.png', 'fullscreen.png', 'fullscreen-motion.png', 'step.log', 'done.txt')
+        @('small-viewport.png', 'menu-open.png', 'wide-viewport.png', 'fullscreen.png', 'fullscreen-motion.png', 'step.log', 'done.txt')
     }
     else {
         @('general.png', 'validation.png', 'step.log', 'done.txt')
