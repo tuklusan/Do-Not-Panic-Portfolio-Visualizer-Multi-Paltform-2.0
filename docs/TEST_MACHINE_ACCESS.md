@@ -94,11 +94,11 @@ inputs, never the product demonstration used for acceptance.
 Product-scene capture enforces at least a 30-second warmup so the live scene,
 including all four ticker lanes, settles before any acceptance screenshot.
 
-Windows product-scene capture also finds and invokes the ordinary File menu
-through Windows UI Automation, asserts that its Exit child is visible, records
-`menu-open.png`, then dismisses it before the wide/fullscreen checks. This is
-acceptance evidence for the actual shell menu and submenu palette, not a visual
-fixture.
+Windows product-scene capture also finds the ordinary File menu through Windows
+UI Automation, clicks the center of its live accessibility rectangle, asserts
+that its Exit child is visible, records `menu-open.png`, then dismisses it
+before the wide/fullscreen checks. This is acceptance evidence for the actual
+shell menu and submenu palette, not a visual fixture.
 
 For the initial viewport the Windows driver launches the ordinary product with
 `--windowed=1024x768`, a bounded startup option that places the Avalonia window
