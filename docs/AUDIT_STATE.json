@@ -945,7 +945,7 @@
       ],
         "objective": "Restore the source-derived Avalonia ticker control geometry and typography while retaining duplicated-track motion, independent speeds/directions, and surgical quote-update cues.",
         "acceptance_criteria": [
-          "Default configured ticker rows are 56 pixels with the upstream 8,3 margin, 9,4 padding, and 28-pixel vertically centered viewport.",
+          "The four groups retain the upstream 56-pixel persisted default while visual ticker controls use upstream compact natural measurement rather than binding that setting as a visual height; each control has the 8,3 margin, 9,4 padding, and 28-pixel vertically centered viewport.",
           "Ticker title badges are vertically centered and use upstream 7,2 padding, 10-pixel separation, Consolas 12-point semibold typography, and source-derived colors.",
           "Ticker symbols and values retain upstream fixed-width Consolas roles without imposing a global monospaced font override on branding or editorial surfaces.",
           "Four lanes move continuously and seamlessly at max(18, 72 * configured speed) pixels per second.",

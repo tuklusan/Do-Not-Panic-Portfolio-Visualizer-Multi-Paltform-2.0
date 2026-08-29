@@ -25,7 +25,7 @@ CR-010C. It was manually rescanned on 2026-08-29 against upstream commit
 
 | ID | Upstream source | Required behavior | Avalonia acceptance evidence |
 | --- | --- | --- | --- |
-| TC-01 | `src/PortfolioSaver.Core/Constants/Defaults.cs`, `src/PortfolioSaver.Core/Models/TickerGroup.cs` | The four default groups each retain a configurable default row height of 56 pixels. | Unit test and source test show a 56-pixel default and binding to the configured row height. |
+| TC-01 | `src/PortfolioSaver.Core/Constants/Defaults.cs`, `src/PortfolioSaver.Core/Models/TickerGroup.cs`, `src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml` | The four default groups retain a persisted 56-pixel row-height setting, but the upstream ticker control does not bind it as a visual height; compact natural control measurement governs the actual lane thickness. | Unit test retains the 56-pixel default; source test confirms the Avalonia template deliberately has no row-height binding. |
 | TC-02 | `src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml` | Every tape has `Margin="8,3"`, `Padding="9,4"`, a 7-pixel corner radius, and vertical centering. | Source test asserts the matching Avalonia template values. |
 | TC-03 | `TickerTapeControl.xaml` | The title badge is vertically centered with `Padding="7,2"`, `Margin="0,0,10,0"`, `Consolas` 12-point semibold text, and the upstream foreground/border colors. | Source test and physical screenshots show centered title badges. |
 | TC-04 | `TickerTapeControl.xaml` | The clipped ticker viewport is vertically centered, 28 pixels high, and uses `Margin="4,0,4,0"`. | Source test asserts the values; physical screenshot shows no vertical drift. |

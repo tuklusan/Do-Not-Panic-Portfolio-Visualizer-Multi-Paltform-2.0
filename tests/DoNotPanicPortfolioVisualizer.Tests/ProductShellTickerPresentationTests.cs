@@ -27,7 +27,7 @@ public sealed class ProductShellTickerPresentationTests
             "Views",
             "ProductShellWindow.axaml"));
 
-        Assert.Contains("Height=\"{Binding RowHeight}\"", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Height=\"{Binding RowHeight}\"", xaml, StringComparison.Ordinal);
         Assert.Contains("CornerRadius=\"7\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Margin=\"8,3\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Padding=\"9,4\"", xaml, StringComparison.Ordinal);

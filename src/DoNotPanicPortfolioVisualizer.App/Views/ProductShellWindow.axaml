@@ -381,7 +381,6 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                     BorderBrush="#332E3A47"
                                     BorderThickness="1"
                                     CornerRadius="7"
-                                    Height="{Binding RowHeight}"
                                     Margin="8,3"
                                     Padding="9,4"
                                     VerticalAlignment="Center">
