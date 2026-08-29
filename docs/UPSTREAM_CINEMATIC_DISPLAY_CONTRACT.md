@@ -89,10 +89,21 @@ not evidence that motion behavior passes.
 
 - Exactly four configured tapes appear with their configured direction and
   independent speeds. Default row height remains 56 pixels.
-- The visible ticker viewport is 28 pixels high inside the upstream border,
-  label, padding, and margins.
+- Each tape keeps the upstream `8,3` outer margin, `9,4` outer padding, and
+  7-pixel corner radius. Its title badge is vertically centered with `7,2`
+  padding, a 10-pixel right margin, `Consolas` 12-point semibold text, and the
+  upstream border and foreground colors.
+- The visible ticker viewport is 28 pixels high, vertically centered, and has
+  the upstream `4,0,4,0` margin inside the outer tape border.
 - Each ticker sequence uses fixed symbol, value, change, gap, and separator
-  geometry from `TickerTapeControl` rather than ad hoc text spacing.
+  geometry from `TickerTapeControl` rather than ad hoc text spacing. Symbol,
+  last-value, and change-value text uses `Consolas` 15-point text (bold for
+  symbols; semibold for values); the waiting glyph remains the sole emoji-font
+  exception.
+- The product deliberately uses mixed typography. Ticker and compact numerical
+  data surfaces are monospaced; product identity and editorial/news typography
+  retain their separately specified upstream faces. No global monospaced-font
+  override is a migration requirement.
 - Content is duplicated enough to cover the viewport and provide a seamless
   cycle in either direction.
 - Motion is elapsed-time based, driven by the render surface, and throttled to

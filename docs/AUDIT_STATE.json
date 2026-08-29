@@ -943,9 +943,12 @@
       "depends_on": [
         "CR-010G"
       ],
-      "objective": "Port upstream duplicated-track ticker controls, elapsed-time animation, independent speeds/directions, and surgical quote-update cues to Avalonia.",
-      "acceptance_criteria": [
-        "Four lanes move continuously and seamlessly at max(18, 72 * configured speed) pixels per second.",
+        "objective": "Restore the source-derived Avalonia ticker control geometry and typography while retaining duplicated-track motion, independent speeds/directions, and surgical quote-update cues.",
+        "acceptance_criteria": [
+          "Default configured ticker rows are 56 pixels with the upstream 8,3 margin, 9,4 padding, and 28-pixel vertically centered viewport.",
+          "Ticker title badges are vertically centered and use upstream 7,2 padding, 10-pixel separation, Consolas 12-point semibold typography, and source-derived colors.",
+          "Ticker symbols and values retain upstream fixed-width Consolas roles without imposing a global monospaced font override on branding or editorial surfaces.",
+          "Four lanes move continuously and seamlessly at max(18, 72 * configured speed) pixels per second.",
         "Direction, fixed item geometry, loading/missing glyphs, trend colors, and quote flashes are preserved.",
         "Quote updates do not reset track position and pause/resume cannot create motion jumps."
       ],
@@ -955,30 +958,17 @@
         "Mandatory review and artifact second opinion"
       ],
       "started_on": "2026-08-20",
-      "completed_on": "2026-08-21",
-      "evidence_files": [
-        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/TickerMotionController.cs",
-        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerLaneViewModel.cs",
-        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/TickerQuoteViewModel.cs",
-        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
-        "build/vm/Invoke-ConfigWindowValidation.ps1"
-      ],
-      "upstream_behavior_inventory": {
-        "status": "complete",
-        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "upstream_behavior_inventory": {
+          "status": "complete",
+          "document": "docs/CR-010C-UPSTREAM-BEHAVIOR-INVENTORY.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": [
           "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
           "src/PortfolioSaver.Render/Services/TapeAnimationController.cs",
           "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
         ],
-        "zero_known_gaps": true
-      },
-      "closure_notes": [
-        "Ported four continuously wrapped duplicated ticker tracks with upstream-derived 72x speed scaling, an 18 pixel-per-second floor, independent direction, fixed 230-pixel quote geometry, and exact sequence spacing.",
-        "Preserved track position across quote refresh and viewport resize, suppressed hydration flashes, bounded pause/resume frame deltas, and restored rising/falling multi-pulse quote cues without rebuilding tracks.",
-        "Passed 70 tests, a warning-free build, six serial self-contained publishes, mandatory CODE review, and mandatory TEST_ARTIFACT review after same-geometry four-second displacement captures on Lubuntu, Windows 10, and high-DPI Windows 11; all post-run process counts were zero."
-      ]
+          "zero_known_gaps": true
+        }
     },
     {
       "id": "CR-010D",
