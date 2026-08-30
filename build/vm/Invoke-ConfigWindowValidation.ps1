@@ -586,6 +586,13 @@ function Invoke-LinuxValidation {
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
 
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path $remoteScriptPath)
+    $maximumCaptureSeconds = 45
+    $fullscreenTransitionSeconds = 22
+    $cleanupSeconds = 3
+    $duplicateWorkflowSeconds = if ($CaptureDuplicateInstanceFixture) { 65 } else { 0 }
+    $remoteScriptTimeoutSeconds = $Timeout + $Warmup +
+        (3 * $maximumCaptureSeconds) + $fullscreenTransitionSeconds + $cleanupSeconds +
+        $duplicateWorkflowSeconds + 90
     $remoteExecutionFailure = $null
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
@@ -600,7 +607,7 @@ function Invoke-LinuxValidation {
             '-o',
             'ConnectTimeout=60',
             "$User@$HostName",
-            "timeout --kill-after=10s 90s bash $remoteScriptPath"
+            "timeout --kill-after=10s ${remoteScriptTimeoutSeconds}s bash $remoteScriptPath"
         )
     }
     catch {
