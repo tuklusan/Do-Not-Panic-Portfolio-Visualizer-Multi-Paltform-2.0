@@ -923,12 +923,6 @@
         "Fresh Windows 11, Windows 10, and Lubuntu real-product captures with menu-state inspection."
       ],
       "started_on": "2026-08-29",
-      "execution_evidence": {
-        "updated_on": "2026-08-30",
-        "windows_11": "passed physical product acceptance with stale-source trace",
-        "linux_lxqt": "passed physical product acceptance with fullscreen geometry, non-empty screenshots, and stale-source trace",
-        "windows_10": "pending: SSH endpoint unavailable during physical acceptance"
-      },
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-010H-UPSTREAM-BEHAVIOR-INVENTORY.md",
@@ -1128,6 +1122,12 @@
         "Fresh and stale-source trace review on the physical test environment"
       ],
       "started_on": "2026-08-29",
+      "execution_evidence": {
+        "updated_on": "2026-08-30",
+        "windows_11": "passed physical product acceptance with stale-source trace",
+        "linux_lxqt": "passed physical product acceptance with fullscreen geometry, non-empty screenshots, and stale-source trace",
+        "windows_10": "pending: SSH endpoint unavailable during physical acceptance"
+      },
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-010I-UPSTREAM-BEHAVIOR-INVENTORY.md",
