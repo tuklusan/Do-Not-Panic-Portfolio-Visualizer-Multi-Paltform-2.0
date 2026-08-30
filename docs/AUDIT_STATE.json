@@ -938,7 +938,7 @@
         "updated_on": "2026-08-30",
         "linux_lxqt": "Passed real-product menu, fullscreen, and motion acceptance from pushed commit 43e45c1 after 45 seconds of settling; visible menu-open capture, trace, and zero-residual-process audit are in ignored build/vm-artifacts/cr010h/linux-menu-acceptance-retry.",
         "windows_10": "Pending a reachable physical-machine run.",
-        "windows_11": "Pending fresh scope-matched menu acceptance and fullscreen-exit menu-restoration evidence."
+        "windows_11": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, and later-motion acceptance; UI Automation verified the File submenu and final remote audit found no product or managed sidecar process. Artifacts are in ignored build/vm-artifacts/cr010h/win11-menu-acceptance-retry. Fullscreen exit/menu-restoration remains an explicit final closure interaction check."
       }
     },
     {
@@ -1146,6 +1146,36 @@
         ],
         "zero_known_gaps": true
       }
+    },
+    {
+      "id": "CR-010J",
+      "phase": "Phase 3",
+      "title": "Replace the single RSS default with resilient multi-source finance news",
+      "status": "open",
+      "depends_on": [
+        "CR-010I"
+      ],
+      "objective": "Port a portable multi-source finance RSS architecture using the configured CNBC, MarketWatch/Dow Jones, and Investing.com feed catalog without weakening stale-content, isolated-failure, or telegraph-playback behavior.",
+      "acceptance_criteria": [
+        "The built-in finance-news catalog contains the three specified sources and preserves a validated user-editable configuration path.",
+        "Current entries are merged deterministically across independently fetched sources with UTC-normalized dates, canonical-link deduplication, source attribution, and per-source stale/failure isolation.",
+        "No current aggregate source yields an explicit degraded state rather than silently replaying historic content or substituting an unrelated publisher.",
+        "The normal product physically demonstrates merged and degraded playback on the three local machines, with source-aware traces, process cleanup, and six-RID publish evidence."
+      ],
+      "validation_plan": [
+        "Source-cited upstream/current inventory and MigrationBehaviorGate pre-development pass.",
+        "Deterministic multi-source parsing, security, ordering, deduplication, freshness, partial-failure, and playback-continuity tests.",
+        "Mandatory reviewer, pushed checkpoint, physical acceptance, TEST_ARTIFACT review, and fresh closure rescan."
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-010J-MULTI-SOURCE-RSS-ARCHITECTURE-CONTRACT.md",
+        "zero_known_gaps": false
+      },
+      "transition_notes": [
+        "CR-010J is the approved successor to the temporary France 24 single-source default introduced by CR-010I.",
+        "CR-010I stale-item protection remains active until CR-010J has passed its required implementation and physical acceptance gates."
+      ]
     },
     {
       "id": "CR-011",

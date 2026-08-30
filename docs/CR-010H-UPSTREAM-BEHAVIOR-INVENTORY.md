@@ -56,6 +56,25 @@ Local ignored artifacts:
 - `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/step.log`
 - `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/cinematic-playback.log`
 
-This is evidence for the Linux local-machine lane only. CR-010H remains open
-until fresh normal/maximized/menu-open acceptance exists for Windows 10 and
-Windows 11, including fullscreen exit and menu restoration where required.
+This was initially evidence for the Linux local-machine lane only. CR-010H
+remains open until fresh normal/maximized/menu-open acceptance exists for
+Windows 10 and every final cross-machine interaction requirement, including
+fullscreen exit and menu restoration where required.
+
+The 2026-08-30 Windows 11 physical run from the same pushed product source
+also passed. The driver recorded its logical `1024x768` windowed startup,
+opened the File submenu through UI Automation, captured normal, wide,
+fullscreen, and later-motion frames, and removed its one-shot scheduled task.
+The final remote process query found no product or managed YFinance sidecar.
+
+Local ignored artifacts:
+
+- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/menu-open.png`
+- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/fullscreen.png`
+- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/fullscreen-motion.png`
+- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/step.log`
+- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/cinematic-playback.log`
+
+Windows 10 remains the sole unaccepted local-machine menu lane. Fullscreen
+exit/menu-restoration remains a dedicated interaction check for the eventual
+final cross-machine closure pass.
