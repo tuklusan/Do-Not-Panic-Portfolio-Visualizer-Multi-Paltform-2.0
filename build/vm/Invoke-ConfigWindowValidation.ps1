@@ -529,7 +529,7 @@ function Invoke-LinuxValidation {
             '  exit 1',
             '}',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
+            'rm -f general.png menu-open.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
             $launchLine,
             'APPPID=$!',
             'DUPPID=""',
@@ -561,6 +561,12 @@ function Invoke-LinuxValidation {
             'capture_screenshot general.png',
             'echo "GENERAL_CAPTURED" >> step.log'
         ) + $duplicateLines + @(
+            'xdotool key alt+f',
+            'sleep 1',
+            'capture_screenshot menu-open.png',
+            'echo "MENU_OPEN_CAPTURED" >> step.log',
+            'xdotool key Escape',
+            'sleep 1',
             'if timeout 5 xdotool key --window "$WID" F11; then',
             '  echo "FULLSCREEN_REQUESTED" >> step.log',
             'else',
@@ -623,7 +629,7 @@ function Invoke-LinuxValidation {
     }
 
     $artifactNames = if ($CaptureProductScene) {
-        @('general.png', 'validation.png', 'motion.png', 'run.log', 'capture-errors.log', 'step.log')
+        @('general.png', 'menu-open.png', 'validation.png', 'motion.png', 'run.log', 'capture-errors.log', 'step.log')
     }
     else {
         @('general.png', 'validation.png', 'run.log', 'step.log')
