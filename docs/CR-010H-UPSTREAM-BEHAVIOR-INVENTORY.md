@@ -38,3 +38,24 @@ dark File, View, Options, and Help labels on the dark menu band. CR-010H adds
 explicit scoped menu-item state styling only. It does not alter menu commands,
 fullscreen transitions, settings ownership, About content, scene geometry, or
 runtime scheduling.
+
+## Current Execution Evidence
+
+The 2026-08-30 Lubuntu physical run from pushed commit `43e45c1` passed with
+the real self-contained product, after a 45-second settling interval. Its
+menu-open capture visibly shows the File, View, Options, and Help roots plus
+the File submenu in the product-owned dark palette. The same run recorded a
+full-screen transition and later motion capture, and the final remote process
+audit found no DNPPV application or managed YFinance sidecar process.
+
+Local ignored artifacts:
+
+- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/menu-open.png`
+- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/validation.png`
+- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/motion.png`
+- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/step.log`
+- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/cinematic-playback.log`
+
+This is evidence for the Linux local-machine lane only. CR-010H remains open
+until fresh normal/maximized/menu-open acceptance exists for Windows 10 and
+Windows 11, including fullscreen exit and menu restoration where required.
