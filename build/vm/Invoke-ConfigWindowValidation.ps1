@@ -171,6 +171,7 @@ function Invoke-RemotePowerShell {
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($ScriptText))
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
+    $remoteExecutionFailure = $null
     try {
         Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
             '-e',
@@ -512,11 +513,11 @@ function Invoke-LinuxValidation {
             'done',
             'capture_screenshot() {',
             '  local output="$1"',
-            '  if ! timeout 15 scrot -o "$output"; then echo "CAPTURE_FAILED=$output" >> step.log; exit 1; fi',
+            '  if ! timeout 15 scrot -o "$output" 2>> capture-errors.log; then echo "CAPTURE_FAILED=$output" >> step.log; exit 1; fi',
             '  if [ ! -s "$output" ]; then echo "CAPTURE_EMPTY=$output" >> step.log; exit 1; fi',
             '}',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log step.log',
+            'rm -f general.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
             $launchLine,
             'APPPID=$!',
             'DUPPID=""',
@@ -573,6 +574,7 @@ function Invoke-LinuxValidation {
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
 
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path $remoteScriptPath)
+    $remoteExecutionFailure = $null
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
@@ -589,6 +591,9 @@ function Invoke-LinuxValidation {
             "timeout --kill-after=10s 90s bash $remoteScriptPath"
         )
     }
+    catch {
+        $remoteExecutionFailure = $_
+    }
     finally {
         if ($null -eq $previous) {
             Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue
@@ -599,7 +604,7 @@ function Invoke-LinuxValidation {
     }
 
     $artifactNames = if ($CaptureProductScene) {
-        @('general.png', 'validation.png', 'motion.png', 'run.log', 'step.log')
+        @('general.png', 'validation.png', 'motion.png', 'run.log', 'capture-errors.log', 'step.log')
     }
     else {
         @('general.png', 'validation.png', 'run.log', 'step.log')
@@ -614,7 +619,18 @@ function Invoke-LinuxValidation {
         $artifactNames += @('duplicate.png', 'duplicate.log')
     }
     foreach ($artifactName in $artifactNames) {
-        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
+        try {
+            Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
+        }
+        catch {
+            if ($null -eq $remoteExecutionFailure) {
+                throw
+            }
+        }
+    }
+
+    if ($null -ne $remoteExecutionFailure) {
+        throw $remoteExecutionFailure
     }
 }
 
