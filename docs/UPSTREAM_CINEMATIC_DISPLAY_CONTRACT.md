@@ -178,6 +178,11 @@ not evidence that motion behavior passes.
   transition to the next headline.
 - RSS remains the default source. Optional styled AI summaries and RSS fallback
   remain supported without changing playback behavior.
+- The required France 24 default is fetched live, but HTTP success and a
+  current channel build timestamp do not by themselves establish current news.
+  DNPPV-2.0 parses item publication dates: a newest valid item older than seven
+  days is an explicit stale-source playback state, while dated stale and
+  future-dated outliers are excluded from otherwise current playback.
 - Playback debounces headline bursts, cancels pending restarts on unload,
   preserves the index for equivalent refreshes, recovers the current headline
   after viewport readiness, preserves explicit line breaks, carries the prior

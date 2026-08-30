@@ -769,11 +769,16 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
-            IReadOnlyList<string> headlines = await _newsService.GetPlaybackHeadlinesAsync(_settings, cancellationToken);
-            await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(headlines), cancellationToken);
+            RssPlaybackSnapshot playback = await _newsService.GetPlaybackSnapshotAsync(_settings, cancellationToken);
+            RssFeedFreshnessSnapshot freshness = playback.Freshness;
+            string latestPublication = freshness.LatestPublicationUtc?.ToString("O") ?? "NONE";
+            WriteCinematicTrace(
+                $"NEWS_SOURCE;STATE={freshness.State};LATEST_UTC={latestPublication}");
+            await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(playback.Headlines), cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            WriteCinematicTrace($"NEWS_SOURCE;STATE=UNAVAILABLE;LATEST_UTC=NONE;ERROR={ex.GetType().Name}");
             await InvokeOnUiAsync(
                 () => _newsPlayback.SetHeadlines(["France 24 business headlines are temporarily unavailable"]),
                 cancellationToken);

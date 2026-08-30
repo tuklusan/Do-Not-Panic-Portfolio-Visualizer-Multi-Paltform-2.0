@@ -536,6 +536,89 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_ReportsStaleButSyntacticallyValidRssContent()
+    {
+        const string rss = "<rss><channel><item><title>Older market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Stale, service.LastRssFreshnessState);
+        Assert.Equal(new DateTimeOffset(2026, 8, 3, 10, 0, 0, TimeSpan.Zero), service.LatestRssPublicationUtc);
+        Assert.Single(headlines);
+        Assert.Contains("stale", headlines[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_ConvertsExplicitPublicationOffsetToUtc()
+    {
+        const string rss = "<rss><channel><item><title>Offset market news</title><pubDate>Sat, 29 Aug 2026 10:00:00 +0200</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Fresh, service.LastRssFreshnessState);
+        Assert.Equal(new DateTimeOffset(2026, 8, 29, 8, 0, 0, TimeSpan.Zero), service.LatestRssPublicationUtc);
+        Assert.Equal(["Offset market news"], headlines);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_ReportsMissingPublicationDatesWhileRetainingLegacyPlayback()
+    {
+        const string rss = "<rss><channel><item><title>Undated market news</title></item></channel></rss>";
+        using FinanceNewsService service = new(new StaticResponseHandler(rss));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.MissingPublicationDate, service.LastRssFreshnessState);
+        Assert.Equal(["Undated market news"], headlines);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_RejectsFuturePublicationDatesAsCurrentNews()
+    {
+        const string rss = "<rss><channel><item><title>Future market news</title><pubDate>Mon, 31 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.FuturePublicationDate, service.LastRssFreshnessState);
+        Assert.Null(service.LatestRssPublicationUtc);
+        Assert.Contains("future", headlines[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_IgnoresFutureOutlierWhenCurrentPublicationDateExists()
+    {
+        const string rss = "<rss><channel><item><title>Current market news</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item><item><title>Future market news</title><pubDate>Mon, 31 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Fresh, service.LastRssFreshnessState);
+        Assert.Equal(new DateTimeOffset(2026, 8, 28, 10, 0, 0, TimeSpan.Zero), service.LatestRssPublicationUtc);
+        Assert.Equal(["Current market news"], headlines);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_RejectsNonHttpFeedUrls()
     {
         using FinanceNewsService service = new(new StaticResponseHandler("<rss />"));

@@ -1101,6 +1101,41 @@
       }
     },
     {
+      "id": "CR-010I",
+      "phase": "Phase 3",
+      "title": "Add freshness integrity to the configured France 24 RSS lane",
+      "status": "open",
+      "depends_on": [
+        "CR-010E"
+      ],
+      "objective": "Keep the mandated France 24 business RSS default while detecting source-stale headlines and preventing them from being represented as current live news.",
+      "acceptance_criteria": [
+        "The default URL remains https://www.france24.com/en/business/rss and no other publisher is silently substituted.",
+        "RSS item publication dates are parsed and recorded in bounded product diagnostics.",
+        "A syntactically valid but stale feed produces an explicit stale-source state instead of ordinary live-news playback.",
+        "Fresh, stale, empty, malformed-date, and transport-failure feeds preserve the independent news playback/failure-isolation contract.",
+        "Physical acceptance captures a real-product trace proving the selected freshness state."
+      ],
+      "validation_plan": [
+        "Deterministic RSS publication-date and fallback-state tests",
+        "Mandatory review and pushed checkpoint before physical validation",
+        "Fresh and stale-source trace review on the physical test environment"
+      ],
+      "started_on": "2026-08-29",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-010I-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml.cs",
+          "src/PortfolioSaver.Core/Constants/Defaults.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_known_gaps": true
+      }
+    },
+    {
       "id": "CR-011",
       "phase": "Phase 4",
       "title": "Port degraded-mode behavior, recovery, and traceability",
@@ -1163,6 +1198,7 @@
   ],
   "remaining_validation_gaps": [
     "CR-010F must reconcile every line of docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md against the completed implementation, deterministic coverage, and dynamic physical evidence before CR-010 and Phase 3 may close.",
+    "CR-010I must prove that the required France 24 default feed is not presented as current live news when its externally supplied item dates are stale.",
     "Hosted execution and release-quality acceptance across the non-local target architectures remain assigned to later queue items."
   ],
   "current_operational_recommendations": [

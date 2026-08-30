@@ -11,10 +11,12 @@
 // SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 // patent, trademark, and governing-law provisions.
 // ============================================================================
-using System.Xml.Linq;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Xml;
+using System.Xml.Linq;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 
@@ -22,13 +24,32 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 
 public sealed class FinanceNewsService : IDisposable
 {
-    private readonly HttpClient _client;
+    public static readonly TimeSpan MaximumRssHeadlineAge = TimeSpan.FromDays(7);
+    private static readonly string[] RssPublicationDateFormats =
+    [
+        "r",
+        "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'",
+        "ddd, d MMM yyyy HH':'mm':'ss 'GMT'",
+        "ddd, dd MMM yyyy HH':'mm':'ss zzz",
+        "ddd, d MMM yyyy HH':'mm':'ss zzz",
+        "ddd, dd MMM yy HH':'mm':'ss zzz",
+        "ddd, d MMM yy HH':'mm':'ss zzz"
+    ];
 
-    public FinanceNewsService(HttpMessageHandler? handler = null)
+    private readonly HttpClient _client;
+    private readonly Func<DateTimeOffset> _utcNow;
+    private RssFeedFreshnessSnapshot _lastRssFreshnessSnapshot = new(RssFeedFreshnessState.Unknown, null);
+
+    public RssFeedFreshnessState LastRssFreshnessState => Volatile.Read(ref _lastRssFreshnessSnapshot).State;
+
+    public DateTimeOffset? LatestRssPublicationUtc => Volatile.Read(ref _lastRssFreshnessSnapshot).LatestPublicationUtc;
+
+    public FinanceNewsService(HttpMessageHandler? handler = null, Func<DateTimeOffset>? utcNow = null)
     {
         _client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: true);
         _client.Timeout = TimeSpan.FromSeconds(15);
         _client.DefaultRequestHeaders.UserAgent.ParseAdd("DNPPV-2.0/2.0");
+        _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
     }
 
     public async Task<IReadOnlyList<string>> GetHeadlinesAsync(string feedUrl, CancellationToken cancellationToken)
@@ -39,16 +60,9 @@ public sealed class FinanceNewsService : IDisposable
             throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(feedUrl));
         }
 
-        using Stream stream = await _client.GetStreamAsync(feedUri, cancellationToken).ConfigureAwait(false);
-        XDocument document = await XDocument.LoadAsync(stream, LoadOptions.None, cancellationToken).ConfigureAwait(false);
-        return document.Descendants()
-            .Where(static element => element.Name.LocalName == "item")
-            .Select(static item => item.Elements().FirstOrDefault(element => element.Name.LocalName == "title")?.Value)
-            .Where(static title => !string.IsNullOrWhiteSpace(title))
-            .Select(static title => title!.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(24)
-            .ToList();
+        RssHeadlineSnapshot snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
+        RecordFreshness(snapshot);
+        return snapshot.Headlines;
     }
 
     public async Task<string> GetNewsTextAsync(AppSettings settings, CancellationToken cancellationToken)
@@ -58,28 +72,63 @@ public sealed class FinanceNewsService : IDisposable
         AppSettings settings,
         CancellationToken cancellationToken)
     {
+        RssPlaybackSnapshot playback = await GetPlaybackSnapshotAsync(settings, cancellationToken).ConfigureAwait(false);
+        return playback.Headlines;
+    }
+
+    public async Task<RssPlaybackSnapshot> GetPlaybackSnapshotAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken)
+    {
         ArgumentNullException.ThrowIfNull(settings);
-        IReadOnlyList<string> headlines = await GetHeadlinesAsync(settings.NewsFeedUrl, cancellationToken)
-            .ConfigureAwait(false);
-        IReadOnlyList<string> rssHeadlines = headlines.Count == 0
+        if (!Uri.TryCreate(settings.NewsFeedUrl, UriKind.Absolute, out Uri? feedUri) ||
+            (feedUri.Scheme != Uri.UriSchemeHttp && feedUri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(settings));
+        }
+
+        RssHeadlineSnapshot snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
+        RecordFreshness(snapshot);
+        if (snapshot.FreshnessState == RssFeedFreshnessState.Stale)
+        {
+            string latestPublication = snapshot.LatestPublicationUtc?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "unknown";
+            return new RssPlaybackSnapshot(
+                [$"Configured RSS source is stale: newest article was published {latestPublication} UTC."],
+                new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+        }
+
+        if (snapshot.FreshnessState == RssFeedFreshnessState.FuturePublicationDate)
+        {
+            return new RssPlaybackSnapshot(
+                ["Configured RSS source reported only future publication dates; waiting for a current source."],
+                new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+        }
+
+        IReadOnlyList<string> rssHeadlines = snapshot.Headlines.Count == 0
             ? ["France 24 business feed returned no headlines"]
-            : headlines;
+            : snapshot.Headlines;
 
         if (settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
             string.IsNullOrWhiteSpace(settings.AiApiKey) ||
             string.IsNullOrWhiteSpace(settings.AiModelId))
         {
-            return rssHeadlines;
+            return new RssPlaybackSnapshot(
+                rssHeadlines,
+                new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
         }
 
         try
         {
-            string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
-            return string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary];
+            string? summary = await SummarizeAsync(settings, snapshot.Headlines, cancellationToken).ConfigureAwait(false);
+            return new RssPlaybackSnapshot(
+                string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary],
+                new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return rssHeadlines;
+            return new RssPlaybackSnapshot(
+                rssHeadlines,
+                new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
         }
     }
 
@@ -129,5 +178,106 @@ public sealed class FinanceNewsService : IDisposable
         return string.IsNullOrWhiteSpace(summary) ? null : summary.Trim();
     }
 
-    public void Dispose() => _client.Dispose();
+    public void Dispose()
+    {
+        _client.Dispose();
+    }
+
+    private async Task<RssHeadlineSnapshot> GetRssHeadlineSnapshotAsync(Uri feedUri, CancellationToken cancellationToken)
+    {
+        using Stream stream = await _client.GetStreamAsync(feedUri, cancellationToken).ConfigureAwait(false);
+        XmlReaderSettings readerSettings = new()
+        {
+            DtdProcessing = DtdProcessing.Prohibit,
+            XmlResolver = null,
+            Async = true,
+            MaxCharactersInDocument = 1_000_000,
+            MaxCharactersFromEntities = 0
+        };
+        using XmlReader reader = XmlReader.Create(stream, readerSettings, feedUri.ToString());
+        XDocument document = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken).ConfigureAwait(false);
+        DateTimeOffset now = _utcNow();
+        List<RssItem> items = document.Descendants()
+            .Where(static element => element.Name.LocalName == "item")
+            .Select(static item => new RssItem(
+                item.Elements().FirstOrDefault(element => element.Name.LocalName == "title")?.Value,
+                TryParsePublicationDate(item.Elements().FirstOrDefault(element => element.Name.LocalName == "pubDate")?.Value)))
+            .ToList();
+        IReadOnlyList<string> headlines = items
+            .Where(item => item.PublicationUtc is null ||
+                (item.PublicationUtc <= now && now - item.PublicationUtc.Value <= MaximumRssHeadlineAge))
+            .Select(static item => item.Title)
+            .Where(static title => !string.IsNullOrWhiteSpace(title))
+            .Select(static title => title!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(24)
+            .ToList();
+        List<DateTimeOffset> publicationDates = items
+            .Select(static item => item.PublicationUtc)
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .ToList();
+
+        List<DateTimeOffset> currentOrPastPublicationDates = publicationDates
+            .Where(publicationDate => publicationDate <= now)
+            .ToList();
+        DateTimeOffset? latestPublicationUtc = currentOrPastPublicationDates.Count == 0
+            ? null
+            : currentOrPastPublicationDates.Max();
+        RssFeedFreshnessState freshnessState = publicationDates.Count > 0 && latestPublicationUtc is null
+            ? RssFeedFreshnessState.FuturePublicationDate
+            : latestPublicationUtc is null
+            ? RssFeedFreshnessState.MissingPublicationDate
+            : now - latestPublicationUtc.Value > MaximumRssHeadlineAge
+                ? RssFeedFreshnessState.Stale
+                : RssFeedFreshnessState.Fresh;
+        return new RssHeadlineSnapshot(headlines, freshnessState, latestPublicationUtc);
+    }
+
+    public RssFeedFreshnessSnapshot GetLatestRssFreshnessSnapshot()
+        => Volatile.Read(ref _lastRssFreshnessSnapshot);
+
+    private void RecordFreshness(RssHeadlineSnapshot snapshot)
+        => Volatile.Write(
+            ref _lastRssFreshnessSnapshot,
+            new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+
+    private static DateTimeOffset? TryParsePublicationDate(string? value)
+        => DateTimeOffset.TryParseExact(
+            value,
+            RssPublicationDateFormats,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AdjustToUniversal,
+            out DateTimeOffset publicationDate)
+            || DateTimeOffset.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AdjustToUniversal,
+                out publicationDate)
+            ? publicationDate
+            : null;
+
+    private sealed record RssHeadlineSnapshot(
+        IReadOnlyList<string> Headlines,
+        RssFeedFreshnessState FreshnessState,
+        DateTimeOffset? LatestPublicationUtc);
+
+    private sealed record RssItem(string? Title, DateTimeOffset? PublicationUtc);
 }
+
+public enum RssFeedFreshnessState
+{
+    Unknown,
+    Fresh,
+    Stale,
+    MissingPublicationDate,
+    FuturePublicationDate
+}
+
+public sealed record RssFeedFreshnessSnapshot(
+    RssFeedFreshnessState State,
+    DateTimeOffset? LatestPublicationUtc);
+
+public sealed record RssPlaybackSnapshot(
+    IReadOnlyList<string> Headlines,
+    RssFeedFreshnessSnapshot Freshness);
