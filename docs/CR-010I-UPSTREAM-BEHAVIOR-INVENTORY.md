@@ -42,3 +42,20 @@ default, never presents stale source material as current live news, retains
 the source-derived refresh/fallback behavior, and proves fresh, stale, empty,
 and failed-feed cases with deterministic tests plus real-product trace
 evidence.
+
+## Execution Evidence
+
+On 2026-08-30, deterministic coverage passed for fresh, stale, empty,
+malformed-date, future-dated, mixed-date, explicit-timezone, and
+transport-failure RSS outcomes. The real product was then physically exercised
+without visual fixtures on two available local desktops:
+
+- Windows 11 completed ordinary-window, duplicate-instance, wide-window, and
+  fullscreen acceptance. Its cinematic trace recorded
+  `NEWS_SOURCE;STATE=Stale;LATEST_UTC=2026-08-05T10:48:44Z`.
+- Lubuntu LXQt completed ordinary product, fullscreen geometry, and motion
+  captures. Its cinematic trace recorded the same stale-source state and
+  timestamp, and its settled screenshot visibly showed the explicit stale RSS
+  message in the finance-news lane.
+- Windows 10 was unavailable at SSH during the 2026-08-30 run. Its matching
+  physical acceptance remains required before this CR may close.

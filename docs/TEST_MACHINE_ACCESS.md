@@ -37,6 +37,14 @@ changes; do not commit live addresses or credentials.
 - Sudo: available; uses the same password on first prompt
 - OS: Lubuntu Linux 26.04 with LXQt desktop
 - Notes: DHCP details may change
+- Desktop capture: `scrot` and ImageMagick `import` are available;
+  `gnome-screenshot` was installed on 2026-08-30 as an additional X11 capture
+  fallback. The physical product harness verifies non-empty PNG artifacts and
+  uses bounded fallbacks in that order.
+- Fullscreen acceptance: the harness sends the real product `F11` command,
+  records the post-transition X11 geometry, and captures settled fullscreen
+  and motion frames. LXQt may emit harmless X11 property warnings during that
+  transition; geometry plus non-empty captures are the authoritative evidence.
 
 ### `windows-10-reference`
 

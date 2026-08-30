@@ -585,6 +585,44 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_UsesExplicitFallbackForEmptyRssContent()
+    {
+        const string rss = "<rss><channel /></rss>";
+        using FinanceNewsService service = new(new StaticResponseHandler(rss));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.MissingPublicationDate, service.LastRssFreshnessState);
+        Assert.Equal(["France 24 business feed returned no headlines"], headlines);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_ToleratesMalformedPublicationDates()
+    {
+        const string rss = "<rss><channel><item><title>Malformed date market news</title><pubDate>later-ish</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(new StaticResponseHandler(rss));
+
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.MissingPublicationDate, service.LastRssFreshnessState);
+        Assert.Equal(["Malformed date market news"], headlines);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_PropagatesTransportFailureForSceneIsolation()
+    {
+        using FinanceNewsService service = new(new FailingResponseHandler());
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => service.GetPlaybackHeadlinesAsync(
+            new AppSettings { NewsFeedUrl = "https://example.test/feed" },
+            CancellationToken.None));
+    }
+
+    [Fact]
     public async Task FinanceNewsService_RejectsFuturePublicationDatesAsCurrentNews()
     {
         const string rss = "<rss><channel><item><title>Future market news</title><pubDate>Mon, 31 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
@@ -717,6 +755,12 @@ public sealed class AmbientSceneServicesTests
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
         }
+    }
+
+    private sealed class FailingResponseHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
     }
 
     private sealed class TemporaryDirectoryScope : IDisposable
