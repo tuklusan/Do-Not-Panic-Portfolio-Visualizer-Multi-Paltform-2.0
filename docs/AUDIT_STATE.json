@@ -1894,6 +1894,26 @@
       "objective": "Implement and prove portable structured news-cache persistence, minimum freshness-floor replacement, AI-failure caching, and expired-cache fallback behavior.",
       "acceptance_criteria": ["DATA-10 passes fresh, stale, expired, malformed, AI-failure, and RSS-failure cache cases without stale-news regressions."],
       "validation_plan": ["Focused news-cache tests", "Three-machine RSS and summarized-news acceptance", "Artifact and reviewer review"]
+    },
+    {
+      "id": "CR-047",
+      "phase": "Phase 7",
+      "title": "Close news playback sequence and viewport recovery parity gaps",
+      "status": "open",
+      "depends_on": ["CR-046"],
+      "objective": "Match upstream headline-count preservation, closing-quote sequencing, teleprinter playback phases, debounce, viewport readiness, and refresh replacement behavior.",
+      "acceptance_criteria": ["VIS-06 passes deterministic playback tests and real production-news captures without duplication or lost headlines."],
+      "validation_plan": ["Focused news playback tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-048",
+      "phase": "Phase 7",
+      "title": "Close shared HTTP resource and timeout-policy parity gaps",
+      "status": "open",
+      "depends_on": ["CR-047"],
+      "objective": "Prove shared handler ownership, bounded per-request timeouts, disposal rules, and transport resource reuse across RSS, AI, probe, and YFinance paths.",
+      "acceptance_criteria": ["DATA-11 passes handler-reuse, timeout, disposal, and transport-trace tests without socket or client leaks."],
+      "validation_plan": ["Focused HTTP lifecycle tests", "Fault-injected provider runs", "Six-target publish"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
