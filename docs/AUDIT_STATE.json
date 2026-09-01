@@ -1844,6 +1844,16 @@
       "objective": "Provide a maintained cross-platform test agent and harness contract for remote launch, failure injection, cleanup, screenshots, traces, and safe diagnostics.",
       "acceptance_criteria": ["TEST-05 self-tests pass and the agent exercises the real product on all available local platforms without residual processes."],
       "validation_plan": ["Harness self-tests", "Three-machine physical acceptance", "Artifact and cleanup review"]
+    },
+    {
+      "id": "CR-042",
+      "phase": "Phase 7",
+      "title": "Close exact settings-normalization compatibility gaps",
+      "status": "open",
+      "depends_on": ["CR-041"],
+      "objective": "Prove placeholder-secret clearing, legacy refresh retirement, remote-background-path retirement, legacy direction normalization, and the approved default AI writing style.",
+      "acceptance_criteria": ["DATA-09 has deterministic normalization tests and preserves only supported user intent."],
+      "validation_plan": ["Focused normalizer tests", "Settings migration acceptance on three machines", "Secret-scan and reviewer gates"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],

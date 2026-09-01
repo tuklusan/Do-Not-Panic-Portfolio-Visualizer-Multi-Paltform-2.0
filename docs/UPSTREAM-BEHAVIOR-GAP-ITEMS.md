@@ -76,6 +76,7 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | LOGIC-06 | `NtpTimeService_*`, `NetworkAvailabilityService`, `VisualizerSceneControl.GetCachedStatusNetworkAvailability`, `ClockTick_*` | Network status probing, bounded NTP correction, cached availability, and time/status refresh behavior need an explicit cross-platform parity matrix. | CR-039 |
 | UI-07 | `ConfigDialogService`, `VisualizerSettingsService`, `VisualizerSceneState`, `MainWindowViewModelValidationTests` | Avalonia replacements for configuration-dialog ownership, settings loading, scene-state transfer, and validation-dialog outcomes need direct workflow evidence. | CR-040 |
 | TEST-05 | `VmHarnessScriptTests`, `PortfolioSaver.VmAgent.Program`, `GuestUxDeepExercise_*`, `DesktopWerLocalDumpsScriptTests` | The maintained 2.0 physical-test agent, remote launch/cleanup contract, failure injection, and diagnostic collection need a platform-neutral replacement and self-tests. | CR-041 |
+| DATA-09 | `Normalize_AiApiKey_ClearsPlaceholder`, `Normalize_RetiresLegacyRefreshPair_ToDesktopDefaults`, `Normalize_RetiresRemoteBackgroundPaths_ToLocalOnlyDefaults`, `Normalize_AppliesAlternatingDirectionsForLegacyAllLeftSettings`, `Normalize_DefaultsAiWritingStyleToDouglasAdams` | Exact settings-normalization compatibility rules need explicit 2.0 tests, including secret placeholder removal and intentional retirement of unsupported legacy values. | CR-042 |
 
 ## Test-Class Disposition Cross-Check
 
