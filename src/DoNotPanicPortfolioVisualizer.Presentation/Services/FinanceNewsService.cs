@@ -213,6 +213,7 @@ public sealed class FinanceNewsService : IDisposable
             .Where(static element => element.Name.LocalName == "item")
             .Select(static item => new RssItem(
                 item.Elements().FirstOrDefault(element => element.Name.LocalName == "title")?.Value,
+                item.Elements().FirstOrDefault(element => element.Name.LocalName is "link" or "id")?.Value,
                 TryParsePublicationDate(item.Elements().FirstOrDefault(element => element.Name.LocalName == "pubDate")?.Value)))
             .ToList();
         IReadOnlyList<string> headlines = items
@@ -243,7 +244,7 @@ public sealed class FinanceNewsService : IDisposable
             : now - latestPublicationUtc.Value > MaximumRssHeadlineAge
                 ? RssFeedFreshnessState.Stale
                 : RssFeedFreshnessState.Fresh;
-        return new RssHeadlineSnapshot(headlines, freshnessState, latestPublicationUtc);
+        return new RssHeadlineSnapshot(headlines, items, freshnessState, latestPublicationUtc);
     }
 
     private async Task<RssPlaybackSnapshot> GetBuiltInPlaybackSnapshotAsync(
@@ -258,9 +259,9 @@ public sealed class FinanceNewsService : IDisposable
             .Where(static result => result.Snapshot.Headlines.Count > 0 && result.Snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
             .ToArray();
         IReadOnlyList<string> headlines = usable
-            .SelectMany(static result => result.Snapshot.Headlines.Select(headline => (result.Source.Name, Headline: headline)))
-            .DistinctBy(static item => item.Headline, StringComparer.OrdinalIgnoreCase)
-            .Select(static item => $"[{item.Name}] {item.Headline}")
+            .SelectMany(static result => result.Snapshot.Items.Select(item => (result.Source.Name, Item: item)))
+            .DistinctBy(static item => NormalizeCanonicalLink(item.Item.Link) ?? item.Item.Title, StringComparer.OrdinalIgnoreCase)
+            .Select(static item => $"[{item.Name}] {item.Item.Title!.Trim()}")
             .Take(24)
             .ToArray();
         RssFeedFreshnessState state = headlines.Count > 0
@@ -281,7 +282,7 @@ public sealed class FinanceNewsService : IDisposable
             .ToList();
         DateTimeOffset? latest = publicationDates.Count == 0 ? null : publicationDates.Max();
         RssFeedFreshnessSnapshot freshness = new(state, latest);
-        RecordFreshness(new RssHeadlineSnapshot(headlines, state, latest));
+        RecordFreshness(new RssHeadlineSnapshot(headlines, [], state, latest));
         IReadOnlyList<string> playback = headlines.Count > 0
             ? headlines
             : [state == RssFeedFreshnessState.Unavailable
@@ -302,7 +303,7 @@ public sealed class FinanceNewsService : IDisposable
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            return new(source, new RssHeadlineSnapshot([], RssFeedFreshnessState.Unavailable, null));
+            return new(source, new RssHeadlineSnapshot([], [], RssFeedFreshnessState.Unavailable, null));
         }
     }
 
@@ -331,12 +332,27 @@ public sealed class FinanceNewsService : IDisposable
             ? publicationDate
             : null;
 
+    private static string? NormalizeCanonicalLink(string? link)
+    {
+        if (!Uri.TryCreate(link?.Trim(), UriKind.Absolute, out Uri? uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            return null;
+        UriBuilder builder = new(uri) { Fragment = string.Empty };
+        string query = string.Join('&', builder.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static value => !value.StartsWith("utm_", StringComparison.OrdinalIgnoreCase) &&
+                                   !value.StartsWith("ref=", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase));
+        builder.Query = query;
+        return builder.Uri.AbsoluteUri.TrimEnd('/');
+    }
+
     private sealed record RssHeadlineSnapshot(
         IReadOnlyList<string> Headlines,
+        IReadOnlyList<RssItem> Items,
         RssFeedFreshnessState FreshnessState,
         DateTimeOffset? LatestPublicationUtc);
 
-    private sealed record RssItem(string? Title, DateTimeOffset? PublicationUtc);
+    private sealed record RssItem(string? Title, string? Link, DateTimeOffset? PublicationUtc);
 
     private sealed record RssSourceSnapshot(RssFeedSource Source, RssHeadlineSnapshot Snapshot);
 }
