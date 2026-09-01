@@ -828,7 +828,7 @@
       "id": "CR-010B",
       "phase": "Phase 3",
       "title": "Port viewport-relative scene geometry and background cinema",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010A"
       ],
@@ -864,8 +864,20 @@
       "closure_notes": [
         "Reopened: prior closure evidence is not retained as current evidence.",
         "Current Windows 11 real-product evidence proves the Avalonia logical 1024x768 startup state, wide/maximized and F11 fullscreen captures, background commit, motion trace, and process cleanup.",
-        "CR remains open until current cross-machine physical acceptance and artifact review satisfy every criterion."
-      ]
+        "Current Linux, Windows 10, and Windows 11 real-product acceptance additionally proves the responsive scene at the required compact and wide/fullscreen states with readable overlays, settled motion, and cleaned-up processes."
+      ],
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs",
+          "src/PortfolioSaver.Media/Services/ExchangePhotoCacheService.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-010G",
