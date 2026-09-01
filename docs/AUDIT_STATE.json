@@ -733,7 +733,7 @@
       "id": "CR-010",
       "phase": "Phase 3",
       "title": "Port floating graph cards, global markets, clocks, weather, news, and backgrounds",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-009"
       ],
@@ -765,7 +765,27 @@
           "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml",
+          "docs/UPSTREAM_CINEMATIC_DISPLAY_CONTRACT.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_notes": [
+        "The Phase 3 parent is reconciled against its closed cinematic children, current real-product evidence, six-target publish proof, and the fresh multi-source RSS acceptance.",
+        "No unowned Phase 3 behavior remains in the tracker; the CR is closed after the required closure scan."
+      ]
     },
     {
       "id": "CR-010A",
