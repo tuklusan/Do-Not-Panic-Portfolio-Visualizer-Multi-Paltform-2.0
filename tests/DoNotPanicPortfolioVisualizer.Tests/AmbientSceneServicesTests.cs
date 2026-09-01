@@ -593,6 +593,24 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_DeduplicatesEquivalentCanonicalLinks()
+    {
+        const string cnbc = "<rss><channel><item><title>First report</title><link>https://news.example/story?id=7&amp;utm_source=cnbc</link><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        const string other = "<rss><channel><item><title>Second wording</title><link>https://news.example/story?id=7&amp;ref=feed</link><pubDate>Fri, 28 Aug 2026 09:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new UrlResponseHandler(request => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(request.Host.Contains("cnbc", StringComparison.OrdinalIgnoreCase) ? cnbc : other, Encoding.UTF8, "application/rss+xml")
+            }),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Single(result.Headlines);
+        Assert.StartsWith("[CNBC]", result.Headlines[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_ReportsStaleButSyntacticallyValidRssContent()
     {
         const string rss = "<rss><channel><item><title>Older market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
