@@ -1754,6 +1754,56 @@
       "objective": "Prove staged background downloads, image validation, concurrent warmup serialization, cancellation, catalog rotation, and prepared rendering behavior.",
       "acceptance_criteria": ["DATA-06 passes cache integrity and rotation cases without partial-file promotion or dispatcher blocking."],
       "validation_plan": ["Focused media/cache tests", "Three-machine production-scene acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-033",
+      "phase": "Phase 7",
+      "title": "Close settings normalization and storage compatibility parity gaps",
+      "status": "open",
+      "depends_on": ["CR-032"],
+      "objective": "Prove legacy settings migration, normalization, profile/group mutation, and portable storage-root compatibility without losing user configuration.",
+      "acceptance_criteria": ["DATA-07 passes a complete persistence and compatibility matrix across supported platforms."],
+      "validation_plan": ["Focused settings tests", "Three-machine persistence acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-034",
+      "phase": "Phase 7",
+      "title": "Close historical cache and startup fallback parity gaps",
+      "status": "open",
+      "depends_on": ["CR-033"],
+      "objective": "Match upstream historical-cache expiry/corruption handling, stale fallback, graph fallback, and startup-news cache behavior.",
+      "acceptance_criteria": ["DATA-08 has deterministic corruption, expiry, stale-fallback, and startup sequencing tests."],
+      "validation_plan": ["Focused cache/provider tests", "Degraded production-scene acceptance", "Reviewer gate"]
+    },
+    {
+      "id": "CR-035",
+      "phase": "Phase 7",
+      "title": "Close degraded-state and ancillary display parity gaps",
+      "status": "open",
+      "depends_on": ["CR-034"],
+      "objective": "Prove accessible degraded states and correct clock, weather, and freshness rendering in the real Avalonia scene.",
+      "acceptance_criteria": ["UI-06 passes online, offline, stale, missing, and recovery acceptance on all local machines."],
+      "validation_plan": ["Focused state/render tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-036",
+      "phase": "Phase 7",
+      "title": "Close release and diagnostic workflow parity gaps",
+      "status": "open",
+      "depends_on": ["CR-035"],
+      "objective": "Prove publication authorization, advisory reporting, safe diagnostic-dump handling, and mandatory reviewer-gate integration for the 2.0 release workflow.",
+      "acceptance_criteria": ["TEST-04 covers deny-by-default publication, safe reports, dump controls, and review-gate failure paths."],
+      "validation_plan": ["Workflow self-tests", "PowerShell/license gates", "Reviewer and artifact review"]
+    },
+    {
+      "id": "CR-037",
+      "phase": "Phase 7",
+      "title": "Close symbol and market-classification parity gaps",
+      "status": "open",
+      "depends_on": ["CR-036"],
+      "objective": "Prove symbol canonicalization, asset-class inference, validation disablement, and market-session classification across the portable provider pipeline.",
+      "acceptance_criteria": ["LOGIC-04 passes the supported ticker, alias, invalid-symbol, and session-boundary matrix."],
+      "validation_plan": ["Focused provider/business-rule tests", "Six-target publish", "Degraded-state regression"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],

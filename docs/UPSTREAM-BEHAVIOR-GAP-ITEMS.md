@@ -63,6 +63,35 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | DATA-05 | `LengthPrefixedProtocolStream_*`, `ProtocolIntegrity_*`, `ClientAndServer_TraceEveryMessageAtTransportBoundary`, `Client_*Dispose*` | Framing limits, zero/truncated/oversized payload handling, checksum compatibility, transport tracing, and pending-request disposal need a unified protocol safety matrix. | CR-031 |
 | DATA-06 | `WarmDefaultManifestCacheAsync_*`, `BackgroundCatalogRefreshDecision_*`, `BackgroundPreparation_*` | Background download staging, content validation, concurrent warmup serialization, cancellation, and catalog rotation decisions need explicit cache-integrity coverage. | CR-032 |
 
+## Third Repeat-Scan Additions
+
+| Item | Upstream line-level evidence | 2.0 status | CR |
+| --- | --- | --- | --- |
+| DATA-07 | `AppSettingsNormalizerTests`, `SettingsFileServiceTests`, `TickerGroupEditorViewModelTests`, `LocalAppDataStorageScriptTests` | Legacy settings fields, profile/group mutation, normalization, and storage-root migration need one explicit persistence/compatibility matrix. | CR-033 |
+| DATA-08 | `HistoricalCacheServiceTests`, `HybridHistoricalDataProvider_*`, `StartupCoordinatorGraphSelectionTests`, `StartupCoordinatorNewsTests` | Historical cache corruption/expiry, stale fallback, graph fallback, and startup-news cache semantics need dedicated parity evidence. | CR-034 |
+| UI-06 | `DegradedUxContractTests`, `FloatingClockBuilderTests`, `WorldWeatherServiceTests`, `RuntimeFreshnessBehavior_*` | Degraded-state text, clock/weather ancillary rendering, and accessible freshness states need a unified real-scene acceptance matrix. | CR-035 |
+| TEST-04 | `ItchPublishWorkflowTests`, `VirusTotalReleaseReportScriptTests`, `DesktopWerLocalDumpsScriptTests`, `DeepSeekCodeReviewGateTests` | Release publication authorization, advisory reporting, diagnostic-dump safety, and reviewer-gate automation need explicit 2.0 workflow coverage. | CR-036 |
+| LOGIC-04 | `SymbolNormalizerTests`, `SymbolProfileHeuristicsTests`, `YahooSymbolValidationServiceTests`, `MarketSessionResolverTests` | Symbol canonicalization, asset-class inference, validation disablement, and market-session classification need a dedicated business-rule parity matrix. | CR-037 |
+
+## Test-Class Disposition Cross-Check
+
+The following upstream test families were re-read from disk during the repeat
+scan. They do not create additional behavior categories because their
+assertions are already routed to the workstreams above or to an earlier
+closed foundation CR. The installer-only family is intentionally retired by
+the Avalonia-only, bundle-delivery architecture.
+
+| Upstream test families | Disposition |
+| --- | --- |
+| `AppDataRootResolverTests`, `PathHelperTests`, `LocalAppDataStorageScriptTests`, `SettingsFileServiceTests`, `AppSettingsNormalizerTests`, `TickerGroupEditorViewModelTests` | Routed to DATA-03/DATA-07 and the closed portable-foundation CRs. |
+| `FinanceNewsServiceTests`, `NewsFeedValidationServiceTests`, `MainWindowViewModelValidationTests`, `StartupCoordinatorTapeItemTests`, `StartupCoordinatorNewsTests`, `StartupCoordinatorGraphSelectionTests`, `VisualizerRenderBehaviorTests`, `FloatingClockBuilderTests`, `WorldWeatherServiceTests`, `DegradedUxContractTests` | Routed to AI-01/UI-01/UI-04/UI-06, VIS-01/VIS-02/VIS-03/VIS-04, and LOGIC-02/LOGIC-03. |
+| `HistoricalCacheServiceTests`, `SymbolNormalizerTests`, `SymbolProfileHeuristicsTests`, `YahooSymbolValidationServiceTests`, `MarketSessionResolverTests`, `QuoteRefreshPolicyTests`, `ProviderHealthServiceTests`, `SensitiveDataRedactorTests`, `YFinanceExchangeTimingServiceTests` | Routed to DATA-01/DATA-02/DATA-08, LOGIC-01/LOGIC-02/LOGIC-04, and SEC-01. |
+| `YFinanceClientServerProtocolTests`, `YFinanceServerClientPipelineTests`, `YFinanceCircularTraceSinkTests`, `YFinanceUpstreamSyncMonitorTests`, `TraceLogTests`, `CappedFileLogWriterTests` | Routed to DATA-05, LIFE-02, TEST-04, and the closed diagnostics foundation CRs. |
+| `ConfigTextConsistencyTests`, `LegalHeaderPolicyTests`, `DeepSeekCodeReviewGateTests`, `VmHarnessScriptTests`, `DesktopWerLocalDumpsScriptTests`, `ItchPublishWorkflowTests`, `VirusTotalReleaseReportScriptTests`, `EnvironmentSerialCollection` | Routed to TEST-01/TEST-02/TEST-04 and the repository license/workflow gates. |
+| `BrandingAssetTransparencyTests`, `ExchangePhotoCacheServiceTests`, `ReleaseManifestValidatorTests`, `ProjectLicenseServiceTests` | Routed to DATA-04/DATA-06, UI-03, and the closed asset/integrity foundation CRs. |
+| `InnoInstallerScriptTests` | Intentionally retired; no Windows installer exists in the target architecture. |
+| `Nb040BehaviorTests`, `Nb048BehaviorTests`, `Nb049BehaviorTests`, `Nb051BehaviorTests`, `Nb058Nb060BehaviorTests` | Historical upstream regression labels; their assertions are routed to the corresponding runtime, scene, and workflow rows above, with no separate product behavior. |
+
 ## Repeat Rule
 
 Every item must be resolved by a mapped 2.0 implementation and a focused test
