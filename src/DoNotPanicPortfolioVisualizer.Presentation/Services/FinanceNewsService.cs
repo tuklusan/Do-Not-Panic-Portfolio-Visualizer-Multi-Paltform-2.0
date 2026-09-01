@@ -17,6 +17,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
+using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 
@@ -25,6 +26,12 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 public sealed class FinanceNewsService : IDisposable
 {
     public static readonly TimeSpan MaximumRssHeadlineAge = TimeSpan.FromDays(7);
+    public static readonly IReadOnlyList<RssFeedSource> BuiltInFinanceSources =
+    [
+        new("CNBC", new Uri("https://www.cnbc.com/id/100003114/device/rss/rss.html")),
+        new("MarketWatch", new Uri("https://feeds.content.dowjones.io/public/rss/mw_topstories")),
+        new("Investing.com", new Uri("https://www.investing.com/rss/news.rss"))
+    ];
     private static readonly string[] RssPublicationDateFormats =
     [
         "r",
@@ -85,6 +92,11 @@ public sealed class FinanceNewsService : IDisposable
             (feedUri.Scheme != Uri.UriSchemeHttp && feedUri.Scheme != Uri.UriSchemeHttps))
         {
             throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(settings));
+        }
+
+        if (string.Equals(settings.NewsFeedUrl, Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            return await GetBuiltInPlaybackSnapshotAsync(settings, cancellationToken).ConfigureAwait(false);
         }
 
         RssHeadlineSnapshot snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
@@ -234,13 +246,75 @@ public sealed class FinanceNewsService : IDisposable
         return new RssHeadlineSnapshot(headlines, freshnessState, latestPublicationUtc);
     }
 
+    private async Task<RssPlaybackSnapshot> GetBuiltInPlaybackSnapshotAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken)
+    {
+        Task<RssSourceSnapshot>[] fetches = BuiltInFinanceSources
+            .Select(source => FetchBuiltInSourceAsync(source, cancellationToken))
+            .ToArray();
+        RssSourceSnapshot[] results = await Task.WhenAll(fetches).ConfigureAwait(false);
+        RssSourceSnapshot[] usable = results
+            .Where(static result => result.Snapshot.Headlines.Count > 0 && result.Snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
+            .ToArray();
+        IReadOnlyList<string> headlines = usable
+            .SelectMany(static result => result.Snapshot.Headlines.Select(headline => (result.Source.Name, Headline: headline)))
+            .DistinctBy(static item => item.Headline, StringComparer.OrdinalIgnoreCase)
+            .Select(static item => $"[{item.Name}] {item.Headline}")
+            .Take(24)
+            .ToArray();
+        RssFeedFreshnessState state = headlines.Count > 0
+            ? usable.Length == BuiltInFinanceSources.Count
+                ? RssFeedFreshnessState.Fresh
+                : RssFeedFreshnessState.Partial
+            : results.Any(static result => result.Snapshot.FreshnessState == RssFeedFreshnessState.FuturePublicationDate)
+                ? RssFeedFreshnessState.FuturePublicationDate
+                : results.Any(static result => result.Snapshot.FreshnessState == RssFeedFreshnessState.Stale)
+                    ? RssFeedFreshnessState.Stale
+                    : results.All(static result => result.Snapshot.FreshnessState == RssFeedFreshnessState.Unavailable)
+                        ? RssFeedFreshnessState.Unavailable
+                        : RssFeedFreshnessState.MissingPublicationDate;
+        List<DateTimeOffset> publicationDates = results
+            .Select(static result => result.Snapshot.LatestPublicationUtc)
+            .Where(static value => value.HasValue)
+            .Select(static value => value!.Value)
+            .ToList();
+        DateTimeOffset? latest = publicationDates.Count == 0 ? null : publicationDates.Max();
+        RssFeedFreshnessSnapshot freshness = new(state, latest);
+        RecordFreshness(new RssHeadlineSnapshot(headlines, state, latest));
+        IReadOnlyList<string> playback = headlines.Count > 0
+            ? headlines
+            : [state == RssFeedFreshnessState.Unavailable
+                ? "No finance news sources are reachable."
+                : state == RssFeedFreshnessState.Stale
+                    ? "All built-in finance news sources are stale."
+                    : "No current finance news sources are available."];
+        return new RssPlaybackSnapshot(playback, freshness);
+    }
+
+    private async Task<RssSourceSnapshot> FetchBuiltInSourceAsync(
+        RssFeedSource source,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return new(source, await GetRssHeadlineSnapshotAsync(source.Uri, cancellationToken).ConfigureAwait(false));
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return new(source, new RssHeadlineSnapshot([], RssFeedFreshnessState.Unavailable, null));
+        }
+    }
+
     public RssFeedFreshnessSnapshot GetLatestRssFreshnessSnapshot()
         => Volatile.Read(ref _lastRssFreshnessSnapshot);
 
     private void RecordFreshness(RssHeadlineSnapshot snapshot)
-        => Volatile.Write(
+    {
+        Interlocked.Exchange(
             ref _lastRssFreshnessSnapshot,
             new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+    }
 
     private static DateTimeOffset? TryParsePublicationDate(string? value)
         => DateTimeOffset.TryParseExact(
@@ -263,6 +337,8 @@ public sealed class FinanceNewsService : IDisposable
         DateTimeOffset? LatestPublicationUtc);
 
     private sealed record RssItem(string? Title, DateTimeOffset? PublicationUtc);
+
+    private sealed record RssSourceSnapshot(RssFeedSource Source, RssHeadlineSnapshot Snapshot);
 }
 
 public enum RssFeedFreshnessState
@@ -271,7 +347,9 @@ public enum RssFeedFreshnessState
     Fresh,
     Stale,
     MissingPublicationDate,
-    FuturePublicationDate
+    FuturePublicationDate,
+    Unavailable,
+    Partial
 }
 
 public sealed record RssFeedFreshnessSnapshot(
@@ -281,3 +359,5 @@ public sealed record RssFeedFreshnessSnapshot(
 public sealed record RssPlaybackSnapshot(
     IReadOnlyList<string> Headlines,
     RssFeedFreshnessSnapshot Freshness);
+
+public sealed record RssFeedSource(string Name, Uri Uri);

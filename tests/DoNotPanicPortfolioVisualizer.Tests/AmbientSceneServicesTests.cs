@@ -14,6 +14,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Media.Services;
@@ -533,6 +534,46 @@ public sealed class AmbientSceneServicesTests
         IReadOnlyList<string> headlines = await service.GetHeadlinesAsync("https://example.test/feed", CancellationToken.None);
 
         Assert.Equal(["Markets rally", "Rates move"], headlines);
+    }
+
+    [Fact]
+    public void FinanceNewsService_ExposesOrderedBuiltInFinanceSources()
+    {
+        Assert.Equal(["CNBC", "MarketWatch", "Investing.com"],
+            FinanceNewsService.BuiltInFinanceSources.Select(static source => source.Name));
+        Assert.All(FinanceNewsService.BuiltInFinanceSources,
+            static source => Assert.Equal(Uri.UriSchemeHttps, source.Uri.Scheme));
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_AggregatesFreshBuiltInSourcesWithAttribution()
+    {
+        const string rss = "<rss><channel><item><title>Markets rally</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(
+            Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Fresh, result.Freshness.State);
+        Assert.Single(result.Headlines);
+        Assert.StartsWith("[CNBC] Markets rally", result.Headlines[0], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_ReportsAllBuiltInSourcesStale()
+    {
+        const string rss = "<rss><channel><item><title>Old market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(
+            Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Stale, result.Freshness.State);
+        Assert.Equal(["All built-in finance news sources are stale."], result.Headlines);
     }
 
     [Fact]
