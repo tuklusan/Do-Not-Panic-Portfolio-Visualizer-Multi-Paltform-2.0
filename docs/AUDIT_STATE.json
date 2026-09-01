@@ -1524,9 +1524,7 @@
       ]
     }
   ],
-  "remaining_validation_gaps": [
-    "No remaining Phase 0-6 migration-baseline gaps are recorded. New behavior or post-baseline hardening must enter the JSON CR queue before implementation."
-  ],
+  "remaining_validation_gaps": [],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
