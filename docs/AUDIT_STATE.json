@@ -1151,7 +1151,7 @@
       "id": "CR-010J",
       "phase": "Phase 3",
       "title": "Replace the single RSS default with resilient multi-source finance news",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010I"
       ],
@@ -1194,6 +1194,12 @@
       "transition_notes": [
         "CR-010J is the approved successor to the temporary France 24 single-source default introduced by CR-010I.",
         "CR-010I stale-item protection remains active until CR-010J has passed its required implementation and physical acceptance gates."
+      ],
+      "closure_notes": [
+        "Implemented the ordered CNBC, MarketWatch/Dow Jones, and Investing.com catalog with isolated concurrent fetches, XML hardening, RSS/Atom parsing, UTC freshness classification, deterministic newest-first merge ordering, canonical-link deduplication, attribution, partial degradation, and summarized-playback preservation.",
+        "Passed 283 Release tests, six self-contained publishes for win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, and osx-arm64, and mandatory TEST_ARTIFACT review with PASS and zero blocking findings.",
+        "Ran the normal product without visual fixtures on Lubuntu, Windows 10, and Windows 11 from pushed checkpoint bc7ece5; all three produced viewport, menu, fullscreen, motion, and playback artifacts, recorded fresh NEWS_SOURCE telemetry, and left zero local helper processes.",
+        "Fresh closure behavior scan passed with two successive zero-gap scans against upstream commit 65a53bbbf0cf9af1058363f8939d464ca03858f8. Implementation checkpoint 5070874 and runner documentation checkpoint bc7ece5 are pushed to main."
       ]
     },
     {
