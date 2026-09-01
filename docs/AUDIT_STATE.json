@@ -1804,6 +1804,46 @@
       "objective": "Prove symbol canonicalization, asset-class inference, validation disablement, and market-session classification across the portable provider pipeline.",
       "acceptance_criteria": ["LOGIC-04 passes the supported ticker, alias, invalid-symbol, and session-boundary matrix."],
       "validation_plan": ["Focused provider/business-rule tests", "Six-target publish", "Degraded-state regression"]
+    },
+    {
+      "id": "CR-038",
+      "phase": "Phase 7",
+      "title": "Close runtime request orchestration and provider budget parity gaps",
+      "status": "open",
+      "depends_on": ["CR-037"],
+      "objective": "Prove in-flight request de-duplication, timeout pruning, recovery cooldown, provider-budget persistence, and staged scene-state construction in the portable runtime.",
+      "acceptance_criteria": ["LOGIC-05 has explicit 2.0 architecture, deterministic tests, and no duplicate or abandoned quote work."],
+      "validation_plan": ["Focused orchestration tests", "Fault-injected runtime acceptance", "Reviewer gate"]
+    },
+    {
+      "id": "CR-039",
+      "phase": "Phase 7",
+      "title": "Close network time and availability parity gaps",
+      "status": "open",
+      "depends_on": ["CR-038"],
+      "objective": "Match upstream bounded network probing, NTP correction, cached availability, and clock/status refresh behavior on every supported platform.",
+      "acceptance_criteria": ["LOGIC-06 passes online, offline, timeout, recovery, and clock-boundary tests without blocking the scene."],
+      "validation_plan": ["Focused time/network tests", "Three-machine degraded acceptance", "Six-target publish"]
+    },
+    {
+      "id": "CR-040",
+      "phase": "Phase 7",
+      "title": "Close Avalonia configuration dialog and scene-state parity gaps",
+      "status": "open",
+      "depends_on": ["CR-039"],
+      "objective": "Prove the Avalonia-owned configuration dialog lifecycle, settings service behavior, scene-state transfer, and validation outcome handling.",
+      "acceptance_criteria": ["UI-07 passes open/edit/validate/cancel/OK/reopen workflows with no stale scene state."],
+      "validation_plan": ["Configuration workflow tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-041",
+      "phase": "Phase 7",
+      "title": "Close platform-neutral physical test-agent parity gaps",
+      "status": "open",
+      "depends_on": ["CR-040"],
+      "objective": "Provide a maintained cross-platform test agent and harness contract for remote launch, failure injection, cleanup, screenshots, traces, and safe diagnostics.",
+      "acceptance_criteria": ["TEST-05 self-tests pass and the agent exercises the real product on all available local platforms without residual processes."],
+      "validation_plan": ["Harness self-tests", "Three-machine physical acceptance", "Artifact and cleanup review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
