@@ -1087,7 +1087,7 @@
       "id": "CR-010E",
       "phase": "Phase 3",
       "title": "Port cinematic status, macro, global-market, and news playback",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010D"
       ],
@@ -1127,7 +1127,19 @@
         "Ported independently scheduled portfolio, macro, world-market, history, weather, and news refresh lanes plus the source-derived 68-pixel global-market strip with pinned New York state and a continuously wrapped 30-pixel-per-second world-market track.",
         "Ported the telegraph news state machine with 50-character-per-second typing, source-derived vertical scrolling and pause timing, structured RSS headline playback, optional AI summary playback, and RSS fallback while preserving active playback across equivalent refreshes.",
         "Closed from pushed checkpoint 0fc7f74 after a zero-warning build, 78 passing tests, six self-contained publishes, and live production-scene acceptance on Lubuntu, Windows 10, and Windows 11; every machine reached 16 graph cards, traversed and wrapped the market sequence, advanced through 24 headlines, cleaned up all product processes, and passed mandatory CODE and TEST_ARTIFACT reviews."
-      ]
+      ],
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/Services/FloatingClockBuilder.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-010F",
