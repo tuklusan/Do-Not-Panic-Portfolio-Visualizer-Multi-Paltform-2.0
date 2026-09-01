@@ -1099,6 +1099,32 @@ function Invoke-WindowsValidation {
             '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''fullscreen motion capture''',
             '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''fullscreen-motion.png'')',
             '    Add-Content -Path $stepPath -Value ''FULLSCREEN_MOTION_CAPTURED''',
+            '    [System.Windows.Forms.SendKeys]::SendWait(''{F11}'')',
+            '    Add-Content -Path $stepPath -Value ''FULLSCREEN_EXIT_REQUESTED''',
+            '    $fullscreenExitConfirmed = $false',
+            '    for ($attempt = 0; $attempt -lt 16; $attempt++) {',
+            '        Start-Sleep -Milliseconds 500',
+            '        $restoredBounds = Get-WindowBounds -WindowHandle $proc.MainWindowHandle',
+            '        if ($restoredBounds.Top -gt $bounds.Top -or $restoredBounds.Left -gt $bounds.Left -or',
+            '            ($restoredBounds.Right - $restoredBounds.Left) -lt $bounds.Width -or',
+            '            ($restoredBounds.Bottom - $restoredBounds.Top) -lt $bounds.Height) {',
+            '            $fullscreenExitConfirmed = $true',
+            '            break',
+            '        }',
+            '    }',
+            '    if (-not $fullscreenExitConfirmed) { throw ''F11 did not restore a non-fullscreen product window.'' }',
+            '    Assert-ForegroundWindow -WindowHandle $proc.MainWindowHandle -State ''fullscreen exit menu restoration''',
+            '    $automationRoot = [System.Windows.Automation.AutomationElement]::FromHandle($proc.MainWindowHandle)',
+            '    $fileMenu = $automationRoot.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $fileCondition)',
+            '    if ($null -eq $fileMenu) { throw ''The File menu item was not restored after leaving fullscreen.'' }',
+            '    Click-UiAutomationElementCenter -Element $fileMenu',
+            '    Start-Sleep -Milliseconds 500',
+            '    $exitMenu = $automationRoot.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $exitCondition)',
+            '    if ($null -eq $exitMenu -or $exitMenu.Current.IsOffscreen) { throw ''The File submenu was not visible after leaving fullscreen.'' }',
+            '    Save-DesktopScreenshot -Path (Join-Path $artifactDir ''fullscreen-exit-menu.png'')',
+            '    Add-Content -Path $stepPath -Value ''FULLSCREEN_EXIT_MENU_CAPTURED''',
+            '    [System.Windows.Forms.SendKeys]::SendWait(''{ESC}'')',
+            '    Start-Sleep -Milliseconds 300',
             '    ''DONE'' | Set-Content -Path $donePath',
             '}',
             'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
@@ -1126,7 +1152,7 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log')
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log'), (Join-Path `$artifactDir 'fullscreen-exit-menu.png')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
@@ -1177,7 +1203,7 @@ finally {
     Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
 
     $artifactNames = if ($CaptureProductScene) {
-        @('small-viewport.png', 'menu-open.png', 'wide-viewport.png', 'fullscreen.png', 'fullscreen-motion.png', 'step.log', 'done.txt')
+        @('small-viewport.png', 'menu-open.png', 'wide-viewport.png', 'fullscreen.png', 'fullscreen-motion.png', 'fullscreen-exit-menu.png', 'step.log', 'done.txt')
     }
     else {
         @('general.png', 'validation.png', 'step.log', 'done.txt')
