@@ -226,8 +226,9 @@ Each cinematic CR requires all of the following:
 
 ## Current Gap Disposition
 
-CR-010 remains open. The 2026-08-20 integration screenshots prove live data,
-backgrounds, graphs, markets, weather, clocks, and RSS rendering, but do not
-prove cinematic parity. The fixed-grid graph experiments and static ticker
-lanes are rejected as closure evidence. Phase 3 cannot close until the CR queue
-implements and accepts this contract.
+CR-010 and its cinematic component CRs are closed. The current acceptance
+record is in `docs/AUDIT_STATE.json`: real-product physical evidence exists for
+Lubuntu, Windows 10, and Windows 11, and the six-target publish workflow is
+green. The fixed-grid graph experiments and static ticker lanes remain rejected
+as closure evidence; only the current real-scene artifacts satisfy this
+contract.

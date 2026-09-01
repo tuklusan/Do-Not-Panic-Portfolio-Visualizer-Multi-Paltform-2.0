@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 Based on original work by Supratim Sanyal of SANYALnet Labs.
 
-Current working date: 2026-08-13
+Current working date: 2026-09-01
 
 ## 1. Purpose
 

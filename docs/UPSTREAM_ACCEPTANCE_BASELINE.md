@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 Based on original work by Supratim Sanyal of SANYALnet Labs.
 
-Current working date: 2026-08-13
+Current working date: 2026-09-01
 
 ## 1. Purpose
 
@@ -479,6 +479,6 @@ Every product-port CR must satisfy these rules:
 
 ## 8. Immediate Migration Implication
 
-The next active CR must create the fresh `.NET 10 + Avalonia` solution skeleton
+The completed baseline uses the `.NET 10 + Avalonia` solution skeleton
 in a way that clearly maps to the upstream product split above, because all
 later work is porting the real application into that structure.

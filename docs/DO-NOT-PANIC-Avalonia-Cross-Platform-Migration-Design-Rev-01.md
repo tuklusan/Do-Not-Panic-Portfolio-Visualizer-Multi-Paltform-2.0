@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 Based on original work by Supratim Sanyal of SANYALnet Labs.
 
-Current working date: 2026-08-13
+Current working date: 2026-09-01
 
 ## 1. Purpose
 
@@ -231,8 +231,9 @@ The migration program does not:
 - claim parity from screenshots that do not show the real DNPPV experience;
 - mutate the upstream 1.0 repository while using it as the migration reference.
 
-## 9. Immediate Next Step
+## 9. Current Boundary
 
-The first active work is to convert this design into a concrete CR queue and
-then execute the queue from upstream acceptance inventory through portable
-foundation, real UI port, and full multi-platform acceptance.
+The Phase 0 through Phase 6 migration baseline is complete and recorded in
+`docs/AUDIT_STATE.json`. Any further implementation must begin with a newly
+scoped CR, a fresh upstream inventory, and the same pre-development and closure
+gates; no post-baseline behavior is implied by this document.
