@@ -109,6 +109,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
+    private readonly object _degradedTraceGate = new();
+    private readonly Dictionary<string, DateTimeOffset> _lastDegradedTraceUtc = new(StringComparer.Ordinal);
     private volatile bool _cinematicPlaybackActive = true;
     private volatile int _resolvedGraphCount;
     private readonly TaskCompletionSource _initialQuoteSequenceCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -325,9 +327,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 break;
             }
-            catch
+            catch (Exception ex)
             {
                 // Keep clocks and motion alive if one optional background is malformed.
+                TraceDegradedLane("ambient", ex);
             }
             await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
         }
@@ -361,9 +364,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 break;
             }
-            catch
+            catch (Exception ex)
             {
                 // A single lane failure must not permanently stop tape motion.
+                TraceDegradedLane("ticker-motion", ex);
             }
             await Task.Delay(TimeSpan.FromMilliseconds(33), cancellationToken);
         }
@@ -400,9 +404,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 break;
             }
-            catch
+            catch (Exception ex)
             {
                 // Playback recovers on the next tick without affecting other scene lanes.
+                TraceDegradedLane("news-playback", ex);
             }
             await Task.Delay(TimeSpan.FromMilliseconds(40), cancellationToken);
         }
@@ -432,7 +437,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
-            await RefreshPortfolioQuotesAsync(cancellationToken);
+            try
+            {
+                await RefreshPortfolioQuotesAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                TraceDegradedLane("portfolio-quotes", ex);
+            }
             await Task.Delay(QuoteRefreshPolicy.GetRefreshPollingInterval(_settings, DateTimeOffset.UtcNow), cancellationToken);
         }
     }
@@ -443,7 +455,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
-            await RefreshMacroQuotesAsync(cancellationToken);
+            try
+            {
+                await RefreshMacroQuotesAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                TraceDegradedLane("macro-quotes", ex);
+            }
             await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
         }
     }
@@ -454,7 +473,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
-            await RefreshGlobalMarketsAsync(cancellationToken);
+            try
+            {
+                await RefreshGlobalMarketsAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                TraceDegradedLane("global-markets", ex);
+            }
             await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
         }
     }
@@ -484,6 +510,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     // History failure degrades the graph lane without terminating its scheduler.
+                    TraceDegradedLane("graph-history", ex);
                 }
 
                 if (_resolvedGraphCount < desiredGraphCount && attempt < 5)
@@ -500,7 +527,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         while (!cancellationToken.IsCancellationRequested)
         {
             await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
-            await RefreshNewsAsync(cancellationToken);
+            try
+            {
+                await RefreshNewsAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                TraceDegradedLane("news-refresh", ex);
+            }
             int refreshMinutes = Math.Clamp(_settings.NewsRefreshMinutes, 30, 240);
             await Task.Delay(TimeSpan.FromMinutes(refreshMinutes), cancellationToken);
         }
@@ -649,6 +683,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // The macro lane degrades independently from portfolio quote playback.
+            TraceDegradedLane("macro-quotes", ex);
         }
     }
 
@@ -673,6 +708,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // World-market quote failure does not stop clocks, weather, or other scene lanes.
+            TraceDegradedLane("global-markets", ex);
         }
 
         if (!refreshWeather || DateTimeOffset.UtcNow < _nextWeatherRefreshUtc)
@@ -687,6 +723,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                TraceDegradedLane("weather", ex);
                 return (market, "weather --");
             }
         }).ToArray();
@@ -1007,6 +1044,21 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             // Acceptance tracing cannot interfere with the product scene.
         }
+    }
+
+    private void TraceDegradedLane(string lane, Exception exception)
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        lock (_degradedTraceGate)
+        {
+            if (_lastDegradedTraceUtc.TryGetValue(lane, out DateTimeOffset last) &&
+                now - last < TimeSpan.FromSeconds(5))
+                return;
+
+            _lastDegradedTraceUtc[lane] = now;
+        }
+
+        WriteCinematicTrace($"DEGRADED;LANE={lane};ERROR={exception.GetType().Name}");
     }
 
     private void TraceRenderHeartbeat(RenderSurfaceHeartbeatResult heartbeat)
