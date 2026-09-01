@@ -40,6 +40,19 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | TEST-01 | `GuestUxDeepExercise_*`, `RunVmUxValidation_*`, `PostProcessReferenceSpotChecks_*` | Harness logging, screenshot provenance, dimensions, multi-monitor behavior, and cleanup need one-to-one 2.0 test proof. | CR-023 |
 | TEST-02 | `ProcessDocs_MakeDeepSeekReviewMandatoryBeforeCommitAndValidation`, `WorkflowGate_HardStopsWhenEndpointOrKeyIsUnavailable` | Review/checkpoint gates need direct tests for every failure and bypass attempt. | CR-023 |
 
+## Repeat-Scan Additions
+
+| Item | Upstream line-level evidence | 2.0 status | CR |
+| --- | --- | --- | --- |
+| DATA-03 | `QueueLegacyRootMigrationForStartup_CopiesLegacyRootInBackground`, `...RespectsExistingSentinel`, `...ReusesScheduledMigrationTask` | Legacy-to-2.0 data migration idempotency and background scheduling need explicit parity proof. | CR-024 |
+| DATA-04 | `ReleaseManifestGuard_BackgroundApiQueuesFullDirectoryValidation`, `ValidateDirectory_ReturnsInvalid_WhenChecksumMismatch` | Release integrity validation must be proven for missing, corrupt, and asynchronously checked bundles. | CR-024 |
+| SEC-01 | `ProviderSecretStoreService_OverlaySecrets_MigratesLegacySerializedAiSecret`, `Save_StripsSecretsFromPersistedSettingsFile` | Secret migration, redaction, and persisted-settings hygiene need a complete cross-platform test matrix. | CR-025 |
+| AI-03 | `OpenRouterModelResolverTests` model ranking, free/instruct filtering, cache, cancellation, and discovery fallback cases | Model discovery behavior needs parity confirmation at the current endpoint/model contract, including cache and cancellation. | CR-025 |
+| LIFE-01 | `DesktopRenderRecoveryPolicyTests` clean-exit, abnormal-exit, run-id, and managed-fatal-marker cases | Renderer recovery marker transitions require complete 2.0 lifecycle coverage. | CR-026 |
+| LIFE-02 | `ServerProcessManager_*`, `Client_*Dispose*`, and `OwnedModeStartup_IsWiredIntoInteractiveApps` | Owned YFinance process shutdown, duplicate launch prevention, and disposal idempotence need end-to-end proof. | CR-026 |
+| UI-03 | `AboutWindow_UsesBrandSplashAndPublisherMetadata`, `HelpAndAboutDocuments_AreBundled_NonEmpty_AndLicenseAligned`, `HelpBadges_ArePresentOnAllKeySections` | About/help/attribution surfaces require real Avalonia UI and accessibility acceptance. | CR-027 |
+| TEST-03 | `DeepSeekArtifactReview_IncludesAppNativeSceneCaptureTiming`, `RunVmUxValidation_RecordsActualCaptureDimensions_AndFlagsFramebufferMismatch` | Screenshot provenance, timing, dimensions, and framebuffer mismatch detection need direct 2.0 harness tests. | CR-027 |
+
 ## Repeat Rule
 
 Every item must be resolved by a mapped 2.0 implementation and a focused test
