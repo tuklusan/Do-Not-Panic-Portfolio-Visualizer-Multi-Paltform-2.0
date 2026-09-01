@@ -1071,7 +1071,7 @@
       "id": "CR-010F",
       "phase": "Phase 3",
       "title": "Close cinematic parity with dynamic multi-platform evidence",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010E"
       ],
@@ -1104,7 +1104,31 @@
           "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs",
+          "src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs",
+          "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_notes": [
+        "Reconciled the cinematic contract against the Avalonia scene, ticker, graph, global-market, news, status, history, media, and lifecycle implementations with two successive zero-gap scans.",
+        "Validated six self-contained RID publishes and fresh real-product acceptance on Lubuntu, Windows 10, and Windows 11 from pushed checkpoint bc7ece5, including settled ticker/news motion, graph and market motion traces, viewport/fullscreen/menu captures, and zero post-run processes.",
+        "The mandatory TEST_ARTIFACT review returned PASS with no blocking findings. The Phase 3 parity child is therefore closed; remaining stale child-ticket bookkeeping is being reconciled independently."
+      ]
     },
     {
       "id": "CR-010I",
