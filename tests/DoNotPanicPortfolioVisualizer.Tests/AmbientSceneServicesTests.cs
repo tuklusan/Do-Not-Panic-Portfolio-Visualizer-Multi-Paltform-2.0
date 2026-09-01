@@ -577,6 +577,22 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_ReportsPartialSourceAvailability()
+    {
+        const string fresh = "<rss><channel><item><title>Current market news</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new UrlResponseHandler(request => request.Host.Contains("cnbc", StringComparison.OrdinalIgnoreCase)
+                ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(fresh, Encoding.UTF8, "application/rss+xml") }
+                : throw new HttpRequestException("simulated source outage")),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Equal(RssFeedFreshnessState.Partial, result.Freshness.State);
+        Assert.Equal(["[CNBC] Current market news"], result.Headlines);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_ReportsStaleButSyntacticallyValidRssContent()
     {
         const string rss = "<rss><channel><item><title>Older market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
@@ -763,6 +779,12 @@ public sealed class AmbientSceneServicesTests
             {
                 Content = new StringContent(body, Encoding.UTF8, "application/rss+xml")
             });
+    }
+
+    private sealed class UrlResponseHandler(Func<Uri, HttpResponseMessage> responseFactory) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(responseFactory(request.RequestUri!));
     }
 
     private sealed class SummaryResponseHandler(string rss, string? summary) : HttpMessageHandler
