@@ -43,7 +43,7 @@ $lines.Add('-->')
 $lines.Add('')
 $lines.Add('# Upstream 1.0 to DNPPV-2.0 Gap Ledger')
 $lines.Add('')
-$lines.Add("Generated artifact register for upstream commit `$upstreamCommit`. The register covers every tracked upstream artifact; each row is a review unit, not a claim that equal filenames imply equal behavior.")
+$lines.Add('Generated artifact register for upstream commit ' + [char]96 + $upstreamCommit + [char]96 + '. The register covers every tracked upstream artifact; each row is a review unit, not a claim that equal filenames imply equal behavior.')
 $lines.Add('')
 $lines.Add('## Scan Protocol')
 $lines.Add('')
@@ -71,7 +71,7 @@ foreach ($file in $files) {
         $disposition = 'MAPPED'; $mapping = 'Root/build metadata counterpart reviewed against the clean-slate 2.0 repository.'
     }
     $safeFile = $file.Replace('|','\|'); $safeMapping = $mapping.Replace('|','\|')
-    $lines.Add("| `$safeFile` | $lineCount | $disposition | $safeMapping |")
+    $lines.Add(('| ' + [char]96 + $safeFile + [char]96 + " | $lineCount | $disposition | $safeMapping |"))
 }
 $lines.Add('')
 $lines.Add('## Initial Gap Register')

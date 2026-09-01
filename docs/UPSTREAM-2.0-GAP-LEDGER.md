@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # Upstream 1.0 to DNPPV-2.0 Gap Ledger
 
-Generated artifact register for upstream commit $upstreamCommit. The register covers every tracked upstream artifact; each row is a review unit, not a claim that equal filenames imply equal behavior.
+Generated artifact register for upstream commit `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`. The register covers every tracked upstream artifact; each row is a review unit, not a claim that equal filenames imply equal behavior.
 
 ## Scan Protocol
 
@@ -24,469 +24,469 @@ Each upstream file is opened from the pinned tree, read line-by-line, and assign
 
 | Upstream artifact | Lines | Disposition | 2.0 mapping / gap |
 | --- | ---: | --- | --- |
-| $safeFile | 1 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 3 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 148 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 1 | MAPPED | Current build/workflow counterpart to verify: .github/CODEOWNERS or the current build/.github gate family. |
-| $safeFile | 276 | MAPPED | Current build/workflow counterpart to verify: .github/workflows/itch-publish.yml or the current build/.github gate family. |
-| $safeFile | 61 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 98 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 241 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 63 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 57 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 229 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 150 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 26 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 242 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 201 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 34 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 273 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 820 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 366 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 18 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 105 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 30 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 148 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 40 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 106 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 261 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 722 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 107 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 59 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 87 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 107 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 94 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 67 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 330 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 176 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 281 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 199 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 156 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 83 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 357 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 14 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 54 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 57 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 46 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 213 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 252 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 32 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 50 | MAPPED | Current build/workflow counterpart to verify: build/DeepSeekWorkflowCommon.ps1 or the current build/.github gate family. |
-| $safeFile | 556 | MAPPED | Current build/workflow counterpart to verify: build/Run-DeepSeekCodeReview.ps1 or the current build/.github gate family. |
-| $safeFile | 114 | MAPPED | Current build/workflow counterpart to verify: build/Test-DeepSeekWorkflowGate.ps1 or the current build/.github gate family. |
-| $safeFile | 63 | MAPPED | Current build/workflow counterpart to verify: build/YFinanceServer.targets or the current build/.github gate family. |
-| $safeFile | 194 | MAPPED | Current build/workflow counterpart to verify: build/build-safe-temp.ps1 or the current build/.github gate family. |
-| $safeFile | 97 | MAPPED | Current build/workflow counterpart to verify: build/diagnostics/Set-DesktopWerLocalDumps.ps1 or the current build/.github gate family. |
-| $safeFile | 69 | MAPPED | Current build/workflow counterpart to verify: build/generate-release-manifest.ps1 or the current build/.github gate family. |
-| $safeFile | 232 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 340 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 213 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 359 | MAPPED | Current build/workflow counterpart to verify: build/publish-inno-installer.ps1 or the current build/.github gate family. |
-| $safeFile | 235 | MAPPED | Current build/workflow counterpart to verify: build/publish-safe-temp.ps1 or the current build/.github gate family. |
-| $safeFile | 33 | MAPPED | Current build/workflow counterpart to verify: build/publish.ps1 or the current build/.github gate family. |
-| $safeFile | 538 | MAPPED | Current build/workflow counterpart to verify: build/release/Publish-VirusTotalReleaseReport.ps1 or the current build/.github gate family. |
-| $safeFile | 45 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 22 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 78 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 95 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 2 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 312 | MAPPED | Current build/workflow counterpart to verify: build/validation/Add-AuditChangeRequest.ps1 or the current build/.github gate family. |
-| $safeFile | 284 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-InstalledReleaseMonitor.ps1 or the current build/.github gate family. |
-| $safeFile | 108 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-InstalledSoakTrace.ps1 or the current build/.github gate family. |
-| $safeFile | 798 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-VisualValidationArtifacts.ps1 or the current build/.github gate family. |
-| $safeFile | 461 | MAPPED | Current build/workflow counterpart to verify: build/validation/Collect-InstalledReleaseMonitor.ps1 or the current build/.github gate family. |
-| $safeFile | 202 | MAPPED | Current build/workflow counterpart to verify: build/validation/Invoke-AutonomousVisualValidation.ps1 or the current build/.github gate family. |
-| $safeFile | 255 | MAPPED | Current build/workflow counterpart to verify: build/validation/Invoke-DeepSeekArtifactReview.ps1 or the current build/.github gate family. |
-| $safeFile | 180 | MAPPED | Current build/workflow counterpart to verify: build/validation/Run-InstalledSoakOnce.local.ps1 or the current build/.github gate family. |
-| $safeFile | 756 | MAPPED | Current build/workflow counterpart to verify: build/validation/Test-ValidationScripts.ps1 or the current build/.github gate family. |
-| $safeFile | 6 | MAPPED | Current build/workflow counterpart to verify: build/validation/allowed-fault-injection-trace-patterns.txt or the current build/.github gate family. |
-| $safeFile | 6 | MAPPED | Current build/workflow counterpart to verify: build/validation/allowed-trace-patterns.txt or the current build/.github gate family. |
-| $safeFile | 66 | MAPPED | Current build/workflow counterpart to verify: build/vm-enum-windows.ps1 or the current build/.github gate family. |
-| $safeFile | 413 | MAPPED | Current build/workflow counterpart to verify: build/vm-settings.example.json or the current build/.github gate family. |
-| $safeFile | 50 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/fix-scoop-and-install-sysinternals.ps1 or the current build/.github gate family. |
-| $safeFile | 56 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-choco.ps1 or the current build/.github gate family. |
-| $safeFile | 39 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-scoop.ps1 or the current build/.github gate family. |
-| $safeFile | 26 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-sysinternals-direct.ps1 or the current build/.github gate family. |
-| $safeFile | 121 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-vm-qa-tools-resume.ps1 or the current build/.github gate family. |
-| $safeFile | 128 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-vm-qa-tools.ps1 or the current build/.github gate family. |
-| $safeFile | 22 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/repair-python-ui-packages.ps1 or the current build/.github gate family. |
-| $safeFile | 36 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/scan-existing-tools.ps1 or the current build/.github gate family. |
-| $safeFile | 29 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/verify-package-managers.ps1 or the current build/.github gate family. |
-| $safeFile | 126 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/verify-vm-tools.ps1 or the current build/.github gate family. |
-| $safeFile | 123 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/vm-tool-inventory.ps1 or the current build/.github gate family. |
-| $safeFile | 75 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ApplyTestSecrets.ps1 or the current build/.github gate family. |
-| $safeFile | 109 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-BootstrapVmRemoteTools.ps1 or the current build/.github gate family. |
-| $safeFile | 29 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ClearDesktopAutomationCredentials.ps1 or the current build/.github gate family. |
-| $safeFile | 76 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ConfigureDesktopAutomation.ps1 or the current build/.github gate family. |
-| $safeFile | 4152 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-UxDeepExercise.ps1 or the current build/.github gate family. |
-| $safeFile | 376 | MAPPED | Current build/workflow counterpart to verify: build/vm/Invoke-VmBuildTest.ps1 or the current build/.github gate family. |
-| $safeFile | 286 | MAPPED | Current build/workflow counterpart to verify: build/vm/PostProcess-ReferenceSpotChecks.ps1 or the current build/.github gate family. |
-| $safeFile | 64 | MAPPED | Current build/workflow counterpart to verify: build/vm/Pull-VmResults.ps1 or the current build/.github gate family. |
-| $safeFile | 181 | MAPPED | Current build/workflow counterpart to verify: build/vm/Push-VmWorkspace.ps1 or the current build/.github gate family. |
-| $safeFile | 470 | MAPPED | Current build/workflow counterpart to verify: build/vm/Run-VmUxValidation.ps1 or the current build/.github gate family. |
-| $safeFile | 400 | MAPPED | Current build/workflow counterpart to verify: build/vm/VM_OPERATIONS_RUNBOOK.md or the current build/.github gate family. |
-| $safeFile | 102 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmPackageInstallCommon.ps1 or the current build/.github gate family. |
-| $safeFile | 469 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmSshCommon.ps1 or the current build/.github gate family. |
-| $safeFile | 125 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmTraceQuoteEvidence.ps1 or the current build/.github gate family. |
-| $safeFile | 146 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmWindowInput.ps1 or the current build/.github gate family. |
-| $safeFile | 341 | MAPPED | Current build/workflow counterpart to verify: build/vm/vm-settings-full.json or the current build/.github gate family. |
-| $safeFile | 10 | MAPPED | Current build/workflow counterpart to verify: build/vm/vm-settings.example.json or the current build/.github gate family. |
-| $safeFile | 63 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 215 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 612 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 12282 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 108 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 334 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 249 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 376 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 212 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 122 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 60 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 1269 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 146 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 127 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 162 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 146 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 551 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 111 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 82 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 550 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 376 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 136 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 4898 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 8 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 56 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 8 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 529 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 8333 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 5 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 1 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 1 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 90 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 3 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 11330 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 10272 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
-| $safeFile | 6 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 73 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 64 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| $safeFile | 299 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
-| $safeFile | 22 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 84 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 91 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 177 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 121 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 294 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 60 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 46 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 144 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 342 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 99 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 75 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 17 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 312 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 156 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 269 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 114 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 121 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 77 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 152 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 103 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 58 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 41 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 125 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 96 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 231 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 295 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 66 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 304 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 3873 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 82261 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 12238 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 47 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 111 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 36 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 69 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 1231 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 494 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 232 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 5365 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 1657 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 30 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 144 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 227 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 102 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 112 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 1572 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 70 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 183 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 7 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 13 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 6 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 6 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 13 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 158 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 134 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 100 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 597 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 71 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 969 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 183 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 62 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 522 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 127 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 64 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 140 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 251 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 274 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 69 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 115 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 69 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 32 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 38 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 42 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 58 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 85 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 118 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 45 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 12 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 10 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 41 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 252 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 137 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 106 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 176 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 378 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 1541 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 135 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 607 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 204 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 55 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 33 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
-| $safeFile | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 10774 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 1233 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 14932 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 74 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 45 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 230 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 364 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 47 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 405 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 202 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 43 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 216 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 100 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 184 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 236 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 525 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
-| $safeFile | 43 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 16 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 102 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 141 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 271 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 409 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 253 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 118 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 327 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 437 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 117 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 143 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 721 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 562 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 72 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 21 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 373 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 2155 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 129 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 228 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 225 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 139 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 61 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 85 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 1777 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 29 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 1687 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 91 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 92 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 75 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 77 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 393 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 157 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 176 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 126 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 122 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 183 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 201 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 137 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 392 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 409 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 68 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 219 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 37 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 47 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 86 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 51 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 483 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 138 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 4640 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 1306 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 313 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 419 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 1267 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 156 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 711 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 257 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 75 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| $safeFile | 95 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `.gitattributes` | 1 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `.githooks/pre-push` | 3 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `.githooks/pre-push.ps1` | 148 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `.github/CODEOWNERS` | 1 | MAPPED | Current build/workflow counterpart to verify: .github/CODEOWNERS or the current build/.github gate family. |
+| `.github/workflows/itch-publish.yml` | 276 | MAPPED | Current build/workflow counterpart to verify: .github/workflows/itch-publish.yml or the current build/.github gate family. |
+| `.gitignore` | 61 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `AGENTS.md` | 98 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `BUILD_AND_DEPLOY.md` | 241 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `Directory.Build.props` | 63 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `Directory.Build.targets` | 57 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `DoNotPanicPortfolioVisualizer.sln` | 229 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `LICENSE` | 150 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `NuGet.Config` | 26 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `README.md` | 242 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `THIRD-PARTY-LICENSES/APACHE-2.0.txt` | 201 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `THIRD-PARTY-NOTICES.md` | 34 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `YFinance.net/PORTING_PLAN.md` | 273 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Client/IYFinanceServerClientTraceSink.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Client/NullYFinanceServerClientTraceSink.cs` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Client/YFinance.NET.Client.csproj` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Client/YFinanceServerClient.cs` | 820 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Client/YFinanceServerConnectionOptions.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Exerciser/Program.cs` | 366 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Exerciser/YFinance.NET.Exerciser.csproj` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolConstants.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolErrorCodes.cs` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolEventTypes.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolMessageTypes.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolOperations.cs` | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Constants/ProtocolResponseStatuses.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/CacheMetadataDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/CurrentTradingPeriodsDto.cs` | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/EmptyPayload.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/GetHistoryRequestDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/GetMarketTimingRequestDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/GetQuoteRequestDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/GetQuotesRequestDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/GetTickerInfoRequestDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HealthResponseDto.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HelloRequestDto.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HelloResponseDto.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HistoryBarDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HistoryMetadataDto.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/HistoryResponseDto.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/MarketTimingDto.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/QuoteDto.cs` | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/QuotesResponseDto.cs` | 18 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/ServerStatusResponseDto.cs` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/TickerInfoDto.cs` | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Dtos/TradingPeriodWindowDto.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Errors/ProtocolError.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Integrity/ProtocolIntegrity.cs` | 105 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Messages/ProtocolEnvelope.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Messages/ProtocolEvent.cs` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Messages/ProtocolRequest.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Messages/ProtocolResponse.cs` | 30 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Transport/LengthPrefixedProtocolStream.cs` | 148 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/Transport/ProtocolJson.cs` | 40 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Protocol/YFinance.NET.Protocol.csproj` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Hosting/ServerOptions.cs` | 106 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Hosting/YFinanceServerFaultInjection.cs` | 261 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Hosting/YFinanceServerProgram.cs` | 722 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Mapping/ProtocolMapper.cs` | 107 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Program.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.Server/YFinance.NET.Server.csproj` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET.slnx` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Api/Ticker.cs` | 59 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Api/Tickers.cs` | 87 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Api/YFinanceClient.cs` | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Caching/CacheBuckets.cs` | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Caching/MemoryTtlCache.cs` | 107 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Caching/PersistentTtlCache.cs` | 94 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Config/YFinanceOptions.cs` | 67 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Config/YFinanceUpstreamSyncMetadata.cs` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Diagnostics/IYFinanceTraceSink.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Diagnostics/NullYFinanceTraceSink.cs` | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs` | 330 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Diagnostics/YFinanceTrace.cs` | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Diagnostics/YFinanceUpstreamSyncMonitor.cs` | 176 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Exceptions/YFinanceApiException.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Exceptions/YFinanceException.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Exceptions/YFinanceRateLimitException.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Features/History/HistoryService.cs` | 281 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Features/History/MarketTimingService.cs` | 199 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Features/Quotes/QuoteService.cs` | 156 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Features/Quotes/QuoteSummaryService.cs` | 83 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Features/Quotes/TickerInfoService.cs` | 357 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/GlobalUsings.cs` | 14 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/CurrentTradingPeriods.cs` | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/HistoricalBar.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/HistoryMetadata.cs` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/HistoryResponse.cs` | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/MarketTimingSnapshot.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/QuoteMath.cs` | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/QuoteSnapshot.cs` | 54 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/QuoteSummaryResult.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/TickerInfo.cs` | 57 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Models/TradingPeriodWindow.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Transport/RequestThrottle.cs` | 46 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Transport/YahooFinanceHttpClient.cs` | 213 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Transport/YahooSessionManager.cs` | 252 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/Transport/YahooSessionState.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/YFinance.NET/YFinance.NET.csproj` | 32 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `YFinance.net/upstream-sync.json` | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `build/DeepSeekWorkflowCommon.ps1` | 50 | MAPPED | Current build/workflow counterpart to verify: build/DeepSeekWorkflowCommon.ps1 or the current build/.github gate family. |
+| `build/Run-DeepSeekCodeReview.ps1` | 556 | MAPPED | Current build/workflow counterpart to verify: build/Run-DeepSeekCodeReview.ps1 or the current build/.github gate family. |
+| `build/Test-DeepSeekWorkflowGate.ps1` | 114 | MAPPED | Current build/workflow counterpart to verify: build/Test-DeepSeekWorkflowGate.ps1 or the current build/.github gate family. |
+| `build/YFinanceServer.targets` | 63 | MAPPED | Current build/workflow counterpart to verify: build/YFinanceServer.targets or the current build/.github gate family. |
+| `build/build-safe-temp.ps1` | 194 | MAPPED | Current build/workflow counterpart to verify: build/build-safe-temp.ps1 or the current build/.github gate family. |
+| `build/diagnostics/Set-DesktopWerLocalDumps.ps1` | 97 | MAPPED | Current build/workflow counterpart to verify: build/diagnostics/Set-DesktopWerLocalDumps.ps1 or the current build/.github gate family. |
+| `build/generate-release-manifest.ps1` | 69 | MAPPED | Current build/workflow counterpart to verify: build/generate-release-manifest.ps1 or the current build/.github gate family. |
+| `build/installer/Cleanup-DoNotPanicPortfolioVisualizer.ps1` | 232 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/installer/DoNotPanicPortfolioVisualizer.iss` | 340 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/installer/Test-InnoInstallCycle.ps1` | 213 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/publish-inno-installer.ps1` | 359 | MAPPED | Current build/workflow counterpart to verify: build/publish-inno-installer.ps1 or the current build/.github gate family. |
+| `build/publish-safe-temp.ps1` | 235 | MAPPED | Current build/workflow counterpart to verify: build/publish-safe-temp.ps1 or the current build/.github gate family. |
+| `build/publish.ps1` | 33 | MAPPED | Current build/workflow counterpart to verify: build/publish.ps1 or the current build/.github gate family. |
+| `build/release/Publish-VirusTotalReleaseReport.ps1` | 538 | MAPPED | Current build/workflow counterpart to verify: build/release/Publish-VirusTotalReleaseReport.ps1 or the current build/.github gate family. |
+| `build/sandbox/Launch-PortfolioSaverSandboxUiValidation.cmd` | 45 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/PortfolioSaverInstallerOfflineUiTest.wsb` | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/PortfolioSaverInstallerTest.wsb` | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/PortfolioSaverInstallerUiTest.wsb` | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/PortfolioSaverPersistentDevSandbox.wsb` | 29 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/QuickSmoke.wsb` | 22 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/Run-PortfolioSaverSandboxSmokeTest.ps1` | 78 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/Run-PortfolioSaverSandboxUiValidation.ps1` | 95 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/sandbox/tmp-manifest.txt` | 2 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `build/validation/Add-AuditChangeRequest.ps1` | 312 | MAPPED | Current build/workflow counterpart to verify: build/validation/Add-AuditChangeRequest.ps1 or the current build/.github gate family. |
+| `build/validation/Analyze-InstalledReleaseMonitor.ps1` | 284 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-InstalledReleaseMonitor.ps1 or the current build/.github gate family. |
+| `build/validation/Analyze-InstalledSoakTrace.ps1` | 108 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-InstalledSoakTrace.ps1 or the current build/.github gate family. |
+| `build/validation/Analyze-VisualValidationArtifacts.ps1` | 798 | MAPPED | Current build/workflow counterpart to verify: build/validation/Analyze-VisualValidationArtifacts.ps1 or the current build/.github gate family. |
+| `build/validation/Collect-InstalledReleaseMonitor.ps1` | 461 | MAPPED | Current build/workflow counterpart to verify: build/validation/Collect-InstalledReleaseMonitor.ps1 or the current build/.github gate family. |
+| `build/validation/Invoke-AutonomousVisualValidation.ps1` | 202 | MAPPED | Current build/workflow counterpart to verify: build/validation/Invoke-AutonomousVisualValidation.ps1 or the current build/.github gate family. |
+| `build/validation/Invoke-DeepSeekArtifactReview.ps1` | 255 | MAPPED | Current build/workflow counterpart to verify: build/validation/Invoke-DeepSeekArtifactReview.ps1 or the current build/.github gate family. |
+| `build/validation/Run-InstalledSoakOnce.local.ps1` | 180 | MAPPED | Current build/workflow counterpart to verify: build/validation/Run-InstalledSoakOnce.local.ps1 or the current build/.github gate family. |
+| `build/validation/Test-ValidationScripts.ps1` | 756 | MAPPED | Current build/workflow counterpart to verify: build/validation/Test-ValidationScripts.ps1 or the current build/.github gate family. |
+| `build/validation/allowed-fault-injection-trace-patterns.txt` | 6 | MAPPED | Current build/workflow counterpart to verify: build/validation/allowed-fault-injection-trace-patterns.txt or the current build/.github gate family. |
+| `build/validation/allowed-trace-patterns.txt` | 6 | MAPPED | Current build/workflow counterpart to verify: build/validation/allowed-trace-patterns.txt or the current build/.github gate family. |
+| `build/vm-enum-windows.ps1` | 66 | MAPPED | Current build/workflow counterpart to verify: build/vm-enum-windows.ps1 or the current build/.github gate family. |
+| `build/vm-settings.example.json` | 413 | MAPPED | Current build/workflow counterpart to verify: build/vm-settings.example.json or the current build/.github gate family. |
+| `build/vm-tools/fix-scoop-and-install-sysinternals.ps1` | 50 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/fix-scoop-and-install-sysinternals.ps1 or the current build/.github gate family. |
+| `build/vm-tools/install-choco.ps1` | 56 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-choco.ps1 or the current build/.github gate family. |
+| `build/vm-tools/install-scoop.ps1` | 39 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-scoop.ps1 or the current build/.github gate family. |
+| `build/vm-tools/install-sysinternals-direct.ps1` | 26 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-sysinternals-direct.ps1 or the current build/.github gate family. |
+| `build/vm-tools/install-vm-qa-tools-resume.ps1` | 121 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-vm-qa-tools-resume.ps1 or the current build/.github gate family. |
+| `build/vm-tools/install-vm-qa-tools.ps1` | 128 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/install-vm-qa-tools.ps1 or the current build/.github gate family. |
+| `build/vm-tools/repair-python-ui-packages.ps1` | 22 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/repair-python-ui-packages.ps1 or the current build/.github gate family. |
+| `build/vm-tools/scan-existing-tools.ps1` | 36 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/scan-existing-tools.ps1 or the current build/.github gate family. |
+| `build/vm-tools/verify-package-managers.ps1` | 29 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/verify-package-managers.ps1 or the current build/.github gate family. |
+| `build/vm-tools/verify-vm-tools.ps1` | 126 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/verify-vm-tools.ps1 or the current build/.github gate family. |
+| `build/vm-tools/vm-tool-inventory.ps1` | 123 | MAPPED | Current build/workflow counterpart to verify: build/vm-tools/vm-tool-inventory.ps1 or the current build/.github gate family. |
+| `build/vm/Guest-ApplyTestSecrets.ps1` | 75 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ApplyTestSecrets.ps1 or the current build/.github gate family. |
+| `build/vm/Guest-BootstrapVmRemoteTools.ps1` | 109 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-BootstrapVmRemoteTools.ps1 or the current build/.github gate family. |
+| `build/vm/Guest-ClearDesktopAutomationCredentials.ps1` | 29 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ClearDesktopAutomationCredentials.ps1 or the current build/.github gate family. |
+| `build/vm/Guest-ConfigureDesktopAutomation.ps1` | 76 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-ConfigureDesktopAutomation.ps1 or the current build/.github gate family. |
+| `build/vm/Guest-UxDeepExercise.ps1` | 4152 | MAPPED | Current build/workflow counterpart to verify: build/vm/Guest-UxDeepExercise.ps1 or the current build/.github gate family. |
+| `build/vm/Invoke-VmBuildTest.ps1` | 376 | MAPPED | Current build/workflow counterpart to verify: build/vm/Invoke-VmBuildTest.ps1 or the current build/.github gate family. |
+| `build/vm/PostProcess-ReferenceSpotChecks.ps1` | 286 | MAPPED | Current build/workflow counterpart to verify: build/vm/PostProcess-ReferenceSpotChecks.ps1 or the current build/.github gate family. |
+| `build/vm/Pull-VmResults.ps1` | 64 | MAPPED | Current build/workflow counterpart to verify: build/vm/Pull-VmResults.ps1 or the current build/.github gate family. |
+| `build/vm/Push-VmWorkspace.ps1` | 181 | MAPPED | Current build/workflow counterpart to verify: build/vm/Push-VmWorkspace.ps1 or the current build/.github gate family. |
+| `build/vm/Run-VmUxValidation.ps1` | 470 | MAPPED | Current build/workflow counterpart to verify: build/vm/Run-VmUxValidation.ps1 or the current build/.github gate family. |
+| `build/vm/VM_OPERATIONS_RUNBOOK.md` | 400 | MAPPED | Current build/workflow counterpart to verify: build/vm/VM_OPERATIONS_RUNBOOK.md or the current build/.github gate family. |
+| `build/vm/VmPackageInstallCommon.ps1` | 102 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmPackageInstallCommon.ps1 or the current build/.github gate family. |
+| `build/vm/VmSshCommon.ps1` | 469 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmSshCommon.ps1 or the current build/.github gate family. |
+| `build/vm/VmTraceQuoteEvidence.ps1` | 125 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmTraceQuoteEvidence.ps1 or the current build/.github gate family. |
+| `build/vm/VmWindowInput.ps1` | 146 | MAPPED | Current build/workflow counterpart to verify: build/vm/VmWindowInput.ps1 or the current build/.github gate family. |
+| `build/vm/vm-settings-full.json` | 341 | MAPPED | Current build/workflow counterpart to verify: build/vm/vm-settings-full.json or the current build/.github gate family. |
+| `build/vm/vm-settings.example.json` | 10 | MAPPED | Current build/workflow counterpart to verify: build/vm/vm-settings.example.json or the current build/.github gate family. |
+| `distribution/github/release-notes-1.0.md` | 63 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `distribution/itch/description.md` | 215 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/ANOMALY_DEGRADATION_TEST_PLAN.md` | 612 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/AUDIT_STATE.json` | 12282 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/DEEPSEEK_DOCUMENTATION_CONSISTENCY_REVIEW_2026-07-03.md` | 108 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/DEEPSEEK_FULL_OPTIMIZATION_REVIEW_2026-07-03.md` | 334 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/DEEPSEEK_FULL_RC_REVIEW_2026-06-05.md` | 249 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/DEEPSEEK_THREADING_OPTIMIZATION_REVIEW_2026-06-11.md` | 376 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/DEEPSEEK_UX_ANOMALY_REVIEW_2026-06-13.md` | 212 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/DEGRADED_MODE_VALIDATION_HARNESS.md` | 122 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/DEGRADED_UX_CONTRACT.md` | 60 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md` | 1269 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/DOCUMENTATION_CONSISTENCY_REVIEW_2026-07-12.md` | 146 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/MANUAL_UI_QA_RESULTS_2026-05-18.md` | 127 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/MANUAL_UI_QA_RESULTS_2026-05-19.md` | 162 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/MANUAL_UI_QA_SUITE.md` | 146 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/MICROSOFT_STORE_PUBLICATION_PLAN.md` | 551 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/RELEASES.md` | 111 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/RELEASE_1_0_BASELINE.md` | 82 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/YFINANCE_NET_ICD.md` | 550 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/YFINANCE_NET_IMPLEMENTATION_PLAN.md` | 376 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/YFINANCE_NET_UPSTREAM_SYNC_2026-06-12.md` | 136 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/cr-evidence/CR-154-ai-access-validation-blocker.png` | 4898 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-160-background-scaling-trace-excerpt.txt` | 8 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-161-ai-validation-429-modal.png` | 56 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-161-ai-validation-429-trace-excerpt.txt` | 8 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-165-installer-dpi-layout.png` | 529 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-166-maximized-laptop-scaling.png` | 8333 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-167-local-fullscreen-crash-dump-metadata.json` | 5 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-167-local-fullscreen-crash-trace-tail.txt` | 1 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-167-local-fullscreen-crash-yfinance-tail.txt` | 1 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/cr-evidence/CR-225-installed-soak-wpf-cross-thread-crash.txt` | 90 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `docs/do not panic final.mp4` | 3 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/screenshot-release-1.0.png` | 11330 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `docs/screenshot.png` | 10272 | MAPPED | Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR. |
+| `global.json` | 6 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `releases/v1.0/RELEASE_1_0_PUBLICATION_EVIDENCE.md` | 73 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `releases/v1.0/virustotal-advisory-report.md` | 64 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
+| `sample-settings.initial-tapes.json` | 299 | MAPPED | Root/build metadata counterpart reviewed against the clean-slate 2.0 repository. |
+| `src/PortfolioSaver.Config/App.xaml` | 22 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Config/App.xaml.cs` | 84 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Config/PortfolioSaver.Config.csproj` | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Constants/DataSourceCatalog.cs` | 91 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Constants/Defaults.cs` | 177 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/AiWritingStyle.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/DataSourceKind.cs` | 19 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/GraphSeriesKind.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/LayoutPreset.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/MarketSession.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/NewsScrollerMode.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/RenderMode.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/ScrollDirection.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Enums/SymbolAssetClass.cs` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/AppSettings.cs` | 121 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/DataSourcePolicySettings.cs` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/HistoricalPricePoint.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/ProviderHealthSnapshot.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/QuoteSnapshot.cs` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/SymbolProfile.cs` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/TickerGroup.cs` | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/TickerHistorySnapshot.cs` | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Models/TickerItem.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/PortfolioSaver.Core.csproj` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs` | 294 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/ExchangeTimeZoneResolver.cs` | 60 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/MarketSessionResolver.cs` | 46 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/NyseTradingCalendarSnapshot.cs` | 144 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs` | 342 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/SymbolNormalizer.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Services/SymbolProfileHeuristics.cs` | 99 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Core/Validation/SettingsValidator.cs` | 75 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Interfaces/IHistoricalCacheService.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Interfaces/IHistoricalDataProvider.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Interfaces/IQuoteProvider.cs` | 25 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Interfaces/ISettingsProtectionService.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Options/DataProviderOptions.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/PortfolioSaver.Data.csproj` | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Properties/AssemblyInfo.cs` | 17 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Providers/HybridHistoricalDataProvider.cs` | 312 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Providers/TreasuryYieldCurveQuoteProvider.cs` | 156 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs` | 269 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/ExchangeTimingModels.cs` | 114 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/HistoricalCacheService.cs` | 121 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/HttpClientFactory.cs` | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/PortfolioSaverYFinanceServerClientTraceSink.cs` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/PortfolioSaverYFinanceTraceSink.cs` | 35 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/ProviderHealthService.cs` | 77 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs` | 152 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/RateLimitGuard.cs` | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/RetryPolicyService.cs` | 103 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/RuntimeQuoteSeedStore.cs` | 58 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/SettingsProtectionService.cs` | 41 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/SymbolProfileResolverService.cs` | 125 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/SymbolProfileStore.cs` | 96 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs` | 231 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/YFinanceRuntimeClientFactory.cs` | 295 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Data/Services/YFinanceSymbolMapper.cs` | 66 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/App.xaml` | 22 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Desktop/App.xaml.cs` | 304 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Desktop/Assets/ExchangeBackgrounds/exchange-photo-attribution.txt` | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/Assets/ExchangeBackgrounds/london-skyline-public-domain.jpg` | 3873 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg` | 82261 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/Assets/ExchangeBackgrounds/shanghai-skyline-public-domain.jpg` | 12238 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj` | 47 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/ViewModels/DesktopShellViewModel.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml` | 111 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml.cs` | 36 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Desktop/Windows/MainWindow.xaml` | 69 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs` | 1231 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Media/Helpers/ImageFileHelper.cs` | 26 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Models/BackgroundImageInfo.cs` | 20 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/PortfolioSaver.Media.csproj` | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Services/BackgroundImageService.cs` | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs` | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Services/ExchangePhotoCacheService.cs` | 494 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Media/Services/ImageTransitionController.cs` | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml` | 232 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs` | 5365 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Presentation/PortfolioSaver.Presentation.csproj` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs` | 1657 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/NetworkAvailabilityService.cs` | 30 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/NtpTimeService.cs` | 144 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/ProviderBudgetLedgerService.cs` | 227 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/QuoteRefreshPolicy.cs` | 102 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/RuntimeQuoteInFlightTracker.cs` | 112 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/RuntimeQuoteRecoveryGate.cs` | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs` | 1572 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs` | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/VisualizerSettingsService.cs` | 70 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs` | 183 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/au.png` | 7 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/br.png` | 13 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/ca.png` | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/ch.png` | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/cn.png` | 6 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/de.png` | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/flag-attribution.txt` | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/fr.png` | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/gb.png` | 6 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/hk.png` | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/in.png` | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/jp.png` | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/kr.png` | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/sa.png` | 13 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/se.png` | 4 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/tw.png` | 9 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/us.png` | 8 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Assets/Flags/za.png` | 5 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/FloatingClockControl.xaml` | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/FloatingClockControl.xaml.cs` | 24 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml` | 158 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs` | 134 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml` | 100 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/GlobalMarketsTapeControl.xaml.cs` | 597 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml` | 71 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml.cs` | 969 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/Controls/StatusBarControl.xaml` | 183 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/StatusBarControl.xaml.cs` | 24 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml` | 62 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs` | 522 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Render/PortfolioSaver.Render.csproj` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Services/FloatingClockBuilder.cs` | 127 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs` | 64 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs` | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Services/TapeAnimationController.cs` | 140 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Services/TickerFormatter.cs` | 33 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/Themes/Generic.xaml` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/ClockCityViewModel.cs` | 251 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/FloatingClockViewModel.cs` | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs` | 274 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/FloatingSpriteViewModel.cs` | 69 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/GraphPointViewModel.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs` | 115 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/MarketSpriteViewModel.cs` | 69 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/NetworkWaitingViewModel.cs` | 32 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/NewsFlasherViewModel.cs` | 38 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/NewsHeadlineViewModel.cs` | 42 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/RenderThreadSafety.cs` | 58 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/StatusBarViewModel.cs` | 85 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/TapeItemViewModel.cs` | 118 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Render/ViewModels/TapeViewModel.cs` | 45 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Commands/RelayCommand.cs` | 34 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Content/about.txt` | 12 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Content/help.txt` | 10 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/PortfolioSaver.Settings.csproj` | 41 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/AiNewsAccessValidationService.cs` | 252 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/BufferedSymbolValidationProgress.cs` | 137 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/ConfigConnectivityService.cs` | 51 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/ConfigDialogService.cs` | 36 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/IConnectivityService.cs` | 23 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs` | 106 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/SettingsFileService.cs` | 176 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs` | 378 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs` | 1541 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/ViewModels/SymbolValidationState.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/ViewModels/TickerGroupEditorViewModel.cs` | 151 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/ViewModels/TickerItemEditorViewModel.cs` | 135 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Settings/Windows/MainWindow.xaml` | 607 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Settings/Windows/MainWindow.xaml.cs` | 204 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml` | 55 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml.cs` | 33 | REPLACED | WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF. |
+| `src/PortfolioSaver.Shared/AppIdentity.cs` | 22 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Assets/Branding/dnppv-icon-rev-3-splash.png` | 10774 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Assets/Branding/dnppv-icon-rev-3.ico` | 1233 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Assets/Branding/dnppv-icon-rev-3.png` | 14932 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/CappedFileLogWriter.cs` | 74 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/CircularTraceSettings.cs` | 45 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryDataRootResolver.cs` | 230 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs` | 364 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/SensitiveDataRedactor.cs` | 47 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs` | 405 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Helpers/AppDataRootResolver.cs` | 202 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Helpers/PathHelper.cs` | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Helpers/TimeFormatHelper.cs` | 27 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Infrastructure/BindableBase.cs` | 37 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Infrastructure/IFileSystem.cs` | 24 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Infrastructure/RealFileSystem.cs` | 43 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Infrastructure/Result.cs` | 29 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Integrity/ReleaseManifestValidator.cs` | 216 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Licensing/ProjectLicenseService.cs` | 100 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/PortfolioSaver.Shared.csproj` | 28 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/PortfolioVersion.cs` | 21 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Properties/AssemblyInfo.cs` | 16 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Services/InternetProbeService.cs` | 184 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Services/OwnedServerShutdownQueue.cs` | 48 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.Shared/Services/YFinanceServerProcessManager.cs` | 236 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.VmAgent/PortfolioSaver.VmAgent.csproj` | 31 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `src/PortfolioSaver.VmAgent/Program.cs` | 525 | MAPPED | Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR. |
+| `tests/PortfolioSaver.Tests/PortfolioSaver.Tests.csproj` | 43 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Properties/AssemblyInfo.cs` | 16 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Providers/TreasuryYieldCurveQuoteProviderTests.cs` | 102 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Providers/YahooFinanceQuoteProviderTests.cs` | 141 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/AppDataRootResolverTests.cs` | 271 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/AppSettingsNormalizerTests.cs` | 409 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/BrandingAssetTransparencyTests.cs` | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/CappedFileLogWriterTests.cs` | 253 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/CircularTraceSettingsTests.cs` | 118 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ConfigTextConsistencyTests.cs` | 327 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewGateTests.cs` | 437 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DegradedUxContractTests.cs` | 117 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryDataRootResolverTests.cs` | 143 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryPolicyTests.cs` | 721 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DesktopShellMigrationTests.cs` | 562 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/DesktopWerLocalDumpsScriptTests.cs` | 72 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/EnvironmentSerialCollection.cs` | 21 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs` | 373 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs` | 2155 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/FloatingClockBuilderTests.cs` | 129 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/HistoricalCacheServiceTests.cs` | 228 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/InnoInstallerScriptTests.cs` | 225 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs` | 139 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ItchPublishWorkflowTests.cs` | 61 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/LegalHeaderPolicyTests.cs` | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/LocalAppDataStorageScriptTests.cs` | 85 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs` | 1777 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/MarketSessionResolverTests.cs` | 29 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/Nb040BehaviorTests.cs` | 1687 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/Nb048BehaviorTests.cs` | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/Nb049BehaviorTests.cs` | 91 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/Nb051BehaviorTests.cs` | 92 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/Nb058Nb060BehaviorTests.cs` | 75 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/NewsFeedValidationServiceTests.cs` | 77 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/OpenRouterModelResolverTests.cs` | 393 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/PathHelperTests.cs` | 157 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ProjectLicenseServiceTests.cs` | 176 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ProviderHealthServiceTests.cs` | 126 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/QuoteRefreshPolicyTests.cs` | 122 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/ReleaseManifestValidatorTests.cs` | 183 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/RetryPolicyServiceTests.cs` | 201 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/SensitiveDataRedactorTests.cs` | 137 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/SettingsFileServiceTests.cs` | 392 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/StartupCoordinatorGraphSelectionTests.cs` | 409 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/StartupCoordinatorNewsTests.cs` | 68 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/StartupCoordinatorTapeItemTests.cs` | 219 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/SymbolNormalizerTests.cs` | 37 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/SymbolProfileHeuristicsTests.cs` | 47 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/SymbolProfileStoreTests.cs` | 86 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/TickerGroupEditorViewModelTests.cs` | 51 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/TraceLogTests.cs` | 483 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/VirusTotalReleaseReportScriptTests.cs` | 138 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs` | 4640 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs` | 1306 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/WorldWeatherServiceTests.cs` | 313 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YFinanceCircularTraceSinkTests.cs` | 419 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YFinanceClientServerProtocolTests.cs` | 1267 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs` | 156 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YFinanceServerClientPipelineTests.cs` | 711 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YFinanceUpstreamSyncMonitorTests.cs` | 257 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/YahooSymbolValidationServiceTests.cs` | 75 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Validation/SettingsValidatorTests.cs` | 95 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
 
 ## Initial Gap Register
 
@@ -499,3 +499,12 @@ Each upstream file is opened from the pinned tree, read line-by-line, and assign
 ## Completion Rule
 
 This ledger is not complete until CR-015 through CR-017 attach line-level findings, every `GAP` is either closed or has an implementation CR, and two successive scans of the pinned upstream tree report zero unclassified artifacts.
+
+## Repeat Scan Record
+
+| Pass | Upstream commit | Files opened/read line-by-line | Ledger rows | Unclassified artifacts | Result |
+| --- | --- | ---: | ---: | ---: | --- |
+| 1 | `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5` | 463 | 463 | 0 | ZERO GAPS |
+| 2 | `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5` | 463 | 463 | 0 | ZERO GAPS |
+
+No new gap was found in the repeat scan. The three open CRs remain the complete actionable queue for the already-classified product, test, and workflow/documentation parity workstreams.
