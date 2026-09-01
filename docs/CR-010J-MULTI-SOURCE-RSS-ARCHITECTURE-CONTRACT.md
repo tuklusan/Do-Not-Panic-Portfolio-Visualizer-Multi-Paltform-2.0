@@ -56,6 +56,19 @@ and Avalonia product; it must not introduce a Python runtime dependency.
 
 ## Migration And Validation Gates
 
+## Functional Inventory
+
+Upstream baseline: `65a53bbbf0cf9af1058363f8939d464ca03858f8`.
+
+| ID | Upstream behavior and citation | DNPPV-2.0 mapping and evidence |
+| --- | --- | --- |
+| RS-01 | `PortfolioSaver.Presentation/Services/FinanceNewsService.cs` normalizes the configured RSS URL and fetches RSS mode directly. | Preserve `NewsFeedUrl` as a validated user override; use the three-source catalog only for the built-in default. |
+| RS-02 | The same service fans out summarized-news feed fetches concurrently and keeps successful results when a peer fails. | Fetch the built-in catalog concurrently with isolated per-source diagnostics and deterministic merging. |
+| RS-03 | `PortfolioSaver.Core/Validation/SettingsValidator.cs` requires an HTTP/S RSS URL only in RSS mode. | Retain mode-aware URL validation and settings-screen editing. |
+| RS-04 | `PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs` validates the configured feed and reports reset, skipped, and failure states. | Preserve validation messages and add catalog/source diagnostics without silently changing a user source. |
+| RS-05 | Upstream `FinanceNewsService.cs` caches/uses RSS fallback when summarized news is unavailable. | Preserve RSS fallback and the independent telegraph playback state machine while replacing only the source aggregation layer. |
+| RS-06 | Upstream fetch paths cap failure effects and refresh on normal cadence. | Bound every request, reject unsafe XML/content, and emit aggregate degradation only when no current entry remains. |
+
 Before implementation, inventory the upstream news service and every current
 DNPPV-2.0 consumer/configuration/trace/test path. Pass
 `Test-MigrationBehaviorGate.ps1 -CrId CR-010J -Stage PreDevelopment` with

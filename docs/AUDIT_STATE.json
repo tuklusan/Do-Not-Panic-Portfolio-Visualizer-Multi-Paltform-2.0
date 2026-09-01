@@ -1168,9 +1168,15 @@
         "Mandatory reviewer, pushed checkpoint, physical acceptance, TEST_ARTIFACT review, and fresh closure rescan."
       ],
       "upstream_behavior_inventory": {
-        "status": "pending",
+        "status": "complete",
         "document": "docs/CR-010J-MULTI-SOURCE-RSS-ARCHITECTURE-CONTRACT.md",
-        "zero_known_gaps": false
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs"
+        ],
+        "zero_known_gaps": true
       },
       "transition_notes": [
         "CR-010J is the approved successor to the temporary France 24 single-source default introduced by CR-010I.",
