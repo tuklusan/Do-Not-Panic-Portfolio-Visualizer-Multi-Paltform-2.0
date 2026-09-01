@@ -600,7 +600,7 @@ function Invoke-LinuxValidation {
             'if [ -z "${WID:-}" ]; then echo "FULLSCREEN_EXIT_WINDOW_NOT_FOUND" >> step.log; exit 1; fi',
             'echo "FULLSCREEN_EXIT_WINDOW=$WID" >> step.log',
             'xdotool windowactivate --sync "$WID"',
-            'xdotool key alt+f',
+            'xdotool mousemove --window "$WID" 24 16 click 1',
             'sleep 1',
             'capture_screenshot fullscreen-exit-menu.png',
             'echo "FULLSCREEN_EXIT_MENU_CAPTURED" >> step.log',
