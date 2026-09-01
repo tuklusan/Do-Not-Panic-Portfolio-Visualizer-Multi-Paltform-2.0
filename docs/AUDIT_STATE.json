@@ -935,10 +935,10 @@
         "zero_known_gaps": true
       },
       "execution_evidence": {
-        "updated_on": "2026-08-30",
-        "linux_lxqt": "Passed real-product menu, fullscreen, and motion acceptance from pushed commit 43e45c1 after 45 seconds of settling; visible menu-open capture, trace, and zero-residual-process audit are in ignored build/vm-artifacts/cr010h/linux-menu-acceptance-retry.",
-        "windows_10": "Pending a reachable physical-machine run.",
-        "windows_11": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, and later-motion acceptance; UI Automation verified the File submenu and final remote audit found no product or managed sidecar process. Artifacts are in ignored build/vm-artifacts/cr010h/win11-menu-acceptance-retry. Fullscreen exit/menu-restoration remains an explicit final closure interaction check."
+        "updated_on": "2026-09-01",
+        "linux_lxqt": "Passed real-product menu, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 34904be. The visible File/Exit capture and cinematic trace are in ignored build/vm-artifacts/cr010h/linux-fullscreen-exit-click.",
+        "windows_10": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 2786d7e. Visible artifacts are in ignored build/vm-artifacts/cr010h/win10-fullscreen-exit.",
+        "windows_11": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 2786d7e. UI Automation verified the File submenu and the final audit found no product or managed sidecar; artifacts are in ignored build/vm-artifacts/cr010h/win11-fullscreen-exit."
       }
     },
     {

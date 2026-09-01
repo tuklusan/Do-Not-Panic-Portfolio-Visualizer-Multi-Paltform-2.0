@@ -57,9 +57,16 @@ Local ignored artifacts:
 - `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/cinematic-playback.log`
 
 This was initially evidence for the Linux local-machine lane only. CR-010H
-remains open until fresh normal/maximized/menu-open acceptance exists for
-Windows 10 and every final cross-machine interaction requirement, including
-fullscreen exit and menu restoration where required.
+The 2026-09-01 rerun from pushed commit `34904be` additionally exercised F11
+exit from full screen, restored the product window, activated its File control,
+and visibly captured the File/Exit dropdown in
+`build/vm-artifacts/cr010h/linux-fullscreen-exit-click/fullscreen-exit-menu.png`.
+
+Windows 10 and Windows 11 subsequently passed that same exit-and-restoration
+interaction from pushed commit `2786d7e`; their ignored artifacts are in
+`build/vm-artifacts/cr010h/win10-fullscreen-exit` and
+`build/vm-artifacts/cr010h/win11-fullscreen-exit` respectively. Each run
+captured the restored File/Exit menu and produced a moving cinematic trace.
 
 The 2026-08-30 Windows 11 physical run from the same pushed product source
 also passed. The driver recorded its logical `1024x768` windowed startup,
