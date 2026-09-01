@@ -234,6 +234,7 @@ The migration program does not:
 ## 9. Current Boundary
 
 The Phase 0 through Phase 6 migration baseline is complete and recorded in
-`docs/AUDIT_STATE.json`. Any further implementation must begin with a newly
+`docs/AUDIT_STATE.json`. Phase 7 begins the post-baseline configurable-news and
+AI-acceptance increment. Any further implementation must begin with a newly
 scoped CR, a fresh upstream inventory, and the same pre-development and closure
-gates; no post-baseline behavior is implied by this document.
+gates.

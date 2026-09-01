@@ -40,11 +40,24 @@ public sealed class SettingsValidator
         if (settings.MaxFloatingGraphsPerTape is < 0 or > 8)
             errors.Add("Max floating graphs per tape must be between 0 and 8.");
 
-        if (settings.NewsScrollerMode == Core.Enums.NewsScrollerMode.RssFeed &&
-            (!Uri.TryCreate(settings.NewsFeedUrl, UriKind.Absolute, out Uri? newsUri) ||
-             (newsUri.Scheme != Uri.UriSchemeHttps && newsUri.Scheme != Uri.UriSchemeHttp)))
+        if (settings.NewsScrollerMode == Core.Enums.NewsScrollerMode.RssFeed)
         {
-            errors.Add("News feed URL must be a valid http or https URL.");
+            List<string> feeds = (settings.NewsFeedUrls ?? [])
+                .Where(static value => !string.IsNullOrWhiteSpace(value))
+                .ToList();
+            if (feeds.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase) &&
+                !string.Equals(settings.NewsFeedUrl?.Trim(), Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase))
+                feeds = string.IsNullOrWhiteSpace(settings.NewsFeedUrl) ? [] : [settings.NewsFeedUrl];
+            if (feeds.Count > Defaults.MaximumNewsFeedCount)
+                errors.Add($"No more than {Defaults.MaximumNewsFeedCount} RSS feeds can be configured.");
+            if (feeds.Count == 0)
+                errors.Add("At least one RSS feed must be configured and verified.");
+            foreach (string feed in feeds)
+            {
+                if (!Uri.TryCreate(feed, UriKind.Absolute, out Uri? newsUri) ||
+                    (newsUri.Scheme != Uri.UriSchemeHttps && newsUri.Scheme != Uri.UriSchemeHttp))
+                    errors.Add("News feed URL entries must be valid http or https URLs.");
+            }
         }
 
         if (settings.Groups.Count > Defaults.MaxTapeCount)

@@ -24,6 +24,7 @@ public sealed class AppSettings
     public NewsScrollerMode NewsScrollerMode { get; set; } = NewsScrollerMode.RssFeed;
     public AiWritingStyle AiWritingStyle { get; set; } = AiWritingStyle.DouglasAdams;
     public string NewsFeedUrl { get; set; } = Defaults.DefaultNewsFeedUrl;
+    public List<string> NewsFeedUrls { get; set; } = Defaults.DefaultNewsFeedUrls.ToList();
     public int NewsRefreshMinutes { get; set; } = 30;
 
     public string BackgroundImageFolder { get; set; } = string.Empty;
@@ -71,6 +72,7 @@ public sealed class AppSettings
         NewsScrollerMode = NewsScrollerMode,
         AiWritingStyle = AiWritingStyle,
         NewsFeedUrl = NewsFeedUrl,
+        NewsFeedUrls = (NewsFeedUrls ?? []).ToList(),
         NewsRefreshMinutes = NewsRefreshMinutes,
         BackgroundImageFolder = BackgroundImageFolder,
         UseCustomBackgroundImageFolder = UseCustomBackgroundImageFolder,

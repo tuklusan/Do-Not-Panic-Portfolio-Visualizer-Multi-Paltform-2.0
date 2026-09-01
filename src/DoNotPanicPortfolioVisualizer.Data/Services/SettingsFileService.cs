@@ -97,6 +97,11 @@ public sealed class SettingsFileService
         copy.AiApiKey = string.Empty;
         copy.AiEndpointUrl = SanitizePersistedUri(copy.AiEndpointUrl, Defaults.DefaultAiEndpointUrl, allowNonSensitiveQueryParameters: false);
         copy.NewsFeedUrl = SanitizePersistedUri(copy.NewsFeedUrl, Defaults.DefaultNewsFeedUrl, allowNonSensitiveQueryParameters: true);
+        copy.NewsFeedUrls = (copy.NewsFeedUrls ?? [])
+            .Take(Defaults.MaximumNewsFeedCount)
+            .Select(url => SanitizePersistedUri(url, Defaults.DefaultNewsFeedUrl, allowNonSensitiveQueryParameters: true))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
         copy.AiModelId = LooksSensitiveValue(copy.AiModelId)
             ? Defaults.DefaultAiModelId
             : (copy.AiModelId ?? string.Empty).Trim();

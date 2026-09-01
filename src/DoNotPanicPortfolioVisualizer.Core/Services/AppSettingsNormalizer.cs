@@ -83,7 +83,8 @@ public static class AppSettingsNormalizer
 
         normalized.NewsScrollerMode = NormalizeNewsScrollerMode(normalized.NewsScrollerMode);
         normalized.AiWritingStyle = NormalizeAiWritingStyle(normalized.AiWritingStyle);
-        normalized.NewsFeedUrl = NormalizeNewsFeedUrl(normalized.NewsFeedUrl);
+        normalized.NewsFeedUrls = NormalizeNewsFeedUrls(normalized.NewsFeedUrls, normalized.NewsFeedUrl);
+        normalized.NewsFeedUrl = normalized.NewsFeedUrls.FirstOrDefault() ?? Defaults.DefaultNewsFeedUrl;
 
         return normalized;
     }
@@ -238,6 +239,29 @@ public static class AppSettingsNormalizer
         }
 
         return Defaults.DefaultNewsFeedUrl;
+    }
+
+    private static List<string> NormalizeNewsFeedUrls(IEnumerable<string>? currentValues, string legacyValue)
+    {
+        List<string> values = (currentValues ?? [])
+            .Select(static value => (value ?? string.Empty).Trim())
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Take(Defaults.MaximumNewsFeedCount)
+            .Select(NormalizeNewsFeedUrl)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        bool legacyOverridesDefaultList = !string.IsNullOrWhiteSpace(legacyValue) &&
+            values.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase) &&
+            !string.Equals(legacyValue.Trim(), Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase);
+        if ((values.Count == 0 || legacyOverridesDefaultList) && !string.IsNullOrWhiteSpace(legacyValue))
+        {
+            if (legacyOverridesDefaultList)
+                values.Clear();
+            values.Add(NormalizeNewsFeedUrl(legacyValue));
+        }
+
+        return values.Count == 0 ? Defaults.DefaultNewsFeedUrls.ToList() : values;
     }
 
     private static string NormalizeAiEndpointUrl(string currentValue)

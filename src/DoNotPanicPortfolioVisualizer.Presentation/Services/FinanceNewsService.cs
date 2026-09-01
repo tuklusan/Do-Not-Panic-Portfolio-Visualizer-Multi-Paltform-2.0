@@ -88,17 +88,70 @@ public sealed class FinanceNewsService : IDisposable
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        if (!Uri.TryCreate(settings.NewsFeedUrl, UriKind.Absolute, out Uri? feedUri) ||
-            (feedUri.Scheme != Uri.UriSchemeHttp && feedUri.Scheme != Uri.UriSchemeHttps))
+        string[] configuredFeeds = (settings.NewsFeedUrls ?? [])
+            .Where(static url => !string.IsNullOrWhiteSpace(url))
+            .Take(Defaults.MaximumNewsFeedCount)
+            .ToArray();
+        bool legacySingleFeedOverridesDefaults = !string.IsNullOrWhiteSpace(settings.NewsFeedUrl) &&
+            configuredFeeds.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase) &&
+            !string.Equals(settings.NewsFeedUrl.Trim(), Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase);
+        if ((configuredFeeds.Length == 0 || legacySingleFeedOverridesDefaults) && !string.IsNullOrWhiteSpace(settings.NewsFeedUrl))
+            configuredFeeds = [settings.NewsFeedUrl];
+        if (legacySingleFeedOverridesDefaults)
         {
-            throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(settings));
+            if (!Uri.TryCreate(settings.NewsFeedUrl, UriKind.Absolute, out Uri? legacyUri) ||
+                (legacyUri.Scheme != Uri.UriSchemeHttp && legacyUri.Scheme != Uri.UriSchemeHttps))
+                throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(settings));
+            return await GetSinglePlaybackSnapshotAsync(legacyUri, settings, cancellationToken).ConfigureAwait(false);
         }
+        if (configuredFeeds.Length == 0)
+            throw new ArgumentException("At least one news feed must be configured.", nameof(settings));
 
-        if (string.Equals(settings.NewsFeedUrl, Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase))
-        {
+        if (configuredFeeds.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase))
             return await GetBuiltInPlaybackSnapshotAsync(settings, cancellationToken).ConfigureAwait(false);
-        }
 
+        RssPlaybackSnapshot multiSource = await GetConfiguredPlaybackSnapshotAsync(configuredFeeds, settings, cancellationToken).ConfigureAwait(false);
+        return multiSource;
+    }
+
+    private async Task<RssPlaybackSnapshot> GetConfiguredPlaybackSnapshotAsync(
+        IReadOnlyList<string> configuredFeeds,
+        AppSettings settings,
+        CancellationToken cancellationToken)
+    {
+        RssHeadlineSnapshot[] snapshots = await Task.WhenAll(configuredFeeds.Select(async url =>
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+                return new RssHeadlineSnapshot([], [], RssFeedFreshnessState.Unavailable, null);
+            try { return await GetRssHeadlineSnapshotAsync(uri, cancellationToken).ConfigureAwait(false); }
+            catch (HttpRequestException) { return new RssHeadlineSnapshot([], [], RssFeedFreshnessState.Unavailable, null); }
+        })).ConfigureAwait(false);
+        RssHeadlineSnapshot[] usable = snapshots.Where(static snapshot => snapshot.Headlines.Count > 0).ToArray();
+        if (usable.Length == 0)
+            return new RssPlaybackSnapshot(["Configured RSS feeds are currently unavailable"], new(RssFeedFreshnessState.Unavailable, null));
+        IReadOnlyList<string> headlines = usable.SelectMany(static snapshot => snapshot.Headlines).Distinct().Take(12).ToList();
+        RssFeedFreshnessState state = usable.Any(static snapshot => snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
+            ? RssFeedFreshnessState.Fresh : RssFeedFreshnessState.Partial;
+        DateTimeOffset? latest = usable.Select(static snapshot => snapshot.LatestPublicationUtc).Max();
+        if (settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
+            !string.IsNullOrWhiteSpace(settings.AiApiKey) && !string.IsNullOrWhiteSpace(settings.AiModelId))
+        {
+            try
+            {
+                string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(summary)) headlines = [summary];
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested) { }
+        }
+        return new RssPlaybackSnapshot(headlines, new(state, latest));
+    }
+
+    private async Task<RssPlaybackSnapshot> GetSinglePlaybackSnapshotAsync(
+        Uri feedUri,
+        AppSettings settings,
+        CancellationToken cancellationToken)
+    {
         RssHeadlineSnapshot snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
         RecordFreshness(snapshot);
         if (snapshot.FreshnessState == RssFeedFreshnessState.Stale)
@@ -136,7 +189,7 @@ public sealed class FinanceNewsService : IDisposable
                 string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary],
                 new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             return new RssPlaybackSnapshot(
                 rssHeadlines,

@@ -124,6 +124,21 @@ public sealed class NewsFeedValidationService
         }
     }
 
+    public async Task<NewsFeedValidationBatchResult> ValidateAsync(
+        IEnumerable<string>? feedUrls,
+        int timeoutSeconds,
+        bool networkAvailable,
+        CancellationToken cancellationToken = default)
+    {
+        string[] candidates = (feedUrls ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Take(Defaults.MaximumNewsFeedCount)
+            .ToArray();
+        NewsFeedValidationResult[] results = await Task.WhenAll(candidates.Select(url =>
+            ValidateAsync(url, timeoutSeconds, networkAvailable, cancellationToken))).ConfigureAwait(false);
+        return new NewsFeedValidationBatchResult(results);
+    }
+
     private static HttpClient CreateDefaultHttpClient(TimeSpan timeout)
     {
         _ = timeout;
@@ -230,4 +245,17 @@ public sealed class NewsFeedValidationResult
             ResolvedFeedUrl = Defaults.DefaultNewsFeedUrl,
             Message = message
         };
+}
+
+public sealed class NewsFeedValidationBatchResult
+{
+    public IReadOnlyList<NewsFeedValidationResult> Results { get; }
+    public IReadOnlyList<string> VerifiedFeedUrls => Results
+        .Where(static result => result.IsValid && !result.ValidationSkipped)
+        .Select(static result => result.ResolvedFeedUrl)
+        .ToList();
+    public bool HasVerifiedFeed => VerifiedFeedUrls.Count > 0;
+
+    public NewsFeedValidationBatchResult(IReadOnlyList<NewsFeedValidationResult> results)
+        => Results = results;
 }

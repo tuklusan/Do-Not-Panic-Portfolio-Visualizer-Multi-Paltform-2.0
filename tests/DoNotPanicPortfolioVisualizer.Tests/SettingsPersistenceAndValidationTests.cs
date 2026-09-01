@@ -224,6 +224,20 @@ public sealed class SettingsPersistenceAndValidationTests
     }
 
     [Fact]
+    public async Task NewsFeedValidationService_VerifiesAllConfiguredSourcesAsOneBatch()
+    {
+        NewsFeedValidationService service = new(_ => CreateHttpClient(
+            "<rss><channel><item><title>Headline</title></item></channel></rss>"));
+
+        NewsFeedValidationBatchResult result = await service.ValidateAsync(
+            ["https://example.com/one.xml", "https://example.com/two.xml"], 10, true);
+
+        Assert.True(result.HasVerifiedFeed);
+        Assert.Equal(2, result.VerifiedFeedUrls.Count);
+        Assert.All(result.Results, item => Assert.True(item.IsValid));
+    }
+
+    [Fact]
     public async Task YahooSymbolValidationService_ValidatesAliasesAndMarksMissingSymbols()
     {
         FakeYFinanceRuntimeClient runtimeClient = new()

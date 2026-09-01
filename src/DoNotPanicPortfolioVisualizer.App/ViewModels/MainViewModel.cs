@@ -59,7 +59,9 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
     private bool _backgroundIncludeSubfolders;
     private int _backgroundChangeSeconds;
     private int _newsRefreshMinutes;
-    private string _newsFeedUrl;
+    private string _newsFeedUrl1;
+    private string _newsFeedUrl2;
+    private string _newsFeedUrl3;
     private string _aiApiKey;
     private string _aiEndpointUrl;
     private string _aiModelId;
@@ -84,7 +86,9 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         _validationSummary = "Validate before saving changes.";
         _validationLogText = string.Empty;
         _customBackgroundImageFolder = string.Empty;
-        _newsFeedUrl = Defaults.DefaultNewsFeedUrl;
+        _newsFeedUrl1 = Defaults.DefaultNewsFeedUrls.ElementAtOrDefault(0) ?? Defaults.DefaultNewsFeedUrl;
+        _newsFeedUrl2 = Defaults.DefaultNewsFeedUrls.ElementAtOrDefault(1) ?? string.Empty;
+        _newsFeedUrl3 = Defaults.DefaultNewsFeedUrls.ElementAtOrDefault(2) ?? string.Empty;
         _aiApiKey = string.Empty;
         _aiEndpointUrl = Defaults.DefaultAiEndpointUrl;
         _aiModelId = Defaults.DefaultAiModelId;
@@ -252,15 +256,16 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
 
     public string NewsFeedUrl
     {
-        get => _newsFeedUrl;
+        get => NewsFeedUrl1;
         set
         {
-            if (!SetProperty(ref _newsFeedUrl, value))
-                return;
-
-            InvalidateValidation();
+            NewsFeedUrl1 = value;
         }
     }
+
+    public string NewsFeedUrl1 { get => _newsFeedUrl1; set { if (SetProperty(ref _newsFeedUrl1, value)) InvalidateValidation(); } }
+    public string NewsFeedUrl2 { get => _newsFeedUrl2; set { if (SetProperty(ref _newsFeedUrl2, value)) InvalidateValidation(); } }
+    public string NewsFeedUrl3 { get => _newsFeedUrl3; set { if (SetProperty(ref _newsFeedUrl3, value)) InvalidateValidation(); } }
 
     public string AiApiKey
     {
@@ -413,20 +418,19 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
             if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.RssFeed)
             {
                 AppendValidationLog("RSS FEED CHECK...");
-                NewsFeedValidationResult feedValidation = await _newsFeedValidationService.ValidateAsync(
-                    candidate.NewsFeedUrl,
+                NewsFeedValidationBatchResult feedValidation = await _newsFeedValidationService.ValidateAsync(
+                    candidate.NewsFeedUrls,
                     candidate.HttpTimeoutSeconds,
                     networkAvailable,
                     cancellationToken);
-
-                candidate.NewsFeedUrl = feedValidation.ResolvedFeedUrl;
-                if (!string.Equals(NewsFeedUrl, candidate.NewsFeedUrl, StringComparison.Ordinal))
-                    NewsFeedUrl = candidate.NewsFeedUrl;
-
-                feedNote = string.IsNullOrWhiteSpace(feedValidation.Message)
-                    ? "RSS feed check passed."
-                    : feedValidation.Message;
-                AppendValidationLog(feedValidation.ValidationSkipped ? "RSS FEED CHECK SKIPPED" : "RSS FEED CHECK COMPLETE");
+                if (feedValidation.Results.Any(static result => !result.IsValid && !result.ValidationSkipped))
+                    errors.Add("Every non-empty RSS feed URL must pass verification before saving.");
+                if (!feedValidation.HasVerifiedFeed && networkAvailable)
+                    errors.Add("At least one configured RSS feed must pass verification before saving.");
+                feedNote = feedValidation.HasVerifiedFeed
+                    ? $"RSS feed check passed for {feedValidation.VerifiedFeedUrls.Count} source(s)."
+                    : "No configured RSS feed passed verification.";
+                AppendValidationLog(feedValidation.HasVerifiedFeed ? "RSS FEED CHECK COMPLETE" : "RSS FEED CHECK FAILED");
             }
             else if (errors.Count == 0 && candidate.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews)
             {
@@ -611,7 +615,11 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
         candidate.BackgroundIncludeSubfolders = BackgroundIncludeSubfolders;
         candidate.BackgroundChangeSeconds = BackgroundChangeSeconds;
         candidate.NewsRefreshMinutes = NewsRefreshMinutes;
-        candidate.NewsFeedUrl = NewsFeedUrl.Trim();
+        candidate.NewsFeedUrls = new[] { NewsFeedUrl1, NewsFeedUrl2, NewsFeedUrl3 }
+            .Select(static value => value.Trim())
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .ToList();
+        candidate.NewsFeedUrl = candidate.NewsFeedUrls.FirstOrDefault() ?? string.Empty;
         candidate.AiApiKey = AiApiKey.Trim();
         candidate.AiEndpointUrl = AiEndpointUrl.Trim();
         candidate.AiModelId = AiModelId.Trim();
@@ -637,7 +645,13 @@ public sealed class MainViewModel : ViewModelBase, IDisposable
             BackgroundIncludeSubfolders = settings.BackgroundIncludeSubfolders;
             BackgroundChangeSeconds = settings.BackgroundChangeSeconds;
             NewsRefreshMinutes = settings.NewsRefreshMinutes;
-            NewsFeedUrl = settings.NewsFeedUrl;
+            IReadOnlyList<string> feeds = settings.NewsFeedUrls ?? [];
+            if (feeds.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase) &&
+                !string.Equals(settings.NewsFeedUrl?.Trim(), Defaults.DefaultNewsFeedUrl, StringComparison.OrdinalIgnoreCase))
+                feeds = string.IsNullOrWhiteSpace(settings.NewsFeedUrl) ? [] : [settings.NewsFeedUrl];
+            NewsFeedUrl1 = feeds.ElementAtOrDefault(0) ?? string.Empty;
+            NewsFeedUrl2 = feeds.ElementAtOrDefault(1) ?? string.Empty;
+            NewsFeedUrl3 = feeds.ElementAtOrDefault(2) ?? string.Empty;
             AiApiKey = settings.AiApiKey;
             AiEndpointUrl = settings.AiEndpointUrl;
             AiModelId = settings.AiModelId;

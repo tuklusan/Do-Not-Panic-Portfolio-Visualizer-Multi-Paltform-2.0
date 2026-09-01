@@ -21,7 +21,14 @@ namespace DoNotPanicPortfolioVisualizer.Core.Constants;
 
 public static class Defaults
 {
-    public const string DefaultNewsFeedUrl = "https://www.france24.com/en/business/rss";
+    public const string DefaultNewsFeedUrl = "https://www.cnbc.com/id/100003114/device/rss/rss.html";
+    public static readonly IReadOnlyList<string> DefaultNewsFeedUrls =
+    [
+        "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "https://feeds.content.dowjones.io/public/rss/mw_topstories",
+        "https://www.investing.com/rss/news.rss"
+    ];
+    public const int MaximumNewsFeedCount = 3;
     public const string DefaultAiEndpointUrl = "https://openrouter.ai/api/v1";
     public const string DefaultAiModelId = "openrouter/free";
 
@@ -61,6 +68,7 @@ public static class Defaults
         NewsScrollerMode = NewsScrollerMode.RssFeed,
         AiWritingStyle = AiWritingStyle.DouglasAdams,
         NewsFeedUrl = DefaultNewsFeedUrl,
+        NewsFeedUrls = DefaultNewsFeedUrls.ToList(),
         NewsRefreshMinutes = 30,
         EnableFloatingGraphs = true,
         HistoricalLookbackDays = 14,

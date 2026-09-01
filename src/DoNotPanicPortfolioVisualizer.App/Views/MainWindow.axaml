@@ -344,14 +344,26 @@ patent, trademark, and governing-law provisions.
                                     </StackPanel>
                                 </Grid>
 
-                                <Grid ColumnDefinitions="Auto,*"
-                                      ColumnSpacing="12">
-                                    <TextBlock Text="RSS feed URL"
+                                <Grid RowDefinitions="Auto,Auto,Auto"
+                                      ColumnDefinitions="Auto,*"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <TextBlock Text="RSS feed 1"
                                                VerticalAlignment="Center"
                                                Foreground="#AFC4D8" />
-                                    <TextBox Grid.Column="1"
-                                             Text="{Binding NewsFeedUrl}" />
+                                    <TextBox Grid.Column="1" Text="{Binding NewsFeedUrl1}" />
+                                    <TextBlock Grid.Row="1" Text="RSS feed 2"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NewsFeedUrl2}" />
+                                    <TextBlock Grid.Row="2" Text="RSS feed 3"
+                                               VerticalAlignment="Center"
+                                               Foreground="#AFC4D8" />
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NewsFeedUrl3}" />
                                 </Grid>
+                                <TextBlock Text="At least one configured feed must pass live RSS verification before saving."
+                                           Foreground="#F3D57F"
+                                           TextWrapping="Wrap" />
 
                                 <Grid ColumnDefinitions="Auto,*,Auto"
                                       ColumnSpacing="12">

@@ -4,7 +4,7 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-09-01",
-  "current_lane": "phase-6-release-readiness-complete",
+  "current_lane": "phase-7-configurable-news-and-ai-acceptance",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",
     "publisher": "SANYALnet Labs",
@@ -121,6 +121,17 @@
         "No migration-baseline parity blockers remain",
         "Documentation and workflow records are internally consistent",
         "Issue tracker reflects the reconciled migration state"
+      ]
+    },
+    {
+      "phase": "Phase 7",
+      "title": "Configurable News Sources And AI Acceptance",
+      "status": "in_progress",
+      "exit_criteria": [
+        "Three default RSS sources and three bounded configuration slots are shipped",
+        "Every non-empty configured source verifies and at least one is live-verified before save",
+        "AI generation and RSS fallback pass the complete failure matrix",
+        "Three-machine production acceptance and six-RID publish pass"
       ]
     }
   ],
@@ -1522,9 +1533,50 @@
         "Removed obsolete CR-010, CR-010I, and hosted-acceptance remaining-gap claims from the authoritative tracker.",
         "The next implementation work, if any, belongs to a newly created post-baseline CR and is not silently implied by this reconciliation."
       ]
+    },
+    {
+      "id": "CR-014",
+      "phase": "Phase 7",
+      "title": "Make RSS sources configurable and prove AI news generation",
+      "status": "in_progress",
+      "depends_on": ["CR-013"],
+      "objective": "Ship three default RSS sources, support up to three configured sources, require every non-empty source to verify and at least one to pass live verification, and thoroughly validate AI news generation with RSS fallback.",
+      "acceptance_criteria": [
+        "Fresh settings contain the three approved feeds.",
+        "The Avalonia configuration screen exposes three bounded RSS slots.",
+        "RSS settings cannot be saved when any non-empty URL fails verification or when no source passes live verification.",
+        "Legacy single-feed settings migrate without losing the selected feed.",
+        "AI success, malformed/empty/error/timeout/cancellation paths and RSS fallback are tested."
+      ],
+      "validation_plan": [
+        "Source-cited upstream behavior gate before and after implementation",
+        "Release build and full automated test suite",
+        "Three-machine configuration and production-scene acceptance",
+        "Six-RID publish, mandatory reviewer, artifact review, and cleanup gates"
+      ],
+      "started_on": "2026-09-01",
+      "artifacts": [
+        "docs/CR-014-CONFIGURABLE-RSS-AND-AI-ACCEPTANCE.md",
+        "src/DoNotPanicPortfolioVisualizer.Core/Models/AppSettings.cs",
+        "src/DoNotPanicPortfolioVisualizer.Data/Services/NewsFeedValidationService.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-014-CONFIGURABLE-RSS-AND-AI-ACCEPTANCE.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs",
+          "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Core/Models/AppSettings.cs"
+        ],
+        "zero_known_gaps": true
+      }
     }
   ],
-  "remaining_validation_gaps": [],
+  "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",

@@ -18,8 +18,9 @@ patent, trademark, and governing-law provisions.
 
 ## Change Intent
 
-Replace the temporary single-source France 24 RSS default with a portable,
-multi-source finance-news architecture. The supplied reference contract reads
+Replace the temporary single-source RSS default with a portable, multi-source
+finance-news architecture. The product ships with the following three default
+feeds and allows up to three user-configured sources. The supplied reference contract reads
 the following feeds, identifies each channel, and handles the first usable
 entries with their title, link, and publication date:
 
@@ -32,8 +33,10 @@ and Avalonia product; it must not introduce a Python runtime dependency.
 
 ## Required Product Behavior
 
-- Configure the three sources as an ordered built-in default catalog while
-  retaining a validated user-editable source configuration path.
+- Ship the three sources as ordered defaults and expose three bounded editable
+  configuration slots. Empty slots are allowed, but every non-empty slot must
+  pass RSS/XML verification and at least one must pass live verification before
+  RSS settings can be saved.
 - Fetch sources independently and concurrently with bounded timeout, retry,
   cancellation, response-size, XML-hardening, and per-source diagnostic
   behavior.
@@ -62,7 +65,7 @@ Upstream baseline: `65a53bbbf0cf9af1058363f8939d464ca03858f8`.
 
 | ID | Upstream behavior and citation | DNPPV-2.0 mapping and evidence |
 | --- | --- | --- |
-| RS-01 | `PortfolioSaver.Presentation/Services/FinanceNewsService.cs` normalizes the configured RSS URL and fetches RSS mode directly. | Preserve `NewsFeedUrl` as a validated user override; use the three-source catalog only for the built-in default. |
+| RS-01 | `PortfolioSaver.Presentation/Services/FinanceNewsService.cs` normalizes the configured RSS URL and fetches RSS mode directly. | Preserve legacy `NewsFeedUrl` settings while migrating to three bounded `NewsFeedUrls` slots and a verified-source configuration gate. |
 | RS-02 | The same service fans out summarized-news feed fetches concurrently and keeps successful results when a peer fails. | Fetch the built-in catalog concurrently with isolated per-source diagnostics and deterministic merging. |
 | RS-03 | `PortfolioSaver.Core/Validation/SettingsValidator.cs` requires an HTTP/S RSS URL only in RSS mode. | Retain mode-aware URL validation and settings-screen editing. |
 | RS-04 | `PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs` validates the configured feed and reports reset, skipped, and failure states. | Preserve validation messages and add catalog/source diagnostics without silently changing a user source. |
@@ -96,6 +99,6 @@ closure rescan of upstream/current behavior.
 
 ## Transition Rule
 
-CR-010I's France 24 stale-source guard remains active until CR-010J is
-implemented and physically accepted. CR-010J then supersedes the single-source
-default policy; it does not erase the requirement to reject stale item content.
+CR-010J established the multi-source service foundation. CR-014 completes the
+configuration-screen contract and AI-generator acceptance matrix; it does not
+erase the requirement to reject stale item content.

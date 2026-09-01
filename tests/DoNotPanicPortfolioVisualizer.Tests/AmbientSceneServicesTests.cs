@@ -824,6 +824,57 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "")]
+    [InlineData(HttpStatusCode.TooManyRequests, "")]
+    [InlineData(HttpStatusCode.InternalServerError, "")]
+    [InlineData(HttpStatusCode.OK, "{}")]
+    [InlineData(HttpStatusCode.OK, "{\"choices\":[]}")]
+    public async Task FinanceNewsService_FallsBackToRssForAiHttpAndMalformedResponses(
+        HttpStatusCode statusCode,
+        string responseBody)
+    {
+        const string rss = "<rss><channel><item><title>Markets remain readable</title></item></channel></rss>";
+        using FinanceNewsService service = new(new AiResponseHandler(rss, statusCode, responseBody));
+        AppSettings settings = CreateSummarizedSettings();
+
+        string text = await service.GetNewsTextAsync(settings, CancellationToken.None);
+
+        Assert.Equal("Markets remain readable", text);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_FallsBackToRssWhenAiTimesOut()
+    {
+        const string rss = "<rss><channel><item><title>Timeout still leaves RSS</title></item></channel></rss>";
+        using FinanceNewsService service = new(new AiResponseHandler(rss, timeout: true));
+
+        string text = await service.GetNewsTextAsync(CreateSummarizedSettings(), CancellationToken.None);
+
+        Assert.Equal("Timeout still leaves RSS", text);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_PropagatesExplicitAiCancellation()
+    {
+        using FinanceNewsService service = new(new AiResponseHandler(
+            "<rss><channel><item><title>Cancellation</title></item></channel></rss>", timeout: true));
+        using CancellationTokenSource cancellation = new();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.GetNewsTextAsync(CreateSummarizedSettings(), cancellation.Token));
+    }
+
+    private static AppSettings CreateSummarizedSettings() => new()
+    {
+        NewsFeedUrl = "https://example.test/feed",
+        NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews,
+        AiApiKey = "test-key",
+        AiEndpointUrl = "https://example.test/v1",
+        AiModelId = "test-model"
+    };
+
+    [Theory]
     [InlineData(0, true, "SUN")]
     [InlineData(0, false, "CLR")]
     [InlineData(63, true, "RAIN")]
@@ -876,6 +927,18 @@ public sealed class AmbientSceneServicesTests
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
+        }
+    }
+
+    private sealed class AiResponseHandler(string rss, HttpStatusCode statusCode = HttpStatusCode.OK, string responseBody = "", bool timeout = false) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(rss, Encoding.UTF8, "application/rss+xml") });
+            if (timeout)
+                throw new TaskCanceledException("simulated provider timeout", innerException: null, cancellationToken);
+            return Task.FromResult(new HttpResponseMessage(statusCode) { Content = new StringContent(responseBody, Encoding.UTF8, "application/json") });
         }
     }
 

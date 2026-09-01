@@ -20,7 +20,8 @@ public sealed class FoundationSettingsTests
 
         AppSettings settings = Defaults.CreateSettings();
 
-        Assert.Equal("https://www.france24.com/en/business/rss", settings.NewsFeedUrl);
+        Assert.Equal(Defaults.DefaultNewsFeedUrls, settings.NewsFeedUrls);
+        Assert.Equal(Defaults.DefaultNewsFeedUrls[0], settings.NewsFeedUrl);
         Assert.Equal(NewsScrollerMode.RssFeed, settings.NewsScrollerMode);
         Assert.StartsWith(productRoot, settings.HistoricalCacheRootFolder, StringComparison.OrdinalIgnoreCase);
         Assert.StartsWith(productRoot, settings.BackgroundImageFolder, StringComparison.OrdinalIgnoreCase);
@@ -45,6 +46,7 @@ public sealed class FoundationSettingsTests
         AppSettings settings = Defaults.CreateSettings();
         settings.NewsScrollerMode = NewsScrollerMode.RssFeed;
         settings.NewsFeedUrl = "not a url";
+        settings.NewsFeedUrls = ["not a url"];
 
         IReadOnlyList<string> errors = new SettingsValidator().Validate(settings);
 
@@ -79,7 +81,8 @@ public sealed class FoundationSettingsTests
         AppSettings normalized = AppSettingsNormalizer.Normalize(settings);
 
         Assert.Equal(Defaults.GetHistoricalCacheFolder(), normalized.HistoricalCacheRootFolder);
-        Assert.Equal("https://www.france24.com/en/business/rss", normalized.NewsFeedUrl);
+        Assert.Equal(Defaults.DefaultNewsFeedUrl, normalized.NewsFeedUrl);
+        Assert.Single(normalized.NewsFeedUrls);
         Assert.NotEmpty(normalized.Groups);
     }
 
