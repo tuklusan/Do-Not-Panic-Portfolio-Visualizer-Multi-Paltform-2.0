@@ -1419,7 +1419,7 @@
       "id": "CR-012",
       "phase": "Phase 5",
       "title": "Publish and validate DNPPV-2.0 across all required platforms",
-      "status": "planned",
+      "status": "closed",
       "depends_on": [
         "CR-011"
       ],
@@ -1433,6 +1433,48 @@
         "Local and remote publish/install runs",
         "GitHub Actions smoke/publish matrix",
         "Artifact review before CR closure"
+      ],
+      "started_on": "2026-09-01",
+      "closed_on": "2026-09-01",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-012-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "README.md",
+          "docs/RELEASE_1_0_BASELINE.md",
+          "docs/MANUAL_UI_QA_SUITE.md",
+          "src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs"
+        ],
+        "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "README.md",
+          "docs/RELEASE_1_0_BASELINE.md",
+          "docs/MANUAL_UI_QA_SUITE.md",
+          "src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Fresh scans reconcile packaged desktop execution, the owned sidecar lifecycle, physical real-scene acceptance, and the complete six-RID publish matrix."
+      },
+      "closure_audit": {
+        "hosted_workflow": "Passed; GitHub Actions run 33562821945 on pushed commit 6f75739",
+        "hosted_targets": "Passed; win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64",
+        "physical_acceptance": "Passed; Lubuntu, Windows 10, Windows 11 using real product scene acceptance",
+        "artifact_review": "Passed; uploaded publish artifacts present for each RID; local captures reviewed",
+        "automated_tests": "Passed; 283 tests",
+        "cleanup": "Passed; no local SSH, sshpass, dotnet, product, or remote helper processes remained"
+      },
+      "closure_notes": [
+        "CR-012 closes the hosted publish and local physical acceptance baseline for the complete six-target matrix.",
+        "The product is shipped as self-contained Avalonia/.NET 10 bundles; no WPF lane or installer was introduced."
       ]
     },
     {
