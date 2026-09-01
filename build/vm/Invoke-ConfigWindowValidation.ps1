@@ -529,7 +529,7 @@ function Invoke-LinuxValidation {
             '  exit 1',
             '}',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App ./YFinanceServer/YFinance.NET.Server',
-            'rm -f general.png menu-open.png validation.png motion.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
+            'rm -f general.png menu-open.png validation.png motion.png fullscreen-exit-menu.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
             $launchLine,
             'APPPID=$!',
             'DUPPID=""',
@@ -586,12 +586,25 @@ function Invoke-LinuxValidation {
             '  echo "FULLSCREEN_GEOMETRY=X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
             'else',
             '  echo "FULLSCREEN_GEOMETRY_UNAVAILABLE" >> step.log',
+            '  exit 1',
             'fi',
             'capture_screenshot validation.png',
             'echo "VALIDATION_CAPTURED" >> step.log',
             'sleep 4',
             'capture_screenshot motion.png',
-            'echo "MOTION_CAPTURED" >> step.log'
+            'echo "MOTION_CAPTURED" >> step.log',
+            'timeout 5 xdotool key --window "$WID" F11',
+            'echo "FULLSCREEN_EXIT_REQUESTED" >> step.log',
+            'sleep 4',
+            'WID=$(xdotool search --pid "$APPPID" | tail -n 1 || true)',
+            'if [ -z "${WID:-}" ]; then echo "FULLSCREEN_EXIT_WINDOW_NOT_FOUND" >> step.log; exit 1; fi',
+            'echo "FULLSCREEN_EXIT_WINDOW=$WID" >> step.log',
+            'xdotool key --window "$WID" alt+f',
+            'sleep 1',
+            'capture_screenshot fullscreen-exit-menu.png',
+            'echo "FULLSCREEN_EXIT_MENU_CAPTURED" >> step.log',
+            'xdotool key --window "$WID" Escape',
+            'sleep 1'
         )
     }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
@@ -634,7 +647,7 @@ function Invoke-LinuxValidation {
     }
 
     $artifactNames = if ($CaptureProductScene) {
-        @('general.png', 'menu-open.png', 'validation.png', 'motion.png', 'run.log', 'capture-errors.log', 'step.log')
+        @('general.png', 'menu-open.png', 'validation.png', 'motion.png', 'fullscreen-exit-menu.png', 'run.log', 'capture-errors.log', 'step.log')
     }
     else {
         @('general.png', 'validation.png', 'run.log', 'step.log')
