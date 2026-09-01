@@ -1110,7 +1110,7 @@
       "id": "CR-010I",
       "phase": "Phase 3",
       "title": "Add freshness integrity to the configured France 24 RSS lane",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010E"
       ],
@@ -1145,7 +1145,11 @@
           "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "closure_notes": [
+        "The freshness contract is retained in the multi-source RSS implementation closed by CR-010J: publication dates are normalized to UTC, stale and future content is explicitly rejected from current playback, and empty or malformed-date feeds remain degraded rather than silently presented as live.",
+        "CR-010J supersedes the temporary France 24-only lane and physically validated the normal product on Linux, Windows 10, and Windows 11 from the pushed multi-source checkpoint. Deterministic stale, fresh, empty, malformed-date, and transport-failure tests remain passing in the 283-test Release suite."
+      ]
     },
     {
       "id": "CR-010J",
