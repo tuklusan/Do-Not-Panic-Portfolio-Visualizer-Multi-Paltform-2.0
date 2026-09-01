@@ -906,7 +906,7 @@
       "id": "CR-010H",
       "phase": "Phase 3",
       "title": "Restore readable cross-platform product menu contrast",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-008"
       ],
@@ -939,7 +939,23 @@
         "linux_lxqt": "Passed real-product menu, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 34904be. The visible File/Exit capture and cinematic trace are in ignored build/vm-artifacts/cr010h/linux-fullscreen-exit-click.",
         "windows_10": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 2786d7e. Visible artifacts are in ignored build/vm-artifacts/cr010h/win10-fullscreen-exit.",
         "windows_11": "Passed real-product logical 1024x768, menu-open, wide, fullscreen, motion, and fullscreen-exit menu restoration from pushed commit 2786d7e. UI Automation verified the File submenu and the final audit found no product or managed sidecar; artifacts are in ignored build/vm-artifacts/cr010h/win11-fullscreen-exit."
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_notes": [
+        "Fresh three-machine real-product acceptance verified readable File/View/Options/Help menus, submenu Exit visibility, fullscreen transitions, and menu restoration after exit; mandatory artifact review and process cleanup passed.",
+        "The CR is closed from its pushed acceptance evidence and current upstream closure audit."
+      ]
     },
     {
       "id": "CR-010C",
