@@ -1854,6 +1854,36 @@
       "objective": "Prove placeholder-secret clearing, legacy refresh retirement, remote-background-path retirement, legacy direction normalization, and the approved default AI writing style.",
       "acceptance_criteria": ["DATA-09 has deterministic normalization tests and preserves only supported user intent."],
       "validation_plan": ["Focused normalizer tests", "Settings migration acceptance on three machines", "Secret-scan and reviewer gates"]
+    },
+    {
+      "id": "CR-043",
+      "phase": "Phase 7",
+      "title": "Close default exchange catalog and benchmark parity gaps",
+      "status": "open",
+      "depends_on": ["CR-042"],
+      "objective": "Prove the default local summary, exchange-card catalog, bundled flag assets, canonical global benchmarks, and world-index mapping.",
+      "acceptance_criteria": ["LOGIC-07 passes deterministic catalog and benchmark mapping tests and real-scene acceptance."],
+      "validation_plan": ["Focused catalog tests", "Three-machine production-scene review", "Six-target publish"]
+    },
+    {
+      "id": "CR-044",
+      "phase": "Phase 7",
+      "title": "Close market-critter sprite motion parity gaps",
+      "status": "open",
+      "depends_on": ["CR-043"],
+      "objective": "Match upstream market-critter sprite bounds, bounce reversal, non-bouncing clamp, and overlay continuity behavior.",
+      "acceptance_criteria": ["VIS-05 passes deterministic motion tests and real-scene captures without sprite escape or jump discontinuity."],
+      "validation_plan": ["Focused sprite-motion tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-045",
+      "phase": "Phase 7",
+      "title": "Close shell fullscreen and composition interaction parity gaps",
+      "status": "open",
+      "depends_on": ["CR-044"],
+      "objective": "Prove menu-safe double-click handling, native fullscreen toggling, DPI-tolerant composition nudges, and Escape-based exit in Avalonia.",
+      "acceptance_criteria": ["UI-08 passes normal, maximized, fullscreen, multi-monitor, menu, DPI, and Escape interaction cases."],
+      "validation_plan": ["Focused shell interaction tests", "Three-machine multi-monitor acceptance", "Screenshot artifact review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
