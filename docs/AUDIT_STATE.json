@@ -871,7 +871,7 @@
       "id": "CR-010G",
       "phase": "Phase 3",
       "title": "Stabilize staged production-scene startup",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010B"
       ],
@@ -900,7 +900,24 @@
           "src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Render/Services/TapeAnimationController.cs",
+          "src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_notes": [
+        "Current three-machine real-product runs show bootstrap readiness, macro/world-market/portfolio sequencing, deferred lane activation, four settled ticker lanes, live news refresh, and bounded startup traces after the documented warmup.",
+        "The fresh closure audit found no unmapped startup behavior; the CR is closed from pushed acceptance evidence."
+      ]
     },
     {
       "id": "CR-010H",
