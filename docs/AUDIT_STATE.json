@@ -1030,7 +1030,7 @@
       "id": "CR-010D",
       "phase": "Phase 3",
       "title": "Port full-scene floating graph physics and quote impulses",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010C"
       ],
@@ -1064,6 +1064,18 @@
           "src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs"
         ],
         "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/HistoricalGraphBuilder.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "closure_notes": [
         "Restored up to 16 source-sized floating graph cards across the full scene with viewport bounds, bounce, collision separation, resize handling, and motion continuity across live-history refresh.",
