@@ -290,6 +290,22 @@ public sealed class FinanceNewsService : IDisposable
                 : state == RssFeedFreshnessState.Stale
                     ? "All built-in finance news sources are stale."
                     : "No current finance news sources are available."];
+        if (settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
+            !string.IsNullOrWhiteSpace(settings.AiApiKey) &&
+            !string.IsNullOrWhiteSpace(settings.AiModelId) &&
+            headlines.Count > 0)
+        {
+            try
+            {
+                string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(summary))
+                    playback = [summary];
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Preserve the merged RSS playback when optional summarization fails.
+            }
+        }
         return new RssPlaybackSnapshot(playback, freshness);
     }
 
