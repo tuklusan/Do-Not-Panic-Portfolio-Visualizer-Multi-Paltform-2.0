@@ -1340,7 +1340,7 @@
       "id": "CR-011",
       "phase": "Phase 4",
       "title": "Port degraded-mode behavior, recovery, and traceability",
-      "status": "planned",
+      "status": "open",
       "depends_on": [
         "CR-010F"
       ],
@@ -1354,7 +1354,26 @@
         "Fault-injection or controlled degraded-run checks",
         "Artifact review of traces/logs/screenshots",
         "Closure evidence in the issue tracker"
-      ]
+      ],
+      "started_on": "2026-09-01",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-011-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Render/ViewModels/NetworkWaitingViewModel.cs",
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Services/YFinanceRuntimeClientFactory.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Services/RenderHeartbeatService.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/WeatherService.cs",
+          "src/PortfolioSaver.VmAgent/Program.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs"
+        ],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-012",
