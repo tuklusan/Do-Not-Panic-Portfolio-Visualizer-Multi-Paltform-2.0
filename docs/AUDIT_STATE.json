@@ -1574,6 +1574,36 @@
         ],
         "zero_known_gaps": true
       }
+    },
+    {
+      "id": "CR-015",
+      "phase": "Phase 7",
+      "title": "Line-level upstream product behavior parity audit",
+      "status": "open",
+      "depends_on": ["CR-014"],
+      "objective": "Manually scan every upstream product source artifact line by line and map each user-visible behavior, business rule, and provider path to Avalonia 2.0 or record a specific gap.",
+      "acceptance_criteria": ["Every upstream product source file has a line-level ledger entry and 2.0 mapping.", "Every genuine missing behavior has a follow-up implementation CR.", "Two successive upstream closure scans report zero unclassified product behaviors."],
+      "validation_plan": ["Manual line-by-line source review", "Upstream behavior gate", "Real product acceptance and regression tests"]
+    },
+    {
+      "id": "CR-016",
+      "phase": "Phase 7",
+      "title": "Line-level upstream test parity audit",
+      "status": "open",
+      "depends_on": ["CR-015"],
+      "objective": "Manually scan every upstream test artifact and map each assertion, fixture, business rule, and test harness behavior to current 2.0 tests or create the required test CR.",
+      "acceptance_criteria": ["All 62 upstream test artifacts are individually ledgered.", "Missing assertions and test environments are converted into actionable CRs.", "The current suite demonstrates the mapped upstream behaviors without toy product evidence."],
+      "validation_plan": ["Manual line-by-line test review", "Full Release test suite", "Artifact and physical acceptance review"]
+    },
+    {
+      "id": "CR-017",
+      "phase": "Phase 7",
+      "title": "Line-level upstream workflow and documentation parity audit",
+      "status": "open",
+      "depends_on": ["CR-016"],
+      "objective": "Manually scan every upstream workflow, build/test script, and documentation artifact and map it to the current public migration workflow or record intentional retirement and missing automation.",
+      "acceptance_criteria": ["All upstream workflow, build, test-script, and documentation artifacts are individually ledgered.", "Intentional WPF, installer, and historical removals are explicitly justified.", "Every missing active workflow or document has an implementation CR and the final ledger has zero unclassified entries."],
+      "validation_plan": ["Manual line-by-line workflow/document review", "PowerShell/license/document gates", "Hosted and local acceptance validation"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
