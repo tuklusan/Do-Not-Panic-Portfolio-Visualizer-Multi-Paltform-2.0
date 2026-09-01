@@ -1340,7 +1340,7 @@
       "id": "CR-011",
       "phase": "Phase 4",
       "title": "Port degraded-mode behavior, recovery, and traceability",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-010F"
       ],
@@ -1373,7 +1373,47 @@
           "src/PortfolioSaver.Core/Validation/SettingsValidator.cs"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/ViewModels/NetworkWaitingViewModel.cs",
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Services/YFinanceRuntimeClientFactory.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Services/RenderHeartbeatService.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/WeatherService.cs",
+          "src/PortfolioSaver.VmAgent/Program.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Fresh closure rescans reconcile provider isolation, degraded state, recovery traces, cancellation bounds, and lifecycle cleanup with the current implementation and physical acceptance evidence."
+      },
+      "closed_on": "2026-09-01",
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "deepseek_code_review": "PASS; blocking_findings=[]",
+        "automated_tests": "Passed; 283 tests",
+        "six_rid_publishes": "Passed; win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64",
+        "physical_acceptance": {
+          "linux_lubuntu": "build/vm-artifacts/cr011/linux-degraded",
+          "windows_10": "build/vm-artifacts/cr011/win10-degraded",
+          "windows_11": "build/vm-artifacts/cr011/win11-degraded",
+          "result": "Passed; real product scene, degraded news trace, viewport/menu/fullscreen/motion captures, zero capture errors"
+        },
+        "fault_injection": "DNPPV_FORCE_NEWS_FAILURE produced NEWS_SOURCE;STATE=UNAVAILABLE;ERROR=HttpRequestException on all three machines",
+        "cleanup": "Passed; validation harness terminated product and remote helper processes"
+      },
+      "closure_notes": [
+        "Added a deterministic provider-failure input to the maintained physical harness. It exercises the real news-refresh catch path and is not a visual fixture.",
+        "All three local machines retained the complete production scene during the injected failure and displayed the explicit Finance News unavailable state.",
+        "The pushed implementation checkpoint is 0324d60."
+      ]
     },
     {
       "id": "CR-012",

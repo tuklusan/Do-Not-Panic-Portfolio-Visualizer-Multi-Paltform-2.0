@@ -52,3 +52,23 @@ Implementation must add deterministic fault-injection tests, real-product
 degraded/recovery acceptance on Lubuntu, Windows 10, and Windows 11, six-RID
 publish evidence, mandatory CODE and TEST_ARTIFACT review, process cleanup, and
 a fresh closure scan with two successive zero-gap results.
+
+## Closure Evidence
+
+The maintained harness now accepts `-ForceNewsFailure`. This sets the test-only
+`DNPPV_FORCE_NEWS_FAILURE=1` input for the real product process; it does not
+select or render a fixture screen. The normal news-refresh path emits the
+bounded `NEWS_SOURCE;STATE=UNAVAILABLE` trace and the scene remains usable.
+
+On 2026-09-01, the real production scene passed the controlled degraded run on
+all three local machines:
+
+- Lubuntu: `build/vm-artifacts/cr011/linux-degraded`
+- Windows 10: `build/vm-artifacts/cr011/win10-degraded`
+- Windows 11: `build/vm-artifacts/cr011/win11-degraded`
+
+Every run recorded `ERROR=HttpRequestException`, captured the real scene,
+menu, viewport, fullscreen, and motion states, and had an empty
+`capture-errors.log` where applicable. The six self-contained runtime
+publishes, 283 automated tests, license gate, PowerShell syntax gate, and
+mandatory DeepSeek code review also passed at pushed checkpoint `0324d60`.
