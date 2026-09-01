@@ -68,6 +68,9 @@ param(
     [switch]$DuplicateInstanceFixture,
 
     [Parameter()]
+    [switch]$ForceNewsFailure,
+
+    [Parameter()]
     [switch]$SkipDeployment
 )
 
@@ -302,6 +305,7 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
+        [Parameter(Mandatory = $true)][bool]$ForceNewsFailure,
         [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
@@ -465,6 +469,9 @@ function Invoke-LinuxValidation {
         }
         if ($CaptureRenderHeartbeatFixture) {
             $launchEnvironment += 'DNPPV_RENDER_HEARTBEAT_FIXTURE=1'
+        }
+        if ($ForceNewsFailure) {
+            $launchEnvironment += 'DNPPV_FORCE_NEWS_FAILURE=1'
         }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
         $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
@@ -694,6 +701,7 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
+        [Parameter(Mandatory = $true)][bool]$ForceNewsFailure,
         [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
@@ -904,6 +912,12 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_RENDER_HEARTBEAT_FIXTURE -ErrorAction SilentlyContinue'
         }
+        $forceNewsFailureLine = if ($ForceNewsFailure) {
+            '$env:DNPPV_FORCE_NEWS_FAILURE = ''1'''
+        }
+        else {
+            'Remove-Item Env:DNPPV_FORCE_NEWS_FAILURE -ErrorAction SilentlyContinue'
+        }
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
             @(
                 '    $duplicate = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
@@ -1019,6 +1033,7 @@ function Invoke-WindowsValidation {
             $fixtureTraceLine,
             $cinematicTraceLine,
             $renderHeartbeatFixtureLine,
+            $forceNewsFailureLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
             '$startInfo = [System.Diagnostics.ProcessStartInfo]::new()',
             '$startInfo.FileName = $exePath',
@@ -1252,6 +1267,9 @@ if ($RenderHeartbeatFixture -and -not $ProductScene) {
 if ($DuplicateInstanceFixture -and -not $ProductScene) {
     throw '-DuplicateInstanceFixture requires -ProductScene.'
 }
+if ($ForceNewsFailure -and -not $ProductScene) {
+    throw '-ForceNewsFailure requires -ProductScene.'
+}
 
 $resolvedPublishDir = (Resolve-Path -LiteralPath $LocalPublishDir -ErrorAction Stop).Path
 if (-not (Test-Path -LiteralPath (Join-Path $resolvedPublishDir 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf) -and
@@ -1265,11 +1283,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     default {

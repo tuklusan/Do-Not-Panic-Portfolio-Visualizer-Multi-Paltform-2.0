@@ -104,6 +104,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
     private readonly bool _renderHeartbeatFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_RENDER_HEARTBEAT_FIXTURE"), "1", StringComparison.Ordinal);
+    private readonly bool _forceNewsFailure =
+        string.Equals(Environment.GetEnvironmentVariable("DNPPV_FORCE_NEWS_FAILURE"), "1", StringComparison.Ordinal);
     private DateTimeOffset _renderHeartbeatFixtureStartedUtc;
     private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
@@ -806,6 +808,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
+            if (_forceNewsFailure)
+                throw new HttpRequestException("Controlled news-provider failure.");
+
             RssPlaybackSnapshot playback = await _newsService.GetPlaybackSnapshotAsync(_settings, cancellationToken);
             RssFeedFreshnessSnapshot freshness = playback.Freshness;
             string latestPublication = freshness.LatestPublicationUtc?.ToString("O") ?? "NONE";

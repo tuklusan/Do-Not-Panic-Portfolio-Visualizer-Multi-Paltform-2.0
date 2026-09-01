@@ -56,6 +56,9 @@ param(
     [switch]$DuplicateInstanceCheck,
 
     [Parameter()]
+    [switch]$ForceNewsFailure,
+
+    [Parameter()]
     [switch]$SkipDeployment
 )
 
@@ -91,6 +94,10 @@ $engineParameters = @{
 
 if ($DuplicateInstanceCheck.IsPresent) {
     $engineParameters.DuplicateInstanceFixture = $true
+}
+
+if ($ForceNewsFailure.IsPresent) {
+    $engineParameters.ForceNewsFailure = $true
 }
 
 if ($SkipDeployment.IsPresent) {
