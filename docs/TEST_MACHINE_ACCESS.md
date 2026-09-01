@@ -78,6 +78,7 @@ changes; do not commit live addresses or credentials.
 
 ## GitHub-Hosted Build/Test Lanes
 
+- `github-windows-x64`: runner `windows-latest`, RID `win-x64`
 - `github-macos-x64`: runner `macos-15-intel`, RID `osx-x64`
 - `github-macos-arm64`: runner `macos-15`, RID `osx-arm64`
 - `github-linux-arm64`: runner `ubuntu-24.04-arm`, RID `linux-arm64`
