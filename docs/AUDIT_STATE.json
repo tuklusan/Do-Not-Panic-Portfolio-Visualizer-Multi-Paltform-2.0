@@ -1704,6 +1704,56 @@
       "objective": "Prove the real About/help/attribution surfaces and screenshot provenance/dimension/framebuffer evidence workflow.",
       "acceptance_criteria": ["UI-03 and TEST-03 pass on all local machines with reviewed production artifacts."],
       "validation_plan": ["Visual and accessibility acceptance", "Harness tests", "Artifact review"]
+    },
+    {
+      "id": "CR-028",
+      "phase": "Phase 7",
+      "title": "Close quote-state and tape/graph presentation parity gaps",
+      "status": "open",
+      "depends_on": ["CR-027"],
+      "objective": "Prove upstream waiting, missing, previous-close, stale, structural-change, and flash suppression presentation rules in the real Avalonia scene.",
+      "acceptance_criteria": ["UI-04 has a complete focused presentation matrix and production-screen evidence."],
+      "validation_plan": ["Focused presentation tests", "Three-machine real-scene acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-029",
+      "phase": "Phase 7",
+      "title": "Close graph cache identity and invalidation parity gaps",
+      "status": "open",
+      "depends_on": ["CR-028"],
+      "objective": "Match upstream graph cache key isolation, LRU eviction, and rebuild behavior when settings, timestamps, or history snapshots change.",
+      "acceptance_criteria": ["LOGIC-03 has deterministic tests proving cache reuse, invalidation, collision resistance, and bounded eviction."],
+      "validation_plan": ["Focused graph-cache tests", "Release build", "Reviewer and artifact review"]
+    },
+    {
+      "id": "CR-030",
+      "phase": "Phase 7",
+      "title": "Close configuration connectivity and cancellation parity gaps",
+      "status": "open",
+      "depends_on": ["CR-029"],
+      "objective": "Prove connectivity transition handling, validation ordering, cancellation responsiveness, and the invariant that canceled validation never publishes settings.",
+      "acceptance_criteria": ["UI-05 passes the complete online/offline/recovery/cancel validation matrix."],
+      "validation_plan": ["Configuration workflow tests", "Three-machine acceptance", "Reviewer gate"]
+    },
+    {
+      "id": "CR-031",
+      "phase": "Phase 7",
+      "title": "Close protocol framing and disposal safety parity gaps",
+      "status": "open",
+      "depends_on": ["CR-030"],
+      "objective": "Prove portable YFinance framing, integrity, transport tracing, malformed payload handling, and idempotent disposal under pending work.",
+      "acceptance_criteria": ["DATA-05 passes zero/truncated/oversized/checksum/cancellation/disposal cases without leaks."],
+      "validation_plan": ["Focused protocol tests", "Fault-injected server/client tests", "Six-target publish"]
+    },
+    {
+      "id": "CR-032",
+      "phase": "Phase 7",
+      "title": "Close background asset cache integrity parity gaps",
+      "status": "open",
+      "depends_on": ["CR-031"],
+      "objective": "Prove staged background downloads, image validation, concurrent warmup serialization, cancellation, catalog rotation, and prepared rendering behavior.",
+      "acceptance_criteria": ["DATA-06 passes cache integrity and rotation cases without partial-file promotion or dispatcher blocking."],
+      "validation_plan": ["Focused media/cache tests", "Three-machine production-scene acceptance", "Artifact review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],

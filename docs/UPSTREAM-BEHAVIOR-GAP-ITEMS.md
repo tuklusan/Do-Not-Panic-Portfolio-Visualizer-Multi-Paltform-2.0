@@ -53,6 +53,16 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | UI-03 | `AboutWindow_UsesBrandSplashAndPublisherMetadata`, `HelpAndAboutDocuments_AreBundled_NonEmpty_AndLicenseAligned`, `HelpBadges_ArePresentOnAllKeySections` | About/help/attribution surfaces require real Avalonia UI and accessibility acceptance. | CR-027 |
 | TEST-03 | `DeepSeekArtifactReview_IncludesAppNativeSceneCaptureTiming`, `RunVmUxValidation_RecordsActualCaptureDimensions_AndFlagsFramebufferMismatch` | Screenshot provenance, timing, dimensions, and framebuffer mismatch detection need direct 2.0 harness tests. | CR-027 |
 
+## Second Repeat-Scan Additions
+
+| Item | Upstream line-level evidence | 2.0 status | CR |
+| --- | --- | --- | --- |
+| UI-04 | `BuildTapeItem_*`, `ApplyQuoteToGraph_OlderQuoteStillShowsCurrentValues`, `...StaleQuoteKeepsMoverVisibleUsingLastKnownData`, `...PercentOnlyChange_DoesNotTriggerCardFlash` | Waiting, missing, previous-close, stale, and structural-change display rules need an explicit 2.0 presentation matrix separate from animation travel tests. | CR-028 |
+| LOGIC-03 | `BuildGraph_Cache*`, `BuildGraph_RebuildsCachedGraphWhenBounceSettingChanges`, `...HistorySnapshotChanges`, `...FetchTimestampChanges` | Graph cache key isolation, LRU eviction, and rebuild invalidation rules are not represented by a dedicated 2.0 test workstream. | CR-029 |
+| UI-05 | `ConnectivityChanged_*`, `ValidateConfigurationAsync_*`, `EnsureValidationConnectivityAsync_*`, `ExecuteCancel_RequestsCloseWithoutPublishingValidatedQuotes` | Connectivity transitions, validation ordering, cancellation, and no-publish-on-cancel behavior need direct configuration workflow parity evidence. | CR-030 |
+| DATA-05 | `LengthPrefixedProtocolStream_*`, `ProtocolIntegrity_*`, `ClientAndServer_TraceEveryMessageAtTransportBoundary`, `Client_*Dispose*` | Framing limits, zero/truncated/oversized payload handling, checksum compatibility, transport tracing, and pending-request disposal need a unified protocol safety matrix. | CR-031 |
+| DATA-06 | `WarmDefaultManifestCacheAsync_*`, `BackgroundCatalogRefreshDecision_*`, `BackgroundPreparation_*` | Background download staging, content validation, concurrent warmup serialization, cancellation, and catalog rotation decisions need explicit cache-integrity coverage. | CR-032 |
+
 ## Repeat Rule
 
 Every item must be resolved by a mapped 2.0 implementation and a focused test
