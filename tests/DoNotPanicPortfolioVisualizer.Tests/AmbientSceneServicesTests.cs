@@ -562,6 +562,47 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_OrdersBuiltInEntriesByNewestPublication()
+    {
+        const string cnbc = "<rss><channel><item><title>CNBC older</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        const string marketWatch = "<rss><channel><item><title>MarketWatch newest</title><pubDate>Sat, 29 Aug 2026 11:00:00 GMT</pubDate></item></channel></rss>";
+        const string investing = "<rss><channel><item><title>Investing middle</title><pubDate>Sat, 29 Aug 2026 09:00:00 GMT</pubDate></item></channel></rss>";
+        using FinanceNewsService service = new(
+            new UrlResponseHandler(request => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    request.Host.Contains("cnbc", StringComparison.OrdinalIgnoreCase)
+                        ? cnbc
+                        : request.Host.Contains("dowjones", StringComparison.OrdinalIgnoreCase)
+                            ? marketWatch
+                            : investing,
+                    Encoding.UTF8,
+                    "application/rss+xml")
+            }),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+
+        RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(
+            Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Equal(
+            ["[MarketWatch] MarketWatch newest", "[Investing.com] Investing middle", "[CNBC] CNBC older"],
+            result.Headlines);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_ReadsAtomEntriesAndHrefLinks()
+    {
+        const string atom = "<feed xmlns=\"http://www.w3.org/2005/Atom\"><entry><title>Atom market news</title><link href=\"https://example.test/atom/1\"/><updated>2026-08-29T10:00:00+00:00</updated></entry></feed>";
+        using FinanceNewsService service = new(new StaticResponseHandler(atom));
+
+        IReadOnlyList<string> headlines = await service.GetHeadlinesAsync(
+            "https://example.test/feed", CancellationToken.None);
+
+        Assert.Equal(["Atom market news"], headlines);
+        Assert.Equal(RssFeedFreshnessState.Fresh, service.LastRssFreshnessState);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_ReportsAllBuiltInSourcesStale()
     {
         const string rss = "<rss><channel><item><title>Old market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
@@ -670,7 +711,7 @@ public sealed class AmbientSceneServicesTests
             CancellationToken.None);
 
         Assert.Equal(RssFeedFreshnessState.MissingPublicationDate, service.LastRssFreshnessState);
-        Assert.Equal(["France 24 business feed returned no headlines"], headlines);
+        Assert.Equal(["Configured RSS source returned no headlines"], headlines);
     }
 
     [Fact]

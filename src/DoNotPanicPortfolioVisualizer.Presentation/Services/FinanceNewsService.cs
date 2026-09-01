@@ -117,7 +117,7 @@ public sealed class FinanceNewsService : IDisposable
         }
 
         IReadOnlyList<string> rssHeadlines = snapshot.Headlines.Count == 0
-            ? ["France 24 business feed returned no headlines"]
+            ? ["Configured RSS source returned no headlines"]
             : snapshot.Headlines;
 
         if (settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
@@ -210,11 +210,12 @@ public sealed class FinanceNewsService : IDisposable
         XDocument document = await XDocument.LoadAsync(reader, LoadOptions.None, cancellationToken).ConfigureAwait(false);
         DateTimeOffset now = _utcNow();
         List<RssItem> items = document.Descendants()
-            .Where(static element => element.Name.LocalName == "item")
-            .Select(static item => new RssItem(
+            .Where(static element => element.Name.LocalName is "item" or "entry")
+            .Select((item, index) => new RssItem(
                 item.Elements().FirstOrDefault(element => element.Name.LocalName == "title")?.Value,
-                item.Elements().FirstOrDefault(element => element.Name.LocalName is "link" or "id")?.Value,
-                TryParsePublicationDate(item.Elements().FirstOrDefault(element => element.Name.LocalName == "pubDate")?.Value)))
+                ReadItemLink(item),
+                TryParsePublicationDate(ReadPublicationValue(item)),
+                index))
             .ToList();
         IReadOnlyList<string> headlines = items
             .Where(item => item.PublicationUtc is null ||
@@ -259,9 +260,14 @@ public sealed class FinanceNewsService : IDisposable
             .Where(static result => result.Snapshot.Headlines.Count > 0 && result.Snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
             .ToArray();
         IReadOnlyList<string> headlines = usable
-            .SelectMany(static result => result.Snapshot.Items.Select(item => (result.Source.Name, Item: item)))
-            .DistinctBy(static item => NormalizeCanonicalLink(item.Item.Link) ?? item.Item.Title, StringComparer.OrdinalIgnoreCase)
-            .Select(static item => $"[{item.Name}] {item.Item.Title!.Trim()}")
+            .SelectMany((result, sourceIndex) => result.Snapshot.Items
+                .Where(item => IsCurrentHeadline(item, _utcNow()))
+                .Select(item => new BuiltInHeadline(result.Source.Name, item, sourceIndex)))
+            .OrderByDescending(static item => item.Item.PublicationUtc ?? DateTimeOffset.MinValue)
+            .ThenBy(static item => item.SourceIndex)
+            .ThenBy(static item => item.Item.OriginalOrder)
+            .DistinctBy(static item => NormalizeCanonicalLink(item.Item.Link) ?? item.Item.Title!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(static item => $"[{item.SourceName}] {item.Item.Title!.Trim()}")
             .Take(24)
             .ToArray();
         RssFeedFreshnessState state = headlines.Count > 0
@@ -348,6 +354,21 @@ public sealed class FinanceNewsService : IDisposable
             ? publicationDate
             : null;
 
+    private static string? ReadItemLink(XElement item)
+    {
+        XElement? link = item.Elements().FirstOrDefault(element => element.Name.LocalName == "link");
+        return link?.Attribute("href")?.Value ?? link?.Value ??
+            item.Elements().FirstOrDefault(element => element.Name.LocalName == "id")?.Value;
+    }
+
+    private static string? ReadPublicationValue(XElement item)
+        => item.Elements().FirstOrDefault(element => element.Name.LocalName is "pubDate" or "published" or "updated")?.Value;
+
+    private static bool IsCurrentHeadline(RssItem item, DateTimeOffset now)
+        => !string.IsNullOrWhiteSpace(item.Title) &&
+            (item.PublicationUtc is null ||
+             (item.PublicationUtc <= now && now - item.PublicationUtc.Value <= MaximumRssHeadlineAge));
+
     private static string? NormalizeCanonicalLink(string? link)
     {
         if (!Uri.TryCreate(link?.Trim(), UriKind.Absolute, out Uri? uri) ||
@@ -368,7 +389,9 @@ public sealed class FinanceNewsService : IDisposable
         RssFeedFreshnessState FreshnessState,
         DateTimeOffset? LatestPublicationUtc);
 
-    private sealed record RssItem(string? Title, string? Link, DateTimeOffset? PublicationUtc);
+    private sealed record RssItem(string? Title, string? Link, DateTimeOffset? PublicationUtc, int OriginalOrder);
+
+    private sealed record BuiltInHeadline(string SourceName, RssItem Item, int SourceIndex);
 
     private sealed record RssSourceSnapshot(RssFeedSource Source, RssHeadlineSnapshot Snapshot);
 }

@@ -153,7 +153,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private double _sceneDimOpacity = 0.55d;
 
     [ObservableProperty]
-    private string _newsText = "Loading France 24 business headlines...";
+    private string _newsText = "Loading finance news headlines...";
 
     [ObservableProperty]
     private double _newsVerticalOffset;
@@ -205,7 +205,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         PinnedGlobalMarket = GlobalMarkets[0];
         GlobalMarketTrackItems = [];
         ConfigureGlobalMarketViewport(_globalMarketsViewportWidth);
-        _newsPlayback.SetHeadlines(["Loading France 24 business headlines..."]);
+        _newsPlayback.SetHeadlines(["Loading finance news headlines..."]);
         LoadSettings();
     }
 
@@ -780,7 +780,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             WriteCinematicTrace($"NEWS_SOURCE;STATE=UNAVAILABLE;LATEST_UTC=NONE;ERROR={ex.GetType().Name}");
             await InvokeOnUiAsync(
-                () => _newsPlayback.SetHeadlines(["France 24 business headlines are temporarily unavailable"]),
+                () => _newsPlayback.SetHeadlines(["Finance news headlines are temporarily unavailable"]),
                 cancellationToken);
         }
     }

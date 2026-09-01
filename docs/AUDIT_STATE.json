@@ -163,7 +163,7 @@
       "artifacts": [
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md"
       ],
-      "upstream_behavior_inventory": {
+  "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
@@ -172,8 +172,8 @@
           "docs/RELEASE_1_0_BASELINE.md",
           "docs/MANUAL_UI_QA_SUITE.md"
         ],
-        "zero_known_gaps": true
-      },
+    "zero_known_gaps": true
+  },
       "upstream_closure_audit": {
         "status": "complete",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
@@ -1177,6 +1177,19 @@
           "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs"
         ],
         "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Fresh closure rescans reconcile configured-feed validation, concurrent summarized fanout, source failure isolation, stale/future handling, fallback playback, and the new ordered built-in catalog. Atom entry parsing, UTC ordering, canonical-link deduplication, and source attribution are covered by current implementation tests. Physical acceptance remains a separate closure requirement."
       },
       "transition_notes": [
         "CR-010J is the approved successor to the temporary France 24 single-source default introduced by CR-010I.",
