@@ -26,6 +26,13 @@ working copy inspected for the corresponding behavior and evidence.
 | BAS-01 | Upstream artifact scope | 2.0 disposition |
 | --- | --- | --- |
 | BAS-01 | All upstream source, test, workflow, build, documentation, configuration, and distribution artifacts in the disk scope below | Every behavior is mapped to 2.0, explicitly retired as installer/history-only, or routed to CR-021 through CR-054. The reverse scan found no unmapped behavior. |
+| BAS-02 | Product shell and startup | Avalonia shell, startup lifecycle, persisted window state, native fullscreen, monitor work-area bounds, menu interaction, and Escape recovery are mapped to CR-020 and CR-045. |
+| BAS-03 | Configuration and settings | Settings load/save, defaults, validation, cancellation, secret handling, legacy normalization, scene-state transfer, and responsive dialog layout are mapped to CR-030, CR-033, CR-040, and CR-042. |
+| BAS-04 | Market data and orchestration | Quote polling, YFinance transport, symbol classification, exchange catalogs, benchmark mapping, NTP/network availability, cancellation, retries, and degraded fallback are mapped to CR-021, CR-022, CR-031, CR-037, CR-038, CR-039, CR-043, and CR-048. |
+| BAS-05 | Cinematic scene composition | Ticker lanes, ticker motion, graph cards, critter motion, market ribbon, clock/macro overlays, background identity, layout nudges, freeze recovery, and multi-monitor behavior are mapped to CR-020, CR-044, CR-045, CR-049, and CR-052. |
+| BAS-06 | News and external services | RSS configuration, feed validation, persistent news cache, playback sequencing, AI summarization, shared HTTP ownership, timeout behavior, and degraded news presentation are mapped to CR-025, CR-046, CR-047, and CR-048. |
+| BAS-07 | Weather, clocks, and persistence | Weather snapshots, per-city freshness, timezone resolution, user-data paths, cache integrity, cleanup, and cross-platform persistence are mapped to CR-024, CR-032, CR-034, CR-051, and CR-053. |
+| BAS-08 | Verification and delivery | Upstream tests, migration tests, reviewer gates, PowerShell syntax gates, license gates, physical harnesses, screenshot/trace artifacts, CI matrices, cleanup, and publish acceptance are mapped to CR-023, CR-036, CR-041, and CR-054. |
 
 ## Disk Scope
 
