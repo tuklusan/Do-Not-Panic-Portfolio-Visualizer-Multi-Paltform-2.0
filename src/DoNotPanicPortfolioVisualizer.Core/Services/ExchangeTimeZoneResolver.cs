@@ -11,11 +11,22 @@
 // SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 // patent, trademark, and governing-law provisions.
 // ============================================================================
+using System.Collections.Concurrent;
+
 namespace DoNotPanicPortfolioVisualizer.Core.Services;
 
 public static class ExchangeTimeZoneResolver
 {
+    private static readonly ConcurrentDictionary<string, TimeZoneInfo> Cache = new(StringComparer.OrdinalIgnoreCase);
+
     public static TimeZoneInfo Resolve(string? timeZoneId)
+    {
+        if (string.IsNullOrWhiteSpace(timeZoneId))
+            return TimeZoneInfo.Utc;
+        return Cache.GetOrAdd(timeZoneId.Trim(), static id => ResolveUncached(id));
+    }
+
+    private static TimeZoneInfo ResolveUncached(string timeZoneId)
     {
         if (TryFind(timeZoneId, out TimeZoneInfo? zone))
             return zone!;

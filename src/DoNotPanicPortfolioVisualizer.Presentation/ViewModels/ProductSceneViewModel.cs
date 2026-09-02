@@ -16,6 +16,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Core.Services;
 using DoNotPanicPortfolioVisualizer.Data.Interfaces;
 using DoNotPanicPortfolioVisualizer.Data.Providers;
 using DoNotPanicPortfolioVisualizer.Data.Runtime;
@@ -870,10 +871,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             try
             {
-                TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(market.TimeZoneId);
+                TimeZoneInfo zone = ExchangeTimeZoneResolver.Resolve(market.TimeZoneId);
                 market.TimeText = TimeZoneInfo.ConvertTime(now, zone).ToString("HH:mm");
             }
-            catch (TimeZoneNotFoundException)
+            catch (InvalidTimeZoneException)
             {
                 market.TimeText = "--:--";
             }
