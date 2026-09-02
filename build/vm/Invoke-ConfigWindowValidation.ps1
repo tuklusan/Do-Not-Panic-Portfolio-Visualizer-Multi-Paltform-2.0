@@ -426,7 +426,7 @@ function Invoke-LinuxValidation {
         '#!/usr/bin/env bash',
         'set -euo pipefail',
         'export DISPLAY=:0',
-        "XAUTHORITY_DISCOVERED=\$(ps -eo args | sed -n 's/.* -auth \\([^ ]*\\).* -displayfd.*/\\1/p' | head -n 1)",
+        "XAUTHORITY_DISCOVERED=\$(ps -eo args | awk '{ for (i = 1; i <= NF; i++) if (\$i == \"-auth\") { print \$(i + 1); exit } }')",
         "export XAUTHORITY=\${XAUTHORITY_DISCOVERED:-$xAuthorityLiteral}",
         'if [ ! -r "$XAUTHORITY" ]; then echo "XAUTHORITY_NOT_FOUND:$XAUTHORITY" >> step.log; exit 1; fi',
         'export XDG_RUNTIME_DIR=/run/user/1000',
