@@ -1660,7 +1660,7 @@
       "id": "CR-016",
       "phase": "Phase 7",
       "title": "Line-level upstream test parity audit",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-015"],
       "objective": "Manually scan every upstream test artifact and map each assertion, fixture, business rule, and test harness behavior to current 2.0 tests or create the required test CR.",
       "acceptance_criteria": ["All 62 upstream test artifacts are individually ledgered.", "Missing assertions and test environments are converted into actionable CRs.", "The current suite demonstrates the mapped upstream behaviors without toy product evidence."],
@@ -1671,7 +1671,26 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": ["tests/PortfolioSaver.Tests (62 artifacts)"],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["tests/PortfolioSaver.Tests (62 artifacts)"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Two successive fresh scans of the pinned 62-artifact upstream test project reconciled assertions, fixtures, environment isolation, and harness behavior with current 2.0 tests or explicit retired/platform follow-up dispositions."
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "automated_tests": "Passed; 291 Release tests, 0 failed, 0 skipped",
+        "test_artifact_scope": "Passed; all 62 upstream test artifacts individually enumerated",
+        "review": "CODE review PASS; zero blocking findings; snapshot 2fae3f2674d55c1ec97dad69af85e1c83ca9b38b:03e09d84ee92223337fb5a5421fa0abf4859ab993f319bc75f34bcdde5fd6223"
+      },
+      "closure_notes": [
+        "Closed after reconciling all 62 pinned upstream test artifacts with current 2.0 tests or explicit retired/platform dispositions, two successive zero-gap scans, and 291 passing Release tests.",
+        "Mandatory CODE review passed with zero blocking findings."
+      ]
     },
     {
       "id": "CR-017",
