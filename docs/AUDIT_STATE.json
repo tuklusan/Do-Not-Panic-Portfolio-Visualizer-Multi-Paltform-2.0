@@ -2018,7 +2018,23 @@
       "depends_on": ["CR-023"],
       "objective": "Prove idempotent legacy-root migration and full release-manifest validation behavior across the portable 2.0 lane.",
       "acceptance_criteria": ["DATA-03 and DATA-04 are mapped to code and focused tests with no data loss or integrity bypass."],
-      "validation_plan": ["Focused data/integrity tests", "Six-target publish", "Artifact review"]
+      "validation_plan": ["Focused data/integrity tests", "Six-target publish", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-024-DATA-MIGRATION-INTEGRITY-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Shared/Helpers/AppDataRootResolver.cs", "tests/PortfolioSaver.Tests/Services/AppDataRootResolverTests.cs", "src/PortfolioSaver.Shared/Integrity/ReleaseManifestValidator.cs", "tests/PortfolioSaver.Tests/Services/ReleaseManifestValidatorTests.cs", "build/generate-release-manifest.ps1"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Shared/Helpers/AppDataRootResolver.cs", "tests/PortfolioSaver.Tests/Services/AppDataRootResolverTests.cs", "src/PortfolioSaver.Shared/Integrity/ReleaseManifestValidator.cs", "tests/PortfolioSaver.Tests/Services/ReleaseManifestValidatorTests.cs", "build/generate-release-manifest.ps1", "src/DoNotPanicPortfolioVisualizer.Shared/Helpers/AppDataRootResolver.cs", "src/DoNotPanicPortfolioVisualizer.Shared/Integrity/ReleaseManifestValidator.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-025",
