@@ -2597,6 +2597,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["288 net10.0 tests passed, including symbol normalization, provider aliases, asset classification, invalid-symbol handling, numeric normalization, and market-session boundaries", "DeepSeek review harness self-test passed", "Clean committed inventory checkpoint was pushed before validation"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Core/Services/SymbolNormalizer.cs", "src/PortfolioSaver.Core/Services/ExchangeTimeZoneResolver.cs", "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "tests/PortfolioSaver.Tests/Services/SymbolNormalizerTests.cs", "tests/PortfolioSaver.Tests/Providers/YahooFinanceQuoteProviderTests.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
