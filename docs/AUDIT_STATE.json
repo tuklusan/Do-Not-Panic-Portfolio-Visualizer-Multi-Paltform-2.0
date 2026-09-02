@@ -4640,9 +4640,73 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
+    },
+    {
+      "id": "CR-066",
+      "phase": "Phase 7",
+      "title": "Build blocking 18-hosted-plus-4-lab real-product validation harness",
+      "status": "open",
+      "depends_on": [
+        "CR-065"
+      ],
+      "objective": "Replace publish-only platform coverage with a solid 18 GitHub-hosted runner plus four local lab machine harness that runs the real Avalonia product, scales from smoke to longer soaks, retrieves circular traces and screenshots, routes defects into JSON CRs, and repeats autonomously through verified closure.",
+      "acceptance_criteria": [
+        "All 18 configured hosted runner labels are probed and their availability is recorded without treating a missing optional label as a product pass.",
+        "Every available required hosted and local lane builds, tests, launches the real product, waits for settling, captures evidence, retrieves circular traces, and passes artifact review.",
+        "DeepSeek reviews both the changed source packet and the complete generated test-result/evidence packet; missing, empty, or FAIL reviews block acceptance.",
+        "Required lane failures block the workflow; only the explicit availability probe is non-blocking.",
+        "Progressive soak profiles, cleanup, disk budgets, process termination, unique artifact naming, and autonomous defect-to-CR iteration are verified on all four local machines."
+      ],
+      "validation_plan": [
+        "Manual upstream comparison against Ludo-Arena hosted, self-hosted, Xvfb, macOS shell-only, and proof-artifact patterns",
+        "Runner availability probe followed by blocking real-product matrix",
+        "Four-machine physical acceptance with circular trace and screenshot review",
+        "Progressive soak and autonomous defect-routing rehearsal",
+        "DeepSeek source/evidence review, license, syntax, upstream, build, test, and cleanup gates"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-066-18-PLUS-4-VALIDATION-HARNESS-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Invoke-DeepSeekReviewHarness.ps1",
+          "docs/TEST_MACHINE_ACCESS.md",
+          "docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md",
+          "docs/CR-066-18-PLUS-4-VALIDATION-HARNESS-INVENTORY.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml",
+          "Ludo-Arena/.github/workflows/runner-matrix-probe.yml",
+          "Ludo-Arena/README.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Invoke-DeepSeekReviewHarness.ps1",
+          "docs/TEST_MACHINE_ACCESS.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Current publish workflow publishes six RIDs but does not run the real application or review generated test evidence across the 18-hosted-plus-4-lab matrix."
+        ]
+      }
     }
   ],
-  "remaining_validation_gaps": [],
+  "remaining_validation_gaps": [
+    "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented."
+  ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
