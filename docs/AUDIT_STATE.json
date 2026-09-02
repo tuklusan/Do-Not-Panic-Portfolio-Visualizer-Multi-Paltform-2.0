@@ -126,7 +126,7 @@
     {
       "phase": "Phase 7",
       "title": "Configurable News Sources And AI Acceptance",
-      "status": "in_progress",
+      "status": "closed",
       "exit_criteria": [
         "Three default RSS sources and three bounded configuration slots are shipped",
         "Every non-empty configured source verifies and at least one is live-verified before save",
@@ -1538,7 +1538,7 @@
       "id": "CR-014",
       "phase": "Phase 7",
       "title": "Make RSS sources configurable and prove AI news generation",
-      "status": "in_progress",
+      "status": "closed",
       "depends_on": ["CR-013"],
       "objective": "Ship three default RSS sources, support up to three configured sources, require every non-empty source to verify and at least one to pass live verification, and thoroughly validate AI news generation with RSS fallback.",
       "acceptance_criteria": [
@@ -1573,7 +1573,37 @@
           "src/PortfolioSaver.Core/Models/AppSettings.cs"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs",
+          "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Core/Models/AppSettings.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "scan_notes": "Fresh line-by-line rescans reconciled the three-feed configuration contract, bounded per-source verification, legacy single-feed migration, independent source aggregation, AI failure fallback, and persisted AI settings with the current 2.0 implementation and tests."
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "review": "CODE review PASS; zero blocking findings; snapshot 5a9b596e8b60499b6931730305ebbfccafa155fe:2f64cf6131aa706286d40ae086002ba22ef034021a49459103eba3616dbe6625",
+        "automated_tests": "Passed; 291 tests, 0 failed, 0 skipped",
+        "six_rid_publish": "Passed; win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64",
+        "physical_acceptance": "Passed; real product scene exercised on Lubuntu, Windows 10, and Windows 11 with screenshots, cinematic traces, fullscreen/menu checks, and zero residual product processes",
+        "artifact_review": "Passed; expected screenshots, step logs, playback traces, and DONE markers inspected for all three local machines",
+        "cleanup": "Passed; remote validation processes and scheduled validation tasks removed",
+        "checkpoint": "5a9b596"
+      },
+      "closure_notes": [
+        "Closed after the current implementation passed the upstream closure gate, mandatory CODE review, 291-test Release-equivalent suite, six self-contained RID publishes, and real-product acceptance on all three local machines.",
+        "Win11 acceptance completed after bounded foreground-focus recovery was added to the validation harness; the run produced small, menu, wide, fullscreen, fullscreen-motion, and fullscreen-exit-menu artifacts plus DONE and cinematic playback evidence.",
+        "Generated publish and acceptance artifacts remain ignored runtime output; the source checkpoint is committed and pushed at 5a9b596."
+      ]
     },
     {
       "id": "CR-015",
