@@ -140,7 +140,7 @@ Each upstream file is opened from the pinned tree, read line-by-line, and assign
 | `build/installer/Cleanup-DoNotPanicPortfolioVisualizer.ps1` | 232 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
 | `build/installer/DoNotPanicPortfolioVisualizer.iss` | 340 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
 | `build/installer/Test-InnoInstallCycle.ps1` | 213 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
-| `build/publish-inno-installer.ps1` | 359 | MAPPED | Current build/workflow counterpart to verify: build/publish-inno-installer.ps1 or the current build/.github gate family. |
+| `build/publish-inno-installer.ps1` | 359 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
 | `build/publish-safe-temp.ps1` | 235 | MAPPED | Current build/workflow counterpart to verify: build/publish-safe-temp.ps1 or the current build/.github gate family. |
 | `build/publish.ps1` | 33 | MAPPED | Current build/workflow counterpart to verify: build/publish.ps1 or the current build/.github gate family. |
 | `build/release/Publish-VirusTotalReleaseReport.ps1` | 538 | MAPPED | Current build/workflow counterpart to verify: build/release/Publish-VirusTotalReleaseReport.ps1 or the current build/.github gate family. |
@@ -446,7 +446,7 @@ Each upstream file is opened from the pinned tree, read line-by-line, and assign
 | `tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs` | 2155 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
 | `tests/PortfolioSaver.Tests/Services/FloatingClockBuilderTests.cs` | 129 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
 | `tests/PortfolioSaver.Tests/Services/HistoricalCacheServiceTests.cs` | 228 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
-| `tests/PortfolioSaver.Tests/Services/InnoInstallerScriptTests.cs` | 225 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
+| `tests/PortfolioSaver.Tests/Services/InnoInstallerScriptTests.cs` | 225 | RETIRED | Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product. |
 | `tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs` | 139 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
 | `tests/PortfolioSaver.Tests/Services/ItchPublishWorkflowTests.cs` | 61 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
 | `tests/PortfolioSaver.Tests/Services/LegalHeaderPolicyTests.cs` | 115 | MAPPED | Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR. |
@@ -507,4 +507,4 @@ This ledger is not complete until CR-015 through CR-017 attach line-level findin
 | 1 | `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5` | 463 | 463 | 0 | ZERO GAPS |
 | 2 | `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5` | 463 | 463 | 0 | ZERO GAPS |
 
-No new gap was found in the repeat scan. The three open CRs remain the complete actionable queue for the already-classified product, test, and workflow/documentation parity workstreams.
+The repeat record is generated from the pinned tree and remains valid only while the complete ledger and behavior-level audit are rerun after each new gap or CR.

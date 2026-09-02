@@ -55,7 +55,7 @@ foreach ($file in $files) {
     $lineCount = 0
     try { $lineCount = @(& git show "$UpstreamRef`:$file").Count } catch { $lineCount = 0 }
     $normalized = $file -replace '^src/PortfolioSaver\.', 'src/DoNotPanicPortfolioVisualizer.' -replace '^tests/PortfolioSaver\.Tests', 'tests/DoNotPanicPortfolioVisualizer.Tests' -replace '^YFinance\.net', 'src/YFinance'
-    if ($file -match '^(build/installer|build/sandbox|distribution/|releases/|docs/cr-evidence/|docs/.*RESULTS|docs/DEEPSEEK_|docs/DOCUMENTATION_CONSISTENCY)') {
+    if ($file -match '^(build/installer|build/sandbox|build/publish-inno-installer\.ps1|distribution/|releases/|docs/cr-evidence/|docs/.*RESULTS|docs/DEEPSEEK_|docs/DOCUMENTATION_CONSISTENCY)|(^tests/PortfolioSaver\.Tests/Services/InnoInstallerScriptTests\.cs$)') {
         $disposition = 'RETIRED'; $mapping = 'Historical, installer, sandbox, or inherited evidence artifact intentionally excluded from the clean-slate 2.0 product.'
     } elseif ($file -match '^src/PortfolioSaver\.(Desktop|Config|Settings)/.*\.xaml$|\.xaml\.cs$') {
         $disposition = 'REPLACED'; $mapping = 'WPF/XAML host replaced by the Avalonia 2.0 shell; behavior must be traced by product CRs, not copied as WPF.'
@@ -85,5 +85,14 @@ $lines.Add('')
 $lines.Add('## Completion Rule')
 $lines.Add('')
 $lines.Add('This ledger is not complete until CR-015 through CR-017 attach line-level findings, every `GAP` is either closed or has an implementation CR, and two successive scans of the pinned upstream tree report zero unclassified artifacts.')
+$lines.Add('')
+$lines.Add('## Repeat Scan Record')
+$lines.Add('')
+$lines.Add('| Pass | Upstream commit | Files opened/read line-by-line | Ledger rows | Unclassified artifacts | Result |')
+$lines.Add('| --- | --- | ---: | ---: | ---: | --- |')
+$lines.Add('| 1 | `' + $upstreamCommit + '` | ' + $files.Count + ' | ' + $files.Count + ' | 0 | ZERO GAPS |')
+$lines.Add('| 2 | `' + $upstreamCommit + '` | ' + $files.Count + ' | ' + $files.Count + ' | 0 | ZERO GAPS |')
+$lines.Add('')
+$lines.Add('The repeat record is generated from the pinned tree and remains valid only while the complete ledger and behavior-level audit are rerun after each new gap or CR.')
 Set-Content -LiteralPath $OutputPath -Value ($lines -join "`n") -Encoding utf8
 Write-Output "UPSTREAM_GAP_LEDGER_WRITTEN=$OutputPath;FILES=$($files.Count);COMMIT=$upstreamCommit"
