@@ -141,7 +141,7 @@
       "id": "CR-001",
       "phase": "Phase 0",
       "title": "Capture authoritative upstream workflow inventory and acceptance baseline",
-      "status": "closed",
+      "status": "open",
       "depends_on": [],
       "objective": "Document every upstream user-visible workflow, configuration path, and runtime surface that DNPPV-2.0 must preserve.",
       "acceptance_criteria": [
@@ -187,6 +187,13 @@
         "Reviewed the upstream README, release baseline, manual UI QA suite, real production screenshots, and key shell/scene/settings source files.",
         "Captured the real production screen composition and user-visible workflow inventory.",
         "Recorded approved DNPPV-2.0 deltas so later parity work preserves functionality while honoring the Avalonia-only architecture reset."
+      ],
+      "revalidation_reason": "Reopened after CR-020 so the complete migration chain is re-baselined under mandatory forward and reverse upstream behavior gates.",
+      "revalidation_scope": [
+        "Rescan every upstream source, test, workflow, and documentation artifact relevant to the migration baseline.",
+        "Map every upstream behavior to the current Avalonia/.NET 10 implementation, test, workflow, or explicit approved exception.",
+        "Run the reverse scan from current 2.0 artifacts to identify upstream logic missing from the migration.",
+        "Require two successive zero-gap scans before re-closing CR-001."
       ]
     },
     {
