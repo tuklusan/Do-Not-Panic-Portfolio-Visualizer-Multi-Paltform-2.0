@@ -2894,7 +2894,23 @@
       "depends_on": ["CR-044"],
       "objective": "Prove menu-safe double-click handling, native fullscreen toggling, DPI-tolerant composition nudges, and Escape-based exit in Avalonia.",
       "acceptance_criteria": ["UI-08 passes normal, maximized, fullscreen, multi-monitor, menu, DPI, and Escape interaction cases."],
-      "validation_plan": ["Focused shell interaction tests", "Three-machine multi-monitor acceptance", "Screenshot artifact review"]
+      "validation_plan": ["Focused shell interaction tests", "Three-machine multi-monitor acceptance", "Screenshot artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-045-SHELL-FULLSCREEN-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml", "tests/PortfolioSaver.Tests/Services/WindowFullscreenBehaviorTests.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml", "tests/DoNotPanicPortfolioVisualizer.Tests/StartupOptionsTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellMenuContrastTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml", "tests/PortfolioSaver.Tests/Services/WindowFullscreenBehaviorTests.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml", "tests/DoNotPanicPortfolioVisualizer.Tests/StartupOptionsTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellMenuContrastTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-046",
