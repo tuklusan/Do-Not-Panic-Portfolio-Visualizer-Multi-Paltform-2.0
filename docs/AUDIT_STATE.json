@@ -1613,7 +1613,30 @@
       "depends_on": ["CR-014"],
       "objective": "Manually scan every upstream product source artifact line by line and map each user-visible behavior, business rule, and provider path to Avalonia 2.0 or record a specific gap.",
       "acceptance_criteria": ["Every upstream product source file has a line-level ledger entry and 2.0 mapping.", "Every genuine missing behavior has a follow-up implementation CR.", "Two successive upstream closure scans report zero unclassified product behaviors."],
-      "validation_plan": ["Manual line-by-line source review", "Upstream behavior gate", "Real product acceptance and regression tests"]
+      "validation_plan": ["Manual line-by-line source review", "Upstream behavior gate", "Real product acceptance and regression tests"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-015-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Settings/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs",
+          "src/PortfolioSaver.Core/Models/AppSettings.cs",
+          "src/PortfolioSaver.Core/Validation/SettingsValidator.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/NewsFeedValidationService.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Render/ViewModels/NetworkWaitingViewModel.cs",
+          "src/PortfolioSaver.Render/Services/RenderHeartbeatService.cs",
+          "src/PortfolioSaver.Presentation/Services/WeatherService.cs",
+          "src/PortfolioSaver.Data",
+          "src/PortfolioSaver.VmAgent",
+          "src/PortfolioSaver.Core/Services",
+          "src/PortfolioSaver.Presentation/Services"
+        ],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-016",
