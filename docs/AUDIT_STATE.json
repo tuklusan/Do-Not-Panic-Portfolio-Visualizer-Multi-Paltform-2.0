@@ -2540,7 +2540,23 @@
       "depends_on": ["CR-035"],
       "objective": "Prove publication authorization, advisory reporting, safe diagnostic-dump handling, and mandatory reviewer-gate integration for the 2.0 release workflow.",
       "acceptance_criteria": ["TEST-04 covers deny-by-default publication, safe reports, dump controls, and review-gate failure paths."],
-      "validation_plan": ["Workflow self-tests", "PowerShell/license gates", "Reviewer and artifact review"]
+      "validation_plan": ["Workflow self-tests", "PowerShell/license gates", "Reviewer and artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-036-RELEASE-DIAGNOSTIC-WORKFLOW-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["build/generate-release-manifest.ps1", "src/PortfolioSaver.Shared/Integrity/ReleaseManifestValidator.cs", "src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs", "build/validation/Analyze-VisualValidationArtifacts.ps1", "build/validation/Invoke-DeepSeekArtifactReview.ps1", "tests/PortfolioSaver.Tests/Services/ReleaseManifestValidatorTests.cs", "tests/PortfolioSaver.Tests/Services/TraceLogTests.cs", "tests/PortfolioSaver.Tests/Services/VirusTotalReleaseReportScriptTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["build/generate-release-manifest.ps1", "src/PortfolioSaver.Shared/Integrity/ReleaseManifestValidator.cs", "src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs", "build/validation/Analyze-VisualValidationArtifacts.ps1", "build/validation/Invoke-DeepSeekArtifactReview.ps1", "tests/PortfolioSaver.Tests/Services/ReleaseManifestValidatorTests.cs", "tests/PortfolioSaver.Tests/Services/TraceLogTests.cs", "src/DoNotPanicPortfolioVisualizer.Shared/Integrity/ReleaseManifestValidator.cs", "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/TraceLog.cs", "build/vm/Invoke-ProductSceneValidation.ps1", "build/Test-DeepSeekWorkflowGate.ps1", "tests/DoNotPanicPortfolioVisualizer.Tests/ReleaseManifestValidatorTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/TraceLogTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-037",
