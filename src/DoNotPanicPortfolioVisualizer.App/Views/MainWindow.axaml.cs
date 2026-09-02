@@ -21,6 +21,8 @@ namespace DoNotPanicPortfolioVisualizer.App.Views;
 
 public partial class MainWindow : Window
 {
+    private const double WindowChromeWidthAllowancePixels = 48d;
+    private const double WindowChromeHeightAllowancePixels = 96d;
     private bool _dataContextDisposed;
 
     public MainWindow()
@@ -39,8 +41,8 @@ public partial class MainWindow : Window
         // Screen work areas are physical pixels.  Keep the configuration dialog on the
         // owner's monitor and leave its desktop chrome unobscured at every DPI scale.
         double scale = Math.Max(1d, RenderScaling);
-        double availableWidth = Math.Max(1d, (screen.WorkingArea.Width - 24d) / scale);
-        double availableHeight = Math.Max(1d, (screen.WorkingArea.Height - 24d) / scale);
+        double availableWidth = Math.Max(1d, (screen.WorkingArea.Width - WindowChromeWidthAllowancePixels) / scale);
+        double availableHeight = Math.Max(1d, (screen.WorkingArea.Height - WindowChromeHeightAllowancePixels) / scale);
         MaxWidth = availableWidth;
         MaxHeight = availableHeight;
         MinWidth = Math.Min(MinWidth, availableWidth);

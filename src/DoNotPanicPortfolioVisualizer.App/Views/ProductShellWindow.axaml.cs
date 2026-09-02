@@ -23,6 +23,8 @@ public partial class ProductShellWindow : Window
 {
     private const double RestoredWindowWidth = 1180d;
     private const double RestoredWindowHeight = 720d;
+    private const double WindowChromeWidthAllowancePixels = 48d;
+    private const double WindowChromeHeightAllowancePixels = 96d;
     private const double UpstreamTickerTopOffset = 188d;
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
     private WindowDecorations _windowDecorationsBeforeFullScreen = WindowDecorations.Full;
@@ -134,8 +136,8 @@ public partial class ProductShellWindow : Window
             return;
 
         double scale = Math.Max(1d, RenderScaling);
-        double availableWidth = Math.Max(1d, (screen.WorkingArea.Width - 24d) / scale);
-        double availableHeight = Math.Max(1d, (screen.WorkingArea.Height - 24d) / scale);
+        double availableWidth = Math.Max(1d, (screen.WorkingArea.Width - WindowChromeWidthAllowancePixels) / scale);
+        double availableHeight = Math.Max(1d, (screen.WorkingArea.Height - WindowChromeHeightAllowancePixels) / scale);
         Size target = requestedSize ?? new Size(RestoredWindowWidth, RestoredWindowHeight);
 
         WindowState = WindowState.Normal;
