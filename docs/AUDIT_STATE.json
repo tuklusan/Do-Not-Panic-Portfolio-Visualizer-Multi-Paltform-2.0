@@ -4717,6 +4717,7 @@
         "The runner retrieves only the product circular trace pair and emits a redacted result manifest.",
         "The OpenRouter key can be supplied from a protected secret source to the child process without appearing in source, traces, screenshots, manifests, or output.",
         "Pass, failure, and interruption paths terminate the launched product process.",
+        "Opt-in soak capture produces a settled real-product screenshot after warmup and every 30 minutes thereafter, with an expected-count and SHA-256 evidence manifest.",
         "Upstream and reverse behavior gates, syntax, license, build, test, and artifact checks pass."
       ],
       "validation_plan": [
@@ -4816,12 +4817,12 @@
     {
       "id": "CR-069",
       "phase": "Phase 7",
-      "title": "Run and close the five progressive product soak profiles",
+      "title": "Run and close the six progressive product soak profiles",
       "status": "open",
       "depends_on": [
         "CR-068"
       ],
-      "objective": "Run 5-minute, 10-minute, 30-minute, 2-hour, and 4-hour real-product soaks in sequence, review traces and evidence, route defects to JSON CRs, and relaunch affected profiles until verified closure.",
+      "objective": "Run 5-minute, 10-minute, 30-minute, 1-hour, 2-hour, and 4-hour real-product soaks in sequence, review traces and evidence, route defects to JSON CRs, and relaunch affected profiles until verified closure.",
       "acceptance_criteria": [
         "All five durations run on every available required environment without overlapping runs.",
         "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, DeepSeek review, and cleanup proof.",
@@ -4845,7 +4846,7 @@
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",
-    "CR-069: five progressive soak profiles have not been executed and reviewed.",
+    "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated."
   ],
   "current_operational_recommendations": [

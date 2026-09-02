@@ -19,8 +19,9 @@ Run and review the real-product profiles in this order on the 18-plus-4 matrix:
 1. 5 minutes
 2. 10 minutes
 3. 30 minutes
-4. 2 hours
-5. 4 hours
+4. 1 hour
+5. 2 hours
+6. 4 hours
 
 The 4-hour profile must be completed twice as independent full cycles. Both
 cycles must cover all 18 hosted runners and all local machines available when
@@ -33,6 +34,12 @@ trace pair, screenshot/evidence manifest, and reviewed diagnosis. After a fix,
 the affected profile and every shorter profile are relaunched. The final
 profile closes only when no product process remains and the two complete
 four-hour cycles show zero new actionable defects.
+
+For every profile, hosted lanes capture a settled product screenshot after the
+30-second warmup and then every 30 minutes while the product remains running.
+The lane must produce the expected screenshot count and a SHA-256 manifest for
+each image. Completed artifacts are reviewed visually and by the evidence gate;
+the capture loop is opt-in and is disabled for ordinary product launches.
 
 At the start of each profile cycle, the harness rechecks all four local lab
 machines and runs on the currently reachable contract-compliant subset. The

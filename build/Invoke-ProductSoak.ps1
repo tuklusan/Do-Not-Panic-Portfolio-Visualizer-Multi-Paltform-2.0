@@ -29,6 +29,10 @@ param(
     [string]$ScreenshotPath,
 
     [Parameter()]
+    [ValidateRange(0, 240)]
+    [int]$ScreenshotIntervalMinutes = 0,
+
+    [Parameter()]
     [string]$LocalDataRoot,
 
     [Parameter()]
@@ -81,6 +85,7 @@ try {
     }
     if (-not [string]::IsNullOrWhiteSpace($ScreenshotPath)) {
         $startInfo.Environment['DNPPV_PRODUCT_CAPTURE_PATH'] = $ScreenshotPath
+        $startInfo.Environment['DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES'] = $ScreenshotIntervalMinutes.ToString([Globalization.CultureInfo]::InvariantCulture)
     }
 
     $process = [Diagnostics.Process]::new()
@@ -149,7 +154,14 @@ finally {
         screenshot = [ordered]@{
             requested = -not [string]::IsNullOrWhiteSpace($ScreenshotPath)
             path = $ScreenshotPath
-            present = -not [string]::IsNullOrWhiteSpace($ScreenshotPath) -and (Test-Path -LiteralPath $ScreenshotPath -PathType Leaf)
+            intervalMinutes = $ScreenshotIntervalMinutes
+            present = -not [string]::IsNullOrWhiteSpace($ScreenshotPath) -and (
+                if ($ScreenshotIntervalMinutes -gt 0) {
+                    @(Get-ChildItem -LiteralPath $ScreenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue).Count -gt 0
+                } else {
+                    Test-Path -LiteralPath $ScreenshotPath -PathType Leaf
+                }
+            )
         }
         samples = @($samples)
     }

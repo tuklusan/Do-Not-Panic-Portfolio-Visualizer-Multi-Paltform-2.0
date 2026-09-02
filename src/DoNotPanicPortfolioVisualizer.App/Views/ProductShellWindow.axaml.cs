@@ -36,6 +36,8 @@ public partial class ProductShellWindow : Window
     private MainWindow? _settingsWindow;
     private readonly BackgroundFrameLoader _backgroundFrameLoader = new();
     private readonly CancellationTokenSource _backgroundLoadCts = new();
+    private CancellationTokenSource? _captureCts;
+    private Task _captureTask = Task.CompletedTask;
     private Task _backgroundLoadA = Task.CompletedTask;
     private Task _backgroundLoadB = Task.CompletedTask;
     private int _backgroundGenerationA;
@@ -131,33 +133,57 @@ public partial class ProductShellWindow : Window
 
         string? capturePath = Environment.GetEnvironmentVariable("DNPPV_PRODUCT_CAPTURE_PATH");
         if (!string.IsNullOrWhiteSpace(capturePath))
-            _ = CaptureProductWindowAsync(capturePath);
+        {
+            int captureIntervalMinutes = ParseCaptureIntervalMinutes();
+            _captureCts = new CancellationTokenSource();
+            _captureTask = CaptureProductWindowAsync(capturePath, captureIntervalMinutes, _captureCts.Token);
+        }
     }
 
-    private async Task CaptureProductWindowAsync(string capturePath)
+    private static int ParseCaptureIntervalMinutes()
+    {
+        string? value = Environment.GetEnvironmentVariable("DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES");
+        return int.TryParse(value, out int interval) && interval > 0 ? interval : 0;
+    }
+
+    private async Task CaptureProductWindowAsync(string capturePath, int intervalMinutes, CancellationToken cancellationToken)
     {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(true);
-            if (!IsVisible || ClientSize.Width <= 0 || ClientSize.Height <= 0)
-                throw new InvalidOperationException("Product window is not visible at capture time.");
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(true);
+            do
+            {
+                if (!IsVisible || ClientSize.Width <= 0 || ClientSize.Height <= 0)
+                    throw new InvalidOperationException("Product window is not visible at capture time.");
 
-            string? directory = Path.GetDirectoryName(capturePath);
-            if (!string.IsNullOrWhiteSpace(directory))
-                Directory.CreateDirectory(directory);
+                string outputPath = intervalMinutes > 0
+                    ? Path.Combine(capturePath, $"product-scene-{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}.png")
+                    : capturePath;
+                string? directory = Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                    Directory.CreateDirectory(directory);
 
-            double scale = Math.Max(1d, RenderScaling);
-            PixelSize pixelSize = new(
-                (int)Math.Ceiling(ClientSize.Width * scale),
-                (int)Math.Ceiling(ClientSize.Height * scale));
-            using RenderTargetBitmap bitmap = new(pixelSize, new Vector(96d * scale, 96d * scale));
-            bitmap.Render(this);
-            bitmap.Save(capturePath, PngBitmapEncoderOptions.Default);
-            TraceLog.InfoState("ProductShell", "ProductWindowCapture", [
-                new("path", capturePath),
-                new("width", pixelSize.Width),
-                new("height", pixelSize.Height)
-            ]);
+                double scale = Math.Max(1d, RenderScaling);
+                PixelSize pixelSize = new(
+                    (int)Math.Ceiling(ClientSize.Width * scale),
+                    (int)Math.Ceiling(ClientSize.Height * scale));
+                using RenderTargetBitmap bitmap = new(pixelSize, new Vector(96d * scale, 96d * scale));
+                bitmap.Render(this);
+                bitmap.Save(outputPath, PngBitmapEncoderOptions.Default);
+                TraceLog.InfoState("ProductShell", "ProductWindowCapture", [
+                    new("path", outputPath),
+                    new("width", pixelSize.Width),
+                    new("height", pixelSize.Height)
+                ]);
+
+                if (intervalMinutes <= 0)
+                    break;
+                await Task.Delay(TimeSpan.FromMinutes(intervalMinutes), cancellationToken).ConfigureAwait(true);
+            }
+            while (!cancellationToken.IsCancellationRequested);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -328,6 +354,7 @@ public partial class ProductShellWindow : Window
         scene.RenderSurfaceRecoveryRequested -= OnRenderSurfaceRecoveryRequested;
         scene.PropertyChanged -= OnScenePropertyChanged;
         _backgroundLoadCts.Cancel();
+        _captureCts?.Cancel();
         try
         {
             await Task.WhenAll(_backgroundLoadA, _backgroundLoadB);
@@ -335,8 +362,16 @@ public partial class ProductShellWindow : Window
         catch (OperationCanceledException)
         {
         }
+        try
+        {
+            await _captureTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
         _backgroundFrameLoader.Dispose();
         _backgroundLoadCts.Dispose();
+        _captureCts?.Dispose();
         await scene.DisposeAsync();
         Close();
     }
