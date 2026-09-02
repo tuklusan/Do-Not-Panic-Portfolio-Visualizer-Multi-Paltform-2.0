@@ -1944,6 +1944,16 @@
       "objective": "Implement and prove portable structured weather snapshots with bounded concurrent fetches, stale per-city fallback, cancellation-safe refresh, and requested-city pruning.",
       "acceptance_criteria": ["DATA-12 passes fresh, stale, failed, offline, cancellation, concurrency, and city-removal cases."],
       "validation_plan": ["Focused weather/cache tests", "Three-machine production-scene acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-052",
+      "phase": "Phase 7",
+      "title": "Close structured background-image identity parity gaps",
+      "status": "open",
+      "depends_on": ["CR-051"],
+      "objective": "Implement and prove structured background image identity, stable display names, supported-format policy, and attribution-safe selection paths.",
+      "acceptance_criteria": ["VIS-07 passes bundled, custom-folder, nested-folder, unsupported-format, and attribution-selection cases."],
+      "validation_plan": ["Focused media tests", "Three-machine visual acceptance", "Artifact review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
