@@ -2376,7 +2376,23 @@
       "depends_on": ["CR-031"],
       "objective": "Prove staged background downloads, image validation, concurrent warmup serialization, cancellation, catalog rotation, and prepared rendering behavior.",
       "acceptance_criteria": ["DATA-06 passes cache integrity and rotation cases without partial-file promotion or dispatcher blocking."],
-      "validation_plan": ["Focused media/cache tests", "Three-machine production-scene acceptance", "Artifact review"]
+      "validation_plan": ["Focused media/cache tests", "Three-machine production-scene acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-032-BACKGROUND-ASSET-CACHE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Media/Services/ExchangePhotoCacheService.cs", "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs", "tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Media/Services/ExchangePhotoCacheService.cs", "src/PortfolioSaver.Media/Services/BackgroundPreloadService.cs", "tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Media/Services/BackgroundImageService.cs", "src/DoNotPanicPortfolioVisualizer.App/Services/BackgroundFrameLoader.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-033",
