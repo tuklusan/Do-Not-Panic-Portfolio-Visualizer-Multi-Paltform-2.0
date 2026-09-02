@@ -1763,9 +1763,9 @@
       "acceptance_criteria": ["UI-01 and UI-02 pass on all four local physical desktops and small/large viewport checks."],
       "validation_plan": ["Four-machine visual acceptance (Windows 10, Windows 11, Lubuntu/LXQt, and Intel macOS Big Sur)", "UI behavior tests", "Artifact review", "Mac acceptance is confined below ~/SOFTWARE_DEV/DNPPV_20/ and stays within the 1 GB project limit."],
       "current_validation": {
-        "status": "open_pending_mac_visual_artifact_review",
-        "evidence": ["283 deterministic tests passed after the configuration-window startup and selected-tab contrast fixes.", "Lubuntu, Windows 10, and Windows 11 physical configuration acceptance passed on the current published build.", "Windows 10 storage contract passed before deployment and during the run; D: free space was approximately 44.9 GiB and machine TEMP/TMP both resolved to D:\\TEMP.", "Windows 11 required and now has per-user .NET 10 base and Windows Desktop runtimes under its DNPPV2 test workspace.", "Mac CoreGraphics reported the real Avalonia configuration window at 1280x848 and the Mac workspace remained below 1 GiB."],
-        "unresolved_gaps": ["Mac SSH screen capture does not currently produce a reviewable window artifact; the full-desktop capture omits the window layer and window-ID capture lacks permission."]
+        "status": "open_pending_mac_endpoint_and_visual_artifact_review",
+        "evidence": ["283 deterministic tests passed after the configuration-window startup and selected-tab contrast fixes.", "Lubuntu, Windows 10, and Windows 11 physical configuration acceptance passed on the current published build.", "Windows 10 storage contract passed before deployment and during the run; D: free space was approximately 44.9 GiB and machine TEMP/TMP both resolved to D:\\TEMP.", "Windows 11 required and now has per-user .NET 10 base and Windows Desktop runtimes under its DNPPV2 test workspace.", "Mac CoreGraphics reported the real Avalonia configuration window at 1280x848 and the Mac workspace remained below 1 GiB.", "A fresh Mac SSH health check on 2026-09-02 did not return within the documented extended connection budget; no new acceptance evidence was claimed."],
+        "unresolved_gaps": ["Mac SSH endpoint is currently unresponsive to the extended health check, and the prior SSH screen-capture path did not produce a reviewable window artifact; the full-desktop capture omits the window layer and window-ID capture lacks permission."]
       },
       "upstream_behavior_inventory": {
         "status": "complete",
