@@ -1971,8 +1971,8 @@
       "title": "Close exact upstream ledger mapping gap",
       "status": "open",
       "depends_on": ["CR-053"],
-      "objective": "Ensure every active upstream source and test artifact has an exact, independently verifiable 2.0 counterpart path in the generated ledger, while installer artifacts remain explicitly retired.",
-      "acceptance_criteria": ["TEST-06 passes with no literal mapping placeholders, no unclassified active artifacts, and a preserved two-pass zero-gap record."],
+      "objective": "Ensure every active upstream source and test artifact has an exact, independently verifiable 2.0 counterpart mapping in the generated ledger. When normalized paths differ or do not exist, record the actual counterpart and line-level content relationship or an explicit architecture disposition; installer/Inno artifacts remain retired.",
+      "acceptance_criteria": ["TEST-06 passes with no literal mapping placeholders, no unmapped active counterpart paths, no unclassified active artifacts, and a preserved two-pass zero-gap record."],
       "validation_plan": ["Regenerate ledger from pinned upstream", "Two successive disk audits", "License and PowerShell gates"]
     }
   ],
