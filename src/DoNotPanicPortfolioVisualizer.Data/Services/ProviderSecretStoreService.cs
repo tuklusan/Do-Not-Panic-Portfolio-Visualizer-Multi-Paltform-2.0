@@ -21,6 +21,7 @@ namespace DoNotPanicPortfolioVisualizer.Data.Services;
 
 public sealed class ProviderSecretStoreService
 {
+    internal const string OpenRouterApiKeyEnvironmentVariable = "DNPPV_OPENROUTER_API_KEY";
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -52,6 +53,12 @@ public sealed class ProviderSecretStoreService
         {
             ProviderSecretsDto dto = LoadSecretsDto();
             ApplySecret(settings, dto.AiApiKey, static s => s.AiApiKey, static (s, v) => s.AiApiKey = v);
+            if (string.IsNullOrWhiteSpace(settings.AiApiKey))
+            {
+                string? processKey = Environment.GetEnvironmentVariable(OpenRouterApiKeyEnvironmentVariable);
+                if (!string.IsNullOrWhiteSpace(processKey))
+                    settings.AiApiKey = processKey.Trim();
+            }
         }
     }
 

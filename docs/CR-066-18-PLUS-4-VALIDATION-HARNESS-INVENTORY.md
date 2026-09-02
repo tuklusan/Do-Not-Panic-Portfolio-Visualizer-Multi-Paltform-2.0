@@ -29,6 +29,7 @@ patent, trademark, and governing-law provisions.
 | CI-11 | Enforce Windows 10 `D:\SW_DEV\DO-NOT-PANIC-2.0` and `D:\TEMP` hard gates and the Intel Mac one-GiB project-usage limit. |
 | CI-12 | Use unique run, machine, RID, and runner artifact names so evidence cannot collide or overwrite. |
 | CI-13 | Leave every machine clean after each run and terminate every application, server, display server, and helper process started by the harness. |
+| CI-14 | At the start of every soak cycle, probe all four local lab machines and use only currently reachable machines whose storage/display contracts pass. | Per-cycle availability manifest; unavailable is distinct from product failure |
 | TEST-01 | Verify that a successful run has a real-product screenshot, passing test result, circular trace retrieval, review result, and cleanup result. |
 
 ## Reference implementation findings

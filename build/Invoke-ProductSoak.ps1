@@ -1,0 +1,155 @@
+# ============================================================================
+# Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+# Proprietary rights reserved except as expressly licensed herein.
+#
+# DO NOT PANIC PORTFOLIO VISUALIZER
+# This file is governed by the SANYALnet Labs Non-Commercial License in the
+# root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+# for AI/ML model training are prohibited unless separately authorized.
+#
+# Attribution is required: "Based on original work by Supratim Sanyal of
+# SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+# patent, trademark, and governing-law provisions.
+# ============================================================================
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ExecutablePath,
+
+    [Parameter(Mandatory = $true)]
+    [ValidateRange(1, 240)]
+    [int]$DurationMinutes,
+
+    [Parameter(Mandatory = $true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ArtifactRoot,
+
+    [Parameter()]
+    [string]$LocalDataRoot,
+
+    [Parameter()]
+    [string]$OpenRouterApiKey = $env:DNPPV_OPENROUTER_API_KEY,
+
+    [Parameter()]
+    [string[]]$ArgumentList = @('--windowed=1280x800'),
+
+    [Parameter()]
+    [ValidateRange(1, 60)]
+    [int]$PollIntervalSeconds = 10
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$resolvedExecutable = (Resolve-Path -LiteralPath $ExecutablePath -ErrorAction Stop).Path
+$resolvedArtifactRoot = [IO.Path]::GetFullPath($ArtifactRoot)
+$resolvedDataRoot = if ([string]::IsNullOrWhiteSpace($LocalDataRoot)) {
+    Join-Path $resolvedArtifactRoot 'local-data'
+} else {
+    [IO.Path]::GetFullPath($LocalDataRoot)
+}
+$traceSource = Join-Path $resolvedDataRoot 'Trace'
+$traceDestination = Join-Path $resolvedArtifactRoot 'trace'
+$resultPath = Join-Path $resolvedArtifactRoot 'soak-result.json'
+$startedAt = [DateTimeOffset]::UtcNow
+$process = $null
+$outcome = 'Failed'
+$failure = $null
+$samples = [Collections.Generic.List[object]]::new()
+
+New-Item -ItemType Directory -Path $resolvedArtifactRoot, $resolvedDataRoot -Force | Out-Null
+
+try {
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $resolvedExecutable
+    $startInfo.WorkingDirectory = Split-Path -Parent $resolvedExecutable
+    $startInfo.UseShellExecute = $false
+    $startInfo.ArgumentList.Clear()
+    foreach ($argument in $ArgumentList) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+    $startInfo.Environment['DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT'] = $resolvedDataRoot
+    $startInfo.Environment['DNPPV_SOAK_DURATION_MINUTES'] = $DurationMinutes.ToString([Globalization.CultureInfo]::InvariantCulture)
+    if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+        # The key exists only in the child process environment and is never
+        # written to the result manifest, trace artifact, or command output.
+        $startInfo.Environment['DNPPV_OPENROUTER_API_KEY'] = $OpenRouterApiKey
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    if (-not $process.Start()) {
+        throw "Could not start product executable: $resolvedExecutable"
+    }
+
+    $deadline = [DateTimeOffset]::UtcNow.AddMinutes($DurationMinutes)
+    while ([DateTimeOffset]::UtcNow -lt $deadline) {
+        Start-Sleep -Seconds $PollIntervalSeconds
+        $process.Refresh()
+        $samples.Add([pscustomobject]@{
+            utc = [DateTimeOffset]::UtcNow.ToString('O')
+            pid = $process.Id
+            running = -not $process.HasExited
+        })
+        if ($process.HasExited) {
+            throw "Product exited before soak duration completed with code $($process.ExitCode)."
+        }
+    }
+    $outcome = 'Passed'
+}
+catch {
+    $failure = $_.Exception.Message
+}
+finally {
+    if ($null -ne $process) {
+        try {
+            if (-not $process.HasExited) {
+                [void]$process.CloseMainWindow()
+                if (-not $process.WaitForExit(10000)) {
+                    $process.Kill($true)
+                    [void]$process.WaitForExit(10000)
+                }
+            }
+        }
+        catch {
+            $outcome = 'Failed'
+            $failure = "Process cleanup failed: $($_.Exception.Message)"
+        }
+        finally {
+            $process.Dispose()
+        }
+    }
+
+    New-Item -ItemType Directory -Path $traceDestination -Force | Out-Null
+    foreach ($traceName in @('trace.circular.log', 'trace.circular.idx')) {
+        $source = Join-Path $traceSource $traceName
+        if (Test-Path -LiteralPath $source -PathType Leaf) {
+            Copy-Item -LiteralPath $source -Destination (Join-Path $traceDestination $traceName) -Force
+        }
+    }
+
+    $result = [ordered]@{
+        schema = 'dnppv2-product-soak/v1'
+        outcome = $outcome
+        executable = $resolvedExecutable
+        durationMinutes = $DurationMinutes
+        startedUtc = $startedAt.ToString('O')
+        completedUtc = [DateTimeOffset]::UtcNow.ToString('O')
+        host = [Environment]::MachineName
+        processCleanedUp = $true
+        openRouterKeyProvided = -not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)
+        traceFiles = @(Get-ChildItem -LiteralPath $traceDestination -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name)
+        samples = @($samples)
+    }
+    if ($null -ne $failure) {
+        $result.failure = $failure
+    }
+    $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $resultPath -Encoding utf8
+}
+
+if ($outcome -ne 'Passed') {
+    throw "Product soak failed. See $resultPath"
+}
+
+Write-Output "PRODUCT_SOAK=Passed;MINUTES=$DurationMinutes;ARTIFACT_ROOT=$resolvedArtifactRoot"

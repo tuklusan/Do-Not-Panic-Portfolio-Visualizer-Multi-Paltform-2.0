@@ -4655,7 +4655,7 @@
         "Every available required hosted and local lane builds, tests, launches the real product, waits for settling, captures evidence, retrieves circular traces, and passes artifact review.",
         "DeepSeek reviews both the changed source packet and the complete generated test-result/evidence packet; missing, empty, or FAIL reviews block acceptance.",
         "Required lane failures block the workflow; only the explicit availability probe is non-blocking.",
-        "Progressive soak profiles, cleanup, disk budgets, process termination, unique artifact naming, and autonomous defect-to-CR iteration are verified on all four local machines."
+        "At the start of every soak cycle, all four local machines are re-probed; currently reachable contract-compliant machines run, unavailable machines are recorded distinctly, and local non-availability is non-blocking when all 18 hosted lanes prove execution. Progressive profiles enforce cleanup, disk budgets, process termination, unique artifact naming, and autonomous defect-to-CR iteration."
       ],
       "validation_plan": [
         "Manual upstream comparison against Ludo-Arena hosted, self-hosted, Xvfb, macOS shell-only, and proof-artifact patterns",
@@ -4702,10 +4702,111 @@
           "Current publish workflow publishes six RIDs but does not run the real application or review generated test evidence across the 18-hosted-plus-4-lab matrix."
         ]
       }
+    },
+    {
+      "id": "CR-067",
+      "phase": "Phase 7",
+      "title": "Implement isolated real-product progressive soak runner",
+      "status": "open",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Provide a reusable runner for real DNPPV product soaks with isolated data, bounded circular trace retrieval, machine-readable evidence, secure OpenRouter injection for AI-news validation, and guaranteed process cleanup.",
+      "acceptance_criteria": [
+        "The runner launches the real published executable for a selected duration and fails on early exit.",
+        "The runner retrieves only the product circular trace pair and emits a redacted result manifest.",
+        "The OpenRouter key can be supplied from a protected secret source to the child process without appearing in source, traces, screenshots, manifests, or output.",
+        "Pass, failure, and interruption paths terminate the launched product process.",
+        "Upstream and reverse behavior gates, syntax, license, build, test, and artifact checks pass."
+      ],
+      "validation_plan": [
+        "Manual line-by-line review against docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md and Ludo-Arena execution patterns",
+        "Controlled short-process rehearsal plus full Release build and test suite",
+        "Secret redaction and process-cleanup inspection"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml",
+          "build/vm/Invoke-ProductSceneValidation.ps1",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Implementation and controlled rehearsal are pending."
+        ]
+      }
+    },
+    {
+      "id": "CR-068",
+      "phase": "Phase 7",
+      "title": "Execute real-product soaks across 18 hosted and four local environments",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-067"
+      ],
+      "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, DeepSeek review, and cleanup lanes across all available hosted runner labels and four local machines.",
+      "acceptance_criteria": [
+        "Every available required lane runs the real product and records runner identity, architecture, display strategy, test result, screenshots, traces, review receipt, and cleanup result.",
+        "Every soak cycle begins by probing all four local lab machines; only reachable contract-compliant machines are used, and unavailable machines are recorded rather than treated as passes.",
+        "Missing optional runner labels are reported by probe and never treated as product passes.",
+        "Windows 10 and Intel Mac storage gates are enforced before launch.",
+        "DeepSeek reviews source and complete generated test evidence before lane acceptance."
+      ],
+      "validation_plan": [
+        "Hosted matrix probe and blocking real-product matrix",
+        "Four-machine physical acceptance with documented storage and display contracts",
+        "Unique artifact and cleanup verification"
+      ],
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Hosted and local real-product execution matrix is not implemented."
+        ]
+      }
+    },
+    {
+      "id": "CR-069",
+      "phase": "Phase 7",
+      "title": "Run and close the five progressive product soak profiles",
+      "status": "open",
+      "depends_on": [
+        "CR-068"
+      ],
+      "objective": "Run 5-minute, 10-minute, 30-minute, 2-hour, and 4-hour real-product soaks in sequence, review traces and evidence, route defects to JSON CRs, and relaunch affected profiles until verified closure.",
+      "acceptance_criteria": [
+        "All five durations run on every available required environment without overlapping runs.",
+        "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, DeepSeek review, and cleanup proof.",
+        "Every actionable failure becomes a JSON CR and is retested at the affected duration plus all shorter durations.",
+        "The final 4-hour profile closes only after successive evidence reviews show zero unresolved defects."
+      ],
+      "validation_plan": [
+        "Progressive duration execution in order",
+        "Trace/artifact analysis and defect-to-CR loop",
+        "Repeated acceptance and cleanup scans"
+      ],
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "No progressive soak evidence exists yet."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
-    "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented."
+    "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
+    "CR-067: isolated real-product progressive soak runner is not yet verified.",
+    "CR-068: hosted and local real-product execution matrix is not implemented.",
+    "CR-069: five progressive soak profiles have not been executed and reviewed."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
