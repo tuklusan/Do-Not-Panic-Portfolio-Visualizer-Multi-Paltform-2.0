@@ -27,6 +27,10 @@ if [[ ! -d "$root" || ! -w "$root" ]]; then
   echo "MAC_STORAGE_HARD_STOP=MissingOrInaccessible:$root" >&2
   exit 2
 fi
+if [[ -f "$publish/DoNotPanicPortfolioVisualizer.App" ]]; then
+  # ZIP extraction on macOS may drop the executable bit from self-contained hosts.
+  chmod +x "$publish/DoNotPanicPortfolioVisualizer.App"
+fi
 if [[ ! -x "$publish/DoNotPanicPortfolioVisualizer.App" ]]; then
   echo "MAC_ACCEPTANCE_HARD_STOP=MissingExecutable:$publish" >&2
   exit 2

@@ -108,6 +108,11 @@ changes; do not commit live addresses or credentials.
   driver for the Mac configuration lane. It hard-stops when the required root
   is missing, outside the user's home directory, inaccessible, or above `1 GiB`
   (1,048,576 KiB), checks the budget throughout the slow startup, and captures
+  the real product window with CoreGraphics. The logged-in desktop user must
+  grant Screen Recording permission to the SSH/terminal host used to run the
+  driver; window enumeration without pixel-capture permission is insufficient
+  and does not satisfy visual acceptance. The driver restores the executable
+  bit after ZIP extraction because macOS artifact extraction may drop it.
   the actual Avalonia window through CoreGraphics. The lower-level
   `build/vm/Test-MacStorageContract.sh` remains available for setup probes.
 
