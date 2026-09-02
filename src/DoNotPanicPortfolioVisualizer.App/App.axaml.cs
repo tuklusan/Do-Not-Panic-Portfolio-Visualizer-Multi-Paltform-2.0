@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using DoNotPanicPortfolioVisualizer.App.Views;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.Core;
@@ -107,7 +108,7 @@ public partial class App : Application
         {
             AppSettings settings = new SettingsFileService().Load();
             AiNewsAccessValidationResult result = await new AiNewsAccessValidationService()
-                .ValidateAsync(settings)
+                .ValidateAsync(settings, NetworkInterface.GetIsNetworkAvailable())
                 .ConfigureAwait(false);
             if (!result.IsValid && !result.ValidationSkipped)
                 Trace.WriteLine($"AI summarized news startup probe failed; normal refresh retry remains enabled. reason={result.Message}");

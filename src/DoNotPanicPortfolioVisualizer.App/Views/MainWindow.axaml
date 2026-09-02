@@ -32,6 +32,22 @@ patent, trademark, and governing-law provisions.
         Background="#14191F"
         Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0 Configuration">
 
+    <Window.Styles>
+        <Style Selector="TabItem">
+            <Setter Property="Foreground" Value="#EAF3FA" />
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Foreground" Value="#F4FAFF" />
+            <Setter Property="CaretBrush" Value="#F4FAFF" />
+        </Style>
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Foreground" Value="#8FA8BE" />
+        </Style>
+    </Window.Styles>
+
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
