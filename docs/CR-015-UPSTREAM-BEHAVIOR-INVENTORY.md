@@ -46,3 +46,14 @@ The auditor must open every upstream product source file in the pinned tree,
 read it line by line, and expand this inventory with line-level entries. Two
 successive fresh scans must report zero unclassified behaviors. Genuine gaps
 must be added as separate actionable CRs before CR-015 can close.
+
+## Audit Record
+
+The pinned upstream tree contains 192 `src/PortfolioSaver*` product artifacts.
+The complete source-derived ledger contains 463 individually counted upstream
+artifact rows, including those product artifacts and their supporting project,
+workflow, test, and documentation files. Two successive fresh ledger scans
+reported `UPSTREAM_GAP_SCAN=ZERO_GAPS`, with 463 files, 463 ledger rows, 463
+line-by-line reads, and zero unresolved gaps. Existing intentional replacements
+and implementation gaps are represented by the dependent CRs in the tracker;
+installer and WPF-only artifacts remain retired from the 2.0 target.

@@ -1609,7 +1609,7 @@
       "id": "CR-015",
       "phase": "Phase 7",
       "title": "Line-level upstream product behavior parity audit",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-014"],
       "objective": "Manually scan every upstream product source artifact line by line and map each user-visible behavior, business rule, and provider path to Avalonia 2.0 or record a specific gap.",
       "acceptance_criteria": ["Every upstream product source file has a line-level ledger entry and 2.0 mapping.", "Every genuine missing behavior has a follow-up implementation CR.", "Two successive upstream closure scans report zero unclassified product behaviors."],
@@ -1636,7 +1636,25 @@
           "src/PortfolioSaver.Presentation/Services"
         ],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver* (192 product artifacts); complete pinned ledger (463 artifacts)"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Two successive fresh source-derived ledger scans read 463 upstream artifacts line by line and found zero unresolved gaps; intentional platform retirements and implementation work remain explicitly assigned to dependent CRs."
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "tracker_and_ledger": "Passed; 192 upstream product artifacts reconciled within 463 complete ledger rows",
+        "review": "CODE review PASS; zero blocking findings; snapshot 86aaaad5df697075c463323256bcee52bfbec772:3516f5d871607f7fd9f23ba6530773424d5d3faeca8eb329732c60e08aac09bc"
+      },
+      "closure_notes": [
+        "Closed after reconciling the 192 upstream product artifacts within the complete 463-row pinned ledger, with two successive zero-gap scans and no unresolved behaviors outside the explicitly queued dependent CRs.",
+        "Mandatory CODE review passed with zero blocking findings."
+      ]
     },
     {
       "id": "CR-016",
