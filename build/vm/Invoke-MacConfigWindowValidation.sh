@@ -17,7 +17,13 @@ set -euo pipefail
 root="${1:?required project root}"
 publish="$root/publish-cr019"
 artifact="${2:?required artifact root}"
+soak_minutes="${3:-0}"
 max_kib=1048576
+
+if [[ ! "$soak_minutes" =~ ^[0-9]+$ || "$soak_minutes" -gt 240 ]]; then
+  echo "MAC_ACCEPTANCE_HARD_STOP=InvalidSoakDuration:$soak_minutes" >&2
+  exit 2
+fi
 
 case "$root" in
   "$HOME"/*) ;;
@@ -50,11 +56,18 @@ check_budget
 rm -f "$artifact/mac-config-window.png" "$artifact/mac-window-info.txt"
 export DOTNET_ROOT="$root/dotnet"
 export DOTNET_ROOT_X64="$root/dotnet"
-export DNPPV_CONFIGURATION_VALIDATION_MODE=1
 export DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT="$root/local-data-cr019"
-export DNPPV_CONFIG_CAPTURE_PATH="$artifact/mac-config-window.png"
 rm -rf "$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT"
 mkdir -p "$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT"
+
+if [[ "$soak_minutes" -gt 0 ]]; then
+  mkdir -p "$artifact/screenshots"
+  export DNPPV_PRODUCT_CAPTURE_PATH="$artifact/screenshots"
+  export DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES=30
+else
+  export DNPPV_CONFIGURATION_VALIDATION_MODE=1
+  export DNPPV_CONFIG_CAPTURE_PATH="$artifact/mac-config-window.png"
+fi
 
 cd "$publish"
 ./DoNotPanicPortfolioVisualizer.App >/dev/null 2>&1 &
@@ -70,6 +83,20 @@ for _ in $(seq 1 18); do
   sleep 5
   check_budget
 done
+
+if [[ "$soak_minutes" -gt 0 ]]; then
+  printf 'MAC_SOAK_STARTED;MINUTES=%s\n' "$soak_minutes" > "$artifact/mac-soak.log"
+  for ((elapsed=0; elapsed<soak_minutes; elapsed++)); do
+    sleep 60
+    if (( (elapsed + 1) % 30 == 0 )); then
+      check_budget
+    fi
+  done
+  printf 'MAC_SOAK_COMPLETED\n' >> "$artifact/mac-soak.log"
+  check_budget
+  printf 'MAC_PRODUCT_SOAK=Passed;MINUTES=%s;ARTIFACT_ROOT=%s\n' "$soak_minutes" "$artifact"
+  exit 0
+fi
 
 swift_source="$root/mac-window-capture.swift"
 if [[ ! -s "$artifact/mac-config-window.png" ]]; then
