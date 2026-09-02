@@ -2663,7 +2663,23 @@
       "depends_on": ["CR-038"],
       "objective": "Match upstream bounded network probing, NTP correction, cached availability, and clock/status refresh behavior on every supported platform. The NTP slice must implement the upstream three-host sequence, 1.5-second DNS timeout, 4-second per-host timeout, cancellation propagation, explicit success/source/UTC result, local-clock fallback, and timeout/failure diagnostics.",
       "acceptance_criteria": ["LOGIC-06 passes online, offline, timeout, recovery, and clock-boundary tests without blocking the scene."],
-      "validation_plan": ["Focused time/network tests", "Three-machine degraded acceptance", "Six-target publish"]
+      "validation_plan": ["Focused time/network tests", "Three-machine degraded acceptance", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-039-NETWORK-TIME-AVAILABILITY-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Shared/Services/InternetProbeService.cs", "src/PortfolioSaver.Presentation/Services/NtpTimeService.cs", "src/PortfolioSaver.Presentation/Services/NetworkAvailabilityService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Shared/Services/InternetProbeService.cs", "src/PortfolioSaver.Presentation/Services/NtpTimeService.cs", "src/PortfolioSaver.Presentation/Services/NetworkAvailabilityService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Shared/Services/InternetProbeService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/NtpTimeService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/InternetProbeServiceTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-040",
