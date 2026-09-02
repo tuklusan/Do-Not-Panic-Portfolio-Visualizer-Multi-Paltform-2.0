@@ -188,6 +188,9 @@ function Invoke-RemotePowerShell {
             "$User@$HostName",
             'powershell',
             '-NoProfile',
+            '-NonInteractive',
+            '-OutputFormat',
+            'Text',
             '-EncodedCommand',
             $encoded
         )

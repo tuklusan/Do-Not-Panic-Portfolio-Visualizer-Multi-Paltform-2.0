@@ -15,6 +15,7 @@
 build/deepseek-review/
 build/publish/
 build/vm-artifacts/
+artifacts/
 build/vm/test-secrets.json
 build/vm/remote-test-machines.local.txt
 .vs/
