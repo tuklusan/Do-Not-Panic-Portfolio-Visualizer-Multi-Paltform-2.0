@@ -32,5 +32,5 @@ LIFE-01 or LIFE-02 behavior gaps.
 
 ## Exit Criteria
 
-Require full lifecycle tests, reviewer self-test, three-machine process cleanup,
+Require full lifecycle tests, reviewer self-test, four-machine process cleanup,
 and fresh forward/reverse closure scans.

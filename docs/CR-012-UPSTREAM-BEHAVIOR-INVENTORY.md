@@ -29,9 +29,9 @@ Upstream baseline: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 
 | ID | Upstream source and behavior | DNPPV-2.0 mapping and required evidence |
 | --- | --- | --- |
-| PB-01 | `README.md` and `docs/RELEASE_1_0_BASELINE.md` describe a desktop product that must run as a packaged release on its supported operating systems. | Produce self-contained Avalonia/.NET 10 bundles for every supported RID and verify the expected executable/manifest is present. |
+| PB-01 | The upstream `README.md` and upstream `docs/RELEASE_1_0_BASELINE.md` describe a desktop product that must run as a packaged release on its supported operating systems. | Produce self-contained Avalonia/.NET 10 bundles for every supported RID and verify the expected executable/manifest is present. |
 | PB-02 | `src/PortfolioSaver.Desktop/PortfolioSaver.Desktop.csproj` and the upstream release layout define the desktop runtime boundary. | Keep the active solution Avalonia-only, publish the app host and owned YFinance sidecar together, and do not introduce WPF or an installer. |
-| PB-03 | `docs/MANUAL_UI_QA_SUITE.md` requires the real visualizer scene, window controls, fullscreen behavior, data lanes, and cleanup to be exercised on physical machines. | Run the maintained real-product acceptance harness on Lubuntu, Windows 10, and Windows 11, with screenshots, traces, and process-cleanup evidence. |
+| PB-03 | The upstream manual UI suite requires the real visualizer scene, window controls, fullscreen behavior, data lanes, and cleanup to be exercised on physical machines. | Run the maintained real-product acceptance harness on Lubuntu/LXQt, Windows 10, Windows 11, and Intel macOS Big Sur, with screenshots, traces, and process-cleanup evidence. |
 | PB-04 | `src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs` owns startup/shutdown of runtime dependencies and the product scene. | Verify the physical runs use the pushed product bundle, settle before capture, and leave no product or sidecar process behind. |
 | PB-05 | The migrated release must cover the complete target architecture set rather than silently validating only the local x64 machines. | Hosted publish jobs must pass for `win-x64`, `win-arm64`, `linux-x64`, `linux-arm64`, `osx-x64`, and `osx-arm64`, with one uploaded artifact per RID. |
 
@@ -45,4 +45,4 @@ Before product or workflow changes, run:
 
 Closure requires two successive fresh upstream scans, mandatory CODE and
 TEST_ARTIFACT review, six-target publish success, physical acceptance on all
-three local machines, artifact inspection, and explicit process cleanup.
+four local machines, artifact inspection, and explicit process cleanup.

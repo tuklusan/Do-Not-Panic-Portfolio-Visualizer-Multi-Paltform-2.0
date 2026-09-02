@@ -215,7 +215,8 @@ Each cinematic CR requires all of the following:
 2. mandatory code review from a clean staged snapshot;
 3. a clean pushed checkpoint before validation;
 4. successful self-contained publishes for all six target RIDs;
-5. visible runs on Lubuntu, Windows 10, and Windows 11;
+5. visible runs on Lubuntu/LXQt, Windows 10, Windows 11, and Intel macOS Big
+   Sur;
 6. at least two timestamped captures or a short capture sequence proving actual
    ticker/card displacement, not merely their presence;
 7. a controlled quote-change fixture proving a rise travels upward, a fall
@@ -228,7 +229,8 @@ Each cinematic CR requires all of the following:
 
 CR-010 and its cinematic component CRs are closed. The current acceptance
 record is in `docs/AUDIT_STATE.json`: real-product physical evidence exists for
-Lubuntu, Windows 10, and Windows 11, and the six-target publish workflow is
+Lubuntu/LXQt, Windows 10, Windows 11, and Intel macOS Big Sur, and the
+six-target publish workflow is
 green. The fixed-grid graph experiments and static ticker lanes remain rejected
 as closure evidence; only the current real-scene artifacts satisfy this
 contract.

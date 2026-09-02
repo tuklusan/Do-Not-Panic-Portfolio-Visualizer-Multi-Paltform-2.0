@@ -140,6 +140,20 @@ machines remain physical acceptance lanes, not GitHub-hosted runners.
 These are the retained environment details for the fresh DNPPV-2.0 migration
 repository.
 
+## Generated Artifact Cleanup
+
+The checked-in `build/Cleanup-LocalProjectArtifacts.ps1` script is the bounded
+cleanup authority for local development and hosted runner workspaces. It
+removes only project-owned `dnppv2-*` temporary directories, known generated
+artifact roots, and `bin`/`obj` directories below the repository. The matching
+`.github/workflows/cleanup-generated-artifacts.yml` workflow is manual
+(`workflow_dispatch`) only; it is not an automatic or scheduled trigger.
+
+Remote physical-machine cleanup remains governed by each machine's root and
+storage contract above. It must stop product processes before removing only
+generated publish, test, evidence, local-data, and temporary outputs, while
+preserving source and installed test dependencies.
+
 ## Product-Scene Acceptance
 
 ### Diagnostic artifact contract

@@ -49,7 +49,8 @@ Before product-code changes, run:
 ```
 
 Implementation must add deterministic fault-injection tests, real-product
-degraded/recovery acceptance on Lubuntu, Windows 10, and Windows 11, six-RID
+degraded/recovery acceptance on Lubuntu/LXQt, Windows 10, Windows 11, and Intel
+macOS Big Sur, six-RID
 publish evidence, mandatory CODE and TEST_ARTIFACT review, process cleanup, and
 a fresh closure scan with two successive zero-gap results.
 
@@ -61,7 +62,7 @@ select or render a fixture screen. The normal news-refresh path emits the
 bounded `NEWS_SOURCE;STATE=UNAVAILABLE` trace and the scene remains usable.
 
 On 2026-09-01, the real production scene passed the controlled degraded run on
-all three local machines:
+all four local machines:
 
 - Lubuntu: `build/vm-artifacts/cr011/linux-degraded`
 - Windows 10: `build/vm-artifacts/cr011/win10-degraded`

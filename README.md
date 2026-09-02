@@ -59,6 +59,10 @@ were removed before the new migration repo was created.
 - the local migration issue tracker starts empty and is maintained in JSON
 - nontrivial generated PowerShell commands run through
   `build/Invoke-CheckedPowerShell.ps1`
+- generated local build, test, release, and acceptance outputs can be removed
+  with the bounded `build/Cleanup-LocalProjectArtifacts.ps1` script; the
+  GitHub cleanup workflow is on-demand only at
+  `.github/workflows/cleanup-generated-artifacts.yml`
 - the Avalonia migration design document is the architecture source of truth
 
 ## License

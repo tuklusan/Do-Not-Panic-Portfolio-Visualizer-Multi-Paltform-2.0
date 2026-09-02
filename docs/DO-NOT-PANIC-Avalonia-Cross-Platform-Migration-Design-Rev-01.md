@@ -85,7 +85,8 @@ The required validation and release matrix is:
 - `osx-x64` via GitHub-hosted `macos-15-intel`
 - `osx-arm64` via GitHub-hosted `macos-15`
 
-Physical-machine proof is mandatory for the three SSH-accessed test machines.
+Physical-machine proof is mandatory for the four SSH-accessed test machines:
+Windows 10, Windows 11, Lubuntu/LXQt, and Intel macOS Big Sur.
 GitHub-hosted runners provide the remaining multi-platform publish and smoke
 coverage.
 
@@ -180,7 +181,8 @@ Publish and validate the actual product on the full platform matrix.
 Exit criteria:
 
 - the product publishes for every required RID;
-- physical-machine validations pass on Windows 10, Windows 11, and Lubuntu;
+- physical-machine validations pass on Windows 10, Windows 11, Lubuntu/LXQt,
+  and Intel macOS Big Sur;
 - GitHub-runner publish/smoke coverage passes for macOS x64/arm64, Linux x64,
   Linux arm64, and Windows arm64;
 - evidence is sufficient to claim real product parity rather than scaffold
@@ -197,6 +199,25 @@ Exit criteria:
 - documentation matches the implemented architecture and workflow;
 - the issue tracker reflects a reconciled state for the completed migration
   baseline.
+
+## Phase 7 - Configurable News Sources And AI Acceptance
+
+Complete the post-baseline configurable-news and AI acceptance work while
+preserving the production cinematic scene and its cross-platform contracts.
+
+Exit criteria:
+
+- three approved RSS sources ship as bounded defaults and up to three sources
+  can be configured;
+- every non-empty configured source passes verification before settings save,
+  and at least one verified source is required;
+- AI news generation, prompt safety, timeout/cancellation behavior, and RSS
+  fallback are tested;
+- persistent news/weather/background caches, shared HTTP lifecycle, runtime
+  budgets, clocks, degraded overlays, and shell behavior retain their mapped
+  upstream parity;
+- all CRs in the phase are closed with upstream closure scans, reviewed
+  evidence, and committed checkpoints.
 
 ## 7. CR Execution Rule
 
@@ -233,8 +254,7 @@ The migration program does not:
 
 ## 9. Current Boundary
 
-The Phase 0 through Phase 6 migration baseline is complete and recorded in
-`docs/AUDIT_STATE.json`. Phase 7 begins the post-baseline configurable-news and
-AI-acceptance increment. Any further implementation must begin with a newly
+The Phase 0 through Phase 7 migration baseline is complete and recorded in
+`docs/AUDIT_STATE.json`. Any further implementation must begin with a newly
 scoped CR, a fresh upstream inventory, and the same pre-development and closure
 gates.

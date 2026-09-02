@@ -21,7 +21,13 @@ below are derived from the pinned upstream source, test, workflow, and
 documentation scans. A filename difference is not a gap; each item names an
 observable behavior, UI rule, business rule, or test-depth obligation.
 
-## Confirmed Gap Workstreams
+## Closed Gap Workstreams
+
+Every workstream in this document was routed to a change request and is now
+closed. The status prose in the tables describes the gap at discovery time;
+the authoritative current status is the closed CR entry in
+`docs/AUDIT_STATE.json` and the corresponding closure inventory. No row below
+is an open ticket.
 
 | Item | Upstream line-level evidence | 2.0 status | CR |
 | --- | --- | --- | --- |

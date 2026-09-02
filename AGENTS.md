@@ -76,6 +76,15 @@ The preserved review-gate entry points are:
 - `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`
 - `build/Invoke-CheckedPowerShell.ps1`
 
+## Generated Artifact Cleanup
+
+Use `build/Cleanup-LocalProjectArtifacts.ps1` for disposable local outputs.
+It removes only the project-owned `dnppv2-*` temp directories, known generated
+roots, and `bin`/`obj` directories below this repository. The corresponding
+GitHub workflow, `.github/workflows/cleanup-generated-artifacts.yml`, is
+`workflow_dispatch` only and has read-only repository permissions; it must not
+be converted into an automatic cleanup trigger.
+
 ## Test Machines
 
 Current machine access details are recorded only in

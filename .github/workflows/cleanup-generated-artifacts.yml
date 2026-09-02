@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+# Proprietary rights reserved except as expressly licensed herein.
+# DO NOT PANIC PORTFOLIO VISUALIZER
+# This file is governed by the SANYALnet Labs Non-Commercial License.
+
+name: Cleanup generated artifacts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove disposable local outputs
+        shell: pwsh
+        run: ./build/Cleanup-LocalProjectArtifacts.ps1

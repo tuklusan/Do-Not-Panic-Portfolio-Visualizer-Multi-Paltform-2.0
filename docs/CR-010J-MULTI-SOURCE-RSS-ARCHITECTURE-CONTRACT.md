@@ -91,7 +91,7 @@ The implementation must add deterministic tests for at least:
   refresh, or source availability changes.
 
 Physical acceptance must run the normal product without visual fixtures on the
-three local desktop machines, capture the rendered multi-source result and
+four local desktop machines, capture the rendered multi-source result and
 degraded result, inspect capped traces, and confirm process cleanup. It also
 requires the full six-RID publish matrix, mandatory reviewer and TEST_ARTIFACT
 review gates, a pushed checkpoint before each physical run, and a fresh

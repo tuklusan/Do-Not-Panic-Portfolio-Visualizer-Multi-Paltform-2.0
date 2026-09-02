@@ -167,17 +167,17 @@ Keep the root `AGENTS.md` concise. Put the detailed gate contract in a separate 
 ```markdown
 ## Independent review gate
 
-Before implementing a task, read `docs/REVIEW-GATE.md` and the active task/CR specification.
+Before implementing a task, read this document and the active task/CR specification.
 
 For code changes:
 1. Complete the implementation and inexpensive pre-review checks permitted by this project.
-2. Freeze the exact candidate snapshot required by `docs/REVIEW-GATE.md`.
+2. Freeze the exact candidate snapshot required by this document.
 3. Obtain a CODE PASS before the project-defined protected test/deploy stage.
 4. Treat only harness-confirmed BLOCKER/HIGH findings as gate blockers.
 5. Fix confirmed findings in a batch, freeze a new candidate, and perform a complete fresh review.
 6. Do not hold an open-ended conversational debate with the reviewer.
 
-Documentation and test-artifact reviews follow `docs/REVIEW-GATE.md`.
+Documentation and test-artifact reviews follow this document.
 Never expose reviewer API secrets.
 ```
 
@@ -188,7 +188,7 @@ At the start of a task, use a short wrapper rather than pasting reviewer convers
 ```text
 Implement the active task completely.
 
-Before editing, read the applicable AGENTS.md, docs/REVIEW-GATE.md, and the active task/CR specification.
+Before editing, read the applicable AGENTS.md, this document, and the active task/CR specification.
 Follow the project's independent review-gate workflow exactly.
 Do not bypass the gate, do not debate raw reviewer suspicions conversationally, and do not treat an unverified reviewer candidate as a blocker.
 When implementation is complete, freeze the required candidate snapshot, run the review harness, fix all confirmed BLOCKER/HIGH findings as a batch, and repeat complete review until PASS.
@@ -202,7 +202,7 @@ When implementation is complete, freeze the required candidate snapshot, run the
 project/
 |-- AGENTS.md
 |-- docs/
-|   `-- REVIEW-GATE.md
+|   `-- FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md
 |-- changes/
 |   `-- TASK-0001.json
 |-- tools/
@@ -256,7 +256,7 @@ Example `changes/TASK-0001.json`:
     "changes/TASK-0001.json",
     "docs/trace-format.md",
     "docs/architecture.md",
-    "docs/REVIEW-GATE.md#universal-safety-baseline"
+    "docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md#universal-safety-baseline"
   ],
   "review_base": "<git commit at task start>",
   "risk_level": "normal",
@@ -313,7 +313,7 @@ A gate candidate may propose only `BLOCKER` or `HIGH`. Medium/low/style/cleanup 
 
 #### Universal safety baseline
 
-Do not require every serious software invariant to be repeated in each task specification. Put a universal baseline in the tracked `docs/REVIEW-GATE.md` and make it an authority source for every task. At minimum, unless a project explicitly narrows it, the current change must not introduce or newly expose:
+Do not require every serious software invariant to be repeated in each task specification. Put a universal baseline in this tracked document and make it an authority source for every task. At minimum, unless a project explicitly narrows it, the current change must not introduce or newly expose:
 
 - a crash or language-level undefined behavior on a supported/reachable path;
 - memory/resource corruption or data corruption;
@@ -1804,7 +1804,7 @@ Return JSON matching this shape:
       "candidate_id":"CODE-A-001",
       "proposed_severity":"HIGH",
       "category":"correctness",
-      "requirement_source":"docs/REVIEW-GATE.md",
+      "requirement_source":"docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md",
       "requirement_quote":"exact short quote",
       "scope_link":"why this applies to the current task now",
       "location":"src/example.c:123",
@@ -1927,7 +1927,7 @@ Use this sequence for every new project.
 
 1. Decide the protected stage: remote tests, integration tests, deployment, release, or another explicit boundary.
 2. Create the task/change-request schema.
-3. Create `docs/REVIEW-GATE.md` from this standard, trimming project-irrelevant material but preserving the proof model.
+3. Use this tracked document as the project review-gate standard, preserving the proof model.
 4. Add the concise `AGENTS.md` rule.
 5. Configure private review-artifact storage.
 6. Define/approve the external-review data policy and redaction rules.
@@ -1974,7 +1974,7 @@ Use this sequence for every new project.
 ### Ready-to-paste fresh-project installation prompt
 
 ```text
-Install the project's independent DeepSeek review gate according to docs/REVIEW-GATE.md.
+Install the project's independent DeepSeek review gate according to this document.
 
 First inspect the repository and existing workflow. Do not overwrite an existing gate blindly.
 Create/confirm the task-scope schema, private review-artifact area, concise AGENTS.md rule, committed-snapshot policy, external-review data policy, normal review harness, independent bootstrap reviewer, regression tests, precision fixtures, and protected-stage PASS receipt integration.
@@ -1993,7 +1993,7 @@ Do not expose the reviewer API key. Do not send source/artifacts outside the pro
 For every normal code task:
 
 ```text
-1. Read AGENTS.md, REVIEW-GATE.md, and task spec.
+1. Read AGENTS.md, this review-gate document, and the task spec.
 2. Implement completely.
 3. Run inexpensive pre-review checks permitted by project policy.
 4. Commit immutable candidate.

@@ -39,5 +39,6 @@ CR-010C. It was manually rescanned on 2026-08-29 against upstream commit
 
 CR-010C cannot close until the complete inventory above is mapped to the
 Avalonia implementation, the mandatory closure rescan is clean, and settled
-physical captures on the local Linux, Windows 10, and Windows 11 machines show
+physical captures on the four local Linux, Windows 10, Windows 11, and Intel
+macOS machines show
 four thinner, vertically centered ticker lanes in the real product.
