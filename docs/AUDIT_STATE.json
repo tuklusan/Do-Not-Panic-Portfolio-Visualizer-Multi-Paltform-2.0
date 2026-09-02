@@ -1978,7 +1978,23 @@
       "depends_on": ["CR-022"],
       "objective": "Match upstream harness logging, screenshots, multi-monitor acceptance, checkpoint gates, reviewer gates, and cleanup evidence.",
       "acceptance_criteria": ["TEST-01 and TEST-02 are directly tested and the full migration queue can run without bypasses."],
-      "validation_plan": ["Harness self-tests", "Mandatory reviewer and checkpoint gates", "Physical artifact review"]
+      "validation_plan": ["Harness self-tests", "Mandatory reviewer and checkpoint gates", "Physical artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-023-HARNESS-EVIDENCE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["build/validation/Invoke-AutonomousVisualValidation.ps1", "build/validation/Invoke-DeepSeekArtifactReview.ps1", "build/validation/Test-ValidationScripts.ps1", "build/vm/Run-VmUxValidation.ps1", "build/DeepSeekWorkflowCommon.ps1", "build/Test-DeepSeekWorkflowGate.ps1", "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["build/validation", "build/vm", "build/DeepSeekWorkflowCommon.ps1", "build/Test-DeepSeekWorkflowGate.ps1", "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-024",
