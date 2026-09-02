@@ -2730,7 +2730,23 @@
       "depends_on": ["CR-040"],
       "objective": "Provide a maintained cross-platform test agent and harness contract for remote launch, failure injection, cleanup, screenshots, traces, and safe diagnostics.",
       "acceptance_criteria": ["TEST-05 self-tests pass and the agent exercises the real product on all available local platforms without residual processes."],
-      "validation_plan": ["Harness self-tests", "Three-machine physical acceptance", "Artifact and cleanup review"]
+      "validation_plan": ["Harness self-tests", "Three-machine physical acceptance", "Artifact and cleanup review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-041-PHYSICAL-TEST-AGENT-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["build/vm/VM_OPERATIONS_RUNBOOK.md", "build/vm/VmSshCommon.ps1", "build/vm/Push-VmWorkspace.ps1", "build/vm/Pull-VmResults.ps1", "build/vm/Run-VmUxValidation.ps1", "build/validation/Invoke-AutonomousVisualValidation.ps1", "build/validation/Analyze-VisualValidationArtifacts.ps1", "build/vm/Invoke-ConfigWindowValidation.ps1", "build/vm/Invoke-ProductSceneValidation.ps1", "build/vm/Invoke-MacConfigWindowValidation.sh", "docs/DEGRADED_MODE_VALIDATION_HARNESS.md", "docs/TEST_MACHINE_ACCESS.md"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["build/vm/Invoke-ConfigWindowValidation.ps1", "build/vm/Invoke-ProductSceneValidation.ps1", "build/vm/Invoke-MacConfigWindowValidation.sh", "build/Assert-ValidationCheckpoint.ps1", "build/Cleanup-LocalProjectArtifacts.ps1", "docs/CR-023-HARNESS-EVIDENCE-INVENTORY.md", "docs/TEST_MACHINE_ACCESS.md"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-042",
