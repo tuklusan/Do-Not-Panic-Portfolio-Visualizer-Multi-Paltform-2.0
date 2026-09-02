@@ -102,7 +102,7 @@ function Invoke-NativeCommand {
         }
 
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-            try { $process.Kill($true) } catch { }
+            Stop-NativeProcessTree -ProcessId $process.Id
             throw "Native command timed out after ${TimeoutSeconds}s: $FilePath $($ArgumentList -join ' ')"
         }
 
@@ -119,6 +119,17 @@ function Invoke-NativeCommand {
     if ($AllowedExitCodes -notcontains $exitCode) {
         throw "Native command failed with exit code ${exitCode}: $FilePath $($ArgumentList -join ' ')"
     }
+}
+
+function Stop-NativeProcessTree {
+    param([Parameter(Mandatory = $true)][int]$ProcessId)
+
+    $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue)
+    foreach ($child in $children) {
+        Stop-NativeProcessTree -ProcessId ([int]$child.ProcessId)
+    }
+
+    Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
 }
 
 function Convert-ToBashSingleQuotedLiteral {
