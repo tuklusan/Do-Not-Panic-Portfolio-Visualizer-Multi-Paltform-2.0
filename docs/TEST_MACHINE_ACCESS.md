@@ -24,7 +24,7 @@ Exact live credentials are intentionally not committed. Operators may keep a
 local ignored endpoint inventory such as `build/vm/remote-test-machines.local.txt`,
 and passwords remain in the operator password manager.
 
-The three physical endpoints were refreshed and SSH-verified on 2026-08-24.
+The four physical endpoints were refreshed and SSH-verified on 2026-08-24.
 Update only the ignored local endpoint inventory when DHCP or network topology
 changes; do not commit live addresses or credentials.
 
