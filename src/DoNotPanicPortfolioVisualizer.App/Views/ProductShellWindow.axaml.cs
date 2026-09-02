@@ -85,6 +85,8 @@ public partial class ProductShellWindow : Window
         PixelRect bounds = screen.Bounds;
         WindowState = WindowState.Normal;
         WindowDecorations = WindowDecorations.None;
+        MaxWidth = double.PositiveInfinity;
+        MaxHeight = double.PositiveInfinity;
         Position = new PixelPoint(bounds.X, bounds.Y);
         Width = bounds.Width / scale;
         Height = bounds.Height / scale;
