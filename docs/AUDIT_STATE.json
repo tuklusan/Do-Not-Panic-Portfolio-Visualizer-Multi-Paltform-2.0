@@ -2156,7 +2156,23 @@
       "depends_on": ["CR-026"],
       "objective": "Prove the real About/help/attribution surfaces and screenshot provenance/dimension/framebuffer evidence workflow.",
       "acceptance_criteria": ["UI-03 and TEST-03 pass on all local machines with reviewed production artifacts."],
-      "validation_plan": ["Visual and accessibility acceptance", "Harness tests", "Artifact review"]
+      "validation_plan": ["Visual and accessibility acceptance", "Harness tests", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-027-HELP-ACCESSIBILITY-CAPTURE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml", "src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml.cs", "src/PortfolioSaver.Shared/Licensing/ProjectLicenseService.cs", "tests/PortfolioSaver.Tests/Services/ProjectLicenseServiceTests.cs", "build/validation/Analyze-VisualValidationArtifacts.ps1"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml", "src/PortfolioSaver.Desktop/Windows/AboutWindow.xaml.cs", "src/PortfolioSaver.Shared/Licensing/ProjectLicenseService.cs", "tests/PortfolioSaver.Tests/Services/ProjectLicenseServiceTests.cs", "build/validation/Analyze-VisualValidationArtifacts.ps1", "src/DoNotPanicPortfolioVisualizer.App/Views/AboutWindow.axaml", "src/DoNotPanicPortfolioVisualizer.Shared/Licensing/ProjectLicenseService.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-028",
