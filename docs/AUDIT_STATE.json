@@ -2746,6 +2746,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["Linux LXQt real-product physical validation passed after the enforced 30-second settling period", "Retrieved real-product screenshots, step log, geometry, and circular trace artifacts were present", "Remote validation cleanup completed with no local product process residue", "Fresh win-x64 and linux-x64 self-contained publish outputs completed", "Migration, license, reviewer, and pre-push gates passed"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["build/vm/VM_OPERATIONS_RUNBOOK.md", "build/vm/VmSshCommon.ps1", "build/vm/Push-VmWorkspace.ps1", "build/vm/Pull-VmResults.ps1", "build/vm/Run-VmUxValidation.ps1", "build/validation/Invoke-AutonomousVisualValidation.ps1", "build/validation/Analyze-VisualValidationArtifacts.ps1", "build/vm/Invoke-ConfigWindowValidation.ps1", "build/vm/Invoke-ProductSceneValidation.ps1", "build/vm/Invoke-MacConfigWindowValidation.sh"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
