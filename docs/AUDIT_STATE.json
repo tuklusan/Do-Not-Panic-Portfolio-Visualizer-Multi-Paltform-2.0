@@ -2581,7 +2581,23 @@
       "depends_on": ["CR-036"],
       "objective": "Prove symbol canonicalization, asset-class inference, validation disablement, and market-session classification across the portable provider pipeline.",
       "acceptance_criteria": ["LOGIC-04 passes the supported ticker, alias, invalid-symbol, and session-boundary matrix."],
-      "validation_plan": ["Focused provider/business-rule tests", "Six-target publish", "Degraded-state regression"]
+      "validation_plan": ["Focused provider/business-rule tests", "Six-target publish", "Degraded-state regression"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-037-SYMBOL-MARKET-CLASSIFICATION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Core/Services/SymbolNormalizer.cs", "src/PortfolioSaver.Core/Services/ExchangeTimeZoneResolver.cs", "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "tests/PortfolioSaver.Tests/Services/SymbolNormalizerTests.cs", "tests/PortfolioSaver.Tests/Providers/YahooFinanceQuoteProviderTests.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Core/Services/SymbolNormalizer.cs", "src/PortfolioSaver.Core/Services/ExchangeTimeZoneResolver.cs", "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "tests/PortfolioSaver.Tests/Services/SymbolNormalizerTests.cs", "tests/PortfolioSaver.Tests/Providers/YahooFinanceQuoteProviderTests.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/YFinanceSymbolMapper.cs", "src/DoNotPanicPortfolioVisualizer.Data/Providers/YahooFinanceQuoteProvider.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/YahooSymbolValidationService.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/SymbolNormalizer.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/ExchangeTimeZoneResolver.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/UpstreamCoreServiceParityTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceProviderPipelineTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-038",
