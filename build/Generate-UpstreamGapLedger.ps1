@@ -62,11 +62,11 @@ foreach ($file in $files) {
     } elseif ($file -match '^build/|^\.github/') {
         $disposition = 'MAPPED'; $mapping = 'Current build/workflow counterpart to verify: ' + $normalized + ' or the current build/.github gate family.'
     } elseif ($file -match '^tests/') {
-        $disposition = 'MAPPED'; $mapping = "Current test counterpart to verify: `$normalized`; missing cases are tracked by the test-parity CR."
+        $disposition = 'MAPPED'; $mapping = "Current test counterpart to verify: $normalized; missing cases are tracked by the test-parity CR."
     } elseif ($file -match '^docs/') {
         $disposition = 'MAPPED'; $mapping = 'Current migration documentation or explicit retired disposition; content parity reviewed in the documentation CR.'
     } elseif ($file -match '^src/|^YFinance\.') {
-        $disposition = 'MAPPED'; $mapping = "Portable 2.0 counterpart expected at `$normalized`; line-level behavior reviewed under the product-parity CR."
+        $disposition = 'MAPPED'; $mapping = "Portable 2.0 counterpart expected at $normalized; line-level behavior reviewed under the product-parity CR."
     } else {
         $disposition = 'MAPPED'; $mapping = 'Root/build metadata counterpart reviewed against the clean-slate 2.0 repository.'
     }

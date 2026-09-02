@@ -88,6 +88,7 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | DATA-12 | `WorldWeatherService.GetWeatherAsync`, `WeatherSnapshot`, `WorldWeatherServiceTests` | Structured weather snapshot persistence, bounded parallel fetches, stale per-city fallback, cancellation-safe refresh, and removal of unrequested cities need explicit 2.0 data-contract coverage. | CR-051 |
 | VIS-07 | `BackgroundImageInfo`, `ImageFileHelper.IsSupported`, `BackgroundImageService.GetImages` | Background selection needs a structured image identity/display-name contract, exact supported-format policy, and attribution-safe path handling rather than returning raw paths alone. | CR-052 |
 | LOGIC-08 | `VisualizerSceneControl_ResolveTimeZone_CachesLookupResultsForSchedulerTicks`, `TimeZoneLookupCache`, `ClockCityViewModel` | Cross-platform exchange-clock updates need a bounded timezone lookup cache and explicit invalid-ID fallback behavior instead of resolving timezone IDs afresh on every tick. | CR-053 |
+| TEST-06 | `UPSTREAM-2.0-GAP-LEDGER.md` generated mappings for active `src/` and `tests/` artifacts | The ledger previously emitted the literal `$normalized` placeholder instead of the calculated 2.0 counterpart path, so active artifact mappings were not independently verifiable. The generator must emit exact paths and retain the two-pass record. | CR-054 |
 
 ## Test-Class Disposition Cross-Check
 

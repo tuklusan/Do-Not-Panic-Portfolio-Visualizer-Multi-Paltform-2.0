@@ -1964,6 +1964,16 @@
       "objective": "Implement and prove cached cross-platform timezone resolution for exchange-clock scheduler ticks, including invalid-ID fallback and bounded lookup behavior.",
       "acceptance_criteria": ["LOGIC-08 passes repeated-tick, IANA, Windows-ID, invalid-ID, and fallback-clock tests without repeated uncached lookups."],
       "validation_plan": ["Focused timezone tests", "Three-machine clock acceptance", "Six-target publish"]
+    },
+    {
+      "id": "CR-054",
+      "phase": "Phase 7",
+      "title": "Close exact upstream ledger mapping gap",
+      "status": "open",
+      "depends_on": ["CR-053"],
+      "objective": "Ensure every active upstream source and test artifact has an exact, independently verifiable 2.0 counterpart path in the generated ledger, while installer artifacts remain explicitly retired.",
+      "acceptance_criteria": ["TEST-06 passes with no literal mapping placeholders, no unclassified active artifacts, and a preserved two-pass zero-gap record."],
+      "validation_plan": ["Regenerate ledger from pinned upstream", "Two successive disk audits", "License and PowerShell gates"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
