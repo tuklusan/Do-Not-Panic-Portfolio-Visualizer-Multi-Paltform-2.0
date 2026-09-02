@@ -25,6 +25,11 @@ public partial class ProductShellWindow : Window
     private const double RestoredWindowHeight = 720d;
     private const double UpstreamTickerTopOffset = 188d;
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
+    private SystemDecorations _systemDecorationsBeforeFullScreen = SystemDecorations.Full;
+    private PixelPoint _windowPositionBeforeFullScreen;
+    private double _windowWidthBeforeFullScreen;
+    private double _windowHeightBeforeFullScreen;
+    private bool _isFullScreen;
     private MainWindow? _settingsWindow;
     private readonly BackgroundFrameLoader _backgroundFrameLoader = new();
     private readonly CancellationTokenSource _backgroundLoadCts = new();
@@ -41,7 +46,7 @@ public partial class ProductShellWindow : Window
         InitializeComponent();
     }
 
-    public bool IsFullScreen => WindowState == WindowState.FullScreen;
+    public bool IsFullScreen => _isFullScreen;
 
     public Size? WindowedStartupSize { get; set; }
 
@@ -62,8 +67,33 @@ public partial class ProductShellWindow : Window
             return;
 
         _windowStateBeforeFullScreen = WindowState;
+        _systemDecorationsBeforeFullScreen = SystemDecorations;
+        _windowPositionBeforeFullScreen = Position;
+        _windowWidthBeforeFullScreen = Width;
+        _windowHeightBeforeFullScreen = Height;
         MainMenu.IsVisible = false;
-        WindowState = WindowState.FullScreen;
+        _isFullScreen = true;
+
+        Screen? screen = Screens.ScreenFromWindow(this);
+        if (screen is null)
+        {
+            WindowState = WindowState.FullScreen;
+            return;
+        }
+
+        double scale = Math.Max(1d, RenderScaling);
+        PixelRect bounds = screen.Bounds;
+        WindowState = WindowState.Normal;
+        SystemDecorations = SystemDecorations.None;
+        Position = new PixelPoint(bounds.X, bounds.Y);
+        Width = bounds.Width / scale;
+        Height = bounds.Height / scale;
+        TraceLog.InfoState("ProductShell", "FullScreenBoundsApplied", [
+            new("monitor", bounds),
+            new("scale", scale),
+            new("width", Width),
+            new("height", Height)
+        ]);
     }
 
     public void ExitFullScreen()
@@ -71,8 +101,13 @@ public partial class ProductShellWindow : Window
         if (!IsFullScreen)
             return;
 
-        WindowState = _windowStateBeforeFullScreen;
+        _isFullScreen = false;
         MainMenu.IsVisible = true;
+        SystemDecorations = _systemDecorationsBeforeFullScreen;
+        Position = _windowPositionBeforeFullScreen;
+        Width = _windowWidthBeforeFullScreen;
+        Height = _windowHeightBeforeFullScreen;
+        WindowState = _windowStateBeforeFullScreen;
     }
 
     private async void OnWindowOpened(object? sender, EventArgs e)
