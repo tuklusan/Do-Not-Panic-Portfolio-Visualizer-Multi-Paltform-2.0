@@ -39,3 +39,14 @@ cancel/discard paths. No WPF or installer behavior is in scope.
 
 Two successive fresh line-by-line scans of the cited upstream configuration
 sources must report zero unmapped behaviors before closure.
+
+## Current Acceptance State
+
+The deterministic suite and physical configuration runs on Lubuntu, Windows 10,
+and Windows 11 pass on the current build. The Windows 10 storage contract also
+passes before deployment and during execution. On the Intel Mac, CoreGraphics
+confirms the real Avalonia configuration window at `1280x848` and the workspace
+stays below `1 GiB`, but the SSH capture path does not yet yield a reviewable
+window artifact: full-desktop capture omits the window layer and window-ID
+capture lacks permission. CR-019 remains open until that Mac visual artifact is
+reviewed; this is not waived by the compositor or operator observation.
