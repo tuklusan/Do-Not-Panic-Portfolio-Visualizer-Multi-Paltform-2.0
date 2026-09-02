@@ -1735,7 +1735,14 @@
       "depends_on": ["CR-017"],
       "objective": "Match upstream AI access validation, timeout/rate-limit behavior, endpoint rules, and prompt-safety test depth.",
       "acceptance_criteria": ["AI-01 and AI-02 have 2.0 implementation and deterministic tests.", "No provider failure or prompt-injection-like headline bypasses the safe fallback contract."],
-      "validation_plan": ["Focused AI tests", "Reviewer gate", "Physical summarized-news acceptance"]
+      "validation_plan": ["Focused AI tests", "Reviewer gate", "Physical summarized-news acceptance"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-018-AI-ACCESS-PROMPT-SAFETY-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["upstream AI access, news, settings, and presentation sources (8 cited files)"],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-019",
