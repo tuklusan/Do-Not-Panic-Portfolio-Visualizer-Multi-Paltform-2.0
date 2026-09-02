@@ -42,3 +42,10 @@ All 109 pinned artifacts must be individually ledgered after line-by-line
 review. Two successive fresh scans must report zero unclassified active
 workflow/document behaviors. Missing active automation or documentation must be
 added as actionable CRs; installer/WPF/history-only material remains retired.
+
+## Audit Record
+
+The pinned upstream scan enumerated 109 workflow, build, test-script, and
+documentation artifacts. Two successive fresh scans reconciled active gate,
+publish, validation, licensing, and documentation behavior with the current
+2.0 workflow; installer and WPF-only artifacts were classified as retired.

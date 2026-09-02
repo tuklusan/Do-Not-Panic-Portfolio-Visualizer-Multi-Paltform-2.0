@@ -1696,7 +1696,7 @@
       "id": "CR-017",
       "phase": "Phase 7",
       "title": "Line-level upstream workflow and documentation parity audit",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-016"],
       "objective": "Manually scan every upstream workflow, build/test script, and documentation artifact and map it to the current public migration workflow or record intentional retirement and missing automation.",
       "acceptance_criteria": ["All upstream workflow, build, test-script, and documentation artifacts are individually ledgered.", "Intentional WPF, installer, and historical removals are explicitly justified.", "Every missing active workflow or document has an implementation CR and the final ledger has zero unclassified entries."],
@@ -1707,7 +1707,25 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": ["upstream workflow/build/test/documentation set (109 artifacts)"],
         "zero_known_gaps": true
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["upstream workflow/build/test/documentation set (109 artifacts)"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "notes": "Two successive fresh scans reconciled active workflow, build, validation, licensing, publishing, and documentation behavior; WPF, installer, and history-only artifacts are explicitly retired."
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "ledger": "Passed; 109 upstream workflow/build/test/documentation artifacts reconciled",
+        "review": "CODE review PASS; zero blocking findings; snapshot fc9a88222f4b4ad1ecdb763847113ff8b2596795:224139ff8e6d26f122cfe7d60ee02ea8920ec95913abe66b52e2794d48aaaf43"
+      },
+      "closure_notes": [
+        "Closed after reconciling the 109-artifact upstream workflow, build, test-script, and documentation set with current 2.0 governance and explicit retirements.",
+        "Mandatory CODE review passed with zero blocking findings."
+      ]
     },
     {
       "id": "CR-018",
