@@ -2910,6 +2910,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["Focused shell/fullscreen suite passed: 49 tests", "Complete Release suite passed: 288 tests", "Migration, license, reviewer, and pre-push gates passed", "Avalonia fullscreen, monitor bounds, menu, Escape, F11, DPI-tolerant geometry, and composition recovery are covered"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml", "tests/PortfolioSaver.Tests/Services/WindowFullscreenBehaviorTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
