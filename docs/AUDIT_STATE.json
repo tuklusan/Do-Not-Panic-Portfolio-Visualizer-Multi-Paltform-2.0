@@ -2984,7 +2984,7 @@
       "id": "CR-047",
       "phase": "Phase 7",
       "title": "Close news playback sequence and viewport recovery parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-046"],
       "objective": "Match upstream headline-count preservation, closing-quote sequencing, teleprinter playback phases, debounce, viewport readiness, and refresh replacement behavior.",
       "acceptance_criteria": ["VIS-06 passes deterministic playback tests and real production-news captures without duplication or lost headlines."],
@@ -3002,6 +3002,33 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Windows/MainWindow.xaml", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Render/Services/NewsPlaybackController.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
         "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Focused FinanceNewsService tests: 29 passed, 0 failed.",
+          "Full Release suite: 290 passed, 0 failed, 0 skipped.",
+          "Structured summarized-item parsing and style-specific closing quotes implemented.",
+          "News playback phase, viewport, and refresh replacement tests passed.",
+          "DeepSeek reviewer, license, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/Windows/MainWindow.xaml",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/Services/NewsPlaybackController.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
