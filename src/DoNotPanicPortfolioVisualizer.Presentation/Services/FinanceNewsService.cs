@@ -160,7 +160,20 @@ public sealed class FinanceNewsService : IDisposable
         AppSettings settings,
         CancellationToken cancellationToken)
     {
-        RssHeadlineSnapshot snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
+        RssHeadlineSnapshot snapshot;
+        try
+        {
+            snapshot = await GetRssHeadlineSnapshotAsync(feedUri, cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpRequestException)
+        {
+            NewsHeadlineCacheEntry? cached = await LoadMatchingCacheAsync(settings, feedUri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+            RssPlaybackSnapshot result = cached is not null
+                ? new RssPlaybackSnapshot(cached.Headlines, new(RssFeedFreshnessState.Stale, cached.LatestPublicationUtc))
+                : new RssPlaybackSnapshot(["Configured RSS source is currently unavailable"], new(RssFeedFreshnessState.Unavailable, null));
+            RecordFreshness(new RssHeadlineSnapshot(result.Headlines, [], result.Freshness.State, result.Freshness.LatestPublicationUtc));
+            return result;
+        }
         RecordFreshness(snapshot);
         if (snapshot.FreshnessState == RssFeedFreshnessState.Stale)
         {
@@ -188,6 +201,7 @@ public sealed class FinanceNewsService : IDisposable
             string.IsNullOrWhiteSpace(settings.AiApiKey) ||
             string.IsNullOrWhiteSpace(settings.AiModelId))
         {
+            await SaveCacheAsync(settings, feedUri.AbsoluteUri, rssHeadlines, snapshot.LatestPublicationUtc, cancellationToken).ConfigureAwait(false);
             return new RssPlaybackSnapshot(
                 rssHeadlines,
                 new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
@@ -356,6 +370,20 @@ public sealed class FinanceNewsService : IDisposable
             .ToList();
         DateTimeOffset? latest = publicationDates.Count == 0 ? null : publicationDates.Max();
         RssFeedFreshnessSnapshot freshness = new(state, latest);
+        if (headlines.Count == 0)
+        {
+            NewsHeadlineCacheEntry? cached = await LoadMatchingCacheAsync(
+                settings,
+                string.Join("|", BuiltInFinanceSources.Select(static source => source.Uri.AbsoluteUri)),
+                cancellationToken).ConfigureAwait(false);
+            if (cached is not null)
+            {
+                headlines = cached.Headlines;
+                state = RssFeedFreshnessState.Stale;
+                latest = cached.LatestPublicationUtc;
+                freshness = new(state, latest);
+            }
+        }
         RecordFreshness(new RssHeadlineSnapshot(headlines, [], state, latest));
         IReadOnlyList<string> playback = headlines.Count > 0
             ? headlines
@@ -380,6 +408,13 @@ public sealed class FinanceNewsService : IDisposable
                 // Preserve the merged RSS playback when optional summarization fails.
             }
         }
+        if (usable.Length > 0)
+            await SaveCacheAsync(
+                settings,
+                string.Join("|", BuiltInFinanceSources.Select(static source => source.Uri.AbsoluteUri)),
+                headlines,
+                latest,
+                cancellationToken).ConfigureAwait(false);
         return new RssPlaybackSnapshot(playback, freshness);
     }
 

@@ -606,9 +606,11 @@ public sealed class AmbientSceneServicesTests
     public async Task FinanceNewsService_ReportsAllBuiltInSourcesStale()
     {
         const string rss = "<rss><channel><item><title>Old market news</title><pubDate>Mon, 03 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using TemporaryDirectoryScope directory = new();
         using FinanceNewsService service = new(
             new StaticResponseHandler(rss),
-            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero),
+            System.IO.Path.Combine(directory.Path, "finance-news-cache.json"));
 
         RssPlaybackSnapshot result = await service.GetPlaybackSnapshotAsync(
             Defaults.CreateSettings(), CancellationToken.None);
@@ -729,13 +731,65 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
-    public async Task FinanceNewsService_PropagatesTransportFailureForSceneIsolation()
+    public async Task FinanceNewsService_ReportsUnavailableWhenPlaybackSourceFails()
     {
-        using FinanceNewsService service = new(new FailingResponseHandler());
+        using TemporaryDirectoryScope directory = new();
+        using FinanceNewsService service = new(
+            new FailingResponseHandler(),
+            cachePath: System.IO.Path.Combine(directory.Path, "finance-news-cache.json"));
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => service.GetPlaybackHeadlinesAsync(
+        IReadOnlyList<string> headlines = await service.GetPlaybackHeadlinesAsync(
             new AppSettings { NewsFeedUrl = "https://example.test/feed" },
-            CancellationToken.None));
+            CancellationToken.None);
+
+        Assert.Equal(["Configured RSS source is currently unavailable"], headlines);
+        Assert.Equal(RssFeedFreshnessState.Unavailable, service.LastRssFreshnessState);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_UsesPersistentCacheWhenConfiguredSourceFails()
+    {
+        using TemporaryDirectoryScope directory = new();
+        string cachePath = System.IO.Path.Combine(directory.Path, "finance-news-cache.json");
+        AppSettings settings = new() { NewsFeedUrl = "https://example.test/feed" };
+        const string rss = "<rss><channel><item><title>Cached market news</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        using (FinanceNewsService writer = new(
+            new StaticResponseHandler(rss),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero),
+            cachePath))
+        {
+            Assert.Equal(["Cached market news"], await writer.GetPlaybackHeadlinesAsync(settings, CancellationToken.None));
+        }
+
+        using FinanceNewsService reader = new(
+            new FailingResponseHandler(),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero),
+            cachePath);
+
+        RssPlaybackSnapshot result = await reader.GetPlaybackSnapshotAsync(settings, CancellationToken.None);
+
+        Assert.Equal(["Cached market news"], result.Headlines);
+        Assert.Equal(RssFeedFreshnessState.Stale, result.Freshness.State);
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_CachesAndRecoversBuiltInThreeFeedPlayback()
+    {
+        using TemporaryDirectoryScope directory = new();
+        string cachePath = System.IO.Path.Combine(directory.Path, "finance-news-cache.json");
+        const string rss = "<rss><channel><item><title>Built-in cached market news</title><pubDate>Fri, 28 Aug 2026 10:00:00 GMT</pubDate></item></channel></rss>";
+        DateTimeOffset now = new(2026, 8, 29, 12, 0, 0, TimeSpan.Zero);
+        using (FinanceNewsService writer = new(new StaticResponseHandler(rss), () => now, cachePath))
+        {
+            RssPlaybackSnapshot fresh = await writer.GetPlaybackSnapshotAsync(Defaults.CreateSettings(), CancellationToken.None);
+            Assert.Equal(["[CNBC] Built-in cached market news"], fresh.Headlines);
+        }
+
+        using FinanceNewsService reader = new(new FailingResponseHandler(), () => now, cachePath);
+        RssPlaybackSnapshot result = await reader.GetPlaybackSnapshotAsync(Defaults.CreateSettings(), CancellationToken.None);
+
+        Assert.Equal(["[CNBC] Built-in cached market news"], result.Headlines);
+        Assert.Equal(RssFeedFreshnessState.Stale, result.Freshness.State);
     }
 
     [Fact]
