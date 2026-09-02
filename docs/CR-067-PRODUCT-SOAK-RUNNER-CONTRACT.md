@@ -28,6 +28,7 @@ patent, trademark, and governing-law provisions.
 | SOAK-08 | Request a settled real-product scene capture and fail the hosted lane when the PNG is absent. | `DNPPV_PRODUCT_CAPTURE_PATH`, `ProductShellWindow`, and screenshot evidence |
 | SOAK-09 | In soak mode, capture timestamped settled real-product screenshots after warmup and every 30 minutes thereafter, canceling the capture loop during shutdown. | `DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES=30`, timestamped PNG set, count/hash manifest, and artifact review |
 | SOAK-10 | Poll launched-process health at a 30-second cadence and avoid repeated unchanged status output between observations. | `PollIntervalSeconds=30`; matrix observer contract in CR-068 |
+| SOAK-11 | Permit physical local-lab validation to hold the real product open for the selected soak duration while retaining the existing cleanup, trace retrieval, and periodic settled screenshots. | `Invoke-ProductSceneValidation.ps1 -SoakDurationMinutes`; remote platform engine; duration-aware timeout and recursive screenshot retrieval |
 
 ## Acceptance
 

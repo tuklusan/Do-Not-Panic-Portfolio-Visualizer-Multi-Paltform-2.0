@@ -41,12 +41,16 @@ param(
     [string]$LocalArtifactRoot = (Join-Path $env:TEMP ("dnppv2-product-scene-validation-{0}-{1:yyyyMMdd-HHmmss}" -f $Platform, (Get-Date))),
 
     [Parameter()]
-    [ValidateRange(30, 600)]
+    [ValidateRange(30, 14400)]
     [int]$TimeoutSeconds = 180,
 
     [Parameter()]
     [ValidateRange(2, 180)]
     [int]$SceneWarmupSeconds = 30,
+
+    [Parameter()]
+    [ValidateRange(0, 240)]
+    [int]$SoakDurationMinutes = 0,
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -87,6 +91,7 @@ $engineParameters = @{
     LocalArtifactRoot        = $LocalArtifactRoot
     TimeoutSeconds           = $TimeoutSeconds
     SceneWarmupSeconds       = $SceneWarmupSeconds
+    SoakDurationMinutes      = $SoakDurationMinutes
     WindowsTaskName          = $WindowsTaskName
     ProductScene             = $true
     CinematicPlaybackTrace   = $true

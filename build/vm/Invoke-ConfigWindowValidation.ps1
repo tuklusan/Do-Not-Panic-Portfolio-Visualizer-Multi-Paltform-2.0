@@ -41,12 +41,16 @@ param(
     [string]$LocalArtifactRoot = (Join-Path $env:TEMP ("dnppv2-config-window-validation-{0}-{1:yyyyMMdd-HHmmss}" -f $Platform, (Get-Date))),
 
     [Parameter()]
-    [ValidateRange(30, 600)]
+    [ValidateRange(30, 14400)]
     [int]$TimeoutSeconds = 120,
 
     [Parameter()]
     [ValidateRange(2, 180)]
     [int]$SceneWarmupSeconds = 2,
+
+    [Parameter()]
+    [ValidateRange(0, 240)]
+    [int]$SoakDurationMinutes = 0,
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -76,7 +80,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$script:NativeCommandTimeoutSeconds = $TimeoutSeconds
+$script:NativeCommandTimeoutSeconds = $TimeoutSeconds + ($SoakDurationMinutes * 60) + 600
 
 function Invoke-NativeCommand {
     param(
@@ -413,14 +417,18 @@ function Copy-FromRemote {
         [Parameter(Mandatory = $true)][string]$HostName,
         [Parameter(Mandatory = $true)][string]$Secret,
         [Parameter(Mandatory = $true)][string]$SourcePath,
-        [Parameter(Mandatory = $true)][string]$DestinationPath
+        [Parameter(Mandatory = $true)][string]$DestinationPath,
+        [Parameter()][switch]$Recursive
     )
 
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
-        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
-            '-e',
+        $copyArguments = @('-e')
+        if ($Recursive.IsPresent) {
+            $copyArguments += '-r'
+        }
+        $copyArguments += @(
             'scp',
             '-O',
             '-o',
@@ -432,6 +440,7 @@ function Copy-FromRemote {
             "${User}@${HostName}:$SourcePath",
             $DestinationPath
         )
+        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList $copyArguments
     }
     finally {
         if ($null -eq $previous) {
@@ -470,6 +479,7 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
+        [Parameter(Mandatory = $true)][int]$SoakMinutes,
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureCinematicPlaybackTrace,
@@ -646,6 +656,10 @@ function Invoke-LinuxValidation {
         if ($ForceNewsFailure) {
             $launchEnvironment += 'DNPPV_FORCE_NEWS_FAILURE=1'
         }
+        if ($SoakMinutes -gt 0) {
+            $launchEnvironment += 'DNPPV_PRODUCT_CAPTURE_PATH="$ART/screenshots"'
+            $launchEnvironment += 'DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES=30'
+        }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
         $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > /dev/null 2>&1 &'
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
@@ -802,7 +816,14 @@ function Invoke-LinuxValidation {
             'echo "FULLSCREEN_EXIT_MENU_CAPTURED" >> step.log',
             'xdotool key --window "$WID" Escape',
             'sleep 1'
-        )
+        ) + $(if ($SoakMinutes -gt 0) {
+            @(
+                'mkdir -p "$ART/screenshots"',
+                ('echo "SOAK_STARTED;MINUTES={0}" >> step.log' -f $SoakMinutes),
+                ('sleep {0}' -f ($SoakMinutes * 60)),
+                'echo "SOAK_COMPLETED" >> step.log'
+            )
+        } else { @() })
     }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
 
@@ -811,7 +832,7 @@ function Invoke-LinuxValidation {
     $fullscreenTransitionSeconds = 22
     $cleanupSeconds = 3
     $duplicateWorkflowSeconds = if ($CaptureDuplicateInstanceFixture) { 65 } else { 0 }
-    $remoteScriptTimeoutSeconds = $Timeout + $Warmup +
+    $remoteScriptTimeoutSeconds = $Timeout + $Warmup + ($SoakMinutes * 60) +
         (3 * $maximumCaptureSeconds) + $fullscreenTransitionSeconds + $cleanupSeconds +
         $duplicateWorkflowSeconds + 90
     $remoteExecutionFailure = $null
@@ -863,6 +884,11 @@ function Invoke-LinuxValidation {
             }
         }
     }
+    if ($SoakMinutes -gt 0) {
+        $screenshotsArtifactRoot = Join-Path $ArtifactRoot 'screenshots'
+        New-Item -ItemType Directory -Force -Path $screenshotsArtifactRoot | Out-Null
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/screenshots/*") -DestinationPath $screenshotsArtifactRoot -Recursive
+    }
 
     $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
     New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
@@ -884,6 +910,7 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][string]$ArtifactRoot,
         [Parameter(Mandatory = $true)][int]$Timeout,
         [Parameter(Mandatory = $true)][int]$Warmup,
+        [Parameter(Mandatory = $true)][int]$SoakMinutes,
         [Parameter(Mandatory = $true)][string]$TaskName,
         [Parameter(Mandatory = $true)][bool]$CaptureProductScene,
         [Parameter(Mandatory = $true)][bool]$CaptureGraphImpulseFixture,
@@ -1248,6 +1275,9 @@ function Invoke-WindowsValidation {
             '}',
             $fixtureEnabledLine,
             '$env:DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT = $localDataRoot',
+            (if ($SoakMinutes -gt 0) {
+                '$captureDirectory = Join-Path $artifactDir ''screenshots''; New-Item -ItemType Directory -Force -Path $captureDirectory | Out-Null; $env:DNPPV_PRODUCT_CAPTURE_PATH = $captureDirectory; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = ''30'''
+            } else { '$env:DNPPV_PRODUCT_CAPTURE_PATH = $null; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = $null' }),
             $renderHeartbeatFixtureLine,
             $forceNewsFailureLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
@@ -1372,6 +1402,9 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value ''FULLSCREEN_EXIT_MENU_CAPTURED''',
             '    [System.Windows.Forms.SendKeys]::SendWait(''{ESC}'')',
             '    Start-Sleep -Milliseconds 300',
+            (if ($SoakMinutes -gt 0) {
+                ('    Add-Content -Path $stepPath -Value ''SOAK_STARTED;MINUTES={0}''; Start-Sleep -Seconds {0}; Add-Content -Path $stepPath -Value ''SOAK_COMPLETED''' -f ($SoakMinutes * 60))
+            } else { '    # No soak requested.' }),
             '    ''DONE'' | Set-Content -Path $donePath',
             '}',
             'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
@@ -1418,7 +1451,7 @@ try {
     `$principal = New-ScheduledTaskPrincipal -UserId `$taskUser -LogonType Interactive -RunLevel Limited
     Register-ScheduledTask -TaskName `$taskName -Action `$action -Trigger `$trigger -Principal `$principal -Force | Out-Null
     Start-ScheduledTask -TaskName `$taskName
-    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {
+    for (`$attempt = 0; `$attempt -lt ($Timeout + ($SoakMinutes * 60)); `$attempt++) {
         if (Test-Path `$donePath) {
             break
         }
@@ -1465,6 +1498,11 @@ finally {
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
+    if ($SoakMinutes -gt 0) {
+        $screenshotsArtifactRoot = Join-Path $ArtifactRoot 'screenshots'
+        New-Item -ItemType Directory -Force -Path $screenshotsArtifactRoot | Out-Null
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'screenshots/*')) -DestinationPath $screenshotsArtifactRoot -Recursive
+    }
     $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
     New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
@@ -1503,11 +1541,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     default {
