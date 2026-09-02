@@ -3349,11 +3349,46 @@
       "id": "CR-054",
       "phase": "Phase 7",
       "title": "Close exact upstream ledger mapping gap",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-053"],
       "objective": "Ensure every active upstream source and test artifact has an exact, independently verifiable 2.0 counterpart mapping in the generated ledger. When normalized paths differ or do not exist, record the actual counterpart and line-level content relationship or an explicit architecture disposition; installer/Inno artifacts remain retired.",
       "acceptance_criteria": ["TEST-06 passes with no literal mapping placeholders, no unmapped active counterpart paths, no unclassified active artifacts, and a preserved two-pass zero-gap record."],
-      "validation_plan": ["Regenerate ledger from pinned upstream", "Two successive disk audits", "License and PowerShell gates"]
+      "validation_plan": ["Regenerate ledger from pinned upstream", "Two successive disk audits", "License and PowerShell gates"],
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "First fresh ledger scan: 463 upstream files, 463 ledger rows, 463 line-by-line reads, zero unresolved gaps.",
+          "Second fresh ledger scan: 463 upstream files, 463 ledger rows, 463 line-by-line reads, zero unresolved gaps.",
+          "Retired capped-file diagnostics and supporting abstractions are explicitly classified; active diagnostics remain circular-trace based.",
+          "License and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-054-LEDGER-COMPLETENESS-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["docs/CR-054-LEDGER-COMPLETENESS-INVENTORY.md", "docs/UPSTREAM-2.0-GAP-LEDGER.md", "build/Test-UpstreamGapLedger.ps1"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["docs/UPSTREAM-2.0-GAP-LEDGER.md", "build/Test-UpstreamGapLedger.ps1", "src", "tests", "build", ".github", "YFinance.net", "distribution", "releases"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["docs/UPSTREAM-2.0-GAP-LEDGER.md", "build/Test-UpstreamGapLedger.ps1", "src", "tests", "build", ".github", "YFinance.net", "distribution", "releases"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
