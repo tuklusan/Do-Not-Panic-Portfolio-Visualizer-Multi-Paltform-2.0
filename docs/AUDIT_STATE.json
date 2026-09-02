@@ -3197,11 +3197,51 @@
       "id": "CR-051",
       "phase": "Phase 7",
       "title": "Close persistent weather snapshot parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-050"],
       "objective": "Implement and prove portable structured weather snapshots with bounded concurrent fetches, stale per-city fallback, cancellation-safe refresh, and requested-city pruning.",
       "acceptance_criteria": ["DATA-12 passes fresh, stale, failed, offline, cancellation, concurrency, and city-removal cases."],
-      "validation_plan": ["Focused weather/cache tests", "Three-machine production-scene acceptance", "Artifact review"]
+      "validation_plan": ["Focused weather/cache tests", "Three-machine production-scene acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-051-WEATHER-SNAPSHOT-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "tests/PortfolioSaver.Tests/Services/WorldWeatherServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "tests/PortfolioSaver.Tests/Services/WorldWeatherServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Full Release suite: 291 passed, 0 failed, 0 skipped.",
+          "Persistent weather snapshots, offline cache return, bounded concurrency, per-city fallback, cancellation, and active-city pruning implemented.",
+          "DeepSeek reviewer, license, migration, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs",
+          "tests/PortfolioSaver.Tests/Services/WorldWeatherServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-052",
