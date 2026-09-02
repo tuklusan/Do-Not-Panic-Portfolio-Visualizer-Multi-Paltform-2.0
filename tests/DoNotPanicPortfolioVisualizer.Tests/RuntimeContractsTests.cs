@@ -7,6 +7,20 @@ namespace DoNotPanicPortfolioVisualizer.Tests;
 public sealed class RuntimeContractsTests
 {
     [Fact]
+    public void DataAssembly_UsesActive2FriendAssemblyIdentities()
+    {
+        string source = File.ReadAllText(Path.Combine(
+            AppContext.BaseDirectory,
+            "..", "..", "..", "..", "..",
+            "src", "DoNotPanicPortfolioVisualizer.Data", "Properties", "AssemblyInfo.cs"));
+
+        Assert.Contains("InternalsVisibleTo(\"DoNotPanicPortfolioVisualizer.Presentation\")", source, StringComparison.Ordinal);
+        Assert.Contains("InternalsVisibleTo(\"DoNotPanicPortfolioVisualizer.Tests\")", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("InternalsVisibleTo(\"PortfolioSaver.Presentation\")", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("InternalsVisibleTo(\"PortfolioSaver.Tests\")", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SingleInstanceLease_BlocksDuplicateAndAllowsAcquireAfterRelease()
     {
         string root = Path.Combine(Path.GetTempPath(), $"dnppv2-single-instance-{Guid.NewGuid():N}");

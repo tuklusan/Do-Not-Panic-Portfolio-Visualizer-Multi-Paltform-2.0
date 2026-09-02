@@ -4566,6 +4566,80 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
+    },
+    {
+      "id": "CR-065",
+      "phase": "Phase 7",
+      "title": "Correct migrated data assembly friend-access identities",
+      "status": "closed",
+      "depends_on": [
+        "CR-064"
+      ],
+      "objective": "Replace the retired PortfolioSaver.Presentation and PortfolioSaver.Tests InternalsVisibleTo identities in the data assembly with the actual 2.0 assembly identities, and verify every intended internal consumer still compiles and exercises its test hooks.",
+      "acceptance_criteria": [
+        "The data assembly grants internal access only to the active 2.0 presentation and test assemblies.",
+        "The full Release test suite passes with the corrected friend-access contract.",
+        "A source scan finds no retired PortfolioSaver friend-assembly declarations in active 2.0 code."
+      ],
+      "validation_plan": [
+        "Manual line-by-line review of the affected assembly metadata and all internal consumers",
+        "Focused compile and full Release test suite",
+        "License and upstream behavior gates"
+      ],
+      "upstream_behavior_inventory": {
+      "status": "complete",
+        "document": "docs/CR-065-DATA-ASSEMBLY-FRIEND-ACCESS-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/DoNotPanicPortfolioVisualizer.Data/Properties/AssemblyInfo.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/DoNotPanicPortfolioVisualizer.Data.csproj",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/DoNotPanicPortfolioVisualizer.Presentation.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "src/DoNotPanicPortfolioVisualizer.Data/Properties/AssemblyInfo.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/DoNotPanicPortfolioVisualizer.Data.csproj",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/DoNotPanicPortfolioVisualizer.Presentation.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Active friend identities now match the 2.0 presentation and test assemblies.",
+          "Focused regression test passed.",
+          "Full Release build and 291-test suite passed.",
+          "Predevelopment and closure migration behavior gates passed.",
+          "License, PowerShell syntax, and upstream ledger gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/DoNotPanicPortfolioVisualizer.Data/Properties/AssemblyInfo.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/DoNotPanicPortfolioVisualizer.Data.csproj",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/DoNotPanicPortfolioVisualizer.Presentation.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DoNotPanicPortfolioVisualizer.Tests.csproj",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeContractsTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     }
   ],
   "remaining_validation_gaps": [],
@@ -4576,6 +4650,39 @@
     "Use the repository-local NuGet.Config to keep restore deterministic and independent of machine-wide Visual Studio fallback-folder quirks.",
     "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment."
   ],
-  "full_codebase_review_records": [],
+  "full_codebase_review_records": [
+    {
+      "pass": 1,
+      "date": "2026-09-02",
+      "scope": "All tracked source and test code files under src and tests, excluding generated bin/obj outputs",
+      "tracked_files": 253,
+      "tracked_lines": 30216,
+      "result": "ZERO_UNRECORDED_GAPS",
+      "recorded_findings": [
+        "CR-065: retired PortfolioSaver friend-assembly identities in the data assembly metadata"
+      ],
+      "validation": [
+        "Full solution Release build passed with 0 warnings and 0 errors",
+        "Full Release test suite passed: 291 passed, 0 failed, 0 skipped",
+        "Upstream gap ledger passed: 463 files, 463 rows, 463 line-by-line reads, 0 unresolved"
+      ]
+    },
+    {
+      "pass": 2,
+      "date": "2026-09-02",
+      "scope": "Fresh repeat of the complete tracked source and test code review after CR-065 recording",
+      "tracked_files": 253,
+      "tracked_lines": 30216,
+      "result": "ZERO_UNRECORDED_GAPS",
+      "recorded_findings": [
+        "No new findings; CR-065 was the sole code-review finding and is now closed"
+      ],
+      "validation": [
+        "License header validation passed: 84 artifacts",
+        "Upstream gap ledger passed: 463 files, 463 rows, 463 line-by-line reads, 0 unresolved",
+        "No whitespace errors detected by git diff --check"
+      ]
+    }
+  ],
   "documentation_review_records": []
 }
