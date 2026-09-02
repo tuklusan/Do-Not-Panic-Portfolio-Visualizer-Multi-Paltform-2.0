@@ -2458,7 +2458,23 @@
       "depends_on": ["CR-033"],
       "objective": "Match upstream historical-cache expiry/corruption handling, stale fallback, graph fallback, and startup-news cache behavior.",
       "acceptance_criteria": ["DATA-08 has deterministic corruption, expiry, stale-fallback, and startup sequencing tests."],
-      "validation_plan": ["Focused cache/provider tests", "Degraded production-scene acceptance", "Reviewer gate"]
+      "validation_plan": ["Focused cache/provider tests", "Degraded production-scene acceptance", "Reviewer gate"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-034-HISTORICAL-CACHE-STARTUP-FALLBACK-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Data/Services/HistoricalCacheService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/HistoricalCacheServiceTests.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorGraphSelectionTests.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorNewsTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Data/Services/HistoricalCacheService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/HistoricalCacheServiceTests.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorGraphSelectionTests.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorNewsTests.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/HistoricalCacheService.cs", "src/DoNotPanicPortfolioVisualizer.Data/Providers/HybridHistoricalDataProvider.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceProviderPipelineTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-035",
