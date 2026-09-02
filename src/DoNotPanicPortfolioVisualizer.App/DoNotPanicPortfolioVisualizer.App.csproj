@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Presentation\DoNotPanicPortfolioVisualizer.Presentation.csproj" />
+    <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Data\DoNotPanicPortfolioVisualizer.Data.csproj" />
     <ProjectReference Include="..\DoNotPanicPortfolioVisualizer.Shared\DoNotPanicPortfolioVisualizer.Shared.csproj" />
     <ProjectReference Include="..\YFinance\YFinance.NET.Server\YFinance.NET.Server.csproj"
                       ReferenceOutputAssembly="false" />

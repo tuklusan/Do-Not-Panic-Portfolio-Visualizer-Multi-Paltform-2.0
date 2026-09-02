@@ -8,6 +8,8 @@ using DoNotPanicPortfolioVisualizer.App.Views;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
 using DoNotPanicPortfolioVisualizer.Core;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
+using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Data.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 using DoNotPanicPortfolioVisualizer.Shared.Services;
 
@@ -79,6 +81,7 @@ public partial class App : Application
                         shell.Opened += enterFullScreenAfterOpen;
                     }
                     desktop.MainWindow = shell;
+                    shell.Opened += (_, _) => _ = ProbeSummarizedNewsAccessAsync();
                 }
                 if (!configurationValidationMode)
                     desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
@@ -96,6 +99,23 @@ public partial class App : Application
     private void ReleaseSingleInstanceLease()
     {
         Interlocked.Exchange(ref _singleInstanceLease, null)?.Dispose();
+    }
+
+    private static async Task ProbeSummarizedNewsAccessAsync()
+    {
+        try
+        {
+            AppSettings settings = new SettingsFileService().Load();
+            AiNewsAccessValidationResult result = await new AiNewsAccessValidationService()
+                .ValidateAsync(settings)
+                .ConfigureAwait(false);
+            if (!result.IsValid && !result.ValidationSkipped)
+                Trace.WriteLine($"AI summarized news startup probe failed; normal refresh retry remains enabled. reason={result.Message}");
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"AI summarized news startup probe failed unexpectedly; normal refresh retry remains enabled. error={ex.GetType().Name}");
+        }
     }
 
     private static void WriteStartupTrace(IEnumerable<string> arguments, bool startsWindowed, bool startsFullScreen)
