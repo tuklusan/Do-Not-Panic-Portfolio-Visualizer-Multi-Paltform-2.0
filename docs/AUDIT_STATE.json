@@ -1891,12 +1891,12 @@
       "id": "CR-021",
       "phase": "Phase 7",
       "title": "Close market and runtime business-rule parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-020"],
       "objective": "Prove runtime symbol ordering, macro preservation, market-session boundaries, and clock/status updates against upstream logic.",
       "acceptance_criteria": ["LOGIC-01 and LOGIC-02 are mapped, tested, and physically observed in the real scene."],
-      "validation_plan": ["Focused business-rule tests", "Real-scene acceptance", "Degraded-state regression"]
-      ,"upstream_behavior_inventory": {
+      "validation_plan": ["Focused business-rule tests", "Real-scene acceptance", "Degraded-state regression"],
+      "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-021-MARKET-RUNTIME-INVENTORY.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
@@ -1909,6 +1909,24 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files_scanned": ["src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Core", "src/DoNotPanicPortfolioVisualizer.Data", "tests/DoNotPanicPortfolioVisualizer.Tests"],
         "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "284 net10.0 tests passed from tests/DoNotPanicPortfolioVisualizer.Tests",
+          "Portable market-session, exchange-calendar, quote-refresh, symbol-order, and staged-scene tests passed",
+          "Win-11, Win-10, and Lubuntu real production-scene captures reviewed during CR-020 acceptance",
+          "No additional behavior was found in two successive forward and reverse upstream scans"
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Core/Constants/DataSourceCatalog.cs", "src/PortfolioSaver.Presentation/Services/QuoteRefreshPolicy.cs", "src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs", "tests/PortfolioSaver.Tests/Services/Nb058Nb060BehaviorTests.cs", "tests/PortfolioSaver.Tests/Services/QuoteRefreshPolicyTests.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"],
+        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
