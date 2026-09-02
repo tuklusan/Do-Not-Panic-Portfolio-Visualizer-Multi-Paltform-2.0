@@ -114,7 +114,7 @@ function Invoke-NativeCommand {
         $stdout = $process.StandardOutput.ReadToEnd()
         $stderr = $process.StandardError.ReadToEnd()
         if ($stdout) { Write-Output $stdout.TrimEnd() }
-        if ($stderr) { Write-Error $stderr.TrimEnd() }
+        if ($stderr) { Write-Verbose ("Native command stderr: " + $stderr.TrimEnd()) }
         $exitCode = $process.ExitCode
     }
     finally {
