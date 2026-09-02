@@ -52,7 +52,7 @@ public sealed class HistoricalGraphBuildCacheTests
 
         Assert.Same(first, retained);
         Assert.Equal(2, cache.Count);
-        Assert.Equal(4, builds);
+        Assert.Equal(3, builds);
     }
 
     private static FloatingGraphViewModel Build(string symbol, int buildNumber)
