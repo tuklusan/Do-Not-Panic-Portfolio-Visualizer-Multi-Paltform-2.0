@@ -2704,7 +2704,23 @@
       "depends_on": ["CR-039"],
       "objective": "Prove the Avalonia-owned configuration dialog lifecycle, settings service behavior, scene-state transfer, and validation outcome handling.",
       "acceptance_criteria": ["UI-07 passes open/edit/validate/cancel/OK/reopen workflows with no stale scene state."],
-      "validation_plan": ["Configuration workflow tests", "Three-machine visual acceptance", "Artifact review"]
+      "validation_plan": ["Configuration workflow tests", "Three-machine visual acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-040-CONFIGURATION-SCENE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Settings/Windows/MainWindow.xaml", "src/PortfolioSaver.Settings/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml", "src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml.cs", "src/DoNotPanicPortfolioVisualizer.App/ViewModels/MainViewModel.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ConfigurationWindowContractTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Settings/Windows/MainWindow.xaml", "src/PortfolioSaver.Settings/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml", "src/PortfolioSaver.Settings/Windows/ValidationProgressWindow.xaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml.cs", "src/DoNotPanicPortfolioVisualizer.App/ViewModels/MainViewModel.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ConfigurationWindowContractTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-041",
