@@ -3144,11 +3144,54 @@
       "id": "CR-050",
       "phase": "Phase 7",
       "title": "Close branded network-waiting overlay parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-049"],
       "objective": "Implement and prove the upstream branded network-waiting overlay, bounded placement, retained-scene behavior, and recovery visibility in the Avalonia product scene.",
       "acceptance_criteria": ["UI-10 passes online, offline, retained-cache, recovery, resize, and fullscreen acceptance on all local machines."],
-      "validation_plan": ["Focused degraded-scene tests", "Three-machine physical acceptance", "Screenshot and artifact review"]
+      "validation_plan": ["Focused degraded-scene tests", "Three-machine physical acceptance", "Screenshot and artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-050-NETWORK-WAITING-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Full Release suite: 291 passed, 0 failed, 0 skipped.",
+          "Network-waiting overlay, retained-scene, retry, resize, fullscreen, and degraded-state mappings verified against upstream.",
+          "DeepSeek reviewer, license, migration, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/MainWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-051",
