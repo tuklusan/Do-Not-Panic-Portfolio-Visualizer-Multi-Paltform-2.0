@@ -2828,6 +2828,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["Catalog, benchmark, and exchange-timing focused suite passed: 71 tests", "Complete Release suite passed: 288 tests", "Migration, license, reviewer, and pre-push gates passed", "Canonical benchmark symbols, global exchange catalog, missing-data behavior, and safe asset identity are covered"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
