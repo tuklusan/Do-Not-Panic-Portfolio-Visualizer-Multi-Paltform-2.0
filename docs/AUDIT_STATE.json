@@ -3247,11 +3247,52 @@
       "id": "CR-052",
       "phase": "Phase 7",
       "title": "Close structured background-image identity parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-051"],
       "objective": "Implement and prove structured background image identity, stable display names, supported-format policy, and attribution-safe selection paths.",
       "acceptance_criteria": ["VIS-07 passes bundled, custom-folder, nested-folder, unsupported-format, and attribution-selection cases."],
-      "validation_plan": ["Focused media tests", "Three-machine visual acceptance", "Artifact review"]
+      "validation_plan": ["Focused media tests", "Three-machine visual acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-052-BACKGROUND-IMAGE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/ExchangePhotoCacheService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Media/Services/BackgroundImageService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/ExchangePhotoCacheService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Media/Services/BackgroundImageService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Full Release suite: 291 passed, 0 failed, 0 skipped.",
+          "Background discovery, nested-folder filtering, supported formats, stable selection, rotation, and attribution mappings verified against upstream.",
+          "DeepSeek reviewer, license, migration, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/ExchangePhotoCacheService.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/ExchangePhotoCacheServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Media/Services/BackgroundImageService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/BackgroundCinemaController.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-053",
