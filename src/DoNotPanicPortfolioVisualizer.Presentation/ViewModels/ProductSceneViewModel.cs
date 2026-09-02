@@ -720,24 +720,24 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         if (!refreshWeather || DateTimeOffset.UtcNow < _nextWeatherRefreshUtc)
             return;
 
-        Task<(GlobalMarketViewModel Market, string Text)>[] weatherTasks = GlobalMarkets.Select(async market =>
+        IReadOnlyDictionary<string, WeatherSnapshot> weatherSnapshots;
+        try
         {
-            try
-            {
-                string text = await _weatherService.GetWeatherAsync(market, cancellationToken);
-                return (market, text);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                TraceDegradedLane("weather", ex);
-                return (market, "weather --");
-            }
-        }).ToArray();
-        (GlobalMarketViewModel Market, string Text)[] weather = await Task.WhenAll(weatherTasks);
+            bool networkAvailable = await _networkProbe.IsInternetAvailableAsync(cancellationToken).ConfigureAwait(false);
+            weatherSnapshots = await _weatherService.GetWeatherAsync(GlobalMarkets, networkAvailable, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            TraceDegradedLane("weather", ex);
+            weatherSnapshots = new Dictionary<string, WeatherSnapshot>(StringComparer.OrdinalIgnoreCase);
+        }
         await InvokeOnUiAsync(() =>
         {
-            foreach ((GlobalMarketViewModel market, string text) in weather)
-                market.WeatherText = text;
+            foreach (GlobalMarketViewModel market in GlobalMarkets)
+            {
+                if (weatherSnapshots.TryGetValue(market.Key, out WeatherSnapshot? snapshot))
+                    market.WeatherText = $"{WorldWeatherService.GetGlyph(snapshot.WeatherCode, snapshot.IsDay)} {snapshot.TemperatureCelsius:0}C";
+            }
             _nextWeatherRefreshUtc = DateTimeOffset.UtcNow.AddMinutes(10);
         }, cancellationToken);
     }
