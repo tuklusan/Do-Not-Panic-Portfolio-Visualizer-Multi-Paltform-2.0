@@ -28,7 +28,7 @@ patent, trademark, and governing-law provisions.
         Height="820"
         MinWidth="760"
         MinHeight="600"
-        WindowStartupLocation="CenterOwner"
+        WindowStartupLocation="CenterScreen"
         Background="#14191F"
         Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0 Configuration">
 
