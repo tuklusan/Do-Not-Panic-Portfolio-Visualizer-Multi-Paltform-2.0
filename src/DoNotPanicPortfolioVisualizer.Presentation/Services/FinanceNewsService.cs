@@ -21,6 +21,7 @@ using System.Xml.Linq;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Data.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 
@@ -55,7 +56,9 @@ public sealed class FinanceNewsService : IDisposable
 
     public FinanceNewsService(HttpMessageHandler? handler = null, Func<DateTimeOffset>? utcNow = null, string? cachePath = null)
     {
-        _client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: true);
+        _client = handler is null
+            ? HttpClientFactory.Create(TimeSpan.FromSeconds(15))
+            : new HttpClient(handler, disposeHandler: true);
         _client.Timeout = TimeSpan.FromSeconds(15);
         _client.DefaultRequestHeaders.UserAgent.ParseAdd("DNPPV-2.0/2.0");
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);

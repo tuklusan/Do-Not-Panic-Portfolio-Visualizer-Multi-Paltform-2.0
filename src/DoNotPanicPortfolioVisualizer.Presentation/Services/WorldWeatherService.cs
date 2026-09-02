@@ -13,6 +13,7 @@
 // ============================================================================
 using System.Globalization;
 using System.Text.Json;
+using DoNotPanicPortfolioVisualizer.Data.Services;
 using DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
 namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
@@ -24,7 +25,7 @@ public sealed class WorldWeatherService : IDisposable
     public WorldWeatherService(HttpMessageHandler? handler = null, TimeSpan? timeout = null)
     {
         _client = handler is null
-            ? new HttpClient()
+            ? HttpClientFactory.Create(timeout ?? TimeSpan.FromSeconds(10))
             : new HttpClient(handler, disposeHandler: true);
         _client.Timeout = timeout ?? TimeSpan.FromSeconds(10);
     }
