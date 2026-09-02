@@ -163,7 +163,12 @@ jobs:
              (Get-Content -Raw (Join-Path $artifactRoot 'soak-result.json'))
              "screenshot=$screenshotPath"
              'trace_files:'
-             (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object { $_.Name; Get-Content -Raw $_.FullName })
+             (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object {
+                 $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+                 $content = [IO.File]::ReadAllText($_.FullName)
+                 $excerpt = if ($content.Length -le 40000) { $content } else { $content.Substring(0, 20000) + "`n[TRACE_EXCERPT_OMITTED]`n" + $content.Substring($content.Length - 20000) }
+                 "trace_file=$($_.Name);bytes=$($_.Length);sha256=$hash`n$excerpt"
+             })
            ) | Set-Content -LiteralPath $manifest -Encoding utf8
            if ([string]::IsNullOrWhiteSpace($env:DEEPSEEK_API_KEY)) { throw 'DEEPSEEK_API_KEY is required for soak artifact review.' }
            ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/deepseek-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
