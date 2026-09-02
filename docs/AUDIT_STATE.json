@@ -1817,7 +1817,7 @@
       "current_validation": {
         "status": "closed",
         "evidence": [
-          "Win-11 real production scene: build/vm-artifacts/cr020-win11-artifact-r9; fullscreen 2560x1600; all six captures reviewed",
+          "Win-11 real production scene: build/vm-artifacts/cr020-win11-artifact-r10b; normal-window chrome clamp and fullscreen 2560x1600; all six captures reviewed",
           "Win-10 real production scene: build/vm-artifacts/cr020-win10-artifact-r10; storage contract passed; all six captures reviewed",
           "Lubuntu real production scene: build/vm-artifacts/cr020-linux-artifact-r1; fullscreen 1280x768; all captures reviewed",
           "Self-contained net10.0 win-x64 and linux-x64 publishes completed",
