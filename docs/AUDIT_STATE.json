@@ -2239,6 +2239,22 @@
       "objective": "Match upstream graph cache key isolation, LRU eviction, and rebuild behavior when settings, timestamps, or history snapshots change.",
       "acceptance_criteria": ["LOGIC-03 has deterministic tests proving cache reuse, invalidation, collision resistance, and bounded eviction."],
       "validation_plan": ["Focused graph-cache tests", "Release build", "Reviewer and artifact review"]
+      ,"upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-029-GRAPH-CACHE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorGraphSelectionTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorGraphSelectionTests.cs", "src/DoNotPanicPortfolioVisualizer.Render/Services/HistoricalGraphBuildCache.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/HistoricalGraphBuildCacheTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-030",

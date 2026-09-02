@@ -74,6 +74,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly FinanceNewsService _newsService = new();
     private readonly WorldWeatherService _weatherService = new();
     private readonly BackgroundImageService _backgroundService = new();
+    private readonly HistoricalGraphBuildCache _graphBuildCache = new();
     private readonly StagedSceneStartupCoordinator _sceneStartupCoordinator = new();
     private readonly SynchronizationContext _uiContext;
     private AppSettings _settings = new();
@@ -763,7 +764,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             if (history is not null)
             {
                 resolvedGraphs.Add((
-                    builder.Build(tapeName, history, quote.ChangePercent, index),
+                    _graphBuildCache.GetOrBuild(
+                        tapeName,
+                        history,
+                        quote.ChangePercent,
+                        _settings.EnableBouncingGraphCards,
+                        () => builder.Build(tapeName, history, quote.ChangePercent, index)),
                     quote.Last,
                     quote.ChangePercent));
             }
