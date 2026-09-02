@@ -13,6 +13,8 @@ SANYALnet Labs." See LICENSE for full terms.
 
 Pinned upstream: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`
 
+## Functional Inventory
+
 | ID | Upstream behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
 | HTL-01 | Startup creates bounded clients for quote, macro, global-market, and news calls. | `ProductSceneViewModel` owns providers/services with explicit disposal. | Gap: ownership and configured timeout policy are not unified. |
