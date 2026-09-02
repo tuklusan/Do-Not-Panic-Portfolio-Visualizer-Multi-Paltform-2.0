@@ -288,6 +288,67 @@ function Copy-ToRemote {
     }
 }
 
+function Copy-LinuxPublishToRemote {
+    param(
+        [Parameter(Mandatory = $true)][string]$User,
+        [Parameter(Mandatory = $true)][string]$HostName,
+        [Parameter(Mandatory = $true)][string]$Secret,
+        [Parameter(Mandatory = $true)][string]$SourcePath,
+        [Parameter(Mandatory = $true)][string]$TargetPublishPath
+    )
+
+    Assert-RequiredTool -Name 'tar'
+    $archivePath = New-TemporaryScriptPath -LeafName 'dnppv2-linux-publish.tar.gz'
+    $remoteArchivePath = "$TargetPublishPath/.dnppv2-linux-publish.tar.gz"
+    $targetLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishPath
+    $archiveLiteral = Convert-ToBashSingleQuotedLiteral -Value $remoteArchivePath
+    $previous = $env:SSHPASS
+    $env:SSHPASS = $Secret
+    try {
+        Invoke-NativeCommand -FilePath 'tar' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
+            '-czf',
+            $archivePath,
+            '-C',
+            $SourcePath,
+            '.'
+        )
+        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
+            '-e',
+            'scp',
+            '-C',
+            '-o',
+            'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=60',
+            $archivePath,
+            "${User}@${HostName}:$remoteArchivePath"
+        )
+        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+            '-e',
+            'ssh',
+            '-o',
+            'StrictHostKeyChecking=no',
+            '-o',
+            'BatchMode=no',
+            '-o',
+            'ConnectTimeout=60',
+            "${User}@${HostName}",
+            "mkdir -p -- $targetLiteral && tar -xzf $archiveLiteral -C $targetLiteral && rm -f -- $archiveLiteral"
+        )
+    }
+    finally {
+        Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
+        if ($null -eq $previous) {
+            Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:SSHPASS = $previous
+        }
+    }
+}
+
 function Copy-FromRemote {
     param(
         [Parameter(Mandatory = $true)][string]$User,
@@ -387,7 +448,7 @@ function Invoke-LinuxValidation {
             }
         }
 
-        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/")
+        Copy-LinuxPublishToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $SourcePublishDir -TargetPublishPath $TargetPublishDir
     }
 
     $linuxExecutableLiteral = Convert-ToBashSingleQuotedLiteral -Value "$TargetPublishDir/DoNotPanicPortfolioVisualizer.App"
