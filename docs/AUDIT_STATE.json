@@ -3298,11 +3298,52 @@
       "id": "CR-053",
       "phase": "Phase 7",
       "title": "Close timezone lookup caching parity gap",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-052"],
       "objective": "Implement and prove cached cross-platform timezone resolution for exchange-clock scheduler ticks, including invalid-ID fallback and bounded lookup behavior.",
       "acceptance_criteria": ["LOGIC-08 passes repeated-tick, IANA, Windows-ID, invalid-ID, and fallback-clock tests without repeated uncached lookups."],
-      "validation_plan": ["Focused timezone tests", "Three-machine clock acceptance", "Six-target publish"]
+      "validation_plan": ["Focused timezone tests", "Three-machine clock acceptance", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-053-TIMEZONE-CACHE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/ExchangeTimeZoneResolverTests.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/ExchangeTimeZoneResolver.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/UpstreamCoreServiceParityTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/ExchangeTimeZoneResolverTests.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/ExchangeTimeZoneResolver.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/UpstreamCoreServiceParityTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Focused timezone suite: 9 passed, 0 failed.",
+          "Full Release suite: 291 passed, 0 failed, 0 skipped.",
+          "Cached IANA/Windows resolution and deterministic invalid-ID fallback are integrated into the live clock loop.",
+          "DeepSeek reviewer, license, migration, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/ExchangeTimeZoneResolverTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Core/Services/ExchangeTimeZoneResolver.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/UpstreamCoreServiceParityTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-054",
