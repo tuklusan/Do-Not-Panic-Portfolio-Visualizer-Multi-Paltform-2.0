@@ -2771,7 +2771,23 @@
       "depends_on": ["CR-041"],
       "objective": "Prove placeholder-secret clearing, legacy refresh retirement, remote-background-path retirement, legacy direction normalization, and the approved default AI writing style.",
       "acceptance_criteria": ["DATA-09 has deterministic normalization tests and preserves only supported user intent."],
-      "validation_plan": ["Focused normalizer tests", "Settings migration acceptance on three machines", "Secret-scan and reviewer gates"]
+      "validation_plan": ["Focused normalizer tests", "Settings migration acceptance on three machines", "Secret-scan and reviewer gates"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-042-SETTINGS-NORMALIZATION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs", "src/PortfolioSaver.Data/Services/SettingsFileService.cs", "tests/PortfolioSaver.Tests/Validation/SettingsValidatorTests.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/AppSettingsNormalizer.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/SettingsFileService.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/FoundationSettingsTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs", "src/PortfolioSaver.Data/Services/SettingsFileService.cs", "tests/PortfolioSaver.Tests/Validation/SettingsValidatorTests.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/AppSettingsNormalizer.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/SettingsFileService.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/FoundationSettingsTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-043",
