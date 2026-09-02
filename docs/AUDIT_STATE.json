@@ -2853,7 +2853,23 @@
       "depends_on": ["CR-043"],
       "objective": "Match upstream market-critter sprite bounds, bounce reversal, non-bouncing clamp, and overlay continuity behavior.",
       "acceptance_criteria": ["VIS-05 passes deterministic motion tests and real-scene captures without sprite escape or jump discontinuity."],
-      "validation_plan": ["Focused sprite-motion tests", "Three-machine visual acceptance", "Artifact review"]
+      "validation_plan": ["Focused sprite-motion tests", "Three-machine visual acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-044-MARKET-CRITTER-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml", "src/PortfolioSaver.Render/ViewModels/MarketSpriteViewModel.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Controls/VisualizerSceneControl.axaml", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/MarketSpriteViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml", "src/PortfolioSaver.Render/ViewModels/MarketSpriteViewModel.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Controls/VisualizerSceneControl.axaml", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/MarketSpriteViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-045",
