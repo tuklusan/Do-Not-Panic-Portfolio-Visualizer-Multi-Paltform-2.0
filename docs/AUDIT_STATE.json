@@ -2869,6 +2869,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["Focused scene/motion suite passed: 63 tests", "Complete Release suite passed: 288 tests", "Upstream and Avalonia production gates both confirm market critters are disabled", "Migration, license, reviewer, and pre-push gates passed"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml", "src/PortfolioSaver.Render/ViewModels/MarketSpriteViewModel.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
