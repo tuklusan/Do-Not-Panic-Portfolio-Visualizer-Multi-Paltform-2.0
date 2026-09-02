@@ -2197,7 +2197,23 @@
       "depends_on": ["CR-027"],
       "objective": "Prove upstream waiting, missing, previous-close, stale, structural-change, and flash suppression presentation rules in the real Avalonia scene.",
       "acceptance_criteria": ["UI-04 has a complete focused presentation matrix and production-screen evidence."],
-      "validation_plan": ["Focused presentation tests", "Three-machine real-scene acceptance", "Artifact review"]
+      "validation_plan": ["Focused presentation tests", "Three-machine real-scene acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-028-QUOTE-PRESENTATION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs", "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorTapeItemTests.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs", "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs", "tests/PortfolioSaver.Tests/Services/StartupCoordinatorTapeItemTests.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerQuoteViewModel.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-029",
