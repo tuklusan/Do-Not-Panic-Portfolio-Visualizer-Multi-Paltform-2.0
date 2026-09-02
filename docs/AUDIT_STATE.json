@@ -1935,11 +1935,40 @@
       "id": "CR-022",
       "phase": "Phase 7",
       "title": "Close YFinance lifecycle and degradation test-depth gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-021"],
       "objective": "Match upstream YFinance client disposal, reconnect, malformed-frame, retry, and rate-limit classification coverage on the portable 2.0 lane.",
       "acceptance_criteria": ["DATA-01 and DATA-02 have deterministic tests and no process leaks."],
-      "validation_plan": ["Focused protocol tests", "Three-machine process cleanup", "Six-target publish"]
+      "validation_plan": ["Focused protocol tests", "Three-machine process cleanup", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-022-YFINANCE-LIFECYCLE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["tests/PortfolioSaver.Tests/Services/YFinanceServerClientPipelineTests.cs", "tests/PortfolioSaver.Tests/Services/Nb040BehaviorTests.cs", "src/YFinance.net/YFinance.NET.Client/YFinanceServerClient.cs", "src/YFinance.net/YFinance.NET/Transport/YahooFinanceHttpClient.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/YFinance/YFinance.NET.Client", "src/YFinance/YFinance.NET", "src/YFinance/YFinance.NET.Protocol", "tests/DoNotPanicPortfolioVisualizer.Tests"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["284 net10.0 tests passed, including protocol lifecycle, malformed-frame, cancellation, retry, and rate-limit cases", "Win-10, Win-11, and Lubuntu product runs exited without residual product processes", "Self-contained win-x64 and linux-x64 publishes completed"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["tests/PortfolioSaver.Tests/Services/YFinanceServerClientPipelineTests.cs", "tests/PortfolioSaver.Tests/Services/Nb040BehaviorTests.cs", "src/YFinance.net/YFinance.NET.Client/YFinanceServerClient.cs", "src/YFinance.net/YFinance.NET/Transport/YahooFinanceHttpClient.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-023",
