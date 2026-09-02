@@ -2515,6 +2515,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["288 net10.0 tests passed, including stale/unavailable RSS, weather parsing/fallback, scene freshness, and independent ancillary lane behavior", "DeepSeek review harness self-test passed", "Clean committed inventory checkpoint was pushed before validation"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Core/Services/MarketSessionResolver.cs", "tests/PortfolioSaver.Tests/Services/DegradedUxContractTests.cs", "tests/PortfolioSaver.Tests/Services/WorldWeatherServiceTests.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
