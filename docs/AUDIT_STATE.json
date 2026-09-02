@@ -2433,6 +2433,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["288 net10.0 tests passed, including defaults, normalization, malformed settings, legacy migration, portable data roots, and secret persistence", "DeepSeek review harness self-test passed", "Clean committed inventory checkpoint was pushed before validation"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Core/Validation/SettingsValidator.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "tests/PortfolioSaver.Tests/Services/AppSettingsNormalizerTests.cs", "tests/PortfolioSaver.Tests/Services/SettingsFileServiceTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
