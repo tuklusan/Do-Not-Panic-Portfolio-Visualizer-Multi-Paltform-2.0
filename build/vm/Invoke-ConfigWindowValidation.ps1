@@ -266,6 +266,7 @@ function Copy-ToRemote {
         Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
             '-e',
             'scp',
+            '-O',
             '-r',
             '-C',
             '-o',
@@ -315,6 +316,7 @@ function Copy-LinuxPublishToRemote {
         Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
             '-e',
             'scp',
+            '-O',
             '-C',
             '-o',
             'StrictHostKeyChecking=no',
@@ -364,6 +366,7 @@ function Copy-FromRemote {
         Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
             '-e',
             'scp',
+            '-O',
             '-o',
             'StrictHostKeyChecking=no',
             '-o',
