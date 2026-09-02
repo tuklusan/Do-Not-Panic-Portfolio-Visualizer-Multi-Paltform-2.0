@@ -2622,7 +2622,23 @@
       "depends_on": ["CR-037"],
       "objective": "Prove in-flight request de-duplication, timeout pruning, recovery cooldown, provider-budget persistence, and staged scene-state construction in the portable runtime.",
       "acceptance_criteria": ["LOGIC-05 has explicit 2.0 architecture, deterministic tests, and no duplicate or abandoned quote work."],
-      "validation_plan": ["Focused orchestration tests", "Fault-injected runtime acceptance", "Reviewer gate"]
+      "validation_plan": ["Focused orchestration tests", "Fault-injected runtime acceptance", "Reviewer gate"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-038-RUNTIME-ORCHESTRATION-BUDGET-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/QuoteRefreshPolicy.cs", "src/PortfolioSaver.Presentation/Services/RuntimeQuoteInFlightTracker.cs", "src/PortfolioSaver.Presentation/Services/RuntimeQuoteRecoveryGate.cs", "src/PortfolioSaver.Presentation/Services/ProviderBudgetLedgerService.cs", "src/PortfolioSaver.Data/Services/ProviderHealthService.cs", "src/PortfolioSaver.Data/Services/RetryPolicyService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/QuoteRefreshPolicyTests.cs", "tests/PortfolioSaver.Tests/Services/ProviderHealthServiceTests.cs", "tests/PortfolioSaver.Tests/Services/RetryPolicyServiceTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/QuoteRefreshPolicy.cs", "src/PortfolioSaver.Presentation/Services/RuntimeQuoteInFlightTracker.cs", "src/PortfolioSaver.Presentation/Services/RuntimeQuoteRecoveryGate.cs", "src/PortfolioSaver.Presentation/Services/ProviderBudgetLedgerService.cs", "src/PortfolioSaver.Data/Services/ProviderHealthService.cs", "src/PortfolioSaver.Data/Services/RetryPolicyService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/QuoteRefreshPolicyTests.cs", "tests/PortfolioSaver.Tests/Services/ProviderHealthServiceTests.cs", "tests/PortfolioSaver.Tests/Services/RetryPolicyServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/QuoteRefreshPolicy.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderHealthService.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/RetryPolicyService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/StagedSceneStartupCoordinator.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ProgressiveQuoteRefreshPipelineTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/ProviderHealthServiceTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/StagedSceneStartupCoordinatorTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-039",
