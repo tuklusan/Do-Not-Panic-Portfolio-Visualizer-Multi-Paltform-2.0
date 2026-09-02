@@ -25,7 +25,7 @@ public partial class ProductShellWindow : Window
     private const double RestoredWindowHeight = 720d;
     private const double UpstreamTickerTopOffset = 188d;
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
-    private SystemDecorations _systemDecorationsBeforeFullScreen = SystemDecorations.Full;
+    private WindowDecorations _windowDecorationsBeforeFullScreen = WindowDecorations.Full;
     private PixelPoint _windowPositionBeforeFullScreen;
     private double _windowWidthBeforeFullScreen;
     private double _windowHeightBeforeFullScreen;
@@ -67,7 +67,7 @@ public partial class ProductShellWindow : Window
             return;
 
         _windowStateBeforeFullScreen = WindowState;
-        _systemDecorationsBeforeFullScreen = SystemDecorations;
+        _windowDecorationsBeforeFullScreen = WindowDecorations;
         _windowPositionBeforeFullScreen = Position;
         _windowWidthBeforeFullScreen = Width;
         _windowHeightBeforeFullScreen = Height;
@@ -84,7 +84,7 @@ public partial class ProductShellWindow : Window
         double scale = Math.Max(1d, RenderScaling);
         PixelRect bounds = screen.Bounds;
         WindowState = WindowState.Normal;
-        SystemDecorations = SystemDecorations.None;
+        WindowDecorations = WindowDecorations.None;
         Position = new PixelPoint(bounds.X, bounds.Y);
         Width = bounds.Width / scale;
         Height = bounds.Height / scale;
@@ -103,7 +103,7 @@ public partial class ProductShellWindow : Window
 
         _isFullScreen = false;
         MainMenu.IsVisible = true;
-        SystemDecorations = _systemDecorationsBeforeFullScreen;
+        WindowDecorations = _windowDecorationsBeforeFullScreen;
         Position = _windowPositionBeforeFullScreen;
         Width = _windowWidthBeforeFullScreen;
         Height = _windowHeightBeforeFullScreen;
