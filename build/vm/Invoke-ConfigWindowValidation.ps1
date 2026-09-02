@@ -267,6 +267,7 @@ function Copy-ToRemote {
             '-e',
             'scp',
             '-r',
+            '-C',
             '-o',
             'StrictHostKeyChecking=no',
             '-o',
