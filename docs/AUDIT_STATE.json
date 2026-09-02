@@ -2320,7 +2320,23 @@
       "depends_on": ["CR-030"],
       "objective": "Prove portable YFinance framing, integrity, transport tracing, malformed payload handling, and idempotent disposal under pending work.",
       "acceptance_criteria": ["DATA-05 passes zero/truncated/oversized/checksum/cancellation/disposal cases without leaks."],
-      "validation_plan": ["Focused protocol tests", "Fault-injected server/client tests", "Six-target publish"]
+      "validation_plan": ["Focused protocol tests", "Fault-injected server/client tests", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-031-PROTOCOL-FRAMING-DISPOSAL-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/YFinance/YFinance.NET.Protocol/Transport/LengthPrefixedProtocolStream.cs", "src/YFinance/YFinance.NET.Client/YFinanceServerClient.cs", "tests/PortfolioSaver.Tests/Services/YFinanceClientServerProtocolTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/YFinance/YFinance.NET.Protocol/Transport/LengthPrefixedProtocolStream.cs", "src/YFinance/YFinance.NET.Client/YFinanceServerClient.cs", "tests/PortfolioSaver.Tests/Services/YFinanceClientServerProtocolTests.cs", "src/YFinance/YFinance.NET.Protocol/Transport/LengthPrefixedProtocolStream.cs", "src/YFinance/YFinance.NET.Client/YFinanceServerClient.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceClientServerProtocolTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-032",
