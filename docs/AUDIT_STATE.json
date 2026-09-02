@@ -159,15 +159,15 @@
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md"
       ],
       "upstream_behavior_inventory": {
-        "status": "complete",
-        "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+        "status": "in_progress",
+        "document": "docs/CR-001-REBASELINE-INVENTORY.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": [
           "README.md",
           "docs/RELEASE_1_0_BASELINE.md",
           "docs/MANUAL_UI_QA_SUITE.md"
         ],
-        "zero_known_gaps": true
+        "zero_known_gaps": false
       },
       "upstream_closure_audit": {
         "status": "complete",
@@ -1578,7 +1578,7 @@
           "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
           "src/PortfolioSaver.Core/Models/AppSettings.cs"
         ],
-        "zero_known_gaps": true
+        "zero_known_gaps": false
       },
       "upstream_closure_audit": {
         "status": "complete",
@@ -1641,7 +1641,7 @@
           "src/PortfolioSaver.Core/Services",
           "src/PortfolioSaver.Presentation/Services"
         ],
-        "zero_known_gaps": true
+        "zero_known_gaps": false
       },
       "upstream_closure_audit": {
         "status": "complete",
