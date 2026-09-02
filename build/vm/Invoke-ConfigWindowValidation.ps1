@@ -888,8 +888,11 @@ function Invoke-WindowsValidation {
         Assert-Windows10StorageContract -User $User -HostName $HostName -Secret $Secret
     }
     if (-not $SkipRemoteDeployment) {
-        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
-        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
+        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "Remove-Item -LiteralPath $targetPublishDirPsLiteral -Force -Recurse -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
+        # OpenSSH for Windows accepts the publish contents as a wildcard.  A
+        # trailing `\.` source is rejected by some OpenSSH versions even though
+        # an individual file or wildcard source is valid.
+        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '*') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
     }
     $deploymentFailureMessage = if ($SkipRemoteDeployment) { 'Remote publish executable is missing after deployment was skipped.' } else { 'Remote publish deployment did not complete.' }
     $deploymentFailureMessagePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $deploymentFailureMessage
