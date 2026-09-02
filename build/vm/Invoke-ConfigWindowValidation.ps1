@@ -95,8 +95,20 @@ function Invoke-NativeCommand {
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    foreach ($argument in $ArgumentList) {
-        [void]$psi.ArgumentList.Add($argument)
+    if ($psi.PSObject.Properties.Name -contains 'ArgumentList') {
+        foreach ($argument in $ArgumentList) {
+            [void]$psi.ArgumentList.Add($argument)
+        }
+    }
+    else {
+        $psi.Arguments = ($ArgumentList | ForEach-Object {
+                if ($_ -match '[\s\"]') {
+                    '"' + ($_ -replace '(\\*)"', '$1$1\"' -replace '(\\+)$', '$1$1') + '"'
+                }
+                else {
+                    $_
+                }
+            }) -join ' '
     }
 
     $process = [System.Diagnostics.Process]::new()

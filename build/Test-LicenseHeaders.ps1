@@ -90,19 +90,19 @@ function Assert-JsonHeader {
     )
 
     try {
-        $parsed = $Text | ConvertFrom-Json -AsHashtable -ErrorAction Stop
+        $parsed = $Text | ConvertFrom-Json -ErrorAction Stop
     }
     catch {
         throw "$PathLabel is not valid JSON."
     }
 
-    if ($parsed.Keys -notcontains 'license_notice' -or
-        [string]$parsed['license_notice'] -ne $jsonLicenseNotice) {
+    if ($null -eq $parsed.PSObject.Properties['license_notice'] -or
+        [string]$parsed.license_notice -ne $jsonLicenseNotice) {
         throw "$PathLabel is missing the required JSON license_notice field."
     }
 
-    if ($parsed.Keys -notcontains 'copyright' -or
-        [string]$parsed['copyright'] -ne $jsonCopyright) {
+    if ($null -eq $parsed.PSObject.Properties['copyright'] -or
+        [string]$parsed.copyright -ne $jsonCopyright) {
         throw "$PathLabel is missing the required JSON copyright field."
     }
 }

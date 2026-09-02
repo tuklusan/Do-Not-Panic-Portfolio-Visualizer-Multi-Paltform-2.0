@@ -80,10 +80,15 @@ changes; do not commit live addresses or credentials.
   any other machine. Re-enable the filter after this testing session; restore
   a protected release posture and use a trusted code-signing certificate before
   any public release acceptance.
-- Runtime prerequisite: the Windows Desktop Runtime matching the published
-  `net10.0` app must be installed. Use the licensed helper
-  `build/vm/Install-DotNetDesktopRuntime.ps1` when the machine reports that a
-  desktop runtime is missing; do not substitute a console-only .NET runtime.
+- Runtime contract: Windows acceptance uses the self-contained `win-x64`
+  publish produced by `.github/workflows/publish-six-rids.yml`; launching an
+  older framework-dependent bundle is invalid and can produce a misleading
+  “install .NET Desktop Runtime” prompt. For harness-only framework-dependent
+  diagnostics, the per-user .NET 10 base and Windows Desktop runtimes live
+  under `C:\Users\vagab\DNPPV2\dotnet`, with `DOTNET_ROOT` and
+  `DOTNET_ROOT_X64` set explicitly. Use the licensed helper
+  `build/vm/Install-DotNetDesktopRuntime.ps1` only when that diagnostic path
+  is required; do not substitute a console-only .NET runtime.
 
 ### `macos-x64-intel-big-sur`
 
