@@ -24,6 +24,7 @@ using DoNotPanicPortfolioVisualizer.Media.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Render.Services;
 using DoNotPanicPortfolioVisualizer.Render.ViewModels;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 using DoNotPanicPortfolioVisualizer.Shared.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
@@ -98,10 +99,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private bool _sceneDisposalStarted;
     private readonly bool _graphImpulseFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_FIXTURE"), "1", StringComparison.Ordinal);
-    private readonly string? _graphImpulseTracePath =
-        Environment.GetEnvironmentVariable("DNPPV_GRAPH_IMPULSE_TRACE");
-    private readonly string? _cinematicTracePath =
-        Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
     private readonly bool _renderHeartbeatFixtureEnabled =
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_RENDER_HEARTBEAT_FIXTURE"), "1", StringComparison.Ordinal);
     private readonly bool _forceNewsFailure =
@@ -1001,27 +998,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             $"START;SYMBOL={graph.Symbol};DIRECTION={direction};Y={graph.Y:0.00};TARGET_Y={graph.RefreshTravelTargetY:0.00};MIN_VELOCITY={FloatingGraphMotionController.RefreshTravelMinimumVelocity:0}");
 
     private void WriteGraphFixtureTrace(string message)
-    {
-        if (string.IsNullOrWhiteSpace(_graphImpulseTracePath))
-            return;
-
-        try
-        {
-            File.AppendAllText(
-                _graphImpulseTracePath,
-                $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
-        }
-        catch
-        {
-            // Acceptance tracing cannot interfere with the product scene.
-        }
-    }
+        => TraceLog.Info("ProductScene.GraphFixture", message);
 
     private void TraceCinematicPlayback(DateTimeOffset now)
     {
-        if (string.IsNullOrWhiteSpace(_cinematicTracePath))
-            return;
-
         bool phaseChanged = _newsPlayback.Phase != _lastTracedNewsPhase;
         if (!phaseChanged && now < _nextCinematicTraceUtc)
             return;
@@ -1035,21 +1015,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     }
 
     private void WriteCinematicTrace(string message)
-    {
-        if (string.IsNullOrWhiteSpace(_cinematicTracePath))
-            return;
-
-        try
-        {
-            File.AppendAllText(
-                _cinematicTracePath!,
-                $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
-        }
-        catch
-        {
-            // Acceptance tracing cannot interfere with the product scene.
-        }
-    }
+        => TraceLog.Info("ProductScene.Cinematic", message);
 
     private void TraceDegradedLane(string lane, Exception exception)
     {

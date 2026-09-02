@@ -12,6 +12,7 @@ using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Data.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 using DoNotPanicPortfolioVisualizer.Shared.Services;
 
 namespace DoNotPanicPortfolioVisualizer.App;
@@ -111,27 +112,21 @@ public partial class App : Application
                 .ValidateAsync(settings, NetworkInterface.GetIsNetworkAvailable())
                 .ConfigureAwait(false);
             if (!result.IsValid && !result.ValidationSkipped)
-                Trace.WriteLine($"AI summarized news startup probe failed; normal refresh retry remains enabled. reason={result.Message}");
+                TraceLog.WarnState("App.Startup", "AiNewsProbeFailed", [new("reason", result.Message)]);
         }
         catch (Exception ex)
         {
-            Trace.WriteLine($"AI summarized news startup probe failed unexpectedly; normal refresh retry remains enabled. error={ex.GetType().Name}");
+            TraceLog.ErrorState("App.Startup", "AiNewsProbeError", [], ex);
         }
     }
 
     private static void WriteStartupTrace(IEnumerable<string> arguments, bool startsWindowed, bool startsFullScreen)
     {
-        string? path = Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
-        if (string.IsNullOrWhiteSpace(path))
-            return;
-
-        try
-        {
-            string serializedArguments = string.Join("|", arguments.Select(static argument => argument.Replace("|", "%7C", StringComparison.Ordinal)));
-            File.AppendAllText(path, $"{DateTimeOffset.UtcNow:O};STARTUP;WINDOWED={startsWindowed};FULLSCREEN={startsFullScreen};ARGS={serializedArguments}{Environment.NewLine}");
-        }
-        catch
-        {
-        }
+        string serializedArguments = string.Join("|", arguments.Select(static argument => argument.Replace("|", "%7C", StringComparison.Ordinal)));
+        TraceLog.InfoState("App.Startup", "Startup", [
+            new("windowed", startsWindowed),
+            new("fullscreen", startsFullScreen),
+            new("args", serializedArguments)
+        ]);
     }
 }

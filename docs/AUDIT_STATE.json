@@ -350,7 +350,6 @@
         "src/DoNotPanicPortfolioVisualizer.Core/Services/OpenRouterModelResolver.cs",
         "src/DoNotPanicPortfolioVisualizer.Core/Services/SymbolNormalizer.cs",
         "src/DoNotPanicPortfolioVisualizer.Core/Services/SymbolProfileHeuristics.cs",
-        "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/CappedFileLogWriter.cs",
         "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/CircularTraceSettings.cs",
         "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryDataRootResolver.cs",
         "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",

@@ -501,8 +501,9 @@ function Invoke-LinuxValidation {
         'cd "$ART"',
         'chmod +x ./DoNotPanicPortfolioVisualizer.App',
         'if [ -f ./YFinanceServer/YFinance.NET.Server ]; then chmod +x ./YFinanceServer/YFinance.NET.Server; fi',
-        'rm -f general.png validation.png run.log step.log',
-        'DNPPV_CONFIGURATION_VALIDATION_MODE=1 setsid ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &',
+        'rm -f general.png validation.png step.log',
+        'rm -rf "$ART/local-data"',
+        'DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT="$ART/local-data" DNPPV_CONFIGURATION_VALIDATION_MODE=1 setsid ./DoNotPanicPortfolioVisualizer.App > /dev/null 2>&1 &',
         'APPPID=$!',
         'echo "APPPID=$APPPID" >> step.log',
         'cleanup() {',
@@ -581,11 +582,8 @@ function Invoke-LinuxValidation {
         $launchEnvironment = @()
         if ($CaptureGraphImpulseFixture) {
             $launchEnvironment += 'DNPPV_GRAPH_IMPULSE_FIXTURE=1'
-            $launchEnvironment += 'DNPPV_GRAPH_IMPULSE_TRACE="$ART/graph-impulse.log"'
         }
-        if ($CaptureCinematicPlaybackTrace) {
-            $launchEnvironment += 'DNPPV_CINEMATIC_TRACE="$ART/cinematic-playback.log"'
-        }
+        $launchEnvironment += 'DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT="$ART/local-data"'
         if ($CaptureRenderHeartbeatFixture) {
             $launchEnvironment += 'DNPPV_RENDER_HEARTBEAT_FIXTURE=1'
         }
@@ -593,11 +591,10 @@ function Invoke-LinuxValidation {
             $launchEnvironment += 'DNPPV_FORCE_NEWS_FAILURE=1'
         }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
-        $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > run.log 2>&1 &'
+        $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > /dev/null 2>&1 &'
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
             @(
-                ': > duplicate.log',
-                './DoNotPanicPortfolioVisualizer.App > duplicate.log 2>&1 &',
+                './DoNotPanicPortfolioVisualizer.App > /dev/null 2>&1 &',
                 'DUPPID=$!',
                 'echo "DUPPID=$DUPPID" >> step.log',
                 'DUPWID=""',
@@ -643,14 +640,14 @@ function Invoke-LinuxValidation {
             'if ! command -v scrot >/dev/null 2>&1 && ! command -v import >/dev/null 2>&1; then echo "MISSING_SCREENSHOT_TOOL" >> step.log; exit 1; fi',
             'capture_screenshot() {',
             '  local output="$1"',
-            '  if timeout 15 scrot -o "$output" 2>> capture-errors.log && [ -s "$output" ]; then return; fi',
+            '  if timeout 15 scrot -o "$output" 2>/dev/null && [ -s "$output" ]; then return; fi',
             '  rm -f "$output"',
-            '  if command -v import >/dev/null 2>&1 && timeout 15 import -window root "$output" 2>> capture-errors.log && [ -s "$output" ]; then',
+            '  if command -v import >/dev/null 2>&1 && timeout 15 import -window root "$output" 2>/dev/null && [ -s "$output" ]; then',
             '    echo "CAPTURE_FALLBACK=import:$output" >> step.log',
             '    return',
             '  fi',
             '  rm -f "$output"',
-            '  if command -v gnome-screenshot >/dev/null 2>&1 && timeout 15 gnome-screenshot -f "$output" 2>> capture-errors.log && [ -s "$output" ]; then',
+            '  if command -v gnome-screenshot >/dev/null 2>&1 && timeout 15 gnome-screenshot -f "$output" 2>/dev/null && [ -s "$output" ]; then',
             '    echo "CAPTURE_FALLBACK=gnome-screenshot:$output" >> step.log',
             '    return',
             '  fi',
@@ -659,7 +656,8 @@ function Invoke-LinuxValidation {
             '}',
             'chmod +x ./DoNotPanicPortfolioVisualizer.App',
             'if [ -f ./YFinanceServer/YFinance.NET.Server ]; then chmod +x ./YFinanceServer/YFinance.NET.Server; fi',
-            'rm -f general.png menu-open.png validation.png motion.png fullscreen-exit-menu.png duplicate.png graph-impulse.log cinematic-playback.log run.log duplicate.log capture-errors.log step.log',
+            'rm -f general.png menu-open.png validation.png motion.png fullscreen-exit-menu.png duplicate.png step.log',
+            'rm -rf "$ART/local-data"',
             $launchLine,
             'APPPID=$!',
             'sleep 1',
@@ -693,10 +691,10 @@ function Invoke-LinuxValidation {
             'xdotool key alt+F10 || true',
             "sleep $Warmup",
             'for i in $(seq 1 15); do',
-            '  if grep -q "STARTUP;SIGNAL=DEFERRED_LANES_STARTED" "$ART/cinematic-playback.log"; then break; fi',
+            '  if grep -a -q "STARTUP;SIGNAL=DEFERRED_LANES_STARTED" "$ART/local-data/Trace/trace.circular.log"; then break; fi',
             '  sleep 1',
             'done',
-            'if ! grep -q "STARTUP;SIGNAL=DEFERRED_LANES_STARTED" "$ART/cinematic-playback.log"; then echo "DEFERRED_LANES_NOT_STARTED" >> step.log; exit 1; fi',
+            'if ! grep -a -q "STARTUP;SIGNAL=DEFERRED_LANES_STARTED" "$ART/local-data/Trace/trace.circular.log"; then echo "DEFERRED_LANES_NOT_STARTED" >> step.log; exit 1; fi',
             'echo "DEFERRED_LANES_CONFIRMED" >> step.log',
             'eval "$(xdotool getwindowgeometry --shell "$WID")"',
             'echo "WINDOW=$WID X=$X Y=$Y W=$WIDTH H=$HEIGHT" >> step.log',
@@ -719,7 +717,7 @@ function Invoke-LinuxValidation {
             # Resolve the live product window again instead of retaining its old ID.
             'WID=$(xdotool search --pid "$APPPID" | tail -n 1 || true)',
             'if [ -z "${WID:-}" ]; then echo "FULLSCREEN_WINDOW_NOT_FOUND" >> step.log; exit 1; fi',
-            'GEOMETRY=$(timeout 5 xdotool getwindowgeometry --shell "$WID" 2>> capture-errors.log || true)',
+            'GEOMETRY=$(timeout 5 xdotool getwindowgeometry --shell "$WID" 2>/dev/null || true)',
             'X=$(printf "%s\\n" "$GEOMETRY" | sed -n "s/^X=//p")',
             'Y=$(printf "%s\\n" "$GEOMETRY" | sed -n "s/^Y=//p")',
             'WIDTH=$(printf "%s\\n" "$GEOMETRY" | sed -n "s/^WIDTH=//p")',
@@ -790,22 +788,17 @@ function Invoke-LinuxValidation {
     }
 
     $artifactNames = if ($CaptureProductScene) {
-        @('general.png', 'menu-open.png', 'validation.png', 'motion.png', 'fullscreen-exit-menu.png', 'run.log', 'capture-errors.log', 'step.log')
+        @('general.png', 'menu-open.png', 'validation.png', 'motion.png', 'fullscreen-exit-menu.png', 'step.log')
     }
     else {
-        @('general.png', 'validation.png', 'run.log', 'step.log')
-    }
-    if ($CaptureGraphImpulseFixture) {
-        $artifactNames += 'graph-impulse.log'
-    }
-    if ($CaptureCinematicPlaybackTrace) {
-        $artifactNames += 'cinematic-playback.log'
+        @('general.png', 'validation.png', 'step.log')
     }
     if ($CaptureDuplicateInstanceFixture) {
-        $artifactNames += @('duplicate.png', 'duplicate.log')
+        $artifactNames += 'duplicate.png'
     }
     foreach ($artifactName in $artifactNames) {
         try {
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent (Join-Path $ArtifactRoot $artifactName)) | Out-Null
             Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
         }
         catch {
@@ -814,6 +807,11 @@ function Invoke-LinuxValidation {
             }
         }
     }
+
+    $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
+    New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
 
     if ($null -ne $remoteExecutionFailure) {
         throw $remoteExecutionFailure
@@ -892,6 +890,8 @@ function Invoke-WindowsValidation {
         '$artifactDir = ' + $targetPublishDirPsLiteral,
         '$donePath = Join-Path $artifactDir ''done.txt''',
         '$stepPath = Join-Path $artifactDir ''step.log''',
+        '$localDataRoot = Join-Path $artifactDir ''local-data''',
+        'Remove-Item -Force -Recurse -ErrorAction SilentlyContinue $localDataRoot',
         'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png'')',
         '',
         'function Click-Point {',
@@ -925,6 +925,7 @@ function Invoke-WindowsValidation {
         '}',
         '',
         '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
+        '$env:DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT = $localDataRoot',
         '$env:DNPPV_CONFIGURATION_VALIDATION_MODE = ''1''',
         '$proc = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
         'Remove-Item Env:DNPPV_CONFIGURATION_VALIDATION_MODE -ErrorAction SilentlyContinue',
@@ -1029,18 +1030,6 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_GRAPH_IMPULSE_FIXTURE -ErrorAction SilentlyContinue'
         }
-        $fixtureTraceLine = if ($CaptureGraphImpulseFixture) {
-            '$env:DNPPV_GRAPH_IMPULSE_TRACE = Join-Path $artifactDir ''graph-impulse.log'''
-        }
-        else {
-            'Remove-Item Env:DNPPV_GRAPH_IMPULSE_TRACE -ErrorAction SilentlyContinue'
-        }
-        $cinematicTraceLine = if ($CaptureCinematicPlaybackTrace) {
-            '$env:DNPPV_CINEMATIC_TRACE = Join-Path $artifactDir ''cinematic-playback.log'''
-        }
-        else {
-            'Remove-Item Env:DNPPV_CINEMATIC_TRACE -ErrorAction SilentlyContinue'
-        }
         $renderHeartbeatFixtureLine = if ($CaptureRenderHeartbeatFixture) {
             '$env:DNPPV_RENDER_HEARTBEAT_FIXTURE = ''1'''
         }
@@ -1125,7 +1114,9 @@ function Invoke-WindowsValidation {
             '$artifactDir = ' + $targetPublishDirPsLiteral,
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
-            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''small-viewport.png''), (Join-Path $artifactDir ''menu-open.png''), (Join-Path $artifactDir ''wide-viewport.png''), (Join-Path $artifactDir ''fullscreen.png''), (Join-Path $artifactDir ''fullscreen-motion.png''), (Join-Path $artifactDir ''duplicate.png''), (Join-Path $artifactDir ''graph-impulse.log''), (Join-Path $artifactDir ''cinematic-playback.log'')',
+            '$localDataRoot = Join-Path $artifactDir ''local-data''',
+            'Remove-Item -Force -Recurse -ErrorAction SilentlyContinue $localDataRoot',
+            'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png''), (Join-Path $artifactDir ''motion.png''), (Join-Path $artifactDir ''small-viewport.png''), (Join-Path $artifactDir ''menu-open.png''), (Join-Path $artifactDir ''wide-viewport.png''), (Join-Path $artifactDir ''fullscreen.png''), (Join-Path $artifactDir ''fullscreen-motion.png''), (Join-Path $artifactDir ''fullscreen-exit-menu.png''), (Join-Path $artifactDir ''duplicate.png'')',
             'function Save-DesktopScreenshot {',
             '    param([string]$Path)',
             '    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
@@ -1168,8 +1159,7 @@ function Invoke-WindowsValidation {
             '    Start-Sleep -Milliseconds 350',
             '}',
             $fixtureEnabledLine,
-            $fixtureTraceLine,
-            $cinematicTraceLine,
+            '$env:DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT = $localDataRoot',
             $renderHeartbeatFixtureLine,
             $forceNewsFailureLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
@@ -1207,9 +1197,9 @@ function Invoke-WindowsValidation {
             '    $smallWidth = $smallBounds.Right - $smallBounds.Left',
             '    $smallHeight = $smallBounds.Bottom - $smallBounds.Top',
             '    $windowedTrace = $null',
-            '    $tracePath = Join-Path $artifactDir ''cinematic-playback.log''',
+            '    $tracePath = Join-Path $localDataRoot ''Trace\trace.circular.log''',
             '    for ($attempt = 0; $attempt -lt 20; $attempt++) {',
-            '        $windowedTrace = Get-Content -LiteralPath $tracePath -ErrorAction SilentlyContinue | Where-Object { $_ -like ''*WINDOW;SIGNAL=WINDOWED_STARTUP_APPLIED;STATE=Normal;WIDTH=1024;HEIGHT=768;*'' } | Select-Object -Last 1',
+            '        $windowedTrace = Get-Content -LiteralPath $tracePath -ErrorAction SilentlyContinue | Where-Object { $_ -like ''*event=WindowedStartupApplied*'' } | Select-Object -Last 1',
             '        if (-not [string]::IsNullOrWhiteSpace($windowedTrace)) { break }',
             '        Start-Sleep -Milliseconds 500',
             '    }',
@@ -1319,7 +1309,9 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'small-viewport.png'), (Join-Path `$artifactDir 'menu-open.png'), (Join-Path `$artifactDir 'wide-viewport.png'), (Join-Path `$artifactDir 'fullscreen.png'), (Join-Path `$artifactDir 'fullscreen-motion.png'), (Join-Path `$artifactDir 'fullscreen-exit-menu.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log')
+`$localDataRoot = Join-Path `$artifactDir 'local-data'
+Remove-Item -Force -Recurse -ErrorAction SilentlyContinue `$localDataRoot
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'small-viewport.png'), (Join-Path `$artifactDir 'menu-open.png'), (Join-Path `$artifactDir 'wide-viewport.png'), (Join-Path `$artifactDir 'fullscreen.png'), (Join-Path `$artifactDir 'fullscreen-motion.png'), (Join-Path `$artifactDir 'fullscreen-exit-menu.png'), (Join-Path `$artifactDir 'duplicate.png'), (Join-Path `$artifactDir 'step.log')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
@@ -1375,18 +1367,16 @@ finally {
     else {
         @('general.png', 'validation.png', 'step.log', 'done.txt')
     }
-    if ($CaptureGraphImpulseFixture) {
-        $artifactNames += 'graph-impulse.log'
-    }
-    if ($CaptureCinematicPlaybackTrace) {
-        $artifactNames += 'cinematic-playback.log'
-    }
     if ($CaptureDuplicateInstanceFixture) {
         $artifactNames += 'duplicate.png'
     }
     foreach ($artifactName in $artifactNames) {
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
     }
+    $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
+    New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
 }
 
 Assert-RequiredTool -Name 'sshpass'

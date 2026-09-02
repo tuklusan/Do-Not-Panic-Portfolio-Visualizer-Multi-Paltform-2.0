@@ -117,6 +117,20 @@ repository.
 
 ## Product-Scene Acceptance
 
+### Diagnostic artifact contract
+
+The product and its YFinance sidecar write diagnostics only to their
+size-bounded circular traces under the resolved local-data root:
+
+- `Trace/trace.circular.log` and `Trace/trace.circular.idx` for the product
+- `Trace/yfinance.circular.log` and `Trace/yfinance.circular.idx` for YFinance
+
+Physical harnesses copy the product trace pair into an artifact `trace/`
+directory for review. `step.log` and `done.txt` are harness control evidence,
+not product logs. Harnesses must discard redirected process output and must
+not create `run.log`, `capture-errors.log`, `cinematic-playback.log`, or
+`graph-impulse.log`.
+
 Use `build/vm/Invoke-ProductSceneValidation.ps1` for physical cinematic-product
 acceptance. It launches the normal product shell, captures its ordinary
 background/ticker/card behavior and a cinematic playback trace, and guarantees

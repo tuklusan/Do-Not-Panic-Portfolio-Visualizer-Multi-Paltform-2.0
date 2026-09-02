@@ -14,6 +14,7 @@ using DoNotPanicPortfolioVisualizer.App.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 using DoNotPanicPortfolioVisualizer.Render.ViewModels;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.App.Views;
 
@@ -78,7 +79,13 @@ public partial class ProductShellWindow : Window
             WindowState = WindowState.Normal;
             Width = requestedSize.Width;
             Height = requestedSize.Height;
-            WriteBackgroundTrace($"WINDOW;SIGNAL=WINDOWED_STARTUP_APPLIED;STATE={WindowState};WIDTH={Width:0.##};HEIGHT={Height:0.##};CLIENT_WIDTH={ClientSize.Width:0.##};CLIENT_HEIGHT={ClientSize.Height:0.##}");
+            TraceLog.InfoState("ProductShell", "WindowedStartupApplied", [
+                new("state", WindowState),
+                new("width", Width),
+                new("height", Height),
+                new("client_width", ClientSize.Width),
+                new("client_height", ClientSize.Height)
+            ]);
         }
 
         if (DataContext is ProductSceneViewModel scene)
@@ -136,14 +143,22 @@ public partial class ProductShellWindow : Window
 
             if (DataContext is ProductSceneViewModel scene)
                 UpdateBackgroundLayerOpacities(scene);
-            WriteBackgroundTrace($"BACKGROUND;SIGNAL=COMMITTED;LAYER={(isLayerA ? "A" : "B")};SOURCE={source};PRESENTATION_OPACITY={frame.PresentationOpacity:0.00}");
+            TraceLog.InfoState("ProductShell", "BackgroundCommitted", [
+                new("layer", isLayerA ? "A" : "B"),
+                new("source", source),
+                new("presentation_opacity", frame.PresentationOpacity)
+            ]);
         }
         catch (OperationCanceledException) when (_backgroundLoadCts.IsCancellationRequested)
         {
         }
         catch (Exception ex)
         {
-            WriteBackgroundTrace($"BACKGROUND;SIGNAL=RETAINED;LAYER={(isLayerA ? "A" : "B")};SOURCE={source};ERROR={ex.GetType().Name}");
+            TraceLog.WarnState("ProductShell", "BackgroundRetained", [
+                new("layer", isLayerA ? "A" : "B"),
+                new("source", source),
+                new("error", ex.GetType().Name)
+            ]);
         }
     }
 
@@ -158,21 +173,6 @@ public partial class ProductShellWindow : Window
             presentationOpacity * transitionOpacity / BackgroundPresentationOpacityPolicy.FallbackOpacity,
             0d,
             1d);
-
-    private static void WriteBackgroundTrace(string message)
-    {
-        string? path = Environment.GetEnvironmentVariable("DNPPV_CINEMATIC_TRACE");
-        if (string.IsNullOrWhiteSpace(path))
-            return;
-
-        try
-        {
-            File.AppendAllText(path, $"{DateTimeOffset.UtcNow:O};{message}{Environment.NewLine}");
-        }
-        catch
-        {
-        }
-    }
 
     private void OnRenderSurfaceRecoveryRequested() => SceneRoot.InvalidateVisual();
 

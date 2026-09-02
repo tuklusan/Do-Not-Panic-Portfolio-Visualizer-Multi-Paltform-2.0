@@ -387,7 +387,7 @@ Required preserved behaviors:
 - local cached values can still be shown in degraded operation;
 - logs/traces support diagnosis of runtime problems.
 - structured trace fields redact secrets, writes are asynchronous and bounded,
-  and circular/capped logs recover from corrupt cursors or write failures;
+  and the circular traces recover from corrupt cursors or write failures;
 - burst trace writes retain order, avoid per-line disk sync, restart their
   worker after loop failure, and resolve network metadata lazily rather than in
   static initialization;

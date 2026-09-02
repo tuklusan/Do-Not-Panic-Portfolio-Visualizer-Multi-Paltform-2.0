@@ -48,14 +48,6 @@ the File submenu in the product-owned dark palette. The same run recorded a
 full-screen transition and later motion capture, and the final remote process
 audit found no DNPPV application or managed YFinance sidecar process.
 
-Local ignored artifacts:
-
-- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/menu-open.png`
-- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/validation.png`
-- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/motion.png`
-- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/step.log`
-- `build/vm-artifacts/cr010h/linux-menu-acceptance-retry/cinematic-playback.log`
-
 This was initially evidence for the Linux local-machine lane only. CR-010H
 The 2026-09-01 rerun from pushed commit `34904be` additionally exercised F11
 exit from full screen, restored the product window, activated its File control,
@@ -74,13 +66,9 @@ opened the File submenu through UI Automation, captured normal, wide,
 fullscreen, and later-motion frames, and removed its one-shot scheduled task.
 The final remote process query found no product or managed YFinance sidecar.
 
-Local ignored artifacts:
-
-- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/menu-open.png`
-- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/fullscreen.png`
-- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/fullscreen-motion.png`
-- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/step.log`
-- `build/vm-artifacts/cr010h/win11-menu-acceptance-retry/cinematic-playback.log`
+Product diagnostics for these runs are retained only in the bounded
+`trace/trace.circular.log` artifact. `step.log` remains harness control
+evidence; no product diagnostic is written to a per-run text log.
 
 Windows 10 remains the sole unaccepted local-machine menu lane. Fullscreen
 exit/menu-restoration remains a dedicated interaction check for the eventual

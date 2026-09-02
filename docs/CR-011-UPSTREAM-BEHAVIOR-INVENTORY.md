@@ -68,7 +68,8 @@ all three local machines:
 - Windows 11: `build/vm-artifacts/cr011/win11-degraded`
 
 Every run recorded `ERROR=HttpRequestException`, captured the real scene,
-menu, viewport, fullscreen, and motion states, and had an empty
-`capture-errors.log` where applicable. The six self-contained runtime
+menu, viewport, fullscreen, and motion states. Product diagnostics were
+collected only from the size-bounded `trace/trace.circular.log` artifact. The
+six self-contained runtime
 publishes, 283 automated tests, license gate, PowerShell syntax gate, and
 mandatory DeepSeek code review also passed at pushed checkpoint `0324d60`.
