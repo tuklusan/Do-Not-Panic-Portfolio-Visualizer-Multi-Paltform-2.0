@@ -44,9 +44,17 @@ sources must report zero unmapped behaviors before closure.
 
 The deterministic suite and physical configuration runs on Lubuntu, Windows 10,
 and Windows 11 pass on the current build. The Windows 10 storage contract also
-passes before deployment and during execution. On the Intel Mac, CoreGraphics
-confirms the real Avalonia configuration window at `1280x848` and the workspace
-stays below `1 GiB`, but the SSH capture path does not yet yield a reviewable
-window artifact: full-desktop capture omits the window layer and window-ID
-capture lacks permission. CR-019 remains open until that Mac visual artifact is
-reviewed; this is not waived by the compositor or operator observation.
+passes before deployment and during execution. On the Intel Mac, the real
+Avalonia window rendered an in-process PNG at `1280x820`; General is selected
+with readable contrast, Advanced is visible, and the footer remains present.
+The capture is produced by Avalonia `RenderTargetBitmap`, following the
+established cross-platform application-rendered capture pattern, so it does not
+depend on SSH Screen Recording permission. The reviewed artifact is maintained
+in the ignored local acceptance-artifact directory, and the Mac workspace stays
+below `1 GiB`.
+
+## Closure Audit
+
+Two fresh line-by-line scans of the pinned upstream sources were completed after
+the physical run. No unmapped configuration behavior or acceptance gap was
+found. CR-019 is eligible for closure after the closure gate passes.

@@ -14,6 +14,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Media.Imaging;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.App.Views;
 
@@ -45,6 +47,41 @@ public partial class MainWindow : Window
         MinHeight = Math.Min(MinHeight, availableHeight);
         Width = Math.Min(Width, availableWidth);
         Height = Math.Min(Height, availableHeight);
+
+        string? capturePath = Environment.GetEnvironmentVariable("DNPPV_CONFIG_CAPTURE_PATH");
+        if (!string.IsNullOrWhiteSpace(capturePath))
+            _ = CaptureValidationWindowAsync(capturePath);
+    }
+
+    private async Task CaptureValidationWindowAsync(string capturePath)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(true);
+            if (!IsVisible || ClientSize.Width <= 0 || ClientSize.Height <= 0)
+                return;
+
+            string? directory = Path.GetDirectoryName(capturePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            double scale = Math.Max(1d, RenderScaling);
+            PixelSize pixelSize = new(
+                (int)Math.Ceiling(ClientSize.Width * scale),
+                (int)Math.Ceiling(ClientSize.Height * scale));
+            using RenderTargetBitmap bitmap = new(pixelSize, new Vector(96d * scale, 96d * scale));
+            bitmap.Render(this);
+            bitmap.Save(capturePath, PngBitmapEncoderOptions.Default);
+            TraceLog.InfoState("App.Configuration", "ValidationWindowCapture", [
+                new("path", capturePath),
+                new("width", pixelSize.Width),
+                new("height", pixelSize.Height)
+            ]);
+        }
+        catch (Exception ex)
+        {
+            TraceLog.ErrorState("App.Configuration", "ValidationWindowCaptureFailed", [], ex);
+        }
     }
 
     private void OnClosed(object? sender, EventArgs e)

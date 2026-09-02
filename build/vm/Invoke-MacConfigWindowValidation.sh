@@ -52,6 +52,7 @@ export DOTNET_ROOT="$root/dotnet"
 export DOTNET_ROOT_X64="$root/dotnet"
 export DNPPV_CONFIGURATION_VALIDATION_MODE=1
 export DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT="$root/local-data-cr019"
+export DNPPV_CONFIG_CAPTURE_PATH="$artifact/mac-config-window.png"
 rm -rf "$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT"
 mkdir -p "$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT"
 
@@ -71,6 +72,7 @@ for _ in $(seq 1 18); do
 done
 
 swift_source="$root/mac-window-capture.swift"
+if [[ ! -s "$artifact/mac-config-window.png" ]]; then
 cat > "$swift_source" <<'SWIFT'
 import CoreGraphics
 import Foundation
@@ -99,7 +101,23 @@ CGImageDestinationAddImage(destination, image, nil)
 guard CGImageDestinationFinalize(destination) else { fatalError("Could not finalize the Mac PNG artifact.") }
 SWIFT
 
-swift "$swift_source" "$artifact/mac-config-window.png" > "$artifact/mac-window-info.txt"
+if ! swift "$swift_source" "$artifact/mac-config-window.png" > "$artifact/mac-window-info.txt" 2>&1; then
+  # SSH-launched processes may lack Screen Recording entitlement while the
+  # logged-in Terminal application already has it. Retry through that desktop
+  # host, then wait for the real window artifact it produces.
+  rm -f "$artifact/mac-config-window.png"
+  capture_command="/usr/bin/swift '$swift_source' '$artifact/mac-config-window.png' > '$artifact/mac-window-info.txt' 2>&1"
+  osascript <<APPLESCRIPT
+tell application "Terminal"
+  do script "$capture_command"
+end tell
+APPLESCRIPT
+  for _ in $(seq 1 30); do
+    [[ -s "$artifact/mac-config-window.png" ]] && break
+    sleep 2
+  done
+fi
+fi
 rm -f "$swift_source"
 check_budget
 test -s "$artifact/mac-config-window.png"

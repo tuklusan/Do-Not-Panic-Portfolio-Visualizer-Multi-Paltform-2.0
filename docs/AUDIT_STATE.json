@@ -1757,15 +1757,15 @@
       "id": "CR-019",
       "phase": "Phase 7",
       "title": "Close configuration UI parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-018"],
       "objective": "Prove the Avalonia configuration workflow, responsive layout, validation states, and save/cancel behavior against upstream user-visible rules.",
       "acceptance_criteria": ["UI-01 and UI-02 pass on all four local physical desktops and small/large viewport checks."],
       "validation_plan": ["Four-machine visual acceptance (Windows 10, Windows 11, Lubuntu/LXQt, and Intel macOS Big Sur)", "UI behavior tests", "Artifact review", "Mac acceptance is confined below ~/SOFTWARE_DEV/DNPPV_20/ and stays within the 1 GB project limit."],
       "current_validation": {
-        "status": "open_pending_mac_visual_artifact_review",
-        "evidence": ["283 deterministic tests passed after the configuration-window startup and selected-tab contrast fixes.", "Lubuntu, Windows 10, and Windows 11 physical configuration acceptance passed on the current published build.", "Windows 10 storage contract passed before deployment and during the run; D: free space was approximately 44.9 GiB and machine TEMP/TMP both resolved to D:\\TEMP.", "Windows 11 required and now has per-user .NET 10 base and Windows Desktop runtimes under its DNPPV2 test workspace.", "Mac SSH authentication and trivial direct-executable commands passed on 2026-09-02; the self-contained app launched from the required Mac root after restoring executable permissions lost during ZIP extraction.", "Mac CoreGraphics enumerated the real Avalonia configuration window, but pixel capture was denied by macOS Screen Recording permission; the Mac workspace remains governed by the 1 GiB limit."],
-        "unresolved_gaps": ["Mac Screen Recording permission is not granted to the SSH/Swift capture host, so no reviewable physical window artifact can be accepted. Window enumeration alone is insufficient."]
+        "status": "closed",
+        "evidence": ["284 deterministic tests passed after the configuration-window startup, selected-tab contrast, and in-process capture changes.", "Lubuntu, Windows 10, and Windows 11 physical configuration acceptance passed on the current published build.", "Windows 10 storage contract passed before deployment and during the run; D: free space was approximately 44.9 GiB and machine TEMP/TMP both resolved to D:\\TEMP.", "Windows 11 acceptance passed with the self-contained win-x64 product bundle; no Desktop Runtime prompt occurred.", "Mac SSH authentication and direct-executable deployment commands passed on 2026-09-02; the self-contained app launched from the required Mac root.", "Mac Avalonia RenderTargetBitmap produced and artifact review confirmed the real 1280x820 configuration window with readable General selection, visible Advanced tab, and unclipped footer; the Mac workspace remained within the 1 GiB limit.", "Application-rendered capture avoids the unavailable SSH Screen Recording permission while remaining a real product-window render."],
+        "unresolved_gaps": []
       },
       "upstream_behavior_inventory": {
         "status": "complete",
@@ -1773,6 +1773,14 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": ["src/PortfolioSaver.Settings/Windows/MainWindow.xaml", "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "src/PortfolioSaver.Data/Services/SettingsProtectionService.cs"],
         "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Settings/Windows/MainWindow.xaml", "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "src/PortfolioSaver.Data/Services/SettingsProtectionService.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
