@@ -1184,7 +1184,7 @@ function Invoke-WindowsValidation {
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
 `$donePath = Join-Path `$artifactDir 'done.txt'
-Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log'), (Join-Path `$artifactDir 'fullscreen-exit-menu.png')
+Remove-Item -Force -ErrorAction SilentlyContinue `$donePath, (Join-Path `$artifactDir 'general.png'), (Join-Path `$artifactDir 'validation.png'), (Join-Path `$artifactDir 'motion.png'), (Join-Path `$artifactDir 'small-viewport.png'), (Join-Path `$artifactDir 'menu-open.png'), (Join-Path `$artifactDir 'wide-viewport.png'), (Join-Path `$artifactDir 'fullscreen.png'), (Join-Path `$artifactDir 'fullscreen-motion.png'), (Join-Path `$artifactDir 'fullscreen-exit-menu.png'), (Join-Path `$artifactDir 'graph-impulse.log'), (Join-Path `$artifactDir 'cinematic-playback.log'), (Join-Path `$artifactDir 'step.log')
 try {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
