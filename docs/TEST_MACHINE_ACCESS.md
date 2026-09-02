@@ -93,12 +93,22 @@ changes; do not commit live addresses or credentials.
 
 ## GitHub-Hosted Build/Test Lanes
 
-- `github-windows-x64`: runner `windows-latest`, RID `win-x64`
-- `github-macos-x64`: runner `macos-15-intel`, RID `osx-x64`
-- `github-macos-arm64`: runner `macos-15`, RID `osx-arm64`
-- `github-linux-arm64`: runner `ubuntu-24.04-arm`, RID `linux-arm64`
-- `github-windows-arm64`: runner `windows-11-arm`, RID `win-arm64`
-- `github-linux-x64`: runner `ubuntu-24.04`, RID `linux-x64`
+The publish workflow exercises every currently documented standard/public label
+for the supported architectures. The `-latest` aliases are retained as
+separate lanes so image migration is visible rather than silently replacing a
+fixed-version result:
+
+- Windows x64: `windows-latest`, `windows-2025`, `windows-2025-vs2026`, `windows-2022`; RID `win-x64`
+- Windows ARM64: `windows-11-arm`, `windows-11-vs2026-arm`; RID `win-arm64`
+- Linux x64: `ubuntu-latest`, `ubuntu-24.04`, `ubuntu-22.04`, `ubuntu-26.04`; RID `linux-x64`
+- Linux ARM64: `ubuntu-24.04-arm`, `ubuntu-22.04-arm`, `ubuntu-26.04-arm`; RID `linux-arm64`
+- macOS Intel x64: `macos-15-intel`, `macos-26-intel`; RID `osx-x64`
+- macOS ARM64: `macos-15`, `macos-14`, `macos-26`; RID `osx-arm64`
+
+Preview labels are intentionally included in the matrix and may fail when
+GitHub availability changes; `fail-fast: false` preserves results from every
+other lane. The local Windows 10, Windows 11, Lubuntu, and Intel Big Sur
+machines remain physical acceptance lanes, not GitHub-hosted runners.
 
 ## Baseline Note
 

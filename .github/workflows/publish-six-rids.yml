@@ -3,7 +3,7 @@
 # DO NOT PANIC PORTFOLIO VISUALIZER
 # This file is governed by the SANYALnet Labs Non-Commercial License.
 
-name: Cross-platform publish
+name: Cross-platform publish matrix
 
 on:
   push:
@@ -23,15 +23,39 @@ jobs:
         include:
           - runner: windows-latest
             rid: win-x64
+          - runner: windows-2025
+            rid: win-x64
+          - runner: windows-2025-vs2026
+            rid: win-x64
+          - runner: windows-2022
+            rid: win-x64
           - runner: windows-11-arm
+            rid: win-arm64
+          - runner: windows-11-vs2026-arm
             rid: win-arm64
           - runner: ubuntu-latest
             rid: linux-x64
+          - runner: ubuntu-24.04
+            rid: linux-x64
+          - runner: ubuntu-22.04
+            rid: linux-x64
+          - runner: ubuntu-26.04
+            rid: linux-x64
           - runner: ubuntu-24.04-arm
+            rid: linux-arm64
+          - runner: ubuntu-22.04-arm
+            rid: linux-arm64
+          - runner: ubuntu-26.04-arm
             rid: linux-arm64
           - runner: macos-15-intel
             rid: osx-x64
+          - runner: macos-26-intel
+            rid: osx-x64
           - runner: macos-15
+            rid: osx-arm64
+          - runner: macos-14
+            rid: osx-arm64
+          - runner: macos-26
             rid: osx-arm64
     runs-on: ${{ matrix.runner }}
     steps:
