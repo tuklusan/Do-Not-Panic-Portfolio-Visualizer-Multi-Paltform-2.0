@@ -2679,6 +2679,21 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "status": "closed",
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": ["288 net10.0 tests passed after adding portable NTP synchronization and scene clock offset integration", "DeepSeek review harness self-test passed", "NTP uses the upstream three-host sequence, 1.5-second DNS timeout, 4-second host timeout, cancellation propagation, explicit result fields, local-clock fallback, and circular diagnostics", "Clean committed implementation checkpoint was pushed before validation"],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["src/PortfolioSaver.Shared/Services/InternetProbeService.cs", "src/PortfolioSaver.Presentation/Services/NtpTimeService.cs", "src/PortfolioSaver.Presentation/Services/NetworkAvailabilityService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
