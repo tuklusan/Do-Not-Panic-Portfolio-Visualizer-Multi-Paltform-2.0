@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using DoNotPanicPortfolioVisualizer.App.ViewModels;
@@ -126,6 +127,41 @@ public partial class ProductShellWindow : Window
             _backgroundLoadA = LoadBackgroundLayerAsync(scene.BackgroundSourceA, BackgroundLayerA, true, ++_backgroundGenerationA);
             _backgroundLoadB = LoadBackgroundLayerAsync(scene.BackgroundSourceB, BackgroundLayerB, false, ++_backgroundGenerationB);
             await Task.WhenAll(_backgroundLoadA, _backgroundLoadB);
+        }
+
+        string? capturePath = Environment.GetEnvironmentVariable("DNPPV_PRODUCT_CAPTURE_PATH");
+        if (!string.IsNullOrWhiteSpace(capturePath))
+            _ = CaptureProductWindowAsync(capturePath);
+    }
+
+    private async Task CaptureProductWindowAsync(string capturePath)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(30)).ConfigureAwait(true);
+            if (!IsVisible || ClientSize.Width <= 0 || ClientSize.Height <= 0)
+                throw new InvalidOperationException("Product window is not visible at capture time.");
+
+            string? directory = Path.GetDirectoryName(capturePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
+            double scale = Math.Max(1d, RenderScaling);
+            PixelSize pixelSize = new(
+                (int)Math.Ceiling(ClientSize.Width * scale),
+                (int)Math.Ceiling(ClientSize.Height * scale));
+            using RenderTargetBitmap bitmap = new(pixelSize, new Vector(96d * scale, 96d * scale));
+            bitmap.Render(this);
+            bitmap.Save(capturePath, PngBitmapEncoderOptions.Default);
+            TraceLog.InfoState("ProductShell", "ProductWindowCapture", [
+                new("path", capturePath),
+                new("width", pixelSize.Width),
+                new("height", pixelSize.Height)
+            ]);
+        }
+        catch (Exception ex)
+        {
+            TraceLog.ErrorState("ProductShell", "ProductWindowCaptureFailed", [], ex);
         }
     }
 

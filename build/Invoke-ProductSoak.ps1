@@ -26,6 +26,9 @@ param(
     [string]$ArtifactRoot,
 
     [Parameter()]
+    [string]$ScreenshotPath,
+
+    [Parameter()]
     [string]$LocalDataRoot,
 
     [Parameter()]
@@ -75,6 +78,9 @@ try {
         # The key exists only in the child process environment and is never
         # written to the result manifest, trace artifact, or command output.
         $startInfo.Environment['DNPPV_OPENROUTER_API_KEY'] = $OpenRouterApiKey
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ScreenshotPath)) {
+        $startInfo.Environment['DNPPV_PRODUCT_CAPTURE_PATH'] = $ScreenshotPath
     }
 
     $process = [Diagnostics.Process]::new()
@@ -140,6 +146,11 @@ finally {
         processCleanedUp = $true
         openRouterKeyProvided = -not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)
         traceFiles = @(Get-ChildItem -LiteralPath $traceDestination -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name)
+        screenshot = [ordered]@{
+            requested = -not [string]::IsNullOrWhiteSpace($ScreenshotPath)
+            path = $ScreenshotPath
+            present = -not [string]::IsNullOrWhiteSpace($ScreenshotPath) -and (Test-Path -LiteralPath $ScreenshotPath -PathType Leaf)
+        }
         samples = @($samples)
     }
     if ($null -ne $failure) {

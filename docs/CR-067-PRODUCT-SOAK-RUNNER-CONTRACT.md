@@ -25,12 +25,13 @@ patent, trademark, and governing-law provisions.
 | SOAK-05 | Terminate the launched process on pass, failure, or interruption. | `finally` cleanup path |
 | SOAK-06 | Do not redirect product stdout/stderr into arbitrary product log files. | Process starts without output redirection |
 | SOAK-07 | Permit a secret OpenRouter key to be injected into the child process for AI-news validation without persisting or echoing it. | `DNPPV_OPENROUTER_API_KEY` or standard `OPENROUTER_API_KEY` protected input; provider secret overlay consumes it only in memory |
+| SOAK-08 | Request a settled real-product scene capture and fail the hosted lane when the PNG is absent. | `DNPPV_PRODUCT_CAPTURE_PATH`, `ProductShellWindow`, and `product-scene.png` evidence |
 
 ## Acceptance
 
 The runner must pass script syntax and license gates, execute a short controlled
-real-product rehearsal, produce a passing result with circular trace evidence,
-and leave no product process running. When AI-news validation is requested, the
+real-product rehearsal, produce a passing result with circular trace and
+real-product screenshot evidence, and leave no product process running. When AI-news validation is requested, the
 operator or CI secret store supplies `DNPPV_OPENROUTER_API_KEY` or
 `OPENROUTER_API_KEY` (the explicit
 parameter remains available for controlled callers); the key must never
