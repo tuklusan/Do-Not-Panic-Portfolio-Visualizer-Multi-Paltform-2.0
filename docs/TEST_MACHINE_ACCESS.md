@@ -149,7 +149,11 @@ artifact roots, and `bin`/`obj` directories below the repository. The matching
 `.github/workflows/cleanup-generated-artifacts.yml` workflow is manual
 (`workflow_dispatch`) only; it is not an automatic or scheduled trigger.
 
-Remote physical-machine cleanup remains governed by each machine's root and
+Each progressive local-lab cycle begins with
+`build/Test-LocalLabAvailability.ps1 -ArtifactRoot <cycle-artifact-root>`.
+Its JSON manifest distinguishes `AvailableForCycle` from
+`UnavailableAtCycleStart`; unavailable machines are never reported as product
+passes. Remote physical-machine cleanup remains governed by each machine's root and
 storage contract above. It must stop product processes before removing only
 generated publish, test, evidence, local-data, and temporary outputs, while
 preserving source and installed test dependencies.

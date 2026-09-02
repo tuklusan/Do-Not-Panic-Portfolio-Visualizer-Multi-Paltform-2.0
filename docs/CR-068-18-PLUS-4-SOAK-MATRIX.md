@@ -20,7 +20,15 @@ may report unavailable labels, but a lane that is available and required must
 build, test, launch, capture, retrieve circular traces, pass DeepSeek review of
 source and evidence, and clean up before acceptance.
 
-At the beginning of every soak cycle, re-probe all four local lab endpoints.
+At the beginning of every soak cycle, run
+`build/Test-LocalLabAvailability.ps1` and re-probe all four local lab endpoints.
+The script writes `local-lab-availability.json` with a timestamped result for
+each endpoint.
+
+The checked-in probe has been exercised against the current ignored inventory:
+three endpoints were reachable and the Intel Mac was recorded as
+`UnavailableAtCycleStart`. This is availability evidence only; physical product
+acceptance still requires the reachable machines to complete their assigned run.
 Machines may be powered off or have changing addresses; a cycle uses the
 reachable subset that passes its documented contract and records the others as
 `UnavailableAtCycleStart`. Local-machine non-availability is not a blocker when
