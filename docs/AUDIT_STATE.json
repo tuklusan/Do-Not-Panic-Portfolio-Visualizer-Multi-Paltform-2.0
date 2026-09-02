@@ -1821,7 +1821,7 @@
       "title": "Close network time and availability parity gaps",
       "status": "open",
       "depends_on": ["CR-038"],
-      "objective": "Match upstream bounded network probing, NTP correction, cached availability, and clock/status refresh behavior on every supported platform.",
+      "objective": "Match upstream bounded network probing, NTP correction, cached availability, and clock/status refresh behavior on every supported platform. The NTP slice must implement the upstream three-host sequence, 1.5-second DNS timeout, 4-second per-host timeout, cancellation propagation, explicit success/source/UTC result, local-clock fallback, and timeout/failure diagnostics.",
       "acceptance_criteria": ["LOGIC-06 passes online, offline, timeout, recovery, and clock-boundary tests without blocking the scene."],
       "validation_plan": ["Focused time/network tests", "Three-machine degraded acceptance", "Six-target publish"]
     },
