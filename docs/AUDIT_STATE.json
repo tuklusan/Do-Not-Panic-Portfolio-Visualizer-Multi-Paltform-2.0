@@ -1792,6 +1792,13 @@
       "objective": "Close ticker animation, graph impulses, scene-safe bounds, and background transition behavior identified in the upstream scan.",
       "acceptance_criteria": ["VIS-01 through VIS-04 have focused tests and real production-screen evidence."],
       "validation_plan": ["Motion/layout tests", "Six-target publish", "Three-machine screenshot/artifact review"]
+      ,"upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-020-VISUAL-MOTION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Render/Services/TapeAnimationController.cs", "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml", "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs", "src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs", "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs", "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs", "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml", "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs", "src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs", "src/PortfolioSaver.Media/Services/BackgroundImageService.cs", "src/PortfolioSaver.Media/Services/ImageTransitionController.cs"],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-021",
