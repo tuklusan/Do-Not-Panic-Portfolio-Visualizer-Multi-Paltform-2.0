@@ -3037,7 +3037,7 @@
       "id": "CR-048",
       "phase": "Phase 7",
       "title": "Close shared HTTP resource and timeout-policy parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-047"],
       "objective": "Prove shared handler ownership, bounded per-request timeouts, disposal rules, and transport resource reuse across RSS, AI, probe, and YFinance paths.",
       "acceptance_criteria": ["DATA-11 passes handler-reuse, timeout, disposal, and transport-trace tests without socket or client leaks."],
@@ -3055,6 +3055,35 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
         "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "completed_on": "2026-09-02",
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Focused HTTP/weather lifecycle tests: 34 passed, 0 failed.",
+          "Full Release suite: 291 passed, 0 failed, 0 skipped.",
+          "Shared handler ownership and settings-derived playback timeout are implemented.",
+          "DeepSeek reviewer, license, migration, and pre-push gates passed."
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
+        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
