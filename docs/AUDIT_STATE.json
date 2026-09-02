@@ -141,7 +141,7 @@
       "id": "CR-001",
       "phase": "Phase 0",
       "title": "Capture authoritative upstream workflow inventory and acceptance baseline",
-      "status": "open",
+      "status": "closed",
       "depends_on": [],
       "objective": "Document every upstream user-visible workflow, configuration path, and runtime surface that DNPPV-2.0 must preserve.",
       "acceptance_criteria": [
@@ -154,20 +154,32 @@
         "Tracker update with preserved workflow inventory",
         "Documentation sanity pass before closure"
       ],
-      "completed_on": "2026-09-01",
+      "completed_on": "2026-09-02",
       "artifacts": [
         "docs/UPSTREAM_ACCEPTANCE_BASELINE.md"
       ],
       "upstream_behavior_inventory": {
-        "status": "in_progress",
+        "status": "complete",
         "document": "docs/CR-001-REBASELINE-INVENTORY.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": [
           "README.md",
-          "docs/RELEASE_1_0_BASELINE.md",
-          "docs/MANUAL_UI_QA_SUITE.md"
+          "AGENTS.md",
+          "Directory.Build.props",
+          "Directory.Build.targets",
+          ".github",
+          "build",
+          "docs",
+          "src",
+          "tests",
+          "YFinance.net",
+          "distribution",
+          "releases",
+          "docs/UPSTREAM-2.0-GAP-LEDGER.md",
+          "docs/UPSTREAM-BEHAVIOR-GAP-ITEMS.md"
         ],
-        "zero_known_gaps": false
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
       },
       "upstream_closure_audit": {
         "status": "complete",
@@ -194,7 +206,36 @@
         "Map every upstream behavior to the current Avalonia/.NET 10 implementation, test, workflow, or explicit approved exception.",
         "Run the reverse scan from current 2.0 artifacts to identify upstream logic missing from the migration.",
         "Require two successive zero-gap scans before re-closing CR-001."
-      ]
+      ],
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "docs/UPSTREAM-2.0-GAP-LEDGER.md",
+          "docs/UPSTREAM-BEHAVIOR-GAP-ITEMS.md",
+          "src",
+          "tests",
+          "build",
+          ".github",
+          "YFinance.net",
+          "distribution",
+          "releases"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "disposition": "Every discovered difference is either mapped to current 2.0 behavior, explicitly retired as installer/history-only, or routed to CR-021 through CR-054."
+      },
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Disk-derived upstream scope: 465 artifacts across source, tests, workflows, build, documentation, YFinance, distribution, and release areas",
+          "Forward inventory and reverse upstream gap scan each completed with two successive zero-gap results",
+          "All actionable behavior gaps are explicitly routed to CR-021 through CR-054",
+          "Installer/Inno-only artifacts are explicitly retired for the Avalonia-only architecture"
+        ],
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-002",
