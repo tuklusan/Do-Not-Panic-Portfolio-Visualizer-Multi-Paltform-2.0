@@ -953,6 +953,28 @@ public sealed class AmbientSceneServicesTests
     public void WorldWeatherService_MapsWeatherCodes(int code, bool isDay, string expected)
         => Assert.Equal(expected, WorldWeatherService.GetGlyph(code, isDay));
 
+    [Fact]
+    public async Task WorldWeatherService_UsesInjectedBoundedTransport()
+    {
+        GlobalMarketViewModel market = new()
+        {
+            Key = "new-york",
+            City = "New York",
+            ExchangeName = "NYSE",
+            Symbol = "^GSPC",
+            TimeZoneId = "America/New_York",
+            Latitude = 40.7,
+            Longitude = -74.0
+        };
+        using WorldWeatherService service = new(
+            new WeatherResponseHandler("{\"current\":{\"temperature_2m\":21.5,\"weather_code\":0,\"is_day\":1}}"),
+            TimeSpan.FromSeconds(3));
+
+        string result = await service.GetWeatherAsync(market, CancellationToken.None);
+
+        Assert.Equal("SUN 22C", result);
+    }
+
     private sealed class StaticResponseHandler(string body) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -1017,6 +1039,15 @@ public sealed class AmbientSceneServicesTests
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+    }
+
+    private sealed class WeatherResponseHandler(string body) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json")
+            });
     }
 
     private sealed class TemporaryDirectoryScope : IDisposable

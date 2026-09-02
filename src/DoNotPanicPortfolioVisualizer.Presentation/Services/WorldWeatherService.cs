@@ -19,7 +19,15 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 
 public sealed class WorldWeatherService : IDisposable
 {
-    private readonly HttpClient _client = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private readonly HttpClient _client;
+
+    public WorldWeatherService(HttpMessageHandler? handler = null, TimeSpan? timeout = null)
+    {
+        _client = handler is null
+            ? new HttpClient()
+            : new HttpClient(handler, disposeHandler: true);
+        _client.Timeout = timeout ?? TimeSpan.FromSeconds(10);
+    }
 
     public async Task<string> GetWeatherAsync(GlobalMarketViewModel market, CancellationToken cancellationToken)
     {
