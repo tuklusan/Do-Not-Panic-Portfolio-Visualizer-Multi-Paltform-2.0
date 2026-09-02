@@ -1330,6 +1330,7 @@ function Invoke-WindowsValidation {
             '    for ($attempt = 0; $attempt -lt 16; $attempt++) {',
             '        Start-Sleep -Milliseconds 500',
             '        $fullBounds = Get-WindowBounds -WindowHandle $proc.MainWindowHandle',
+            '        Add-Content -Path $stepPath -Value (''FULLSCREEN_RECT={0},{1},{2},{3}'' -f $fullBounds.Left, $fullBounds.Top, $fullBounds.Right, $fullBounds.Bottom)',
             '        if ($fullBounds.Left -eq $bounds.Left -and $fullBounds.Top -eq $bounds.Top -and',
             '            ($fullBounds.Right - $fullBounds.Left) -eq $bounds.Width -and',
             '            ($fullBounds.Bottom - $fullBounds.Top) -eq $bounds.Height) {',
