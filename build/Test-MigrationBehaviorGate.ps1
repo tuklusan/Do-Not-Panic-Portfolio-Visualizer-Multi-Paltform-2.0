@@ -27,7 +27,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $trackerPath = Join-Path $repoRoot 'docs/AUDIT_STATE.json'
-$tracker = Get-Content -LiteralPath $trackerPath -Raw | ConvertFrom-Json
+$tracker = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $trackerPath -Raw)
 $cr = @($tracker.change_requests | Where-Object { $_.id -eq $CrId })
 if ($cr.Count -ne 1) {
     throw "Migration behavior gate requires exactly one tracker entry for $CrId; found $($cr.Count)."

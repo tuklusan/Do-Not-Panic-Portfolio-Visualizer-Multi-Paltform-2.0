@@ -90,7 +90,7 @@ function Assert-JsonHeader {
     )
 
     try {
-        $parsed = $Text | ConvertFrom-Json -ErrorAction Stop
+        $parsed = ConvertFrom-Json -InputObject ([string]$Text) -ErrorAction Stop
     }
     catch {
         throw "$PathLabel is not valid JSON."
