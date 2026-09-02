@@ -1761,8 +1761,8 @@
       "status": "open",
       "depends_on": ["CR-018"],
       "objective": "Prove the Avalonia configuration workflow, responsive layout, validation states, and save/cancel behavior against upstream user-visible rules.",
-      "acceptance_criteria": ["UI-01 and UI-02 pass on all three physical desktops and small/large viewport checks."],
-      "validation_plan": ["Three-machine visual acceptance", "UI behavior tests", "Artifact review"],
+      "acceptance_criteria": ["UI-01 and UI-02 pass on all four local physical desktops and small/large viewport checks."],
+      "validation_plan": ["Four-machine visual acceptance (Windows 10, Windows 11, Lubuntu/LXQt, and Intel macOS Big Sur)", "UI behavior tests", "Artifact review", "Mac acceptance is confined below ~/SOFTWARE_DEV/DNPPV_20/ and stays within the 1 GB project limit."],
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-019-CONFIGURATION-UI-INVENTORY.md",

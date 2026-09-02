@@ -29,8 +29,11 @@ Upstream pin: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 ## Validation Contract
 
 The physical workflow verifies the real Avalonia configuration window at small
-and large viewports. Deterministic tests cover validation, cancellation,
-save/reload, and cancel/discard paths. No WPF or installer behavior is in scope.
+and large viewports on all four local desktops: Windows 10, Windows 11,
+Lubuntu/LXQt, and Intel macOS Big Sur. The Mac run is confined below
+`~/SOFTWARE_DEV/DNPPV_20/` and must remain within its 1 GB project limit.
+Deterministic tests cover validation, cancellation, save/reload, and
+cancel/discard paths. No WPF or installer behavior is in scope.
 
 ## Audit Exit
 
