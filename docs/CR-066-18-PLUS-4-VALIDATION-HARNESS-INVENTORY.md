@@ -30,6 +30,7 @@ patent, trademark, and governing-law provisions.
 | CI-12 | Use unique run, machine, RID, and runner artifact names so evidence cannot collide or overwrite. |
 | CI-13 | Leave every machine clean after each run and terminate every application, server, display server, and helper process started by the harness. |
 | CI-14 | At the start of every soak cycle, probe all four local lab machines and use only currently reachable machines whose storage/display contracts pass. | Per-cycle availability manifest; unavailable is distinct from product failure |
+| CI-15 | Do not close the family until two independent complete four-hour soak cycles show no new actionable defects across all 18 hosted runners and every local machine available at each cycle start. | Two reviewed cycle manifests, trace sets, and defect ledgers |
 | TEST-01 | Verify that a successful run has a real-product screenshot, passing test result, circular trace retrieval, review result, and cleanup result. |
 
 ## Reference implementation findings

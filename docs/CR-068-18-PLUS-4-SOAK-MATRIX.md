@@ -36,5 +36,10 @@ lanes receive the OpenRouter key from a protected CI/local secret and pass it
 only as `DNPPV_OPENROUTER_API_KEY`; the value is never committed or included in
 review evidence.
 
+The matrix is not considered complete after one successful pass. Closure
+requires two independent full four-hour cycles. Each cycle must execute all 18
+hosted runner labels and every local machine available at that cycle's start;
+unavailable local machines are recorded as unavailable, never as passing lanes.
+
 **Depends on:** CR-066, CR-067  
 **Status:** Open

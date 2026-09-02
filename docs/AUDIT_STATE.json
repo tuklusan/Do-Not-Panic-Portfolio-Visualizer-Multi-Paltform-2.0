@@ -4757,6 +4757,7 @@
       "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, DeepSeek review, and cleanup lanes across all available hosted runner labels and four local machines.",
       "acceptance_criteria": [
         "Every available required lane runs the real product and records runner identity, architecture, display strategy, test result, screenshots, traces, review receipt, and cleanup result.",
+        "The matrix is not closed until two independent complete 4-hour cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects.",
         "Every soak cycle begins by probing all four local lab machines; only reachable contract-compliant machines are used, and unavailable machines are recorded rather than treated as passes.",
         "Missing optional runner labels are reported by probe and never treated as product passes.",
         "Windows 10 and Intel Mac storage gates are enforced before launch.",
@@ -4787,7 +4788,7 @@
         "All five durations run on every available required environment without overlapping runs.",
         "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, DeepSeek review, and cleanup proof.",
         "Every actionable failure becomes a JSON CR and is retested at the affected duration plus all shorter durations.",
-        "The final 4-hour profile closes only after successive evidence reviews show zero unresolved defects."
+        "The family closes only after two independent complete 4-hour cycles show no new actionable defects across all 18 hosted runners and available local machines."
       ],
       "validation_plan": [
         "Progressive duration execution in order",

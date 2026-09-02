@@ -22,12 +22,17 @@ Run and review the real-product profiles in this order on the 18-plus-4 matrix:
 4. 2 hours
 5. 4 hours
 
+The 4-hour profile must be completed twice as independent full cycles. Both
+cycles must cover all 18 hosted runners and all local machines available when
+that cycle begins, and both must show no new actionable defects after circular
+trace, artifact, and DeepSeek review.
+
 Each profile starts only after the prior profile's artifacts are reviewed and
 the machine is clean. Failures create a JSON CR with the exact run identity,
 trace pair, screenshot/evidence manifest, and reviewed diagnosis. After a fix,
 the affected profile and every shorter profile are relaunched. The final
-profile closes only when no product process remains and successive artifact
-reviews show zero unresolved failures.
+profile closes only when no product process remains and the two complete
+four-hour cycles show zero new actionable defects.
 
 At the start of each profile cycle, the harness rechecks all four local lab
 machines and runs on the currently reachable contract-compliant subset. The
