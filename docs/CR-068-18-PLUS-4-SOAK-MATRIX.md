@@ -33,8 +33,8 @@ The matrix must use unique run/host/RID artifact names, Linux Xvfb where needed,
 the documented Windows 10 `D:\SW_DEV\DO-NOT-PANIC-2.0` and `D:\TEMP` gates, and the
 Intel Mac one-GiB ceiling. Hosted publish-only jobs are insufficient. AI-news
 lanes receive the OpenRouter key from a protected CI/local secret and pass it
-only as `DNPPV_OPENROUTER_API_KEY`; the value is never committed or included in
-review evidence.
+only as `DNPPV_OPENROUTER_API_KEY` or `OPENROUTER_API_KEY`; the value is never
+committed or included in review evidence.
 
 The matrix is not considered complete after one successful pass. Closure
 requires two independent full four-hour cycles. Each cycle must execute all 18

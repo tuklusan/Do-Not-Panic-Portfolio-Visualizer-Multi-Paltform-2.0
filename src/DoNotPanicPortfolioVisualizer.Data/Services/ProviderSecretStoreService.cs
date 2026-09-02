@@ -55,7 +55,8 @@ public sealed class ProviderSecretStoreService
             ApplySecret(settings, dto.AiApiKey, static s => s.AiApiKey, static (s, v) => s.AiApiKey = v);
             if (string.IsNullOrWhiteSpace(settings.AiApiKey))
             {
-                string? processKey = Environment.GetEnvironmentVariable(OpenRouterApiKeyEnvironmentVariable);
+                string? processKey = Environment.GetEnvironmentVariable(OpenRouterApiKeyEnvironmentVariable)
+                    ?? Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
                 if (!string.IsNullOrWhiteSpace(processKey))
                     settings.AiApiKey = processKey.Trim();
             }

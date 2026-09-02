@@ -11,6 +11,13 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      soak_minutes:
+        description: 'Real-product soak duration in minutes (5, 10, 30, 120, or 240)'
+        required: true
+        default: '5'
+        type: choice
+        options: ['5', '10', '30', '120', '240']
 
 permissions:
   contents: read
@@ -67,5 +74,106 @@ jobs:
         run: dotnet publish src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output artifacts/${{ matrix.rid }}
       - uses: actions/upload-artifact@v4
         with:
-          name: dnppv2-${{ matrix.rid }}
+          name: dnppv2-${{ matrix.runner }}-${{ matrix.rid }}
           path: artifacts/${{ matrix.rid }}
+
+  real-product-soak:
+    if: github.event_name == 'workflow_dispatch'
+    timeout-minutes: 370
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            rid: win-x64
+          - runner: windows-2025
+            rid: win-x64
+          - runner: windows-2025-vs2026
+            rid: win-x64
+          - runner: windows-2022
+            rid: win-x64
+          - runner: windows-11-arm
+            rid: win-arm64
+          - runner: windows-11-vs2026-arm
+            rid: win-arm64
+          - runner: ubuntu-latest
+            rid: linux-x64
+          - runner: ubuntu-24.04
+            rid: linux-x64
+          - runner: ubuntu-22.04
+            rid: linux-x64
+          - runner: ubuntu-26.04
+            rid: linux-x64
+          - runner: ubuntu-24.04-arm
+            rid: linux-arm64
+          - runner: ubuntu-22.04-arm
+            rid: linux-arm64
+          - runner: ubuntu-26.04-arm
+            rid: linux-arm64
+          - runner: macos-15-intel
+            rid: osx-x64
+          - runner: macos-26-intel
+            rid: osx-x64
+          - runner: macos-15
+            rid: osx-arm64
+          - runner: macos-14
+            rid: osx-arm64
+          - runner: macos-26
+            rid: osx-arm64
+    runs-on: ${{ matrix.runner }}
+    env:
+      DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build and test the real product
+        run: |
+          dotnet build DoNotPanicPortfolioVisualizer.sln --configuration Release
+          dotnet test DoNotPanicPortfolioVisualizer.sln --configuration Release --no-build --logger "console;verbosity=minimal"
+      - name: Publish the real product
+        run: dotnet publish src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output artifacts/${{ matrix.rid }}
+      - name: Start Xvfb for Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          Xvfb :99 -screen 0 1280x800x24 >/dev/null 2>&1 &
+          echo $! > "$RUNNER_TEMP/dnppv2-xvfb.pid"
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+      - name: Run real-product soak and collect circular trace
+        shell: pwsh
+        env:
+          DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '5' }}
+        run: |
+          $runnerName = '${{ matrix.runner }}'
+          $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, '${{ matrix.rid }}')
+          $exeName = if ($IsWindows) { 'DoNotPanicPortfolioVisualizer.App.exe' } else { 'DoNotPanicPortfolioVisualizer.App' }
+          $exe = Join-Path $PWD ('artifacts/${{ matrix.rid }}/{0}' -f $exeName)
+          ./build/Invoke-ProductSoak.ps1 -ExecutablePath $exe -DurationMinutes ([int]$env:DNPPV_SOAK_DURATION_MINUTES) -ArtifactRoot $artifactRoot
+          $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
+          @(
+            "run_id=$env:GITHUB_RUN_ID"
+            "runner=$runnerName"
+            "rid=${{ matrix.rid }}"
+            (Get-Content -Raw (Join-Path $artifactRoot 'soak-result.json'))
+            'trace_files:'
+            (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object { $_.Name; Get-Content -Raw $_.FullName })
+          ) | Set-Content -LiteralPath $manifest -Encoding utf8
+          if ([string]::IsNullOrWhiteSpace($env:DEEPSEEK_API_KEY)) { throw 'DEEPSEEK_API_KEY is required for soak artifact review.' }
+          ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/deepseek-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+      - name: Stop Xvfb
+        if: always() && runner.os == 'Linux'
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/dnppv2-xvfb.pid" ]; then kill "$(cat "$RUNNER_TEMP/dnppv2-xvfb.pid")" 2>/dev/null || true; fi
+      - name: Upload soak evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dnppv2-soak-${{ github.run_id }}-${{ matrix.runner }}-${{ matrix.rid }}
+          path: |
+            artifacts/soak
+            build/deepseek-review

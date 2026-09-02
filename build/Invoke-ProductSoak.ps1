@@ -29,7 +29,7 @@ param(
     [string]$LocalDataRoot,
 
     [Parameter()]
-    [string]$OpenRouterApiKey = $env:DNPPV_OPENROUTER_API_KEY,
+    [string]$OpenRouterApiKey = $(if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } else { $env:OPENROUTER_API_KEY }),
 
     [Parameter()]
     [string[]]$ArgumentList = @('--windowed=1280x800'),
