@@ -263,7 +263,7 @@ function Copy-ToRemote {
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
-        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
             '-e',
             'scp',
             '-r',
