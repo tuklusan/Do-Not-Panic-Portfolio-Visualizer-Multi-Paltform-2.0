@@ -76,6 +76,21 @@ changes; do not commit live addresses or credentials.
   a protected release posture and use a trusted code-signing certificate before
   any public release acceptance.
 
+### `macos-x64-intel-big-sur`
+
+- Access: exact current SSH endpoint is kept only in the local ignored endpoint
+  inventory; current lab address is recorded there as `10.0.0.114`
+- OS: macOS Big Sur on Intel x64 hardware
+- Required project root: `~/SOFTWARE_DEV/DNPPV_20/`
+- Confinement rule: every uploaded source, build, test, temporary, log, and
+  acceptance artifact must remain below the required project root; missing or
+  inaccessible root is a hard stop requiring human intervention
+- Resource rule: total project-related disk usage must remain at or below
+  `1 GB` at all times; validation must measure before and during each run and
+  hard-stop before exceeding the ceiling
+- SSH: user is maintained in the ignored endpoint inventory; credentials are
+  never committed
+
 ## GitHub-Hosted Build/Test Lanes
 
 - `github-windows-x64`: runner `windows-latest`, RID `win-x64`
