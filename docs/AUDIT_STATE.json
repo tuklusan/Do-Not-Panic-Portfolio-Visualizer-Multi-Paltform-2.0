@@ -2074,7 +2074,23 @@
       "depends_on": ["CR-024"],
       "objective": "Prove secret migration/redaction and OpenRouter model discovery, ranking, caching, cancellation, and fallback behavior.",
       "acceptance_criteria": ["SEC-01 and AI-03 have complete deterministic 2.0 coverage and no secrets persist in settings or traces."],
-      "validation_plan": ["Security and model resolver tests", "Reviewer gate", "Artifact secret scan"]
+      "validation_plan": ["Security and model resolver tests", "Reviewer gate", "Artifact secret scan"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-025-SECRET-AI-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs", "tests/PortfolioSaver.Tests/Services/ProviderSecretStoreServiceTests.cs", "src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs", "tests/PortfolioSaver.Tests/Services/OpenRouterModelResolverTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Data/Services/ProviderSecretStoreService.cs", "tests/PortfolioSaver.Tests/Services/ProviderSecretStoreServiceTests.cs", "src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs", "tests/PortfolioSaver.Tests/Services/OpenRouterModelResolverTests.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs", "src/DoNotPanicPortfolioVisualizer.Core/Services/OpenRouterModelResolver.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-026",
