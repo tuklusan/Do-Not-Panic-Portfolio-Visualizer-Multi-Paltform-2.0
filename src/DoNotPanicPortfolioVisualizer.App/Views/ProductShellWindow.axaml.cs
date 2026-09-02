@@ -20,6 +20,8 @@ namespace DoNotPanicPortfolioVisualizer.App.Views;
 
 public partial class ProductShellWindow : Window
 {
+    private const double RestoredWindowWidth = 1180d;
+    private const double RestoredWindowHeight = 720d;
     private const double UpstreamTickerTopOffset = 188d;
     private WindowState _windowStateBeforeFullScreen = WindowState.Maximized;
     private MainWindow? _settingsWindow;
@@ -74,19 +76,7 @@ public partial class ProductShellWindow : Window
 
     private async void OnWindowOpened(object? sender, EventArgs e)
     {
-        if (WindowedStartupSize is Size requestedSize)
-        {
-            WindowState = WindowState.Normal;
-            Width = requestedSize.Width;
-            Height = requestedSize.Height;
-            TraceLog.InfoState("ProductShell", "WindowedStartupApplied", [
-                new("state", WindowState),
-                new("width", Width),
-                new("height", Height),
-                new("client_width", ClientSize.Width),
-                new("client_height", ClientSize.Height)
-            ]);
-        }
+        ApplyRestoredWindowBounds(WindowedStartupSize);
 
         if (DataContext is ProductSceneViewModel scene)
         {
@@ -97,6 +87,33 @@ public partial class ProductShellWindow : Window
             _backgroundLoadB = LoadBackgroundLayerAsync(scene.BackgroundSourceB, BackgroundLayerB, false, ++_backgroundGenerationB);
             await Task.WhenAll(_backgroundLoadA, _backgroundLoadB);
         }
+    }
+
+    private void ApplyRestoredWindowBounds(Size? requestedSize)
+    {
+        Screen? screen = Screens.ScreenFromWindow(this);
+        if (screen is null)
+            return;
+
+        double scale = Math.Max(1d, RenderScaling);
+        double availableWidth = Math.Max(1d, (screen.WorkingArea.Width - 24d) / scale);
+        double availableHeight = Math.Max(1d, (screen.WorkingArea.Height - 24d) / scale);
+        Size target = requestedSize ?? new Size(RestoredWindowWidth, RestoredWindowHeight);
+
+        WindowState = WindowState.Normal;
+        MaxWidth = availableWidth;
+        MaxHeight = availableHeight;
+        Width = Math.Clamp(target.Width, Math.Min(MinWidth, availableWidth), availableWidth);
+        Height = Math.Clamp(target.Height, Math.Min(MinHeight, availableHeight), availableHeight);
+        TraceLog.InfoState("ProductShell", "WindowedBoundsApplied", [
+            new("requested_width", target.Width),
+            new("requested_height", target.Height),
+            new("available_width", availableWidth),
+            new("available_height", availableHeight),
+            new("width", Width),
+            new("height", Height),
+            new("working_area", screen.WorkingArea)
+        ]);
     }
 
     private void OnScenePropertyChanged(object? sender, PropertyChangedEventArgs e)
