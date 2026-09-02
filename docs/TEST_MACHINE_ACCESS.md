@@ -80,6 +80,10 @@ changes; do not commit live addresses or credentials.
   any other machine. Re-enable the filter after this testing session; restore
   a protected release posture and use a trusted code-signing certificate before
   any public release acceptance.
+- Runtime prerequisite: the Windows Desktop Runtime matching the published
+  `net10.0` app must be installed. Use the licensed helper
+  `build/vm/Install-DotNetDesktopRuntime.ps1` when the machine reports that a
+  desktop runtime is missing; do not substitute a console-only .NET runtime.
 
 ### `macos-x64-intel-big-sur`
 

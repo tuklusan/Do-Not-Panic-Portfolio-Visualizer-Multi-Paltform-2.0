@@ -938,6 +938,11 @@ function Invoke-WindowsValidation {
         '"@',
         '',
         '$artifactDir = ' + $targetPublishDirPsLiteral,
+        '$userDotnetRoot = Join-Path $env:USERPROFILE ''DNPPV2\dotnet''',
+        'if (Test-Path -LiteralPath (Join-Path $userDotnetRoot ''dotnet.exe'') -PathType Leaf) {',
+        '    $env:DOTNET_ROOT = $userDotnetRoot',
+        '    $env:DOTNET_ROOT_X64 = $userDotnetRoot',
+        '}',
         '$donePath = Join-Path $artifactDir ''done.txt''',
         '$stepPath = Join-Path $artifactDir ''step.log''',
         '$localDataRoot = Join-Path $artifactDir ''local-data''',
@@ -1177,6 +1182,8 @@ function Invoke-WindowsValidation {
             '"@',
             '[DnppvSceneNative]::SetProcessDPIAware() | Out-Null',
             '$artifactDir = ' + $targetPublishDirPsLiteral,
+            '$userDotnetRoot = Join-Path $env:USERPROFILE ''DNPPV2\dotnet''',
+            'if (Test-Path -LiteralPath (Join-Path $userDotnetRoot ''dotnet.exe'') -PathType Leaf) { $env:DOTNET_ROOT = $userDotnetRoot; $env:DOTNET_ROOT_X64 = $userDotnetRoot }',
             '$donePath = Join-Path $artifactDir ''done.txt''',
             '$stepPath = Join-Path $artifactDir ''step.log''',
             '$localDataRoot = Join-Path $artifactDir ''local-data''',
@@ -1374,6 +1381,8 @@ function Invoke-WindowsValidation {
 `$scriptPath = $remoteScriptPathPsLiteral
 `$artifactDir = $targetPublishDirPsLiteral
 `$taskUser = $remoteUserPsLiteral
+`$userDotnetRoot = Join-Path `$env:USERPROFILE 'DNPPV2\dotnet'
+if (Test-Path -LiteralPath (Join-Path `$userDotnetRoot 'dotnet.exe') -PathType Leaf) { `$env:DOTNET_ROOT = `$userDotnetRoot; `$env:DOTNET_ROOT_X64 = `$userDotnetRoot }
 `$donePath = Join-Path `$artifactDir 'done.txt'
 `$localDataRoot = Join-Path `$artifactDir 'local-data'
 Remove-Item -Force -Recurse -ErrorAction SilentlyContinue `$localDataRoot
