@@ -81,11 +81,41 @@ function Invoke-NativeCommand {
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
         [Parameter()][string[]]$ArgumentList = @(),
-        [Parameter()][int[]]$AllowedExitCodes = @(0)
+        [Parameter()][int[]]$AllowedExitCodes = @(0),
+        [Parameter()][ValidateRange(1, 3600)][int]$TimeoutSeconds = 300
     )
 
-    & $FilePath @ArgumentList
-    $exitCode = $global:LASTEXITCODE
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $FilePath
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    foreach ($argument in $ArgumentList) {
+        [void]$psi.ArgumentList.Add($argument)
+    }
+
+    $process = [System.Diagnostics.Process]::new()
+    $process.StartInfo = $psi
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start native command: $FilePath"
+        }
+
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            try { $process.Kill($true) } catch { }
+            throw "Native command timed out after ${TimeoutSeconds}s: $FilePath $($ArgumentList -join ' ')"
+        }
+
+        $stdout = $process.StandardOutput.ReadToEnd()
+        $stderr = $process.StandardError.ReadToEnd()
+        if ($stdout) { Write-Output $stdout.TrimEnd() }
+        if ($stderr) { Write-Error $stderr.TrimEnd() }
+        $exitCode = $process.ExitCode
+    }
+    finally {
+        $process.Dispose()
+    }
+
     if ($AllowedExitCodes -notcontains $exitCode) {
         throw "Native command failed with exit code ${exitCode}: $FilePath $($ArgumentList -join ' ')"
     }
