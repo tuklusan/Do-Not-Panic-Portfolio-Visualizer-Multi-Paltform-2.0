@@ -155,18 +155,18 @@ jobs:
            $exe = Join-Path $PWD ('artifacts/${{ matrix.rid }}/{0}' -f $exeName)
            ./build/Invoke-ProductSoak.ps1 -ExecutablePath $exe -DurationMinutes ([int]$env:DNPPV_SOAK_DURATION_MINUTES) -ArtifactRoot $artifactRoot -ScreenshotPath $screenshotPath
            if (-not (Test-Path -LiteralPath $screenshotPath -PathType Leaf)) { throw 'Real product screenshot was not captured.' }
-          $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
-          @(
-            "run_id=$env:GITHUB_RUN_ID"
-            "runner=$runnerName"
-            "rid=${{ matrix.rid }}"
+           $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
+           @(
+             "run_id=$env:GITHUB_RUN_ID"
+             "runner=$runnerName"
+             "rid=${{ matrix.rid }}"
              (Get-Content -Raw (Join-Path $artifactRoot 'soak-result.json'))
              "screenshot=$screenshotPath"
-            'trace_files:'
-            (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object { $_.Name; Get-Content -Raw $_.FullName })
-          ) | Set-Content -LiteralPath $manifest -Encoding utf8
-          if ([string]::IsNullOrWhiteSpace($env:DEEPSEEK_API_KEY)) { throw 'DEEPSEEK_API_KEY is required for soak artifact review.' }
-          ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/deepseek-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+             'trace_files:'
+             (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object { $_.Name; Get-Content -Raw $_.FullName })
+           ) | Set-Content -LiteralPath $manifest -Encoding utf8
+           if ([string]::IsNullOrWhiteSpace($env:DEEPSEEK_API_KEY)) { throw 'DEEPSEEK_API_KEY is required for soak artifact review.' }
+           ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/deepseek-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
       - name: Stop Xvfb
         if: always() && runner.os == 'Linux'
         shell: bash
