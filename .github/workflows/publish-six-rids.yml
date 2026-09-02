@@ -24,6 +24,9 @@ permissions:
 
 jobs:
   publish:
+    concurrency:
+      group: dnppv2-publish-${{ github.ref }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:

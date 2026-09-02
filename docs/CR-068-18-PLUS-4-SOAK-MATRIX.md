@@ -59,5 +59,10 @@ requires two independent full four-hour cycles. Each cycle must execute all 18
 hosted runner labels and every local machine available at that cycle's start;
 unavailable local machines are recorded as unavailable, never as passing lanes.
 
+Ordinary publish-matrix jobs use branch-scoped concurrency and cancel obsolete
+older publish jobs when a newer checkpoint is pushed. The manually dispatched
+real-product soak matrix is intentionally outside that concurrency group and
+must never be cancelled or duplicated by a source push.
+
 **Depends on:** CR-066, CR-067  
 **Status:** Open
