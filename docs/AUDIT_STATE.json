@@ -2812,7 +2812,23 @@
       "depends_on": ["CR-042"],
       "objective": "Prove the default local summary, exchange-card catalog, bundled flag assets, canonical global benchmarks, and world-index mapping.",
       "acceptance_criteria": ["LOGIC-07 passes deterministic catalog and benchmark mapping tests and real-scene acceptance."],
-      "validation_plan": ["Focused catalog tests", "Three-machine production-scene review", "Six-target publish"]
+      "validation_plan": ["Focused catalog tests", "Three-machine production-scene review", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-043-CATALOG-BENCHMARK-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/YFinanceExchangeTimingService.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceExchangeTimingServiceTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/TickerPresentationTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs", "tests/PortfolioSaver.Tests/Services/YFinanceExchangeTimingServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/YFinanceExchangeTimingService.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/YFinanceExchangeTimingServiceTests.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/TickerPresentationTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-044",
