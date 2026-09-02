@@ -44,6 +44,16 @@ lanes receive the OpenRouter key from a protected CI/local secret and pass it
 only as `DNPPV_OPENROUTER_API_KEY` or `OPENROUTER_API_KEY`; the value is never
 committed or included in review evidence.
 
+## Observation cadence
+
+The runner's process-health poll and any live soak observer use a 30-second
+cadence. An unchanged in-progress state is not emitted more frequently than
+once per 30 seconds and should remain quiet between meaningful state changes.
+This observation cadence is separate from product timers, screenshot cadence,
+and the scheduler's wake-up behavior. A scheduler or chat continuation must not
+create duplicate soak runs or repeated per-second status messages; it waits for
+the next 30-second observation or a terminal/state-change event.
+
 The matrix is not considered complete after one successful pass. Closure
 requires two independent full four-hour cycles. Each cycle must execute all 18
 hosted runner labels and every local machine available at that cycle's start;

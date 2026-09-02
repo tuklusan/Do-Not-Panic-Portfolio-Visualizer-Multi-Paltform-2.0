@@ -43,7 +43,7 @@ param(
 
     [Parameter()]
     [ValidateRange(1, 60)]
-    [int]$PollIntervalSeconds = 10
+    [int]$PollIntervalSeconds = 30
 )
 
 Set-StrictMode -Version Latest
