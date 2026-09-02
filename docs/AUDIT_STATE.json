@@ -1665,6 +1665,13 @@
       "objective": "Manually scan every upstream test artifact and map each assertion, fixture, business rule, and test harness behavior to current 2.0 tests or create the required test CR.",
       "acceptance_criteria": ["All 62 upstream test artifacts are individually ledgered.", "Missing assertions and test environments are converted into actionable CRs.", "The current suite demonstrates the mapped upstream behaviors without toy product evidence."],
       "validation_plan": ["Manual line-by-line test review", "Full Release test suite", "Artifact and physical acceptance review"]
+      ,"upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-016-UPSTREAM-TEST-BEHAVIOR-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["tests/PortfolioSaver.Tests (62 artifacts)"],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-017",
