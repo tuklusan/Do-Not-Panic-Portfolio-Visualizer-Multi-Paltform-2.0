@@ -18,10 +18,10 @@ Upstream pin: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 
 ## Functional Inventory
 
-| LIFE-01 | Upstream behavior | 2.0 mapping |
+| LIF-01 | Upstream behavior | 2.0 mapping |
 | --- | --- | --- |
-| LIFE-01 | The owned provider process is launched only when needed, duplicate ownership/port use is rejected, startup is bounded, and cancellation or failed startup terminates and disposes the owned process. | `src/DoNotPanicPortfolioVisualizer.Shared/Services/YFinanceServerProcessManager.cs`, `src/YFinance/YFinance.NET.Server/Hosting/YFinanceServerProgram.cs`, and `YFinanceInfrastructureTests` cover owned launch, duplicate prevention, probe, cancellation, kill, wait, and disposal. |
-| LIFE-02 | Shutdown is idempotent, queued shutdown reaches the owned manager, clean and abnormal process-exit markers are preserved, and no child process remains after validation. | `OwnedServerShutdownQueue`, `DesktopRenderRecoveryPolicy`, VM harness `finally` cleanup, and lifecycle/process tests cover shutdown and cleanup behavior. |
+| LIF-01 | The owned provider process is launched only when needed, duplicate ownership/port use is rejected, startup is bounded, and cancellation or failed startup terminates and disposes the owned process. | `src/DoNotPanicPortfolioVisualizer.Shared/Services/YFinanceServerProcessManager.cs`, `src/YFinance/YFinance.NET.Server/Hosting/YFinanceServerProgram.cs`, and `YFinanceInfrastructureTests` cover owned launch, duplicate prevention, probe, cancellation, kill, wait, and disposal. |
+| LIF-02 | Shutdown is idempotent, queued shutdown reaches the owned manager, clean and abnormal process-exit markers are preserved, and no child process remains after validation. | `OwnedServerShutdownQueue`, `DesktopRenderRecoveryPolicy`, VM harness `finally` cleanup, and lifecycle/process tests cover shutdown and cleanup behavior. |
 
 ## Reverse Upstream Gap Scan
 
