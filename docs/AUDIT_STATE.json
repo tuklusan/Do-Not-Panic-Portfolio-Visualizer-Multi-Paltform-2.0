@@ -2417,7 +2417,23 @@
       "depends_on": ["CR-032"],
       "objective": "Prove legacy settings migration, normalization, profile/group mutation, and portable storage-root compatibility without losing user configuration.",
       "acceptance_criteria": ["DATA-07 passes a complete persistence and compatibility matrix across supported platforms."],
-      "validation_plan": ["Focused settings tests", "Three-machine persistence acceptance", "Artifact review"]
+      "validation_plan": ["Focused settings tests", "Three-machine persistence acceptance", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-033-SETTINGS-NORMALIZATION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Core/Validation/SettingsValidator.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "tests/PortfolioSaver.Tests/Services/AppSettingsNormalizerTests.cs", "tests/PortfolioSaver.Tests/Services/SettingsFileServiceTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Core/Services/AppSettingsNormalizer.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "src/PortfolioSaver.Core/Validation/SettingsValidator.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "tests/PortfolioSaver.Tests/Services/AppSettingsNormalizerTests.cs", "tests/PortfolioSaver.Tests/Services/SettingsFileServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Core/Storage/LocalDataRootResolver.cs", "src/DoNotPanicPortfolioVisualizer.Data/Services/SettingsFileService.cs", "src/DoNotPanicPortfolioVisualizer.Shared/Helpers/AppDataRootResolver.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-034",
