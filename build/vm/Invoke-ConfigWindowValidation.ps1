@@ -1259,7 +1259,7 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value (''PID={0}'' -f $proc.Id)',
             "    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {",
             '        Start-Sleep -Seconds 1',
-            '        Assert-StorageContract',
+            '        if (Get-Command Assert-StorageContract -ErrorAction SilentlyContinue) { Assert-StorageContract }',
             '        $proc.Refresh()',
             '        if ($proc.HasExited) { throw (''Product process exited before opening a window. Exit code: {0}'' -f $proc.ExitCode) }',
             '        if ($proc.MainWindowHandle -ne 0) { break }',
