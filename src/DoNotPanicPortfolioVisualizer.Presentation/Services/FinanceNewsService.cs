@@ -91,6 +91,9 @@ public sealed class FinanceNewsService : IDisposable
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Max(3, settings.HttpTimeoutSeconds)));
+        cancellationToken = timeout.Token;
         string[] configuredFeeds = (settings.NewsFeedUrls ?? [])
             .Where(static url => !string.IsNullOrWhiteSpace(url))
             .Take(Defaults.MaximumNewsFeedCount)
