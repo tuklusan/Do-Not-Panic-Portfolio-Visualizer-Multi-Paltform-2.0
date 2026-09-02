@@ -2935,7 +2935,23 @@
       "depends_on": ["CR-045"],
       "objective": "Implement and prove portable structured news-cache persistence, minimum freshness-floor replacement, AI-failure caching, and expired-cache fallback behavior.",
       "acceptance_criteria": ["DATA-10 passes fresh, stale, expired, malformed, AI-failure, and RSS-failure cache cases without stale-news regressions."],
-      "validation_plan": ["Focused news-cache tests", "Three-machine RSS and summarized-news acceptance", "Artifact and reviewer review"]
+      "validation_plan": ["Focused news-cache tests", "Three-machine RSS and summarized-news acceptance", "Artifact and reviewer review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-046-NEWS-CACHE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/NewsHeadlineCacheStore.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/NewsHeadlineCacheStore.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-047",

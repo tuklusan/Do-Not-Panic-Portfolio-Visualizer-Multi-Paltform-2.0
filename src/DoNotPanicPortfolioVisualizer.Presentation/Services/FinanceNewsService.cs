@@ -45,18 +45,20 @@ public sealed class FinanceNewsService : IDisposable
 
     private readonly HttpClient _client;
     private readonly Func<DateTimeOffset> _utcNow;
+    private readonly NewsHeadlineCacheStore _cacheStore;
     private RssFeedFreshnessSnapshot _lastRssFreshnessSnapshot = new(RssFeedFreshnessState.Unknown, null);
 
     public RssFeedFreshnessState LastRssFreshnessState => Volatile.Read(ref _lastRssFreshnessSnapshot).State;
 
     public DateTimeOffset? LatestRssPublicationUtc => Volatile.Read(ref _lastRssFreshnessSnapshot).LatestPublicationUtc;
 
-    public FinanceNewsService(HttpMessageHandler? handler = null, Func<DateTimeOffset>? utcNow = null)
+    public FinanceNewsService(HttpMessageHandler? handler = null, Func<DateTimeOffset>? utcNow = null, string? cachePath = null)
     {
         _client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: true);
         _client.Timeout = TimeSpan.FromSeconds(15);
         _client.DefaultRequestHeaders.UserAgent.ParseAdd("DNPPV-2.0/2.0");
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+        _cacheStore = new NewsHeadlineCacheStore(cachePath);
     }
 
     public async Task<IReadOnlyList<string>> GetHeadlinesAsync(string feedUrl, CancellationToken cancellationToken)
@@ -129,7 +131,12 @@ public sealed class FinanceNewsService : IDisposable
         })).ConfigureAwait(false);
         RssHeadlineSnapshot[] usable = snapshots.Where(static snapshot => snapshot.Headlines.Count > 0).ToArray();
         if (usable.Length == 0)
-            return new RssPlaybackSnapshot(["Configured RSS feeds are currently unavailable"], new(RssFeedFreshnessState.Unavailable, null));
+        {
+            NewsHeadlineCacheEntry? cached = await LoadMatchingCacheAsync(settings, string.Join("|", configuredFeeds), cancellationToken).ConfigureAwait(false);
+            return cached is not null
+                ? new RssPlaybackSnapshot(cached.Headlines, new(RssFeedFreshnessState.Stale, cached.LatestPublicationUtc))
+                : new RssPlaybackSnapshot(["Configured RSS feeds are currently unavailable"], new(RssFeedFreshnessState.Unavailable, null));
+        }
         IReadOnlyList<string> headlines = usable.SelectMany(static snapshot => snapshot.Headlines).Distinct().Take(12).ToList();
         RssFeedFreshnessState state = usable.Any(static snapshot => snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
             ? RssFeedFreshnessState.Fresh : RssFeedFreshnessState.Partial;
@@ -144,6 +151,7 @@ public sealed class FinanceNewsService : IDisposable
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested) { }
         }
+        await SaveCacheAsync(settings, string.Join("|", configuredFeeds), headlines, latest, cancellationToken).ConfigureAwait(false);
         return new RssPlaybackSnapshot(headlines, new(state, latest));
     }
 
@@ -156,6 +164,9 @@ public sealed class FinanceNewsService : IDisposable
         RecordFreshness(snapshot);
         if (snapshot.FreshnessState == RssFeedFreshnessState.Stale)
         {
+            NewsHeadlineCacheEntry? cached = await LoadMatchingCacheAsync(settings, feedUri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
+            if (cached is not null)
+                return new RssPlaybackSnapshot(cached.Headlines, new(RssFeedFreshnessState.Stale, cached.LatestPublicationUtc));
             string latestPublication = snapshot.LatestPublicationUtc?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "unknown";
             return new RssPlaybackSnapshot(
                 [$"Configured RSS source is stale: newest article was published {latestPublication} UTC."],
@@ -185,15 +196,19 @@ public sealed class FinanceNewsService : IDisposable
         try
         {
             string? summary = await SummarizeAsync(settings, snapshot.Headlines, cancellationToken).ConfigureAwait(false);
-            return new RssPlaybackSnapshot(
+            RssPlaybackSnapshot result = new(
                 string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary],
                 new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+            await SaveCacheAsync(settings, feedUri.AbsoluteUri, result.Headlines, snapshot.LatestPublicationUtc, cancellationToken).ConfigureAwait(false);
+            return result;
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
-            return new RssPlaybackSnapshot(
+            RssPlaybackSnapshot result = new(
                 rssHeadlines,
                 new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
+            await SaveCacheAsync(settings, feedUri.AbsoluteUri, result.Headlines, snapshot.LatestPublicationUtc, cancellationToken).ConfigureAwait(false);
+            return result;
         }
     }
 
@@ -381,6 +396,35 @@ public sealed class FinanceNewsService : IDisposable
             return new(source, new RssHeadlineSnapshot([], [], RssFeedFreshnessState.Unavailable, null));
         }
     }
+
+    private async Task<NewsHeadlineCacheEntry?> LoadMatchingCacheAsync(
+        AppSettings settings,
+        string feedKey,
+        CancellationToken cancellationToken)
+    {
+        NewsHeadlineCacheEntry? cached = await _cacheStore.LoadAsync(cancellationToken).ConfigureAwait(false);
+        string modeKey = $"{settings.NewsScrollerMode}:{settings.AiWritingStyle}";
+        return cached is not null &&
+            string.Equals(cached.ModeKey, modeKey, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(cached.FeedUrl, feedKey, StringComparison.OrdinalIgnoreCase)
+            ? cached
+            : null;
+    }
+
+    private Task SaveCacheAsync(
+        AppSettings settings,
+        string feedKey,
+        IReadOnlyList<string> headlines,
+        DateTimeOffset? latestPublicationUtc,
+        CancellationToken cancellationToken)
+        => _cacheStore.SaveAsync(new NewsHeadlineCacheEntry
+        {
+            ModeKey = $"{settings.NewsScrollerMode}:{settings.AiWritingStyle}",
+            FeedUrl = feedKey,
+            FetchTimestampUtc = _utcNow(),
+            LatestPublicationUtc = latestPublicationUtc,
+            Headlines = headlines.ToList()
+        }, cancellationToken);
 
     public RssFeedFreshnessSnapshot GetLatestRssFreshnessSnapshot()
         => Volatile.Read(ref _lastRssFreshnessSnapshot);
