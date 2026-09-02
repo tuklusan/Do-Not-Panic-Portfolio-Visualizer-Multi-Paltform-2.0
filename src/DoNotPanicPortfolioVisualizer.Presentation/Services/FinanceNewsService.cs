@@ -15,6 +15,7 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
@@ -147,7 +148,7 @@ public sealed class FinanceNewsService : IDisposable
             try
             {
                 string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
-                if (!string.IsNullOrWhiteSpace(summary)) headlines = [summary];
+                if (!string.IsNullOrWhiteSpace(summary)) headlines = BuildSummarizedHeadlines(summary, settings.AiWritingStyle);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested) { }
         }
@@ -211,7 +212,7 @@ public sealed class FinanceNewsService : IDisposable
         {
             string? summary = await SummarizeAsync(settings, snapshot.Headlines, cancellationToken).ConfigureAwait(false);
             RssPlaybackSnapshot result = new(
-                string.IsNullOrWhiteSpace(summary) ? rssHeadlines : [summary],
+                string.IsNullOrWhiteSpace(summary) ? rssHeadlines : BuildSummarizedHeadlines(summary, settings.AiWritingStyle),
                 new RssFeedFreshnessSnapshot(snapshot.FreshnessState, snapshot.LatestPublicationUtc));
             await SaveCacheAsync(settings, feedUri.AbsoluteUri, result.Headlines, snapshot.LatestPublicationUtc, cancellationToken).ConfigureAwait(false);
             return result;
@@ -270,6 +271,26 @@ public sealed class FinanceNewsService : IDisposable
             .GetProperty("content")
             .GetString();
         return string.IsNullOrWhiteSpace(summary) ? null : summary.Trim();
+    }
+
+    private static IReadOnlyList<string> BuildSummarizedHeadlines(string summary, AiWritingStyle writingStyle)
+    {
+        MatchCollection matches = Regex.Matches(
+            summary,
+            "\\[\\[ITEM\\]\\]\\s*(.*?)\\s*\\[\\[/ITEM\\]\\]",
+            RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        IReadOnlyList<string> items = matches.Count == 0
+            ? [summary.Trim()]
+            : matches.Select(static match => match.Groups[1].Value.Trim())
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .ToArray();
+        if (items.Count == 0)
+            items = [summary.Trim()];
+
+        string closingQuote = writingStyle == AiWritingStyle.WilliamShakespeare
+            ? "\"All that glisters is not gold.\""
+            : "\"Nothing travels faster than the speed of light, with the possible exception of bad news, which obeys its own special laws.\"";
+        return [.. items, closingQuote];
     }
 
     public void Dispose()
@@ -401,7 +422,7 @@ public sealed class FinanceNewsService : IDisposable
             {
                 string? summary = await SummarizeAsync(settings, headlines, cancellationToken).ConfigureAwait(false);
                 if (!string.IsNullOrWhiteSpace(summary))
-                    playback = [summary];
+                    playback = BuildSummarizedHeadlines(summary, settings.AiWritingStyle);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

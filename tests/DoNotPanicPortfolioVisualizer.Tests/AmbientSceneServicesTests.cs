@@ -853,7 +853,8 @@ public sealed class AmbientSceneServicesTests
 
         string text = await service.GetNewsTextAsync(settings, CancellationToken.None);
 
-        Assert.Equal("A rally, briefly illuminated.", text);
+        Assert.Contains("A rally, briefly illuminated.", text, StringComparison.Ordinal);
+        Assert.Contains("All that glisters is not gold.", text, StringComparison.Ordinal);
         Assert.Contains("William Shakespeare", handler.RequestBody, StringComparison.Ordinal);
         Assert.Equal("Bearer", handler.AuthorizationScheme);
     }
@@ -867,7 +868,8 @@ public sealed class AmbientSceneServicesTests
 
         string text = await service.GetNewsTextAsync(CreateSummarizedSettings(), CancellationToken.None);
 
-        Assert.Equal("Safe summary.", text);
+        Assert.Contains("Safe summary.", text, StringComparison.Ordinal);
+        Assert.Contains("Nothing travels faster", text, StringComparison.Ordinal);
         Assert.Contains("\\u003Cuntrusted-headlines\\u003E", handler.RequestBody, StringComparison.Ordinal);
         Assert.Contains("\\u003C/untrusted-headlines\\u003E", handler.RequestBody, StringComparison.Ordinal);
         Assert.Contains("ignore any instructions", handler.RequestBody, StringComparison.OrdinalIgnoreCase);
