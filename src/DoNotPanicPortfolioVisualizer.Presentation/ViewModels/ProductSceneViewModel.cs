@@ -73,6 +73,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly YFinanceServerProcessManager _serverManager;
     private readonly FinanceNewsService _newsService = new();
     private readonly WorldWeatherService _weatherService = new();
+    private readonly NtpTimeService _ntpTimeService = new();
+    private readonly InternetProbeService _networkProbe = new();
     private readonly BackgroundImageService _backgroundService = new();
     private readonly HistoricalGraphBuildCache _graphBuildCache = new();
     private readonly StagedSceneStartupCoordinator _sceneStartupCoordinator = new();
@@ -87,6 +89,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly object _renderHeartbeatGate = new();
     private DateTimeOffset _nextBackgroundChangeUtc;
     private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
+    private DateTimeOffset _lastNtpSyncUtc = DateTimeOffset.MinValue;
+    private TimeSpan? _ntpOffset;
     private double _graphViewportWidth = 1280d;
     private double _graphViewportHeight = 720d;
     private double _globalMarketsViewportWidth = 900d;
@@ -309,6 +313,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             prior = current;
             try
             {
+                if (DateTimeOffset.UtcNow - _lastNtpSyncUtc >= TimeSpan.FromMinutes(10))
+                    await RefreshNtpAsync(cancellationToken);
                 await InvokeOnUiAsync(() => UpdateClockAndMotion(elapsed), cancellationToken);
                 DateTimeOffset acceptedAt = DateTimeOffset.UtcNow;
                 TimeSpan fixtureElapsed = acceptedAt - _renderHeartbeatFixtureStartedUtc;
@@ -857,7 +863,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private void UpdateClockAndMotion(TimeSpan elapsed)
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = GetReferenceUtcNow();
         ClockDateText = now.ToLocalTime().ToString("ddd dd-MMM-yyyy").ToUpperInvariant();
         ClockText = now.ToString("HH:mm:ss 'UTC'");
         foreach (GlobalMarketViewModel market in GlobalMarkets)
@@ -888,6 +894,43 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
         ApplyBackgroundCinemaState();
     }
+
+    private async Task RefreshNtpAsync(CancellationToken cancellationToken)
+    {
+        DateTimeOffset attemptUtc = DateTimeOffset.UtcNow;
+        try
+        {
+            if (!await _networkProbe.IsInternetAvailableAsync(cancellationToken).ConfigureAwait(false))
+            {
+                _ntpOffset = null;
+                _lastNtpSyncUtc = attemptUtc;
+                return;
+            }
+
+            NtpSyncResult result = await _ntpTimeService.TryGetUtcNowAsync(cancellationToken).ConfigureAwait(false);
+            _ntpOffset = result.Success ? result.UtcNow - DateTimeOffset.UtcNow : null;
+            _lastNtpSyncUtc = attemptUtc;
+            TraceLog.InfoState(
+                "NtpTimeService",
+                result.Success ? "SyncSucceeded" : "LocalClockFallback",
+                [new("source", result.Source), new("success", result.Success), new("offset_ms", _ntpOffset?.TotalMilliseconds ?? 0d)]);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _ntpOffset = null;
+            _lastNtpSyncUtc = attemptUtc;
+            TraceLog.WarnState("NtpTimeService", "RefreshFailed", [new("exception_type", exception.GetType().Name)]);
+        }
+    }
+
+    private DateTimeOffset GetReferenceUtcNow()
+        => _ntpOffset.HasValue && DateTimeOffset.UtcNow - _lastNtpSyncUtc <= TimeSpan.FromMinutes(20)
+            ? DateTimeOffset.UtcNow + _ntpOffset.Value
+            : DateTimeOffset.UtcNow;
 
     public void ConfigureGraphViewport(double width, double height)
     {
