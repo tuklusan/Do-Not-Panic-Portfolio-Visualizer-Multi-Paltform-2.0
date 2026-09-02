@@ -1787,12 +1787,12 @@
       "id": "CR-020",
       "phase": "Phase 7",
       "title": "Close visual motion and background parity gaps",
-      "status": "open",
+      "status": "closed",
       "depends_on": ["CR-019"],
       "objective": "Close ticker animation, graph impulses, scene-safe bounds, and background transition behavior identified in the upstream scan.",
       "acceptance_criteria": ["VIS-01 through VIS-04 have focused tests and real production-screen evidence."],
-      "validation_plan": ["Motion/layout tests", "Six-target publish", "Three-machine screenshot/artifact review"]
-      ,"upstream_behavior_inventory": {
+      "validation_plan": ["Motion/layout tests", "Six-target publish", "Three-machine screenshot/artifact review"],
+      "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-020-VISUAL-MOTION-INVENTORY.md",
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
@@ -1804,6 +1804,37 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files_scanned": ["src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml", "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Render/Services/FloatingGraphMotionController.cs", "tests/DoNotPanicPortfolioVisualizer.Tests"],
         "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "evidence": [
+          "Win-11 real production scene: build/vm-artifacts/cr020-win11-artifact-r9; fullscreen 2560x1600; all six captures reviewed",
+          "Win-10 real production scene: build/vm-artifacts/cr020-win10-artifact-r10; storage contract passed; all six captures reviewed",
+          "Lubuntu real production scene: build/vm-artifacts/cr020-linux-artifact-r1; fullscreen 1280x768; all captures reviewed",
+          "Self-contained net10.0 win-x64 and linux-x64 publishes completed",
+          "Normal window restored bounds and active-monitor fullscreen bounds are implemented and traced"
+        ],
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/Services/TapeAnimationController.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Services/FloatingSpriteMotionController.cs",
+          "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml",
+          "src/PortfolioSaver.Desktop/Windows/MainWindow.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/VisualizerSceneState.cs",
+          "src/PortfolioSaver.Media/Services/BackgroundImageService.cs",
+          "src/PortfolioSaver.Media/Services/ImageTransitionController.cs"
+        ],
+        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       }
