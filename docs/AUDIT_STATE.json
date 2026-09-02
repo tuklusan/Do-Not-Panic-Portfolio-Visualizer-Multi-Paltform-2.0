@@ -1924,6 +1924,16 @@
       "objective": "Implement and prove the upstream floating clock, macro-meter status overlay, scene-state bindings, and responsive placement behavior in Avalonia.",
       "acceptance_criteria": ["UI-09 passes clock, macro status, viewport resize, fullscreen, and degraded-state acceptance on all local machines."],
       "validation_plan": ["Focused overlay/view-model tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-050",
+      "phase": "Phase 7",
+      "title": "Close branded network-waiting overlay parity gaps",
+      "status": "open",
+      "depends_on": ["CR-049"],
+      "objective": "Implement and prove the upstream branded network-waiting overlay, bounded placement, retained-scene behavior, and recovery visibility in the Avalonia product scene.",
+      "acceptance_criteria": ["UI-10 passes online, offline, retained-cache, recovery, resize, and fullscreen acceptance on all local machines."],
+      "validation_plan": ["Focused degraded-scene tests", "Three-machine physical acceptance", "Screenshot and artifact review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],

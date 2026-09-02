@@ -84,6 +84,7 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 | VIS-06 | `BuildNews_PreservesOriginalHeadlineCountWithoutArtificialDuplication`, `BuildNews_OnlyIncludesClosingQuoteOncePerPlaybackSequence`, `NewsFlasher_UsesTeleprinterPlaybackInsteadOfMarqueeLoop`, `NewsFlasherControl_*` | News sequence construction, teleprinter phase timing, viewport recovery, debounce, and headline replacement semantics need dedicated production-scene parity coverage. | CR-047 |
 | DATA-11 | `DefaultHttpClients_ReuseSharedHandlers`, `GetHttpClientTimeout_*`, `ClientAndServer_TraceEveryMessageAtTransportBoundary` | Shared HTTP-handler ownership, per-request timeout policy, and transport resource reuse need explicit 2.0 lifecycle and performance-safety tests. | CR-048 |
 | UI-09 | `FloatingClockViewModel`, `FloatingClockBuilder`, `StatusBarViewModel`, `MacroMeterViewModel`, `VisualizerSceneState.Clock`, `VisualizerSceneState.Status` | The upstream floating clock, macro-meter status overlay, and scene-state bindings are not represented by an equivalent 2.0 overlay model; the current fixed clock/status text is insufficient for full behavioral parity. | CR-049 |
+| UI-10 | `NetworkWaitingViewModel`, `VisualizerSceneControl.ApplyNetworkWaitingOverlay`, `NetworkWaitingOverlay`, `DegradedUxContractTests` | The upstream branded network-waiting overlay, bounded placement, retained-scene behavior, and recovery visibility are not represented by a dedicated 2.0 scene surface. | CR-050 |
 
 ## Test-Class Disposition Cross-Check
 
