@@ -1914,6 +1914,16 @@
       "objective": "Prove shared handler ownership, bounded per-request timeouts, disposal rules, and transport resource reuse across RSS, AI, probe, and YFinance paths.",
       "acceptance_criteria": ["DATA-11 passes handler-reuse, timeout, disposal, and transport-trace tests without socket or client leaks."],
       "validation_plan": ["Focused HTTP lifecycle tests", "Fault-injected provider runs", "Six-target publish"]
+    },
+    {
+      "id": "CR-049",
+      "phase": "Phase 7",
+      "title": "Close floating clock and macro status overlay parity gaps",
+      "status": "open",
+      "depends_on": ["CR-048"],
+      "objective": "Implement and prove the upstream floating clock, macro-meter status overlay, scene-state bindings, and responsive placement behavior in Avalonia.",
+      "acceptance_criteria": ["UI-09 passes clock, macro status, viewport resize, fullscreen, and degraded-state acceptance on all local machines."],
+      "validation_plan": ["Focused overlay/view-model tests", "Three-machine visual acceptance", "Artifact review"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
