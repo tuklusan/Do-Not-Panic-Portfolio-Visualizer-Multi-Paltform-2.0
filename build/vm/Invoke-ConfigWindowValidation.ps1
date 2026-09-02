@@ -328,7 +328,7 @@ function Invoke-LinuxValidation {
                 '-o',
                 'ConnectTimeout=60',
                 "$User@$HostName",
-                "mkdir -p -- $remotePublishDirLiteral"
+                "rm -rf -- $remotePublishDirLiteral && mkdir -p -- $remotePublishDirLiteral"
             )
         }
         finally {
