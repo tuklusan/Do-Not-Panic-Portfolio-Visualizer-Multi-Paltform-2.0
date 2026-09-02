@@ -1742,6 +1742,15 @@
         "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
         "source_files": ["upstream AI access, news, settings, and presentation sources (8 cited files)"],
         "zero_known_gaps": true
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": ["All 463 files in the upstream reference tree; CR-018 cited AI sources were included."],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [],
+        "evidence": "Test-UpstreamGapLedger.ps1 passed twice in the current workspace; latest scan read 463 files line by line."
       }
     },
     {
