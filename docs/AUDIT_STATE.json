@@ -1954,6 +1954,16 @@
       "objective": "Implement and prove structured background image identity, stable display names, supported-format policy, and attribution-safe selection paths.",
       "acceptance_criteria": ["VIS-07 passes bundled, custom-folder, nested-folder, unsupported-format, and attribution-selection cases."],
       "validation_plan": ["Focused media tests", "Three-machine visual acceptance", "Artifact review"]
+    },
+    {
+      "id": "CR-053",
+      "phase": "Phase 7",
+      "title": "Close timezone lookup caching parity gap",
+      "status": "open",
+      "depends_on": ["CR-052"],
+      "objective": "Implement and prove cached cross-platform timezone resolution for exchange-clock scheduler ticks, including invalid-ID fallback and bounded lookup behavior.",
+      "acceptance_criteria": ["LOGIC-08 passes repeated-tick, IANA, Windows-ID, invalid-ID, and fallback-clock tests without repeated uncached lookups."],
+      "validation_plan": ["Focused timezone tests", "Three-machine clock acceptance", "Six-target publish"]
     }
   ],
   "remaining_validation_gaps": ["CR-014 configurable RSS verification and AI acceptance pending closure"],
