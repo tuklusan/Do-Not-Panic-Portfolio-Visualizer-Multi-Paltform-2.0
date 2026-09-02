@@ -1762,7 +1762,14 @@
       "depends_on": ["CR-018"],
       "objective": "Prove the Avalonia configuration workflow, responsive layout, validation states, and save/cancel behavior against upstream user-visible rules.",
       "acceptance_criteria": ["UI-01 and UI-02 pass on all three physical desktops and small/large viewport checks."],
-      "validation_plan": ["Three-machine visual acceptance", "UI behavior tests", "Artifact review"]
+      "validation_plan": ["Three-machine visual acceptance", "UI behavior tests", "Artifact review"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-019-CONFIGURATION-UI-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Settings/Windows/MainWindow.xaml", "src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "src/PortfolioSaver.Settings/Services/SettingsFileService.cs", "src/PortfolioSaver.Data/Services/SettingsProtectionService.cs"],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-020",
