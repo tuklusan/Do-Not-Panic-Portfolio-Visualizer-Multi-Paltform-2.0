@@ -1700,7 +1700,14 @@
       "depends_on": ["CR-016"],
       "objective": "Manually scan every upstream workflow, build/test script, and documentation artifact and map it to the current public migration workflow or record intentional retirement and missing automation.",
       "acceptance_criteria": ["All upstream workflow, build, test-script, and documentation artifacts are individually ledgered.", "Intentional WPF, installer, and historical removals are explicitly justified.", "Every missing active workflow or document has an implementation CR and the final ledger has zero unclassified entries."],
-      "validation_plan": ["Manual line-by-line workflow/document review", "PowerShell/license/document gates", "Hosted and local acceptance validation"]
+      "validation_plan": ["Manual line-by-line workflow/document review", "PowerShell/license/document gates", "Hosted and local acceptance validation"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-017-UPSTREAM-WORKFLOW-DOCUMENT-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["upstream workflow/build/test/documentation set (109 artifacts)"],
+        "zero_known_gaps": true
+      }
     },
     {
       "id": "CR-018",
