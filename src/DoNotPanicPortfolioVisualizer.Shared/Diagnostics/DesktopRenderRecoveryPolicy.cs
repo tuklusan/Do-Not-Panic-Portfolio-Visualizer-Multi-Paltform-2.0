@@ -145,7 +145,8 @@ public static class DesktopRenderRecoveryPolicy
         DateTimeOffset startedUtc,
         int? rendererTier,
         string processRenderMode,
-        Action<string>? warningSink = null)
+        Action<string>? warningSink = null,
+        Action<string, string>? stateWriter = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(appDataRoot);
         ArgumentNullException.ThrowIfNull(decision);
@@ -156,22 +157,24 @@ public static class DesktopRenderRecoveryPolicy
         {
             try
             {
-                WriteState(
-                    statePath,
-                    new DesktopRenderRecoveryState
-                    {
-                        Version = StateVersion,
-                        RunId = runId,
-                        Status = RunningStatus,
-                        ProcessId = processId,
-                        StartedUtc = startedUtc,
-                        SelectedRenderMode = decision.SelectedModeName,
-                        SelectionReason = decision.Reason,
-                        PreviousRunStatus = decision.PreviousRunStatus,
-                        PreviousRunWasAbnormal = decision.PreviousRunWasAbnormal,
-                        RendererTier = rendererTier,
-                        ProcessRenderMode = processRenderMode
-                    });
+                DesktopRenderRecoveryState state = new()
+                {
+                    Version = StateVersion,
+                    RunId = runId,
+                    Status = RunningStatus,
+                    ProcessId = processId,
+                    StartedUtc = startedUtc,
+                    SelectedRenderMode = decision.SelectedModeName,
+                    SelectionReason = decision.Reason,
+                    PreviousRunStatus = decision.PreviousRunStatus,
+                    PreviousRunWasAbnormal = decision.PreviousRunWasAbnormal,
+                    RendererTier = rendererTier,
+                    ProcessRenderMode = processRenderMode
+                };
+                if (stateWriter is null)
+                    WriteState(statePath, state);
+                else
+                    stateWriter(statePath, JsonSerializer.Serialize(state, JsonOptions));
             }
             catch (Exception ex) when (IsRecoverableFileSystemException(ex))
             {

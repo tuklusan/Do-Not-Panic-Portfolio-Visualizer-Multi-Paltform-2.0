@@ -4776,6 +4776,44 @@
       }
     },
     {
+      "id": "CR-070",
+      "phase": "Phase 7",
+      "title": "Make recovery-policy fault simulation filesystem-independent",
+      "status": "open",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Replace the platform-specific file-sharing fault simulation in the recovery-policy test with a deterministic injected state-write failure so hosted Linux and macOS lanes exercise the same contract as Windows.",
+      "acceptance_criteria": [
+        "The test deterministically receives a simulated state-write failure on every supported operating system.",
+        "The stale running marker remains intact, a new run ID is allocated, a warning is emitted, and clean-exit update is rejected.",
+        "Full Release build and test suite pass on the local machine and hosted matrix.",
+        "Upstream behavior, license, syntax, and DeepSeek review gates pass."
+      ],
+      "validation_plan": [
+        "Manual line-by-line review of DesktopRenderRecoveryPolicy and its test",
+        "Local focused and full test execution",
+        "Hosted Linux, macOS, and Windows smoke rerun"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-070-CROSS-PLATFORM-RECOVERY-FAULT-INJECTION.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DesktopRenderRecoveryPolicyTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Hosted smoke rerun is pending."
+        ]
+      }
+    },
+    {
       "id": "CR-069",
       "phase": "Phase 7",
       "title": "Run and close the five progressive product soak profiles",
@@ -4807,7 +4845,8 @@
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",
-    "CR-069: five progressive soak profiles have not been executed and reviewed."
+    "CR-069: five progressive soak profiles have not been executed and reviewed.",
+    "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

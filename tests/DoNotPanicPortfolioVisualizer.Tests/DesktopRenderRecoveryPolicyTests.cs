@@ -635,19 +635,17 @@ public sealed class DesktopRenderRecoveryPolicyTests
             List<string> warnings = [];
             DesktopRenderRunRegistration failedStartRegistration;
 
-            using (new FileStream(statePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                failedStartRegistration = DesktopRenderRecoveryPolicy.MarkRunStarted(
-                    root,
-                    firstDecision,
-                    processId: 5678,
-                    DateTimeOffset.Parse("2026-07-13T12:10:00Z"),
-                    rendererTier: 2,
-                    processRenderMode: "Default",
-                    warnings.Add);
+            failedStartRegistration = DesktopRenderRecoveryPolicy.MarkRunStarted(
+                root,
+                firstDecision,
+                processId: 5678,
+                DateTimeOffset.Parse("2026-07-13T12:10:00Z"),
+                rendererTier: 2,
+                processRenderMode: "Default",
+                warnings.Add,
+                static (_, _) => throw new IOException("simulated state write failure"));
 
-                Assert.NotEqual(staleRegistration.RunId, failedStartRegistration.RunId);
-            }
+            Assert.NotEqual(staleRegistration.RunId, failedStartRegistration.RunId);
 
             Assert.NotEmpty(warnings);
             Assert.False(DesktopRenderRecoveryPolicy.TryMarkCleanExit(
@@ -719,4 +717,3 @@ public sealed class DesktopRenderRecoveryPolicyTests
             Directory.Delete(root, recursive: true);
     }
 }
-
