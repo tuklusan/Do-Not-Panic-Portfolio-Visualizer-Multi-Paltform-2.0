@@ -28,6 +28,8 @@ Upstream pin: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 | AI-04 | `src/PortfolioSaver.Render/ViewModels/NewsFlasherViewModel.cs`; `NewsHeadlineViewModel.cs` | Present safe generated or RSS headlines with bounded content and source attribution. |
 | AI-05 | `src/PortfolioSaver.Settings/Windows/MainWindow.xaml`; `MainWindow.xaml.cs` | Keep API fields, validation state, and save/apply interaction visible and correctly gated in the Avalonia configuration surface. |
 | AI-06 | Upstream news prompt construction and response parsing | Treat headlines as untrusted input; generated output must not execute, alter settings, bypass fallback, or suppress provider errors. |
+| AI-07 | `src/PortfolioSaver.Desktop/App.xaml.cs` startup access probe | After the desktop is visible, perform a bounded summarized-news access check, log a failed probe without preventing normal refresh retry, and preserve cancellation/cleanup behavior. |
+| AI-08 | Upstream settings/configuration workflow and physical validation path | Permit a physical test run to configure summarized-news mode with a non-secret test endpoint, model, and key, then prove a summary was requested and displayed with explicit trace evidence. |
 
 ## Required Failure Matrix
 

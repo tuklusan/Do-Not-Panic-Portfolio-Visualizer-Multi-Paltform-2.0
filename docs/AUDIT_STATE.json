@@ -1733,8 +1733,8 @@
       "title": "Close AI news access and prompt-safety parity gaps",
       "status": "open",
       "depends_on": ["CR-017"],
-      "objective": "Match upstream AI access validation, timeout/rate-limit behavior, endpoint rules, and prompt-safety test depth.",
-      "acceptance_criteria": ["AI-01 and AI-02 have 2.0 implementation and deterministic tests.", "No provider failure or prompt-injection-like headline bypasses the safe fallback contract."],
+      "objective": "Match upstream AI access validation, startup-probe orchestration, timeout/rate-limit behavior, endpoint rules, physical configuration workflow, and prompt-safety test depth.",
+      "acceptance_criteria": ["AI-01 and AI-02 have 2.0 implementation and deterministic tests.", "No provider failure or prompt-injection-like headline bypasses the safe fallback contract.", "The desktop performs the upstream bounded summarized-news startup access probe and retries normally after a probe failure.", "Physical acceptance can configure and launch summarized-news mode with a non-secret test endpoint and emits explicit summarized-success evidence."],
       "validation_plan": ["Focused AI tests", "Reviewer gate", "Physical summarized-news acceptance"],
       "upstream_behavior_inventory": {
         "status": "complete",
