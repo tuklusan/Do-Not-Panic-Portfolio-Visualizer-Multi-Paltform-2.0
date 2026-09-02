@@ -115,6 +115,16 @@ public partial class ProductShellWindow : Window
             new("height", Height),
             new("working_area", screen.WorkingArea)
         ]);
+        if (requestedSize is not null)
+        {
+            TraceLog.InfoState("ProductShell", "WindowedStartupApplied", [
+                new("state", WindowState),
+                new("width", Width),
+                new("height", Height),
+                new("client_width", ClientSize.Width),
+                new("client_height", ClientSize.Height)
+            ]);
+        }
     }
 
     private void OnScenePropertyChanged(object? sender, PropertyChangedEventArgs e)
