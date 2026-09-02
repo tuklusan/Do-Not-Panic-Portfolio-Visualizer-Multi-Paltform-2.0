@@ -3041,7 +3041,23 @@
       "depends_on": ["CR-047"],
       "objective": "Prove shared handler ownership, bounded per-request timeouts, disposal rules, and transport resource reuse across RSS, AI, probe, and YFinance paths.",
       "acceptance_criteria": ["DATA-11 passes handler-reuse, timeout, disposal, and transport-trace tests without socket or client leaks."],
-      "validation_plan": ["Focused HTTP lifecycle tests", "Fault-injected provider runs", "Six-target publish"]
+      "validation_plan": ["Focused HTTP lifecycle tests", "Fault-injected provider runs", "Six-target publish"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-048-HTTP-LIFECYCLE-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Presentation/Services/WorldWeatherService.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs", "tests/PortfolioSaver.Tests/Services/InternetProbeServiceTests.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/Services/WorldWeatherService.cs", "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-049",
