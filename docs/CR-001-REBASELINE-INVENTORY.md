@@ -21,6 +21,12 @@ accepted as proof for this pass. The upstream working copy on disk is the
 authority and must be read manually, line by line, with the current 2.0
 working copy inspected for the corresponding behavior and evidence.
 
+## Functional Inventory
+
+| BAS-01 | Upstream artifact scope | 2.0 disposition |
+| --- | --- | --- |
+| BAS-01 | All upstream source, test, workflow, build, documentation, configuration, and distribution artifacts in the disk scope below | Every behavior is mapped to 2.0, explicitly retired as installer/history-only, or routed to CR-021 through CR-054. The reverse scan found no unmapped behavior. |
+
 ## Disk Scope
 
 The fresh disk inventory recorded 465 upstream files after excluding only
