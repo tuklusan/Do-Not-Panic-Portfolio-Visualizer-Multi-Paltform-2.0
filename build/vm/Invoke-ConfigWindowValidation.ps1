@@ -76,14 +76,19 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$script:NativeCommandTimeoutSeconds = $TimeoutSeconds
 
 function Invoke-NativeCommand {
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
         [Parameter()][string[]]$ArgumentList = @(),
         [Parameter()][int[]]$AllowedExitCodes = @(0),
-        [Parameter()][ValidateRange(1, 3600)][int]$TimeoutSeconds = 300
+        [Parameter()][ValidateRange(0, 3600)][int]$TimeoutSeconds = 0
     )
+
+    if ($TimeoutSeconds -le 0) {
+        $TimeoutSeconds = $script:NativeCommandTimeoutSeconds
+    }
 
     $psi = [System.Diagnostics.ProcessStartInfo]::new()
     $psi.FileName = $FilePath
