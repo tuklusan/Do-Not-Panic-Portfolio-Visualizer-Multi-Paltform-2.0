@@ -39,6 +39,14 @@ patent, trademark, and governing-law provisions.
         <Style Selector="TabItem:pointerover">
             <Setter Property="Foreground" Value="#FFFFFF" />
         </Style>
+        <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="#33414F" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+        <Style Selector="TabItem:selected:pointerover">
+            <Setter Property="Background" Value="#40576B" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
         <Style Selector="TextBox">
             <Setter Property="Foreground" Value="#F4FAFF" />
             <Setter Property="CaretBrush" Value="#F4FAFF" />
