@@ -1896,6 +1896,22 @@
       "objective": "Prove runtime symbol ordering, macro preservation, market-session boundaries, and clock/status updates against upstream logic.",
       "acceptance_criteria": ["LOGIC-01 and LOGIC-02 are mapped, tested, and physically observed in the real scene."],
       "validation_plan": ["Focused business-rule tests", "Real-scene acceptance", "Degraded-state regression"]
+      ,"upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-021-MARKET-RUNTIME-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs", "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs", "src/PortfolioSaver.Core/Constants/DataSourceCatalog.cs", "src/PortfolioSaver.Presentation/Services/QuoteRefreshPolicy.cs", "src/PortfolioSaver.Data/Services/YFinanceExchangeTimingService.cs", "tests/PortfolioSaver.Tests/Services/Nb058Nb060BehaviorTests.cs", "tests/PortfolioSaver.Tests/Services/QuoteRefreshPolicyTests.cs", "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs", "src/DoNotPanicPortfolioVisualizer.Core", "src/DoNotPanicPortfolioVisualizer.Data", "tests/DoNotPanicPortfolioVisualizer.Tests"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-022",
