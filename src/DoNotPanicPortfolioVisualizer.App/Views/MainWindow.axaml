@@ -388,7 +388,9 @@ patent, trademark, and governing-law provisions.
                                                VerticalAlignment="Center"
                                                Foreground="#AFC4D8" />
                                     <TextBox Grid.Column="1"
-                                             Text="{Binding AiApiKey}" />
+                                             Text="{Binding AiApiKey}"
+                                             PasswordChar="*"
+                                             AutomationProperties.Name="AI API key" />
                                 </Grid>
 
                                 <Grid ColumnDefinitions="Auto,*"
