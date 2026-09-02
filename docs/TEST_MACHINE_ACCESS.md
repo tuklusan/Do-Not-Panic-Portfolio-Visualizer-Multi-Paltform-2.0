@@ -99,11 +99,12 @@ changes; do not commit live addresses or credentials.
   hard-stop before exceeding the ceiling
 - SSH: user is maintained in the ignored endpoint inventory; credentials are
   never committed
-- Harness gate: `build/vm/Test-MacStorageContract.sh` is the mandatory probe for
-  the Mac lane. It hard-stops when the required root is missing, outside the
-  user's home directory, inaccessible, or above `1 GiB` (1,048,576 KiB). The
-  Mac runner must invoke it before deployment and between run steps; absence of
-  a Mac driver that invokes it is a test-environment gap, not a waiver.
+- Harness gate: `build/vm/Invoke-MacConfigWindowValidation.sh` is the mandatory
+  driver for the Mac configuration lane. It hard-stops when the required root
+  is missing, outside the user's home directory, inaccessible, or above `1 GiB`
+  (1,048,576 KiB), checks the budget throughout the slow startup, and captures
+  the actual Avalonia window through CoreGraphics. The lower-level
+  `build/vm/Test-MacStorageContract.sh` remains available for setup probes.
 
 ## GitHub-Hosted Build/Test Lanes
 
