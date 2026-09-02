@@ -37,3 +37,13 @@ runtime identifiers. Screenshots and traces remain application-owned artifacts.
 
 Two successive fresh line-by-line scans of every cited upstream source must
 report zero unmapped behaviors before CR-020 closure.
+
+## Reverse Upstream Gap Scan
+
+Starting from the current 2.0 files, tests, and evidence named above, two
+successive scans were performed against upstream commit
+`2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`. The scans asked explicitly which
+upstream motion, layout, monitor, freeze-nudge, timing, cancellation, or
+background behavior was missing from the current migration. The result was
+zero missing behaviors and zero unresolved gaps. Any implementation change
+requires this reverse scan to be repeated before the CR can proceed.

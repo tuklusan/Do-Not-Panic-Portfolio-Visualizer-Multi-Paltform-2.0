@@ -31,6 +31,13 @@ Before changing product code for a CR:
 5. record the inventory document and scanned upstream commit in
    `docs/AUDIT_STATE.json`.
 
+The same CR must also carry a reverse upstream gap scan. This scan starts from
+the current 2.0 implementation and asks, for every related 2.0 file, test,
+workflow, and documentation entry: "identify upstream logic missing from the
+current migration." It must enumerate the upstream source files searched,
+record every missing behavior and its disposition, and prove two successive
+zero-gap scans. A forward inventory without this reverse scan is a hard stop.
+
 Run:
 
 ```powershell
@@ -54,6 +61,10 @@ The closure audit must record:
 - every discovered gap and its final disposition;
 - zero unmapped behaviors; and
 - at least two successive complete scans that found zero gaps.
+
+The reverse scan is mandatory here as well. Closure is blocked if any current
+2.0 artifact has not been reconciled back to the pinned upstream behavior, or
+if the reverse scan is stale relative to the implementation.
 
 Run:
 

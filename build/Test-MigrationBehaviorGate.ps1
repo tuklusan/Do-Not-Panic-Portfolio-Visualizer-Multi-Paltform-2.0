@@ -84,6 +84,16 @@ if ($inventorySection -notmatch $inventoryItemPattern) {
     throw "$CrId inventory document does not list functional behavior items."
 }
 
+$reverse = $cr[0].reverse_upstream_gap_scan
+if ($null -eq $reverse -or $reverse.status -ne 'complete' -or
+    [string]::IsNullOrWhiteSpace([string]$reverse.upstream_commit) -or
+    @($reverse.source_files_scanned).Count -eq 0 -or
+    $reverse.zero_missing_behaviors -ne $true -or
+    [int]$reverse.successive_zero_gap_scans -lt 2 -or
+    @($reverse.unresolved_gaps).Count -ne 0) {
+    throw "$CrId reverse upstream gap gate requires a complete scan, zero missing behaviors, no unresolved gaps, and at least two successive zero-gap scans."
+}
+
 if ($Stage -eq 'PreDevelopment') {
     Write-Output "MIGRATION_BEHAVIOR_GATE=Passed;CR=$CrId;STAGE=$Stage;UPSTREAM=$($inventory.upstream_commit)"
     return
