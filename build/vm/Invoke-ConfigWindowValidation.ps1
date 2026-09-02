@@ -251,6 +251,50 @@ function Invoke-RemotePowerShell {
     }
 }
 
+function Assert-Windows10StorageContract {
+    param(
+        [Parameter(Mandatory = $true)][string]$User,
+        [Parameter(Mandatory = $true)][string]$HostName,
+        [Parameter(Mandatory = $true)][string]$Secret
+    )
+
+    $scriptText = @'
+$projectRoot = 'D:\SW_DEV\DO-NOT-PANIC-2.0'
+$tempRoot = 'D:\TEMP'
+foreach ($requiredPath in @($projectRoot, $tempRoot)) {
+    if (-not (Test-Path -LiteralPath $requiredPath -PathType Container)) {
+        throw "WINDOWS10_STORAGE_HARD_STOP=MissingOrInaccessible:$requiredPath"
+    }
+    try {
+        $probe = Join-Path $requiredPath '.dnppv2-storage-contract-probe'
+        [IO.File]::WriteAllText($probe, 'probe')
+        Remove-Item -LiteralPath $probe -Force
+    }
+    catch {
+        throw "WINDOWS10_STORAGE_HARD_STOP=NotWritable:$requiredPath"
+    }
+}
+$machineTemp = [Environment]::GetEnvironmentVariable('TEMP', 'Machine')
+$machineTmp = [Environment]::GetEnvironmentVariable('TMP', 'Machine')
+if ($machineTemp -ne $tempRoot -or $machineTmp -ne $tempRoot) {
+    throw "WINDOWS10_STORAGE_HARD_STOP=MachineTempMapping:TEMP=$machineTemp;TMP=$machineTmp"
+}
+$d = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='D:'"
+if ($null -eq $d -or [int64]$d.FreeSpace -le 0) {
+    throw 'WINDOWS10_STORAGE_HARD_STOP=DDriveUnavailable'
+}
+[pscustomobject]@{
+    Contract = 'windows-10-project-storage'
+    ProjectRoot = $projectRoot
+    TempRoot = $tempRoot
+    MachineTemp = $machineTemp
+    MachineTmp = $machineTmp
+    DFreeBytes = [int64]$d.FreeSpace
+} | ConvertTo-Json -Compress
+'@
+    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $scriptText
+}
+
 function Copy-ToRemote {
     param(
         [Parameter(Mandatory = $true)][string]$User,
@@ -840,6 +884,9 @@ function Invoke-WindowsValidation {
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
+    if ($TargetPublishDir -match '^[Dd]:\\SW_DEV\\DO-NOT-PANIC-2\.0(?:\\|$)') {
+        Assert-Windows10StorageContract -User $User -HostName $HostName -Secret $Secret
+    }
     if (-not $SkipRemoteDeployment) {
         Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
         Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Join-Path $SourcePublishDir '.') -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path "$TargetPublishDir/")
@@ -891,6 +938,21 @@ function Invoke-WindowsValidation {
         '$donePath = Join-Path $artifactDir ''done.txt''',
         '$stepPath = Join-Path $artifactDir ''step.log''',
         '$localDataRoot = Join-Path $artifactDir ''local-data''',
+        '$storageContractRoot = ''D:\\SW_DEV\\DO-NOT-PANIC-2.0''',
+        '$storageContractTemp = ''D:\\TEMP''',
+        'function Assert-StorageContract {',
+        '    if ($artifactDir -notlike ($storageContractRoot + ''*'')) { return }',
+        '    foreach ($requiredPath in @($storageContractRoot, $storageContractTemp)) {',
+        '        if (-not (Test-Path -LiteralPath $requiredPath -PathType Container)) { throw (''WINDOWS10_STORAGE_HARD_STOP=MissingOrInaccessible:{0}'' -f $requiredPath) }',
+        '        $probe = Join-Path $requiredPath ''.dnppv2-storage-contract-probe''',
+        '        [IO.File]::WriteAllText($probe, ''probe'')',
+        '        Remove-Item -LiteralPath $probe -Force',
+        '    }',
+        '    $machineTemp = [Environment]::GetEnvironmentVariable(''TEMP'', ''Machine'')',
+        '    $machineTmp = [Environment]::GetEnvironmentVariable(''TMP'', ''Machine'')',
+        '    if ($machineTemp -ne $storageContractTemp -or $machineTmp -ne $storageContractTemp) { throw (''WINDOWS10_STORAGE_HARD_STOP=MachineTempMapping:TEMP={0};TMP={1}'' -f $machineTemp, $machineTmp) }',
+        '}',
+        'Assert-StorageContract',
         'Remove-Item -Force -Recurse -ErrorAction SilentlyContinue $localDataRoot',
         'Remove-Item -Force -ErrorAction SilentlyContinue $donePath, $stepPath, (Join-Path $artifactDir ''general.png''), (Join-Path $artifactDir ''validation.png'')',
         '',
@@ -1175,6 +1237,7 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value (''PID={0}'' -f $proc.Id)',
             "    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {",
             '        Start-Sleep -Seconds 1',
+            '        Assert-StorageContract',
             '        $proc.Refresh()',
             '        if ($proc.HasExited) { throw (''Product process exited before opening a window. Exit code: {0}'' -f $proc.ExitCode) }',
             '        if ($proc.MainWindowHandle -ne 0) { break }',

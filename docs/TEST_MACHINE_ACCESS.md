@@ -57,6 +57,11 @@ changes; do not commit live addresses or credentials.
   `D:\TEMP`
 - Notes: treat missing or inaccessible `D:\SW_DEV\DO-NOT-PANIC-2.0` or
   `D:\TEMP` as a hard stop requiring human intervention
+- Harness gate: when the remote publish path is below this root,
+  `Invoke-ConfigWindowValidation.ps1` verifies both roots are writable, checks
+  machine-level `TEMP` and `TMP`, and rechecks the contract while the product
+  is running. A failed check is fatal; the harness does not continue or clean
+  around the failure.
 
 ### `windows-11-laptop`
 
@@ -90,6 +95,11 @@ changes; do not commit live addresses or credentials.
   hard-stop before exceeding the ceiling
 - SSH: user is maintained in the ignored endpoint inventory; credentials are
   never committed
+- Harness gate: `build/vm/Test-MacStorageContract.sh` is the mandatory probe for
+  the Mac lane. It hard-stops when the required root is missing, outside the
+  user's home directory, inaccessible, or above `1 GiB` (1,048,576 KiB). The
+  Mac runner must invoke it before deployment and between run steps; absence of
+  a Mac driver that invokes it is a test-environment gap, not a waiver.
 
 ## GitHub-Hosted Build/Test Lanes
 
