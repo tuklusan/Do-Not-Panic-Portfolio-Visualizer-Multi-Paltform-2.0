@@ -2279,7 +2279,23 @@
       "depends_on": ["CR-029"],
       "objective": "Prove connectivity transition handling, validation ordering, cancellation responsiveness, and the invariant that canceled validation never publishes settings.",
       "acceptance_criteria": ["UI-05 passes the complete online/offline/recovery/cancel validation matrix."],
-      "validation_plan": ["Configuration workflow tests", "Three-machine acceptance", "Reviewer gate"]
+      "validation_plan": ["Configuration workflow tests", "Three-machine acceptance", "Reviewer gate"],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-030-CONFIGURATION-CONNECTIVITY-CANCELLATION-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": ["src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs", "src/PortfolioSaver.Settings/Services/AiNewsAccessValidationService.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs"],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": ["src/PortfolioSaver.Settings/ViewModels/MainWindowViewModel.cs", "src/PortfolioSaver.Settings/Services/NewsFeedValidationService.cs", "src/PortfolioSaver.Settings/Services/AiNewsAccessValidationService.cs", "src/PortfolioSaver.Settings/Services/YahooSymbolValidationService.cs", "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs", "src/DoNotPanicPortfolioVisualizer.App/ViewModels/MainViewModel.cs", "tests/DoNotPanicPortfolioVisualizer.Tests/SettingsPersistenceAndValidationTests.cs"],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
     },
     {
       "id": "CR-031",
