@@ -5399,8 +5399,16 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The first 2026-09-03 local four-hour cycle stopped after Linux because artifact retrieval referenced an uninitialized variable."
-        ]
+          "The first 2026-09-03 local four-hour cycle stopped after Linux because artifact retrieval referenced an uninitialized variable.",
+          "The corrected 2026-09-03-r3 cycle was intentionally interrupted at approximately 56 minutes during the Linux soak; no local-machine pass evidence was claimed."
+        ],
+        "checkpoint": {
+          "cycle": "local-cycle-240-20260903-r3",
+          "state": "intentionally-interrupted",
+          "completed_machine_lanes": [],
+          "cleanup": "local coordinator, SSH helpers, and Linux temporary cycle root removed",
+          "resume_from": "start a fresh availability-probed cycle after commit b2eceaf"
+        }
       }
     }
   ],
