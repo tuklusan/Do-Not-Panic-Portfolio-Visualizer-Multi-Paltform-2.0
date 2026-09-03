@@ -5263,7 +5263,7 @@
       "id": "CR-077",
       "phase": "Phase 7",
       "title": "Make Windows SSH physical acceptance foreground-safe",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066"
       ],
@@ -5285,13 +5285,17 @@
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "The 2026-09-03 local five-minute cycle reached both Windows products but failed before screenshot capture because the product window was not foreground; subsequent SCP errors obscured the original driver failure."
-        ],
+        "status": "closed",
+        "unresolved_gaps": [],
         "implementation_progress": [
-          "The Windows scene engine now attaches input threads and performs an ALT-assisted foreground acquisition retry before visual assertions.",
-          "Remote Windows retrieval now copies and validates done.txt before requesting screenshots, preserving the original driver failure instead of masking it with SCP output."
+          "The Windows scene engine first uses explicit ShowWindow, topmost promotion, AllowSetForegroundWindow, SwitchToThisWindow, SetForegroundWindow, and SetActiveWindow calls, then uses a verified AttachThreadInput fallback only when required.",
+          "Remote Windows retrieval validates done.txt before optional artifacts and attempts step.log retrieval when done.txt reports failure; Linux retrieval preserves both remote execution and artifact-copy failures."
+        ],
+        "evidence": [
+          "Fresh 2026-09-03 Windows 10 product-scene acceptance passed with DONE, SMALL_VIEWPORT_CAPTURED, MENU_OPEN_CAPTURED, WIDE_VIEWPORT_CAPTURED, FULLSCREEN_CAPTURED, FULLSCREEN_MOTION_CAPTURED, and FULLSCREEN_EXIT_MENU_CAPTURED.",
+          "Fresh 2026-09-03 Windows 11 product-scene acceptance passed with the same complete capture set and DONE.",
+          "Both runs retrieved non-empty screenshots and circular trace files; traces confirm Startup, WindowedStartupApplied, BackgroundCommitted, SyncSucceeded, and DEFERRED_LANES_STARTED.",
+          "Focused PowerShell syntax, license-header, and diff checks passed; NVIDIA NIM review completed on the staged harness changes and its remaining findings are advisory design concerns recorded for later hardening."
         ]
       }
     }

@@ -39,4 +39,12 @@ reverse-gap scans, NVIDIA NIM source/evidence review, a deliberate failure-path
 check proving missing screenshots do not mask the original error, successful
 physical acceptance on each available Windows machine, and remote cleanup.
 
-**Status:** Open
+**Status:** Closed
+
+Closure evidence: fresh 2026-09-03 product-scene acceptance passed on both
+Windows 10 and Windows 11. Each run returned `DONE`, captured the windowed,
+menu, wide, fullscreen, fullscreen-motion, and fullscreen-exit-menu states,
+and retrieved non-empty screenshots and circular trace files. The traces
+confirm startup, restored window geometry, background commit, time sync, and
+deferred ticker-lane startup. The harness now preserves the first remote
+failure reason when artifact retrieval is incomplete.
