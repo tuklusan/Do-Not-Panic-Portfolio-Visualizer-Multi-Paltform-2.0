@@ -5255,6 +5255,38 @@
           "No progressive soak evidence exists yet."
         ]
       }
+    },
+    {
+      "id": "CR-077",
+      "phase": "Phase 7",
+      "title": "Make Windows SSH physical acceptance foreground-safe",
+      "status": "open",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Ensure SSH-launched Windows physical acceptance runs in the logged-in interactive desktop, acquires foreground focus before visual assertions, and preserves the original failure reason when an artifact is absent.",
+      "acceptance_criteria": [
+        "Windows 10 and Windows 11 acceptance runs prove the interactive session and window station used for capture.",
+        "Foreground acquisition succeeds before positioning, capture, menu, and fullscreen assertions.",
+        "Missing screenshot retrieval cannot mask the original driver failure.",
+        "Successful runs retrieve non-empty screenshots and circular traces and leave no residual product or helper processes."
+      ],
+      "validation_plan": [
+        "Line-by-line upstream and current Windows harness comparison",
+        "Deliberate foreground and missing-artifact failure-path rehearsal",
+        "Five-minute real-product runs on both available Windows machines",
+        "Focused/full tests, NVIDIA NIM review, cleanup, and repeated acceptance scan"
+      ],
+      "artifacts": [
+        "docs/CR-077-WINDOWS-REMOTE-FOREGROUND-ACCEPTANCE.md",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The 2026-09-03 local five-minute cycle reached both Windows products but failed before screenshot capture because the product window was not foreground; subsequent SCP errors obscured the original driver failure."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
