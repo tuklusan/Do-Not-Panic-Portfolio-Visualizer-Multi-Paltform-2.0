@@ -9,7 +9,7 @@
     "checkpoint_commit": "c6c6c43",
     "queue_source": "docs/AUDIT_STATE.json",
     "goal_status": "active",
-    "reviewer_migration": "NVIDIA NIM reviewer migration in progress until the new gate passes and is committed."
+    "reviewer_migration": "Complete at commit 460d447; NVIDIA NIM is the active reviewer and CR-066 queue processing may resume."
   },
   "active_reviewer": {
     "provider": "NVIDIA NIM",
@@ -4669,7 +4669,7 @@
       "acceptance_criteria": [
         "All 18 configured hosted runner labels are probed and their availability is recorded without treating a missing optional label as a product pass.",
         "Every available required hosted and local lane builds, tests, launches the real product, waits for settling, captures evidence, retrieves circular traces, and passes artifact review.",
-        "DeepSeek reviews both the changed source packet and the complete generated test-result/evidence packet; missing, empty, or FAIL reviews block acceptance.",
+        "NVIDIA NIM reviews both the changed source packet and the complete generated test-result/evidence packet; missing, empty, or FAIL reviews block acceptance.",
         "Required lane failures block the workflow; only the explicit availability probe is non-blocking.",
         "At the start of every soak cycle, all four local machines are re-probed; currently reachable contract-compliant machines run, unavailable machines are recorded distinctly, and local non-availability is non-blocking when all 18 hosted lanes prove execution. Progressive profiles enforce cleanup, disk budgets, process termination, unique artifact naming, and autonomous defect-to-CR iteration."
       ],
@@ -4678,7 +4678,7 @@
         "Runner availability probe followed by blocking real-product matrix",
         "Four-machine physical acceptance with circular trace and screenshot review",
         "Progressive soak and autonomous defect-routing rehearsal",
-        "DeepSeek source/evidence review, license, syntax, upstream, build, test, and cleanup gates"
+        "NVIDIA NIM source/evidence review, license, syntax, upstream, build, test, and cleanup gates"
       ],
       "upstream_behavior_inventory": {
         "status": "complete",
@@ -4795,14 +4795,14 @@
         "CR-066",
         "CR-067"
       ],
-      "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, DeepSeek review, and cleanup lanes across all available hosted runner labels and four local machines.",
+      "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, NVIDIA NIM review, and cleanup lanes across all available hosted runner labels and four local machines.",
       "acceptance_criteria": [
         "Every available required lane runs the real product and records runner identity, architecture, display strategy, test result, screenshots, traces, review receipt, and cleanup result.",
         "The matrix is not closed until two independent complete 4-hour cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects.",
         "Every soak cycle begins by probing all four local lab machines; only reachable contract-compliant machines are used, and unavailable machines are recorded rather than treated as passes.",
         "Missing optional runner labels are reported by probe and never treated as product passes.",
         "Windows 10 and Intel Mac storage gates are enforced before launch.",
-        "DeepSeek reviews source and complete generated test evidence before lane acceptance."
+        "NVIDIA NIM reviews source and complete generated test evidence before lane acceptance."
       ],
       "validation_plan": [
         "Hosted matrix probe and blocking real-product matrix",
@@ -4836,7 +4836,7 @@
         "Fresh upstream line-by-line scan and reverse missing-behavior gate",
         "Focused regression tests for ribbon geometry, startup status rendering, and scheduling",
         "Linux-first real-product 5-, 10-, and 30-minute soaks with circular-trace correlation",
-        "Windows and macOS physical acceptance when available, followed by DeepSeek source/evidence review"
+        "Windows and macOS physical acceptance when available, followed by NVIDIA NIM source/evidence review"
       ],
       "artifacts": [
         "docs/CR-071-STARTUP-RIBBON-AND-PACING.md"
@@ -4876,7 +4876,7 @@
         "Manual upstream AI/news behavior comparison and reverse gap scan",
         "Focused timeout and trace tests",
         "Fresh real-product local runs on all available machines",
-        "Full Release build/test and DeepSeek source/evidence review"
+        "Full Release build/test and NVIDIA NIM source/evidence review"
       ],
       "artifacts": [
         "docs/CR-073-AI-SUMMARY-TIMEOUT-AND-TRACE.md"
@@ -4918,7 +4918,7 @@
         ],
         "evidence": [
           "2026-09-03 local five-minute cycle passed on Linux, Windows 10, and Windows 11 with real AI summary success events in circular traces.",
-          "DeepSeek artifact review passed for the consolidated local five-minute evidence."
+          "NVIDIA NIM artifact review passed for the consolidated local five-minute evidence."
         ]
       }
     },
@@ -4935,12 +4935,12 @@
         "Summary requests include temperature 0.2 and max_tokens 2000.",
         "OpenRouter requests include provider sort latency and attribution headers.",
         "OpenRouter auto-model requests use the resolved model.",
-        "Focused and full validation passes, including DeepSeek review and cleanup, succeed."
+        "Focused and full validation passes, including NVIDIA NIM review and cleanup, succeed."
       ],
       "validation_plan": [
         "Manual upstream and reverse AI request contract scan",
         "Focused payload and header tests",
-        "Full Release build/test and DeepSeek source/evidence review",
+        "Full Release build/test and NVIDIA NIM source/evidence review",
         "Fresh real-product AI-path evidence"
       ],
       "artifacts": [
@@ -4984,7 +4984,7 @@
         "evidence": [
           "Full Release test suite passed: 294 passed, 0 failed.",
           "Release build passed with 0 warnings and 0 errors.",
-          "DeepSeek code review passed with no blocking findings.",
+          "NVIDIA NIM code review completed; advisory findings were evaluated and no unverified blocker was accepted.",
           "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11."
         ]
       }
@@ -5008,7 +5008,7 @@
         "Manual workflow concurrency and dependency scan",
         "Push plus dispatch interaction rehearsal",
         "Fresh 240-minute hosted cycle",
-        "Artifact and DeepSeek review"
+        "Artifact and NVIDIA NIM review"
       ],
       "artifacts": [
         "docs/CR-076-SOAK-CONCURRENCY-ISOLATION.md",
@@ -5059,12 +5059,12 @@
       "acceptance_criteria": [
         "Every hosted runner trace contains AI access and summary evidence.",
         "Missing AI trace evidence fails post-soak review and routes a CR.",
-        "The evidence set contains 18 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing DeepSeek artifact review."
+        "The evidence set contains 18 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing NVIDIA NIM artifact review."
       ],
       "validation_plan": [
         "Manual inspection of completed hosted artifacts",
         "Fresh current-main 240-minute hosted cycle",
-        "DeepSeek source and evidence review",
+        "NVIDIA NIM source and evidence review",
         "CR-066 acceptance ledger update"
       ],
       "artifacts": [
@@ -5117,7 +5117,7 @@
         "The Linux lane prefers the installed X11 capture utility and applies a hard timeout plus kill-after grace period to every fallback.",
         "A capture failure fails the lane with a step-log reason rather than hanging the soak.",
         "Fresh Linux evidence contains a non-empty screenshot, circular trace pair, and zero residual product, sidecar, screenshot, or SSH helper processes.",
-        "The upstream behavior gate, syntax, license, build, test, DeepSeek source/evidence review, and artifact checks pass."
+        "The upstream behavior gate, syntax, license, build, test, NVIDIA NIM source/evidence review, and artifact checks pass."
       ],
       "validation_plan": [
         "Manual upstream and current-driver capture-path comparison",
@@ -5204,7 +5204,7 @@
         "The test deterministically receives a simulated state-write failure on every supported operating system.",
         "The stale running marker remains intact, a new run ID is allocated, a warning is emitted, and clean-exit update is rejected.",
         "Full Release build and test suite pass on the local machine and hosted matrix.",
-        "Upstream behavior, license, syntax, and DeepSeek review gates pass."
+        "Upstream behavior, license, syntax, and NVIDIA NIM review gates pass."
       ],
       "validation_plan": [
         "Manual line-by-line review of DesktopRenderRecoveryPolicy and its test",
@@ -5240,7 +5240,7 @@
       "objective": "Run 5-minute, 10-minute, 30-minute, 1-hour, 2-hour, and 4-hour real-product soaks in sequence, review traces and evidence, route defects to JSON CRs, and relaunch affected profiles until verified closure.",
       "acceptance_criteria": [
         "All five durations run on every available required environment without overlapping runs.",
-        "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, DeepSeek review, and cleanup proof.",
+        "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, NVIDIA NIM review, and cleanup proof.",
         "Every actionable failure becomes a JSON CR and is retested at the affected duration plus all shorter durations.",
         "The family closes only after two independent complete 4-hour cycles show no new actionable defects across all 18 hosted runners and available local machines."
       ],
