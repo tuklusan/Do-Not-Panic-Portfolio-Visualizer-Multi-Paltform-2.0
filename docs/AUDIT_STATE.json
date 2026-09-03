@@ -5288,6 +5288,10 @@
         "status": "open",
         "unresolved_gaps": [
           "The 2026-09-03 local five-minute cycle reached both Windows products but failed before screenshot capture because the product window was not foreground; subsequent SCP errors obscured the original driver failure."
+        ],
+        "implementation_progress": [
+          "The Windows scene engine now attaches input threads and performs an ALT-assisted foreground acquisition retry before visual assertions.",
+          "Remote Windows retrieval now copies and validates done.txt before requesting screenshots, preserving the original driver failure instead of masking it with SCP output."
         ]
       }
     }

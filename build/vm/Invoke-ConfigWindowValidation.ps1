@@ -240,6 +240,7 @@ function Invoke-RemotePowerShell {
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     $remoteExecutionFailure = $null
+    $artifactRetrievalFailure = $null
     try {
         Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
             '-e',
@@ -927,9 +928,7 @@ function Invoke-LinuxValidation {
             Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/$artifactName") -DestinationPath (Join-Path $ArtifactRoot $artifactName)
         }
         catch {
-            if ($null -eq $remoteExecutionFailure) {
-                throw
-            }
+            if ($null -eq $artifactRetrievalFailure) { $artifactRetrievalFailure = $_ }
         }
     }
     if ($SoakMinutes -gt 0) {
@@ -943,6 +942,12 @@ function Invoke-LinuxValidation {
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
 
+    if ($null -ne $remoteExecutionFailure -and $null -ne $artifactRetrievalFailure) {
+        throw "Linux validation and artifact retrieval both failed. remote=$($remoteExecutionFailure.Exception.Message); retrieval=$($artifactRetrievalFailure.Exception.Message)"
+    }
+    if ($null -ne $artifactRetrievalFailure) {
+        throw "Linux validation completed remotely, but artifact retrieval failed. retrieval=$($artifactRetrievalFailure.Exception.Message)"
+    }
     if ($null -ne $remoteExecutionFailure) {
         throw $remoteExecutionFailure
     }
@@ -971,7 +976,8 @@ function Invoke-WindowsValidation {
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
-    $remoteSecretPath = Join-Path $TargetPublishDir '.dnppv2-openrouter-secret'
+    $remoteSecretName = '.dnppv2-openrouter-secret-{0}' -f ([Guid]::NewGuid().ToString('N'))
+    $remoteSecretPath = Join-Path $TargetPublishDir $remoteSecretName
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
     if ($TargetPublishDir -match '^[Dd]:\\SW_DEV\\DO-NOT-PANIC-2\.0(?:\\|$)') {
         Assert-Windows10StorageContract -User $User -HostName $HostName -Secret $Secret
@@ -1219,11 +1225,19 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_FORCE_NEWS_FAILURE -ErrorAction SilentlyContinue'
         }
+        $remoteSecretNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteSecretName
         $openRouterApiKeyLine = if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
-            '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath (Join-Path $artifactDir ''.dnppv2-openrouter-secret'') -Raw).Trim()'
+            '$openRouterSecretPath = Join-Path $artifactDir ' + $remoteSecretNamePsLiteral
+            '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath $openRouterSecretPath -Raw).Trim()'
         }
         else {
             'Remove-Item Env:DNPPV_OPENROUTER_API_KEY -ErrorAction SilentlyContinue'
+        }
+        $openRouterApiKeyCleanupLine = if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+            'Remove-Item -LiteralPath $openRouterSecretPath -Force -ErrorAction SilentlyContinue'
+        }
+        else {
+            '$null = $null'
         }
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
             @(
@@ -1264,9 +1278,16 @@ function Invoke-WindowsValidation {
             '    public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);',
             '    [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();',
             '    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);',
+            '    [DllImport("user32.dll")] public static extern IntPtr SetActiveWindow(IntPtr hWnd);',
             '    [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr hWnd);',
             '    [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int processId);',
             '    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();',
+            '    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);',
+            '    [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint flags);',
+            '    [DllImport("user32.dll")] public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);',
+            '    [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);',
+            '    [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();',
+            '    [DllImport("user32.dll")] public static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);',
             '    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);',
             '    [DllImport("user32.dll")] public static extern bool SetCursorPos(int X, int Y);',
             '    [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extraInfo);',
@@ -1276,7 +1297,6 @@ function Invoke-WindowsValidation {
             '    [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }',
             '    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);',
             '    [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr hWnd);',
-            '    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);',
             '    public static IntPtr FindVisibleWindowForProcess(int processId)',
             '    {',
             '        IntPtr found = IntPtr.Zero;',
@@ -1319,12 +1339,23 @@ function Invoke-WindowsValidation {
             '    param([IntPtr]$WindowHandle, [string]$State)',
             '    $foreground = $false',
             '    for ($attempt = 0; $attempt -lt 5; $attempt++) {',
+            '        $foregroundWindow = [DnppvSceneNative]::GetForegroundWindow()',
+            '        if ($foregroundWindow -eq [IntPtr]::Zero) { Add-Content -Path $stepPath -Value ''FOREGROUND_WINDOW=NONE'' }',
             '        [DnppvSceneNative]::ShowWindow($WindowHandle, 9) | Out-Null',
+            '        [DnppvSceneNative]::SetWindowPos($WindowHandle, [IntPtr](-1), 0, 0, 0, 0, 0x0003) | Out-Null',
             '        [DnppvSceneNative]::AllowSetForegroundWindow(-1) | Out-Null',
             '        [DnppvSceneNative]::BringWindowToTop($WindowHandle) | Out-Null',
+            '        [DnppvSceneNative]::SwitchToThisWindow($WindowHandle, $true)',
             '        [DnppvSceneNative]::SetForegroundWindow($WindowHandle) | Out-Null',
+            '        [DnppvSceneNative]::SetActiveWindow($WindowHandle) | Out-Null',
             '        Start-Sleep -Milliseconds 500',
-            '        if ([DnppvSceneNative]::GetForegroundWindow() -eq $WindowHandle) { $foreground = $true; break }',
+            '        if ([DnppvSceneNative]::GetForegroundWindow() -eq $WindowHandle) { $foreground = $true; [DnppvSceneNative]::SetWindowPos($WindowHandle, [IntPtr](-2), 0, 0, 0, 0, 0x0003) | Out-Null; break }',
+            '        [DnppvSceneNative]::SetWindowPos($WindowHandle, [IntPtr](-2), 0, 0, 0, 0, 0x0003) | Out-Null',
+            '        if (-not $foreground) {',
+            '            [uint32]$foregroundProcessId = 0; [uint32]$foregroundThread = [DnppvSceneNative]::GetWindowThreadProcessId([DnppvSceneNative]::GetForegroundWindow(), [ref]$foregroundProcessId); [uint32]$currentThread = [DnppvSceneNative]::GetCurrentThreadId();',
+            '            if ($foregroundThread -ne 0 -and $foregroundThread -ne $currentThread -and [DnppvSceneNative]::AttachThreadInput($currentThread, $foregroundThread, $true)) { try { [DnppvSceneNative]::SetForegroundWindow($WindowHandle) | Out-Null; [DnppvSceneNative]::SetActiveWindow($WindowHandle) | Out-Null; Start-Sleep -Milliseconds 500; $foreground = [DnppvSceneNative]::GetForegroundWindow() -eq $WindowHandle } finally { [DnppvSceneNative]::AttachThreadInput($currentThread, $foregroundThread, $false) | Out-Null } }',
+            '            if ($foreground) { [DnppvSceneNative]::SetWindowPos($WindowHandle, [IntPtr](-2), 0, 0, 0, 0, 0x0003) | Out-Null; break }',
+            '        }',
             '    }',
             '    if (-not $foreground) { throw (''Product window was not foreground before {0}.'' -f $State) }',
             '}',
@@ -1363,6 +1394,7 @@ function Invoke-WindowsValidation {
             '$duplicate = $null',
             '$proc = [System.Diagnostics.Process]::Start($startInfo)',
             'if ($null -eq $proc) { throw ''Product process launch returned no process handle.'' }',
+            $openRouterApiKeyCleanupLine,
             'try {',
             '    Add-Content -Path $stepPath -Value (''PID={0}'' -f $proc.Id)',
             "    for (`$attempt = 0; `$attempt -lt $Timeout; `$attempt++) {",
@@ -1577,18 +1609,43 @@ finally {
     if ($CaptureDuplicateInstanceFixture) {
         $artifactNames += 'duplicate.png'
     }
-    foreach ($artifactName in $artifactNames) {
-        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
+    $doneDestination = Join-Path $ArtifactRoot 'done.txt'
+    try {
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'done.txt')) -DestinationPath $doneDestination
     }
-    if ($SoakMinutes -gt 0) {
-        $screenshotsArtifactRoot = Join-Path $ArtifactRoot 'screenshots'
-        New-Item -ItemType Directory -Force -Path $screenshotsArtifactRoot | Out-Null
-        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'screenshots/*')) -DestinationPath $screenshotsArtifactRoot -Recursive
+    catch {
+        throw "Remote Windows validation did not produce done.txt; artifact retrieval cannot continue. retrieval_error=$($_.Exception.Message)"
     }
-    $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
-    New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
-    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
-    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
+    $doneText = (Get-Content -Raw -LiteralPath $doneDestination).Trim()
+    if (-not [string]::Equals($doneText, 'DONE', [StringComparison]::Ordinal)) {
+        $failureStepDestination = Join-Path $ArtifactRoot 'step.log'
+        try {
+            Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'step.log')) -DestinationPath $failureStepDestination
+        }
+        catch {
+            $doneText = "$doneText; step.log retrieval failed: $($_.Exception.Message)"
+        }
+        throw "Remote Windows validation failed before artifact retrieval. See done.txt and step.log: $doneText"
+    }
+    try {
+        $stepDestination = Join-Path $ArtifactRoot 'step.log'
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'step.log')) -DestinationPath $stepDestination
+        foreach ($artifactName in @($artifactNames | Where-Object { $_ -notin @('step.log', 'done.txt') })) {
+            Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir $artifactName)) -DestinationPath (Join-Path $ArtifactRoot $artifactName)
+        }
+        if ($SoakMinutes -gt 0) {
+            $screenshotsArtifactRoot = Join-Path $ArtifactRoot 'screenshots'
+            New-Item -ItemType Directory -Force -Path $screenshotsArtifactRoot | Out-Null
+            Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'screenshots/*')) -DestinationPath $screenshotsArtifactRoot -Recursive
+        }
+        $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'
+        New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
+        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
+    }
+    catch {
+        throw "Remote Windows validation completed with done.txt=DONE, but artifact retrieval failed. done.txt=DONE; retrieval_error=$($_.Exception.Message)"
+    }
 }
 
 Assert-RequiredTool -Name 'sshpass'
