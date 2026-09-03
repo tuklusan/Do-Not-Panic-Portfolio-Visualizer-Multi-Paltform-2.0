@@ -885,6 +885,7 @@ function Invoke-LinuxValidation {
         (3 * $maximumCaptureSeconds) + $fullscreenTransitionSeconds + $cleanupSeconds +
         $duplicateWorkflowSeconds + 90
     $remoteExecutionFailure = $null
+    $artifactRetrievalFailure = $null
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {

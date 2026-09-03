@@ -5303,7 +5303,7 @@
       "id": "CR-078",
       "phase": "Phase 7",
       "title": "Permit the local four-hour soak timeout envelope",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066"
       ],
@@ -5324,9 +5324,82 @@
         "build/vm/Invoke-ConfigWindowValidation.ps1"
       ],
       "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Commit c69c569 raised the internal native-command validator envelope to accept the 240-minute profile plus startup and cleanup margin.",
+          "The fresh 2026-09-03 local cycle reached Linux and Windows validation launch; its remaining failures were downstream artifact-retrieval and product-soak harness defects recorded as CR-080 and CR-079.",
+          "Syntax, license, Release-test, and NVIDIA review gates were run for the timeout correction."
+        ]
+      }
+    },
+    {
+      "id": "CR-079",
+      "phase": "Phase 7",
+      "title": "Fix product soak screenshot-presence expression",
+      "status": "closed",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Make the real-product soak harness produce a valid result manifest on every supported PowerShell runner after the full duration.",
+      "acceptance_criteria": [
+        "Screenshot presence is calculated through explicit assignments and the script parses on PowerShell 7.",
+        "ScreenshotPath is documented and tested as the product capture directory in both zero-interval and periodic-capture modes.",
+        "A focused short-duration soak produces a result manifest and preserves the screenshot/trace contract.",
+        "Syntax, license, source review, and artifact-review gates pass for the correction.",
+        "The affected 18-hosted-plus-4-local validation cycle is relaunchable with the corrected script."
+      ],
+      "validation_plan": [
+        "PowerShell syntax and wrapper self-test",
+        "Focused stub-executable soak with screenshot interval disabled and enabled",
+        "License and NVIDIA NIM code review",
+        "Fresh hosted and local validation cycle"
+      ],
+      "artifacts": [
+        "build/Invoke-ProductSoak.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "PowerShell syntax gate passed for build/Invoke-ProductSoak.ps1 after replacing the invalid inline conditional with explicit boolean assignment.",
+          "Focused one-minute stub soak passed with no screenshot path and with a capture directory in zero-interval mode; result manifests reported boolean screenshot states.",
+          "Release test suite passed: 294 tests passed, 0 failed, 0 skipped.",
+          "License header gate passed: 100 artifacts.",
+          "NVIDIA review findings requiring restoration of file-path semantics and initialization were reviewed as false positives because ScreenshotPath is a directory contract and $screenshotPresent is initialized to $false; the real summary consistency finding was corrected by closing CR-079."
+        ]
+      }
+    },
+    {
+      "id": "CR-080",
+      "phase": "Phase 7",
+      "title": "Initialize Linux artifact retrieval failure state in local soak validation",
+      "status": "open",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Ensure Linux local-lab validation preserves remote and artifact-retrieval failures and always writes a complete per-machine cycle manifest.",
+      "acceptance_criteria": [
+        "Invoke-LinuxValidation initializes its artifact-retrieval failure state before artifact-copy error handling.",
+        "A focused Linux failure-path test records the original retrieval failure without an unbound-variable error.",
+        "Syntax, license, source review, and artifact-review gates pass for the correction.",
+        "A fresh local cycle records every machine reached before any failure and leaves no helper process behind."
+      ],
+      "validation_plan": [
+        "PowerShell syntax gate and focused function inspection",
+        "Linux retrieval-failure path test",
+        "License and NVIDIA NIM code review",
+        "Fresh availability-probed local cycle"
+      ],
+      "artifacts": [
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The first 2026-09-03 local four-hour attempt failed before launch because the native-command timeout validator rejected 15,300 seconds."
+          "The first 2026-09-03 local four-hour cycle stopped after Linux because artifact retrieval referenced an uninitialized variable."
         ]
       }
     }
@@ -5336,7 +5409,8 @@
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
-    "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated."
+    "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
+    "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

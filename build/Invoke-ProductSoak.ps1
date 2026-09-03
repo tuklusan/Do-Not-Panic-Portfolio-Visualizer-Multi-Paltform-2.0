@@ -146,6 +146,16 @@ finally {
         }
     }
 
+    $screenshotPresent = $false
+    if (-not [string]::IsNullOrWhiteSpace($ScreenshotPath)) {
+        if ($ScreenshotIntervalMinutes -gt 0) {
+            $screenshotPresent = @(Get-ChildItem -LiteralPath $ScreenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue).Count -gt 0
+        }
+        else {
+            $screenshotPresent = @(Get-ChildItem -LiteralPath $ScreenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue).Count -gt 0
+        }
+    }
+
     $result = [ordered]@{
         schema = 'dnppv2-product-soak/v1'
         outcome = $outcome
@@ -161,13 +171,7 @@ finally {
             requested = -not [string]::IsNullOrWhiteSpace($ScreenshotPath)
             path = $ScreenshotPath
             intervalMinutes = $ScreenshotIntervalMinutes
-            present = -not [string]::IsNullOrWhiteSpace($ScreenshotPath) -and (
-                if ($ScreenshotIntervalMinutes -gt 0) {
-                    @(Get-ChildItem -LiteralPath $ScreenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue).Count -gt 0
-                } else {
-                    Test-Path -LiteralPath $ScreenshotPath -PathType Leaf
-                }
-            )
+            present = $screenshotPresent
         }
         samples = @($samples)
     }
