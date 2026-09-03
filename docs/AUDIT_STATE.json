@@ -4699,7 +4699,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The hosted four-hour cycle remains in progress and has not yet produced terminal evidence.",
+          "The first hosted four-hour cycle completed successfully at GitHub but its older-SHA evidence lacks AI access and summary trace events, so it cannot count toward CR-066 acceptance; a fresh current-SHA cycle is required.",
           "The local coordinator is implemented and probe-validated, but the complete four-machine-or-available-machine soak ladder and evidence review are still pending."
         ],
         "implementation_progress": [
@@ -4707,7 +4707,8 @@
           "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
           "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
           "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test.",
-          "The 2026-09-03 five-minute local cycle passed on Linux, Windows 10, and Windows 11 after a fresh availability probe; each produced product screenshots, circular traces, and a successful real AI summary response. The Mac was recorded UnavailableAtCycleStart."
+          "The 2026-09-03 five-minute local cycle passed on Linux, Windows 10, and Windows 11 after a fresh availability probe; each produced product screenshots, circular traces, and a successful real AI summary response. The Mac was recorded UnavailableAtCycleStart.",
+          "Hosted cycle 33689685166 completed all 18 four-hour jobs successfully but its older-SHA traces contained no AI access or summary events; it is evidence-incomplete and does not count toward CR-066."
         ]
       }
     },
@@ -4969,6 +4970,64 @@
           "Release build passed with 0 warnings and 0 errors.",
           "DeepSeek code review passed with no blocking findings.",
           "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11."
+        ]
+      }
+    },
+    {
+      "id": "CR-075",
+      "phase": "Phase 7",
+      "title": "Require AI evidence in hosted soaks",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-073",
+        "CR-074"
+      ],
+      "objective": "Ensure hosted soak acceptance proves real AI access validation and summary events in every runner trace, rather than inferring AI execution from secret injection alone.",
+      "acceptance_criteria": [
+        "Every hosted runner trace contains AI access and summary evidence.",
+        "Missing AI trace evidence fails post-soak review and routes a CR.",
+        "The evidence set contains 18 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing DeepSeek artifact review."
+      ],
+      "validation_plan": [
+        "Manual inspection of completed hosted artifacts",
+        "Fresh current-main 240-minute hosted cycle",
+        "DeepSeek source and evidence review",
+        "CR-066 acceptance ledger update"
+      ],
+      "artifacts": [
+        "docs/CR-075-HOSTED-SOAK-AI-EVIDENCE.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-075-HOSTED-SOAK-AI-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Completed hosted cycle 33689685166 lacks AI access and summary trace events because it ran from an older SHA; fresh current-main hosted evidence is required."
         ]
       }
     },
