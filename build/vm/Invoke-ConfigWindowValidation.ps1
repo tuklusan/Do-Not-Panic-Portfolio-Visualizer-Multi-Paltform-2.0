@@ -90,7 +90,7 @@ function Invoke-NativeCommand {
         [Parameter(Mandatory = $true)][string]$FilePath,
         [Parameter()][string[]]$ArgumentList = @(),
         [Parameter()][int[]]$AllowedExitCodes = @(0),
-        [Parameter()][ValidateRange(0, 3600)][int]$TimeoutSeconds = 0
+        [Parameter()][ValidateRange(0, 30000)][int]$TimeoutSeconds = 0
     )
 
     if ($TimeoutSeconds -le 0) {

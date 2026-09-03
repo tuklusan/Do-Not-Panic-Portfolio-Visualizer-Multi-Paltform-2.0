@@ -5298,6 +5298,37 @@
           "Focused PowerShell syntax, license-header, and diff checks passed; NVIDIA NIM review completed on the staged harness changes and its remaining findings are advisory design concerns recorded for later hardening."
         ]
       }
+    },
+    {
+      "id": "CR-078",
+      "phase": "Phase 7",
+      "title": "Permit the local four-hour soak timeout envelope",
+      "status": "open",
+      "depends_on": [
+        "CR-066"
+      ],
+      "objective": "Allow the local soak coordinator to pass the complete four-hour native-command timeout envelope without rejecting the run before machine launch.",
+      "acceptance_criteria": [
+        "The internal native-command timeout validator accepts the 15,300-second four-hour profile envelope.",
+        "A fresh availability-probed local cycle reaches every machine available at cycle start and records per-machine results.",
+        "Release tests, syntax, license, review, artifact, and cleanup gates remain satisfied."
+      ],
+      "validation_plan": [
+        "Fresh local availability probe and four-hour cycle",
+        "Per-machine manifest and artifact inspection",
+        "Release tests and repository gates",
+        "NVIDIA NIM code/evidence review"
+      ],
+      "artifacts": [
+        "docs/CR-078-LOCAL-SOAK-TIMEOUT.md",
+        "build/vm/Invoke-ConfigWindowValidation.ps1"
+      ],
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The first 2026-09-03 local four-hour attempt failed before launch because the native-command timeout validator rejected 15,300 seconds."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
