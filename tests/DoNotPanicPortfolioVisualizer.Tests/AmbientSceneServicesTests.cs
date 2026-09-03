@@ -17,6 +17,7 @@ using System.Text.Json;
 using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
+using DoNotPanicPortfolioVisualizer.Core.Services;
 using DoNotPanicPortfolioVisualizer.Media.Services;
 using DoNotPanicPortfolioVisualizer.Presentation.Services;
 using DoNotPanicPortfolioVisualizer.Render.Services;
@@ -857,6 +858,29 @@ public sealed class AmbientSceneServicesTests
         Assert.Contains("All that glisters is not gold.", text, StringComparison.Ordinal);
         Assert.Contains("William Shakespeare", handler.RequestBody, StringComparison.Ordinal);
         Assert.Equal("Bearer", handler.AuthorizationScheme);
+
+        using JsonDocument request = JsonDocument.Parse(handler.RequestBody);
+        Assert.Equal(0.2, request.RootElement.GetProperty("temperature").GetDouble());
+        Assert.Equal(2000, request.RootElement.GetProperty("max_tokens").GetInt32());
+        Assert.False(request.RootElement.TryGetProperty("provider", out _));
+    }
+
+    [Fact]
+    public async Task FinanceNewsService_UsesOpenRouterRequestContract()
+    {
+        const string rss = "<rss><channel><item><title>Markets rally</title></item></channel></rss>";
+        SummaryResponseHandler handler = new(rss, "A concise summary.");
+        using FinanceNewsService service = new(handler);
+        AppSettings settings = CreateSummarizedSettings();
+        settings.AiEndpointUrl = "https://openrouter.ai/api/v1";
+        settings.AiModelId = "openai/gpt-4o-mini";
+
+        await service.GetNewsTextAsync(settings, CancellationToken.None);
+
+        using JsonDocument request = JsonDocument.Parse(handler.RequestBody);
+        Assert.Equal("latency", request.RootElement.GetProperty("provider").GetProperty("sort").GetString());
+        Assert.Equal(OpenRouterModelResolver.AttributionReferer, handler.OpenRouterReferer);
+        Assert.Equal(OpenRouterModelResolver.AttributionTitle, handler.OpenRouterTitle);
     }
 
     [Fact]
@@ -994,6 +1018,8 @@ public sealed class AmbientSceneServicesTests
     {
         public string RequestBody { get; private set; } = string.Empty;
         public string? AuthorizationScheme { get; private set; }
+        public string? OpenRouterReferer { get; private set; }
+        public string? OpenRouterTitle { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -1009,6 +1035,12 @@ public sealed class AmbientSceneServicesTests
 
             RequestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
             AuthorizationScheme = request.Headers.Authorization?.Scheme;
+            OpenRouterReferer = request.Headers.TryGetValues("HTTP-Referer", out IEnumerable<string>? referer)
+                ? referer.SingleOrDefault()
+                : null;
+            OpenRouterTitle = request.Headers.TryGetValues("X-OpenRouter-Title", out IEnumerable<string>? title)
+                ? title.SingleOrDefault()
+                : null;
             if (summary is null)
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
 

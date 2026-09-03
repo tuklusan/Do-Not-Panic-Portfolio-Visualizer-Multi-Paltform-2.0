@@ -4839,6 +4839,129 @@
       }
     },
     {
+      "id": "CR-073",
+      "phase": "Phase 7",
+      "title": "Bound and trace AI news summary requests",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-067"
+      ],
+      "objective": "Ensure real-product soak validation exercises the AI news summary path with a timeout aligned to the configured soak budget and explicit circular-trace outcomes.",
+      "acceptance_criteria": [
+        "The real product exercises AI news when the soak secret is present.",
+        "The AI summary client honors the soak-aware HTTP timeout instead of an unrelated shorter hard timeout.",
+        "Request start, response, success, empty, and bounded failure outcomes are traced without API keys or headline payloads.",
+        "Linux, Windows 10, and Windows 11 evidence contains the AI path and at least one real summary response, with all cleanup and review gates passing."
+      ],
+      "validation_plan": [
+        "Manual upstream AI/news behavior comparison and reverse gap scan",
+        "Focused timeout and trace tests",
+        "Fresh real-product local runs on all available machines",
+        "Full Release build/test and DeepSeek source/evidence review"
+      ],
+      "artifacts": [
+        "docs/CR-073-AI-SUMMARY-TIMEOUT-AND-TRACE.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-073-AI-SUMMARY-TIMEOUT-AND-TRACE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/Services/AiNewsAccessValidationService.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "tests/PortfolioSaver.Tests/Services/MainWindowViewModelValidationTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/Services/AiNewsAccessValidationService.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Fresh local AI-summary evidence after the timeout correction is pending."
+        ]
+      }
+    },
+    {
+      "id": "CR-074",
+      "phase": "Phase 7",
+      "title": "Restore upstream AI request parity",
+      "status": "open",
+      "depends_on": [
+        "CR-073"
+      ],
+      "objective": "Restore the upstream AI summary request contract for bounded generation, OpenRouter latency routing, attribution headers, and resolved auto-model use.",
+      "acceptance_criteria": [
+        "Summary requests include temperature 0.2 and max_tokens 2000.",
+        "OpenRouter requests include provider sort latency and attribution headers.",
+        "OpenRouter auto-model requests use the resolved model.",
+        "Focused and full validation passes, including DeepSeek review and cleanup, succeed."
+      ],
+      "validation_plan": [
+        "Manual upstream and reverse AI request contract scan",
+        "Focused payload and header tests",
+        "Full Release build/test and DeepSeek source/evidence review",
+        "Fresh real-product AI-path evidence"
+      ],
+      "artifacts": [
+        "docs/CR-074-UPSTREAM-AI-REQUEST-PARITY.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-074-UPSTREAM-AI-REQUEST-PARITY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "src/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Core/Services/OpenRouterModelResolver.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "src/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Core/Services/OpenRouterModelResolver.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Fresh build, reviewer, and real-product AI evidence after the parity change is pending."
+        ]
+      }
+    },
+    {
       "id": "CR-072",
       "phase": "Phase 7",
       "title": "Bound Linux desktop screenshot capture",
