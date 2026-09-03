@@ -3,7 +3,23 @@
   "license_notice": "Based on original work by Supratim Sanyal of SANYALnet Labs.",
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
-  "date": "2026-09-02",
+  "date": "2026-09-03",
+  "detour_checkpoint": {
+    "purpose": "Resume CR-066 autonomous soak execution after reviewer migration.",
+    "checkpoint_commit": "c6c6c43",
+    "queue_source": "docs/AUDIT_STATE.json",
+    "goal_status": "active",
+    "reviewer_migration": "NVIDIA NIM reviewer migration in progress until the new gate passes and is committed."
+  },
+  "active_reviewer": {
+    "provider": "NVIDIA NIM",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "base_url": "https://integrate.api.nvidia.com/v1",
+    "api_key_environment_variable": "NVIDIA_API_KEY_CODING",
+    "retry_statuses": [404, 408, 425, 429, 500, 502, 503, 504],
+    "retry_policy": "bounded exponential backoff with jitter; 404 is intentionally treated like 429",
+    "request_timeout_seconds": 7200
+  },
   "current_lane": "phase-7-configurable-news-and-ai-acceptance",
   "current_snapshot": {
     "product": "DO NOT PANIC PORTFOLIO VISUALIZER 2.0",

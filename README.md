@@ -43,9 +43,9 @@ need:
 
 - the migration design source of truth at
   `docs/DO-NOT-PANIC-Avalonia-Cross-Platform-Migration-Design-Rev-01.md`
-- the DeepSeek review gate under `build/`
-- the DeepSeek gate reference document at
-  `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`
+- the NVIDIA NIM review gate under `build/`
+- the NVIDIA NIM gate reference document at
+  `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`
 - the machine-access workbook at `docs/TEST_MACHINE_ACCESS.md`
 - the empty migration issue tracker at `docs/AUDIT_STATE.json`
 

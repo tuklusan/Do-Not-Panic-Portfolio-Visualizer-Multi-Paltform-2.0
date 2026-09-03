@@ -13,10 +13,10 @@
 # ============================================================================
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [string]$Endpoint = "https://api.deepseek.com",
-    # Project default verified against the configured DeepSeek endpoint on 2026-06-04.
-    [string]$Model = "deepseek-v4-pro",
-    [string]$OutputDirectory = "build/deepseek-review",
+    [string]$Endpoint = "https://integrate.api.nvidia.com/v1",
+    # Project default verified against the configured Nvidia endpoint on 2026-06-04.
+    [string]$Model = "nvidia/nemotron-3-ultra-550b-a55b",
+    [string]$OutputDirectory = "build/nvidia-review",
     [int]$MaxFileCharacters = 100000,
     [int]$MaxPacketCharacters = 600000,
     [int]$MaxRequestBytes = 1048576,
@@ -34,7 +34,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $script:OutputRootForAudit = $null
 $script:ReviewGateLocationPushed = $false
-$script:MinimumDeepSeekSendSpacingSeconds = 20
+$script:MinimumNvidiaSendSpacingSeconds = 20
 
 trap {
     if ($script:ReviewGateLocationPushed) {
@@ -46,7 +46,7 @@ trap {
 }
 
 # The default mode builds a local packet only. Passing -SendForReview sends that
-# packet to the configured DeepSeek-compatible external API. Secret scanning is
+# packet to the configured Nvidia-compatible external API. Secret scanning is
 # best-effort only; inspect the packet first when a change may contain confidential
 # implementation details or sensitive local-only material.
 
@@ -68,20 +68,20 @@ function Complete-ReviewGate([int]$ExitCode) {
     exit $ExitCode
 }
 
-$deepSeekCommonPath = Join-Path $PSScriptRoot 'DeepSeekWorkflowCommon.ps1'
+$deepSeekCommonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
 if (-not (Test-Path -LiteralPath $deepSeekCommonPath)) {
-    throw "DeepSeek workflow common module is missing: $deepSeekCommonPath"
+    throw "Nvidia workflow common module is missing: $deepSeekCommonPath"
 }
 try {
     . $deepSeekCommonPath
 }
 catch {
-    throw "Could not load DeepSeek workflow common module '$deepSeekCommonPath': $($_.Exception.Message)"
+    throw "Could not load Nvidia workflow common module '$deepSeekCommonPath': $($_.Exception.Message)"
 }
 
-foreach ($requiredCommonFunction in @('Get-DeepSeekApiKey', 'Get-RepoRoot', 'Assert-NoLikelySecrets', 'Get-ValidatedDeepSeekEndpoint', 'Get-SafeDeepSeekEndpointForLog', 'Redact-LikelySecretsInText')) {
+foreach ($requiredCommonFunction in @('Get-NvidiaApiKey', 'Get-RepoRoot', 'Assert-NoLikelySecrets', 'Get-ValidatedNvidiaEndpoint', 'Get-SafeNvidiaEndpointForLog', 'Redact-LikelySecretsInText')) {
     if (-not (Get-Command $requiredCommonFunction -CommandType Function -ErrorAction SilentlyContinue)) {
-        throw "DeepSeek workflow common module did not define required function '$requiredCommonFunction'."
+        throw "Nvidia workflow common module did not define required function '$requiredCommonFunction'."
     }
 }
 
@@ -116,32 +116,32 @@ function Test-SecretLikePath([string]$Path) {
 
 function Write-SendAudit([string]$PacketPath, [string]$EndpointValue, [string]$ModelValue) {
     if ([string]::IsNullOrWhiteSpace($script:OutputRootForAudit)) {
-        throw "Cannot write DeepSeek send audit before the ignored output directory is initialized."
+        throw "Cannot write Nvidia send audit before the ignored output directory is initialized."
     }
 
     try {
         $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $PacketPath).Hash
-        $safeEndpoint = Get-SafeDeepSeekEndpointForLog -Endpoint $EndpointValue
+        $safeEndpoint = Get-SafeNvidiaEndpointForLog -Endpoint $EndpointValue
         $safeModel = Redact-LikelySecretsInText -Text ([string]$ModelValue)
         $line = "{0}`tuser={1}`tbranch={2}`tendpoint={3}`tmodel={4}`tpacketSha256={5}" -f (Get-Date -Format o), [Environment]::UserName, (& git branch --show-current), $safeEndpoint, $safeModel, $hash
         Add-Content -LiteralPath (Join-Path $script:OutputRootForAudit 'send-audit.log') -Value $line -Encoding UTF8
     }
     catch {
-        Write-Warning "Could not write DeepSeek send audit log: $($_.Exception.Message)"
+        Write-Warning "Could not write Nvidia send audit log: $($_.Exception.Message)"
     }
 }
 
-function Wait-DeepSeekSendSpacing {
+function Wait-NvidiaSendSpacing {
     if ([string]::IsNullOrWhiteSpace($script:OutputRootForAudit)) {
-        throw "Cannot enforce DeepSeek send spacing before the ignored output directory is initialized."
+        throw "Cannot enforce Nvidia send spacing before the ignored output directory is initialized."
     }
 
     $spacingPath = Join-Path $script:OutputRootForAudit 'last-send-at.txt'
     $mutexName = if ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT) {
-        'Global\DoNotPanicPortfolioVisualizer.DeepSeekReviewGate.SendSpacing'
+        'Global\DoNotPanicPortfolioVisualizer.NvidiaReviewGate.SendSpacing'
     }
     else {
-        'DoNotPanicPortfolioVisualizer.DeepSeekReviewGate.SendSpacing'
+        'DoNotPanicPortfolioVisualizer.NvidiaReviewGate.SendSpacing'
     }
     $mutex = New-Object System.Threading.Mutex($false, $mutexName)
     $lockTaken = $false
@@ -150,11 +150,11 @@ function Wait-DeepSeekSendSpacing {
         try {
             $lockTaken = $mutex.WaitOne([TimeSpan]::FromSeconds(30))
             if (-not $lockTaken) {
-                throw "Timed out waiting for DeepSeek send-spacing lock."
+                throw "Timed out waiting for Nvidia send-spacing lock."
             }
         }
         catch [System.Threading.AbandonedMutexException] {
-            Write-Warning "DeepSeek send-spacing mutex was abandoned by a prior run; continuing with the recovered lock."
+            Write-Warning "Nvidia send-spacing mutex was abandoned by a prior run; continuing with the recovered lock."
             $lockTaken = $true
         }
 
@@ -164,16 +164,16 @@ function Wait-DeepSeekSendSpacing {
                 if (-not [string]::IsNullOrWhiteSpace($lastSendText)) {
                     $lastSend = [DateTimeOffset]::Parse($lastSendText)
                     $elapsedSeconds = ([DateTimeOffset]::Now - $lastSend).TotalSeconds
-                    $remainingSeconds = [Math]::Ceiling($script:MinimumDeepSeekSendSpacingSeconds - $elapsedSeconds)
+                    $remainingSeconds = [Math]::Ceiling($script:MinimumNvidiaSendSpacingSeconds - $elapsedSeconds)
                     if ($remainingSeconds -gt 0) {
-                        Write-Warning "DeepSeek gate spacing: waiting $remainingSeconds seconds before sending the next review message."
+                        Write-Warning "Nvidia gate spacing: waiting $remainingSeconds seconds before sending the next review message."
                         Start-Sleep -Seconds $remainingSeconds
                     }
                 }
             }
             catch {
-                Write-Warning "Could not read DeepSeek send-spacing timestamp; enforcing a full $script:MinimumDeepSeekSendSpacingSeconds-second delay and resetting the timestamp. $($_.Exception.Message)"
-                Start-Sleep -Seconds $script:MinimumDeepSeekSendSpacingSeconds
+                Write-Warning "Could not read Nvidia send-spacing timestamp; enforcing a full $script:MinimumNvidiaSendSpacingSeconds-second delay and resetting the timestamp. $($_.Exception.Message)"
+                Start-Sleep -Seconds $script:MinimumNvidiaSendSpacingSeconds
             }
         }
 
@@ -191,7 +191,7 @@ function Wait-DeepSeekSendSpacing {
     }
 }
 
-function New-DeepSeekReviewRequestBody {
+function New-NvidiaReviewRequestBody {
     param(
         [Parameter(Mandatory = $true)][string]$ModelValue,
         [Parameter(Mandatory = $true)][string]$Packet,
@@ -216,18 +216,16 @@ function New-DeepSeekReviewRequestBody {
     }
 
     if ($DisableThinking) {
-        # DeepSeek V4 defaults to thinking mode, which can spend the whole
+        # Nvidia V4 defaults to thinking mode, which can spend the whole
         # token budget in reasoning_content and return empty message.content.
-        $request['thinking'] = @{
-            type = 'disabled'
-        }
+        $request['chat_template_kwargs'] = @{ enable_thinking = $false }
     }
 
     try {
         return $request | ConvertTo-Json -Depth 8
     }
     catch {
-        throw "Failed to serialize DeepSeek review request body: $($_.Exception.Message)"
+        throw "Failed to serialize Nvidia review request body: $($_.Exception.Message)"
     }
 }
 
@@ -253,36 +251,36 @@ Push-Location $repoRoot
 $script:ReviewGateLocationPushed = $true
 
 if (-not $PSBoundParameters.ContainsKey('Endpoint')) {
-    $configuredEndpoint = [Environment]::GetEnvironmentVariable('DEEPSEEK_ENDPOINT')
+    $configuredEndpoint = [Environment]::GetEnvironmentVariable('NVIDIA_ENDPOINT')
     if (-not [string]::IsNullOrWhiteSpace($configuredEndpoint)) {
         $Endpoint = $configuredEndpoint
     }
 }
 
 if (-not $PSBoundParameters.ContainsKey('Model')) {
-    $configuredModel = [Environment]::GetEnvironmentVariable('DEEPSEEK_MODEL')
+    $configuredModel = [Environment]::GetEnvironmentVariable('NVIDIA_MODEL')
     if (-not [string]::IsNullOrWhiteSpace($configuredModel)) {
         $Model = $configuredModel
     }
 }
 
 if ([string]::IsNullOrWhiteSpace($Endpoint)) {
-    throw "DeepSeek review endpoint must not be empty."
+    throw "Nvidia review endpoint must not be empty."
 }
 
 if ([string]::IsNullOrWhiteSpace($Model)) {
-    throw "DeepSeek review model must not be empty."
+    throw "Nvidia review model must not be empty."
 }
 
-$Endpoint = Get-ValidatedDeepSeekEndpoint -Endpoint $Endpoint
+$Endpoint = Get-ValidatedNvidiaEndpoint -Endpoint $Endpoint
 
 if ($SelfTest) {
     $null = Invoke-GitLines @('version')
     $scriptText = Get-Content -Raw -LiteralPath $PSCommandPath
     $null = [ScriptBlock]::Create($scriptText)
-    foreach ($requiredToken in @('$SendForReview', '$AcknowledgeSecretScan', '$AcknowledgeEndpointOverride', 'Get-DeepSeekApiKey', 'Assert-NoLikelySecrets', 'Write-SendAudit', 'Wait-DeepSeekSendSpacing', 'New-DeepSeekReviewRequestBody')) {
+    foreach ($requiredToken in @('$SendForReview', '$AcknowledgeSecretScan', '$AcknowledgeEndpointOverride', 'Get-NvidiaApiKey', 'Assert-NoLikelySecrets', 'Write-SendAudit', 'Wait-NvidiaSendSpacing', 'New-NvidiaReviewRequestBody')) {
         if ($scriptText.IndexOf($requiredToken, [StringComparison]::Ordinal) -lt 0) {
-            throw "DeepSeek review gate self-test failed; missing required token $requiredToken."
+            throw "Nvidia review gate self-test failed; missing required token $requiredToken."
         }
     }
     $forbiddenTokens = @(
@@ -290,95 +288,95 @@ if ($SelfTest) {
         ('Write-Waiver' + 'Audit'))
     foreach ($forbiddenToken in $forbiddenTokens) {
         if ($scriptText.IndexOf($forbiddenToken, [StringComparison]::Ordinal) -ge 0) {
-            throw "DeepSeek review gate self-test failed; forbidden legacy token $forbiddenToken was found."
+            throw "Nvidia review gate self-test failed; forbidden legacy token $forbiddenToken was found."
         }
     }
 
     $commonScriptText = Get-Content -Raw -LiteralPath $deepSeekCommonPath
     foreach ($forbiddenToken in $forbiddenTokens) {
         if ($commonScriptText.IndexOf($forbiddenToken, [StringComparison]::Ordinal) -ge 0) {
-            throw "DeepSeek review gate self-test failed; forbidden legacy token $forbiddenToken was found in the common workflow module."
+            throw "Nvidia review gate self-test failed; forbidden legacy token $forbiddenToken was found in the common workflow module."
         }
     }
-    if ($commonScriptText.IndexOf('function Get-DeepSeekApiKey', [StringComparison]::Ordinal) -lt 0) {
-        throw "DeepSeek review gate self-test failed; common workflow module does not define Get-DeepSeekApiKey."
+    if ($commonScriptText.IndexOf('function Get-NvidiaApiKey', [StringComparison]::Ordinal) -lt 0) {
+        throw "Nvidia review gate self-test failed; common workflow module does not define Get-NvidiaApiKey."
     }
     if ($commonScriptText.IndexOf('function Get-RepoRoot', [StringComparison]::Ordinal) -lt 0) {
-        throw "DeepSeek review gate self-test failed; common workflow module does not define Get-RepoRoot."
+        throw "Nvidia review gate self-test failed; common workflow module does not define Get-RepoRoot."
     }
-    if ($commonScriptText.IndexOf('function Get-ValidatedDeepSeekEndpoint', [StringComparison]::Ordinal) -lt 0) {
-        throw "DeepSeek review gate self-test failed; common workflow module does not define Get-ValidatedDeepSeekEndpoint."
+    if ($commonScriptText.IndexOf('function Get-ValidatedNvidiaEndpoint', [StringComparison]::Ordinal) -lt 0) {
+        throw "Nvidia review gate self-test failed; common workflow module does not define Get-ValidatedNvidiaEndpoint."
     }
 
     try {
-        $deepSeekBodyProbe = New-DeepSeekReviewRequestBody -ModelValue 'deepseek-v4-flash' -Packet 'self-test packet' -MaxTokensValue 16 -DisableThinking |
+        $deepSeekBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3-ultra-550b-a55b' -Packet 'self-test packet' -MaxTokensValue 16 -DisableThinking |
             ConvertFrom-Json
-        $genericBodyProbe = New-DeepSeekReviewRequestBody -ModelValue 'generic-model' -Packet 'self-test packet' -MaxTokensValue 16 |
+        $genericBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'generic-model' -Packet 'self-test packet' -MaxTokensValue 16 |
             ConvertFrom-Json
     }
     catch {
-        throw "DeepSeek review gate self-test failed; could not parse request body JSON: $($_.Exception.Message)"
+        throw "Nvidia review gate self-test failed; could not parse request body JSON: $($_.Exception.Message)"
     }
 
-    if ($deepSeekBodyProbe.thinking.type -ne 'disabled') {
-        throw "DeepSeek review gate self-test failed; DeepSeek request body does not disable thinking mode."
+    if ($deepSeekBodyProbe.chat_template_kwargs.enable_thinking -ne $false) {
+        throw "Nvidia review gate self-test failed; Nvidia request body does not disable thinking mode."
     }
 
-    if ($deepSeekBodyProbe.model -ne 'deepseek-v4-flash' -or
+    if ($deepSeekBodyProbe.model -ne 'nvidia/nemotron-3-ultra-550b-a55b' -or
         $deepSeekBodyProbe.messages.Count -ne 2 -or
         $deepSeekBodyProbe.messages[0].role -ne 'system' -or
         $deepSeekBodyProbe.messages[1].role -ne 'user' -or
         $deepSeekBodyProbe.temperature -ne 0.1 -or
         $deepSeekBodyProbe.max_tokens -ne 16) {
-        throw "DeepSeek review gate self-test failed; DeepSeek request body has an unexpected shape."
+        throw "Nvidia review gate self-test failed; Nvidia request body has an unexpected shape."
     }
 
-    if ($genericBodyProbe.PSObject.Properties.Name -contains 'thinking') {
-        throw "DeepSeek review gate self-test failed; generic request body unexpectedly includes DeepSeek thinking controls."
+    if ($genericBodyProbe.PSObject.Properties.Name -contains 'chat_template_kwargs') {
+        throw "Nvidia review gate self-test failed; generic request body unexpectedly includes Nvidia thinking controls."
     }
 
-    $harnessPath = Join-Path $PSScriptRoot 'Invoke-DeepSeekReviewHarness.ps1'
+    $harnessPath = Join-Path $PSScriptRoot 'Invoke-NvidiaReviewHarness.ps1'
     if (-not (Test-Path -LiteralPath $harnessPath)) {
-        throw "DeepSeek review gate self-test failed; missing harness script: $harnessPath"
+        throw "Nvidia review gate self-test failed; missing harness script: $harnessPath"
     }
     try {
         $harnessSelfTestOutput = @(& $harnessPath -SelfTest)
     }
     catch {
-        throw "DeepSeek review gate self-test failed; review harness self-test raised an error: $($_.Exception.Message)"
+        throw "Nvidia review gate self-test failed; review harness self-test raised an error: $($_.Exception.Message)"
     }
-    if (-not ($harnessSelfTestOutput -contains 'DEEPSEEK_REVIEW_HARNESS_SELFTEST=Passed')) {
-        throw "DeepSeek review gate self-test failed; review harness self-test did not report success."
+    if (-not ($harnessSelfTestOutput -contains 'NVIDIA_REVIEW_HARNESS_SELFTEST=Passed')) {
+        throw "Nvidia review gate self-test failed; review harness self-test did not report success."
     }
 
     $originalOutputRootForAudit = $script:OutputRootForAudit
-    $originalMinimumSpacingSeconds = $script:MinimumDeepSeekSendSpacingSeconds
-    $spacingSelfTestRoot = Join-Path ([IO.Path]::GetTempPath()) ("DeepSeekReviewGateSelfTest-" + [Guid]::NewGuid().ToString("N"))
+    $originalMinimumSpacingSeconds = $script:MinimumNvidiaSendSpacingSeconds
+    $spacingSelfTestRoot = Join-Path ([IO.Path]::GetTempPath()) ("NvidiaReviewGateSelfTest-" + [Guid]::NewGuid().ToString("N"))
     try {
         New-Item -ItemType Directory -Force -Path $spacingSelfTestRoot | Out-Null
         $script:OutputRootForAudit = $spacingSelfTestRoot
-        $script:MinimumDeepSeekSendSpacingSeconds = 0
-        Wait-DeepSeekSendSpacing
-        $script:MinimumDeepSeekSendSpacingSeconds = 1
+        $script:MinimumNvidiaSendSpacingSeconds = 0
+        Wait-NvidiaSendSpacing
+        $script:MinimumNvidiaSendSpacingSeconds = 1
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        Wait-DeepSeekSendSpacing
+        Wait-NvidiaSendSpacing
         $stopwatch.Stop()
         $elapsedSeconds = $stopwatch.Elapsed.TotalSeconds
         # Allow 200 ms of test-host timer jitter; production spacing still uses the configured 20-second default.
         if ($elapsedSeconds -lt 0.8) {
-            throw "DeepSeek review gate self-test failed; spacing helper did not enforce a non-zero delay."
+            throw "Nvidia review gate self-test failed; spacing helper did not enforce a non-zero delay."
         }
     }
     finally {
         $script:OutputRootForAudit = $originalOutputRootForAudit
-        $script:MinimumDeepSeekSendSpacingSeconds = $originalMinimumSpacingSeconds
+        $script:MinimumNvidiaSendSpacingSeconds = $originalMinimumSpacingSeconds
         Remove-Item -LiteralPath $spacingSelfTestRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     try {
         $uriCredentialProbe = 'mongodb+srv://' + 'reviewer:realistic-secret@cluster.example.invalid/db'
         Assert-NoLikelySecrets $uriCredentialProbe
-        throw "DeepSeek review gate self-test failed; known URI credential pattern was not detected."
+        throw "Nvidia review gate self-test failed; known URI credential pattern was not detected."
     }
     catch {
         if ($_.Exception.Message -notlike 'Potential secret material detected*') {
@@ -388,7 +386,7 @@ if ($SelfTest) {
 
     try {
         Assert-NoLikelySecrets ("API_KEY=`"" + "sk-" + "selftestsecretpattern1234567890`"")
-        throw "DeepSeek review gate self-test failed; known secret pattern was not detected."
+        throw "Nvidia review gate self-test failed; known secret pattern was not detected."
     }
     catch {
         if ($_.Exception.Message -notlike 'Potential secret material detected*') {
@@ -399,7 +397,7 @@ if ($SelfTest) {
     try {
         $connectionProbe = 'ConnectionString="' + 'Server=db;User Id=prod;Pass' + 'word=realistic-secret;"'
         Assert-NoLikelySecrets $connectionProbe
-        throw "DeepSeek review gate self-test failed; known connection string pattern was not detected."
+        throw "Nvidia review gate self-test failed; known connection string pattern was not detected."
     }
     catch {
         if ($_.Exception.Message -notlike 'Potential secret material detected*') {
@@ -407,7 +405,7 @@ if ($SelfTest) {
         }
     }
 
-    Write-Output "DeepSeek review gate self-test passed."
+    Write-Output "Nvidia review gate self-test passed."
     Complete-ReviewGate 0
 }
 
@@ -428,7 +426,7 @@ foreach ($entry in $statusEntries) {
 
     $normalizedPath = $pathText.Replace('\', '/')
     if ([string]::IsNullOrWhiteSpace($normalizedPath) -or
-        $normalizedPath.StartsWith('build/deepseek-review/')) {
+        $normalizedPath.StartsWith('build/nvidia-review/')) {
         continue
     }
 
@@ -444,12 +442,12 @@ foreach ($entry in $statusEntries) {
 }
 
 if ($changedFiles.Count -eq 0) {
-    Write-Output "No tracked code/documentation changes found for DeepSeek review."
+    Write-Output "No tracked code/documentation changes found for Nvidia review."
     Complete-ReviewGate 0
 }
 
 if ($WhatIfPreference) {
-    Write-Output "WhatIf requested; no review packet was written and no DeepSeek API call was made."
+    Write-Output "WhatIf requested; no review packet was written and no Nvidia API call was made."
     Complete-ReviewGate 0
 }
 
@@ -468,18 +466,18 @@ $outputRoot = $resolvedOutputRoot
 New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 $script:OutputRootForAudit = $resolvedOutputRoot
 $relativeOutputRootDirectory = ($relativeOutputRoot.TrimEnd('/') + '/').Replace('\', '/')
-$ignoreProbePath = ($relativeOutputRoot.TrimEnd('/') + '/.deepseek-review-ignore-probe').Replace('\', '/')
-Assert-GitIgnored $relativeOutputRootDirectory "DeepSeek review output directory is not ignored by git. Add build/deepseek-review/ to .gitignore before continuing."
-Assert-GitIgnored $ignoreProbePath "DeepSeek review output directory probe is not ignored by git. Add build/deepseek-review/ to .gitignore before continuing."
+$ignoreProbePath = ($relativeOutputRoot.TrimEnd('/') + '/.nvidia-review-ignore-probe').Replace('\', '/')
+Assert-GitIgnored $relativeOutputRootDirectory "Nvidia review output directory is not ignored by git. Add build/nvidia-review/ to .gitignore before continuing."
+Assert-GitIgnored $ignoreProbePath "Nvidia review output directory probe is not ignored by git. Add build/nvidia-review/ to .gitignore before continuing."
 Get-ChildItem -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue |
     Where-Object { -not $_.PSIsContainer -and $_.LastWriteTime -lt (Get-Date).AddDays(-1 * [Math]::Max(1, $CleanupOlderThanDays)) } |
     Remove-Item -Force -ErrorAction SilentlyContinue
 
-$packetPath = Join-Path $outputRoot "deepseek-review-packet-$timestamp.txt"
-$responsePath = Join-Path $outputRoot "deepseek-review-$timestamp.md"
+$packetPath = Join-Path $outputRoot "nvidia-review-packet-$timestamp.txt"
+$responsePath = Join-Path $outputRoot "nvidia-review-$timestamp.md"
 
 $sections = New-Object System.Collections.Generic.List[string]
-$sections.Add("# Mandatory DeepSeek code-review packet")
+$sections.Add("# Mandatory Nvidia code-review packet")
 $sections.Add("Review the uncommitted changes in this repository before commit/push and before local or VM validation. Focus on correctness, regressions, security/privacy, reliability, UI behavior, test adequacy, and maintainability. Return findings first, ordered by severity, with exact file paths. If there are no actionable findings, say so explicitly.")
 $sections.Add("# Git status")
 $sections.Add(($statusLines | Out-String))
@@ -501,7 +499,7 @@ foreach ($file in ($untrackedFiles | Sort-Object)) {
     $content = Get-Content -Raw -LiteralPath $literalPath
     if ($content.Length -gt $MaxFileCharacters) {
         $truncatedCharacters = $content.Length - $MaxFileCharacters
-        $content = $content.Substring(0, $MaxFileCharacters) + "`n...[truncated by Run-DeepSeekCodeReview.ps1; omitted $truncatedCharacters characters]..."
+        $content = $content.Substring(0, $MaxFileCharacters) + "`n...[truncated by Run-NvidiaCodeReview.ps1; omitted $truncatedCharacters characters]..."
     }
 
     $sections.Add("# Untracked file: $file")
@@ -510,18 +508,18 @@ foreach ($file in ($untrackedFiles | Sort-Object)) {
 
 $packet = Redact-RemovedDiffSecretLines ($sections -join "`n`n")
 if ($packet.Length -gt $MaxPacketCharacters) {
-    throw "DeepSeek review packet is $($packet.Length) characters, exceeding MaxPacketCharacters=$MaxPacketCharacters. Split the change into smaller reviewable units or rerun with an explicit larger -MaxPacketCharacters value."
+    throw "Nvidia review packet is $($packet.Length) characters, exceeding MaxPacketCharacters=$MaxPacketCharacters. Split the change into smaller reviewable units or rerun with an explicit larger -MaxPacketCharacters value."
 }
 
 Assert-NoLikelySecrets $packet
-Write-Warning "Writing local DeepSeek review packet to $packetPath. If it contains sensitive material, delete it immediately and do not use -SendForReview."
+Write-Warning "Writing local Nvidia review packet to $packetPath. If it contains sensitive material, delete it immediately and do not use -SendForReview."
 Set-Content -LiteralPath $packetPath -Value $packet -Encoding UTF8
 $relativePacketPath = (Resolve-Path -LiteralPath $packetPath -Relative).TrimStart('.', '\', '/')
-Assert-GitIgnored $relativePacketPath "DeepSeek review packet is not ignored by git: $relativePacketPath. Fix .gitignore before continuing."
+Assert-GitIgnored $relativePacketPath "Nvidia review packet is not ignored by git: $relativePacketPath. Fix .gitignore before continuing."
 
 if ($PacketOnly -or -not $SendForReview) {
-    Write-Output "DEEPSEEK_REVIEW_PACKET=$packetPath"
-    Write-Output "Packet-only mode; no DeepSeek API call was made. Rerun with -SendForReview to transmit the packet."
+    Write-Output "NVIDIA_REVIEW_PACKET=$packetPath"
+    Write-Output "Packet-only mode; no Nvidia API call was made. Rerun with -SendForReview to transmit the packet."
     Complete-ReviewGate 0
 }
 
@@ -531,20 +529,21 @@ if (-not $AcknowledgeSecretScan) {
 
 # The shared harness owns the normal review request.  It performs all internal
 # specialist and consolidation calls and returns only its compact conclusion.
-$harnessPath = Join-Path $PSScriptRoot 'Invoke-DeepSeekReviewHarness.ps1'
-if (-not (Test-Path -LiteralPath $harnessPath)) { throw "DeepSeek review harness is missing: $harnessPath" }
+$harnessPath = Join-Path $PSScriptRoot 'Invoke-NvidiaReviewHarness.ps1'
+if (-not (Test-Path -LiteralPath $harnessPath)) { throw "Nvidia review harness is missing: $harnessPath" }
 $reviewResult = & $harnessPath -ReviewType CODE -ReviewMaterialPath $packetPath -Endpoint $Endpoint -Model $Model -OutputDirectory $OutputDirectory -MaxTokens $MaxTokens -AcknowledgeEndpointOverride:$AcknowledgeEndpointOverride
-if ([string]::IsNullOrWhiteSpace([string]$reviewResult)) { throw 'DeepSeek review harness did not return a compact result.' }
+if ([string]::IsNullOrWhiteSpace([string]$reviewResult)) { throw 'Nvidia review harness did not return a compact result.' }
 $reviewJson = ($reviewResult | Out-String).Trim()
 try { $reviewObject = $reviewJson | ConvertFrom-Json -ErrorAction Stop }
-catch { throw 'DeepSeek review harness returned malformed compact JSON.' }
+catch { throw 'Nvidia review harness returned malformed compact JSON.' }
 if ($reviewObject.verdict -notin @('PASS', 'FAIL') -or -not [bool]$reviewObject.review_complete -or
     $reviewObject.PSObject.Properties.Name -notcontains 'blocking_findings' -or
     $reviewObject.PSObject.Properties.Name -notcontains 'root_cause_groups' -or
-    $reviewObject.blocking_findings -is [string] -or $reviewObject.root_cause_groups -is [string]) { throw "DeepSeek review harness did not return a valid completed result. Verdict: $($reviewObject.verdict)" }
+    $reviewObject.blocking_findings -is [string] -or $reviewObject.root_cause_groups -is [string]) { throw "Nvidia review harness did not return a valid completed result. Verdict: $($reviewObject.verdict)" }
 Set-Content -LiteralPath $responsePath -Value $reviewJson -Encoding UTF8
-Write-Output "DEEPSEEK_REVIEW_PACKET=$packetPath"
-Write-Output "DEEPSEEK_REVIEW_RESPONSE=$responsePath"
-Write-Output "DEEPSEEK_REVIEW_RESULT=$reviewJson"
+Write-Output "NVIDIA_REVIEW_PACKET=$packetPath"
+Write-Output "NVIDIA_REVIEW_RESPONSE=$responsePath"
+Write-Output "NVIDIA_REVIEW_RESULT=$reviewJson"
 if ($reviewObject.verdict -eq 'FAIL') { Complete-ReviewGate 1 }
 Complete-ReviewGate 0
+

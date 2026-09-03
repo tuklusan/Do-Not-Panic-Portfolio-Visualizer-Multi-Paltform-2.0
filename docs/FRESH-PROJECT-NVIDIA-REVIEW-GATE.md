@@ -16,9 +16,9 @@ patent, trademark, and governing-law provisions.
 
 # Fresh-Project Independent Review Gate Standard
 
-**Purpose:** establish a reusable, high-precision DeepSeek review gate for a new software project without recreating the long developer/reviewer argument loops that an over-aggressive reviewer can cause.
+**Purpose:** establish a reusable, high-precision NVIDIA NIM review gate for a new software project without recreating the long developer/reviewer argument loops that an over-aggressive reviewer can cause.
 
-**Status of API facts:** verified against official DeepSeek API documentation on 2026-08-11. The integration values are centralized so they can be updated deliberately if the API changes.
+**Status of API facts:** verified against official NVIDIA NIM API documentation on 2026-08-11. The integration values are centralized so they can be updated deliberately if the API changes.
 
 **Primary goals, in order:**
 
@@ -93,16 +93,16 @@ This standard assumes:
 
 - a Git repository;
 - a development agent working in the repository;
-- DeepSeek as an independent external reviewer;
+- NVIDIA NIM as an independent external reviewer;
 - a project-level task/change-request record with explicit acceptance criteria;
-- an environment variable containing the DeepSeek API key;
+- an environment variable containing the NVIDIA NIM API key;
 - review artifacts stored privately or ignored by Git;
 - tests/builds performed according to the project's own execution policy.
 
 The recommended default secret name in the examples is:
 
 ```text
-DeepSeek_API_key
+NVIDIA_API_KEY_CODING
 ```
 
 If a project standardizes a different name, change it in exactly one configuration location. Never duplicate the key or embed it in prompts, source, command lines, telemetry, or committed configuration.
@@ -117,37 +117,36 @@ The same proof discipline applies to all three, but their evidence packets diffe
 
 ---
 
-## 3. Current DeepSeek API baseline
+## 3. Current NVIDIA NIM API baseline
 
 As verified on 2026-08-11, the reference integration uses:
 
 ```text
-Base URL:           https://api.deepseek.com
+Base URL:           https://integrate.api.nvidia.com/v1
 Endpoint:           POST /chat/completions
-Model:              deepseek-v4-pro
+Model:              nvidia/nemotron-3-ultra-550b-a55b
 Thinking:           disabled explicitly
 Streaming:          false
 Output format:      JSON object
+Request timeout:    up to 7200 seconds for slow NIM inference
 ```
 
-DeepSeek currently documents `deepseek-v4-pro` and `deepseek-v4-flash` for the Chat Completions endpoint. For this reviewer integration, every `deepseek-v4-pro` request must include `thinking={"type":"disabled"}` and must omit `reasoning_effort`; otherwise the model can spend the output allowance in reasoning content and return empty final content. JSON Output requires both `response_format={"type":"json_object"}` and an instruction to produce JSON.
+NVIDIA NIM currently documents `nvidia/nemotron-3-ultra-550b-a55b` for the Chat Completions endpoint. For this reviewer integration, every request includes the top-level `chat_template_kwargs={"enable_thinking":false}` field and omits `reasoning_effort`; this is the JSON shape accepted by the hosted NIM endpoint and prevents reasoning output from consuming the review response budget. JSON Output requires both `response_format={"type":"json_object"}` and an instruction to produce JSON.
 
 Do **not** set the model's maximum possible output allowance as the routine default. Use bounded per-phase output budgets and shard work when necessary. A huge output allowance reduces available context headroom and encourages unnecessarily large responses.
 
-DeepSeek's context cache is automatic. Cache hits depend on matching previously persisted prefixes, so put stable common material before pass-specific instructions.
+NVIDIA NIM's context cache is automatic. Cache hits depend on matching previously persisted prefixes, so put stable common material before pass-specific instructions.
 
 ### Official source URLs
 
-- <https://api-docs.deepseek.com/api/create-chat-completion>
-- <https://api-docs.deepseek.com/guides/thinking_mode>
-- <https://api-docs.deepseek.com/guides/json_mode>
-- <https://api-docs.deepseek.com/guides/kv_cache>
-- <https://api-docs.deepseek.com/quick_start/rate_limit>
-- <https://api-docs.deepseek.com/quick_start/pricing/>
+- <https://docs.nvidia.com/nim/large-language-models/2.0.6/day-0/get-started-nemotron-3-ultra.html>
+- <https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b/build>
+- <https://build.nvidia.com/nvidia/nemotron-3-ultra-550b-a55b/modelcard>
+- <https://docs.nvidia.com/nim/large-language-models/3.0.0/reference/support-matrix.html>
 
 ### Maintenance rule
 
-Verify these API facts when the gate is first installed. After that, do not make the developer agent browse DeepSeek documentation before every review. Re-verify only when:
+Verify these API facts when the gate is first installed. After that, do not make the developer agent browse NVIDIA NIM documentation before every review. Re-verify only when:
 
 - the API rejects the pinned request shape;
 - the configured model becomes unavailable;
@@ -202,7 +201,7 @@ When implementation is complete, freeze the required candidate snapshot, run the
 project/
 |-- AGENTS.md
 |-- docs/
-|   `-- FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md
+|   `-- FRESH-PROJECT-NVIDIA-REVIEW-GATE.md
 |-- changes/
 |   `-- TASK-0001.json
 |-- tools/
@@ -256,7 +255,7 @@ Example `changes/TASK-0001.json`:
     "changes/TASK-0001.json",
     "docs/trace-format.md",
     "docs/architecture.md",
-    "docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md#universal-safety-baseline"
+    "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md#universal-safety-baseline"
   ],
   "review_base": "<git commit at task start>",
   "risk_level": "normal",
@@ -326,7 +325,7 @@ A candidate relying on this baseline cites the exact baseline clause just like a
 
 ### 6B. External-review data policy and prompt-injection boundary
 
-DeepSeek is a third-party service. Before enabling the gate for a fresh project, explicitly decide what project material is authorized to leave the local environment for this reviewer. Do not assume every repository can send every source file, secret, customer datum, credential, private key, production dump, or regulated record to an external model.
+NVIDIA NIM is a third-party service. Before enabling the gate for a fresh project, explicitly decide what project material is authorized to leave the local environment for this reviewer. Do not assume every repository can send every source file, secret, customer datum, credential, private key, production dump, or regulated record to an external model.
 
 The project should define:
 
@@ -462,7 +461,7 @@ When the exact packet is too large:
 7. If sharding itself could hide integration defects, run a separate **integration discovery** pass over the change manifest plus exact interface/header/contract material. Any model-generated navigation summary used for this pass is non-authoritative; an integration candidate must still acquire exact source evidence and survive falsification.
 8. If a single indivisible evidence item is too large for the configured safe budget, return `INCONCLUSIVE` unless a deterministic approved extractor/partitioner can preserve its semantics.
 
-Sharding may increase DeepSeek API calls. That is acceptable when required for correctness because those calls remain inside the harness rather than becoming developer/reviewer dialogue.
+Sharding may increase NVIDIA NIM API calls. That is acceptable when required for correctness because those calls remain inside the harness rather than becoming developer/reviewer dialogue.
 
 Do not use model-generated requirement summaries as substitutes for original requirement shards.
 
@@ -661,7 +660,7 @@ Rules:
 
 ## 13. Hostile falsification
 
-After discovery, validation, deduplication, and context completion, submit the candidate batch to an independent DeepSeek falsification call. If every mandatory discovery pass completes successfully and the validated candidate set is empty, no falsification call is needed; the harness may proceed to final PASS checks.
+After discovery, validation, deduplication, and context completion, submit the candidate batch to an independent NVIDIA NIM falsification call. If every mandatory discovery pass completes successfully and the validated candidate set is empty, no falsification call is needed; the harness may proceed to final PASS checks.
 
 Keep thinking explicitly disabled for this phase. The hostile-falsification
 discipline comes from the prompt and independent pass structure, not hidden
@@ -859,7 +858,7 @@ Example:
   "task_id": "TASK-0001",
   "snapshot_id": "git:<base>..<head>:sha256:<diffhash>",
   "packet_manifest_hash": "<sha256 covering task/scope, authorities, and evidence manifest>",
-  "model": "deepseek-v4-pro",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b",
   "prompt_schema_version": 1,
   "verdict": "PASS",
   "review_complete": true
@@ -906,7 +905,7 @@ If two authoritative documents conflict, return `HUMAN_DECISION_REQUIRED` or `IN
 
 ## 20. Test-artifact review
 
-DeepSeek's documented Chat Completions message schema accepts text content. Do not pretend arbitrary binary files or screenshots are directly understood as text.
+NVIDIA NIM's documented Chat Completions message schema accepts text content. Do not pretend arbitrary binary files or screenshots are directly understood as text.
 
 Classify every artifact first.
 
@@ -936,10 +935,10 @@ Do not UTF-8-decode or base64-dump the image and claim visual review.
 
 Use either:
 
-1. an explicitly configured vision-capable analysis component that produces a provenance-bound textual description for DeepSeek's second opinion; or
+1. an explicitly configured vision-capable analysis component that produces a provenance-bound textual description for NVIDIA NIM's second opinion; or
 2. `EVIDENCE_INSUFFICIENT` / `INCONCLUSIVE` for visual-only claims.
 
-If the visual description is produced by the same developer agent whose conclusion is being second-opinioned, DeepSeek is independently reviewing the **description**, not independently inspecting the pixels. Do not label that as independent visual verification. If independent visual verification is required, use an independently configured vision-capable reviewer or a deterministic image-analysis tool suitable for the acceptance criterion.
+If the visual description is produced by the same developer agent whose conclusion is being second-opinioned, NVIDIA NIM is independently reviewing the **description**, not independently inspecting the pixels. Do not label that as independent visual verification. If independent visual verification is required, use an independently configured vision-capable reviewer or a deterministic image-analysis tool suitable for the acceptance criterion.
 
 ### Unknown binary
 
@@ -980,12 +979,13 @@ Examples commonly treated as retryable:
 
 - timeout/connection failure;
 - HTTP 408;
+- HTTP 404 when returned by the configured NIM route/model, per this project's explicit retry policy;
 - HTTP 429;
 - HTTP 500/502/503/504.
 
 Use bounded retry/backoff. Do not create an unbounded loop.
 
-DeepSeek's documentation currently lists 429 as rate limiting and 500/503 as server-side conditions where retry is appropriate. Its non-streaming requests may keep the HTTP connection alive while waiting; a separate inference-level "are you alive?" call is unnecessary in the normal review path.
+NVIDIA NIM's documentation currently lists 429 as rate limiting and 500/503 as server-side conditions where retry is appropriate. This project additionally treats 404 exactly like 429 because the required deployment may briefly be unavailable while a route/model is being provisioned. Retries use bounded exponential backoff with jitter. Its non-streaming requests may keep the HTTP connection alive while waiting; a separate inference-level "are you alive?" call is unnecessary in the normal review path.
 
 ### Output failure
 
@@ -998,7 +998,7 @@ Fail closed on:
 - output truncation;
 - incomplete mandatory phase.
 
-JSON mode can occasionally return empty content according to DeepSeek's own documentation, so bounded internal retry/repair is appropriate. Empty content is never PASS.
+JSON mode can occasionally return empty content according to NVIDIA NIM's own documentation, so bounded internal retry/repair is appropriate. Empty content is never PASS.
 
 ---
 
@@ -1043,7 +1043,7 @@ Record, when returned:
 
 Caching is an optimization, not a correctness condition.
 
-DeepSeek also documents an optional `user_id` parameter that isolates KV cache/scheduling state by caller identity. If multiple projects share one API account and project policy wants stronger cache separation, use a stable non-PII project identifier; do not put personal/customer information in `user_id`. This is optional and must not change review semantics.
+NVIDIA NIM also documents an optional `user_id` parameter that isolates KV cache/scheduling state by caller identity. If multiple projects share one API account and project policy wants stronger cache separation, use a stable non-PII project identifier; do not put personal/customer information in `user_id`. This is optional and must not change review semantics.
 
 Keep developer-visible output compact. Do not cap the number of valid confirmed findings, but bound individual prose fields and use exact path/line references instead of pasting large source excerpts. If a confirmed set is too large for one structured response, return deterministic batches under one review result rather than dropping findings.
 
@@ -1090,7 +1090,7 @@ Never log:
 
 - API key;
 - Authorization header;
-- DeepSeek reasoning content;
+- NVIDIA NIM reasoning content;
 - full source files;
 - full prompts by default.
 
@@ -1327,7 +1327,7 @@ The following code is intentionally a **reference implementation skeleton**, not
 - strict committed-snapshot validation;
 - full changed-file packet construction from Git objects;
 - exact requirement provenance;
-- safe DeepSeek JSON calls;
+- safe NVIDIA NIM JSON calls;
 - candidate validation;
 - deterministic final blocker synthesis.
 
@@ -1347,14 +1347,14 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-API_URL = "https://api.deepseek.com/chat/completions"
-MODEL = "deepseek-v4-pro"
-KEY_ENV = "DeepSeek_API_key"
+API_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
+MODEL = "nvidia/nemotron-3-ultra-550b-a55b"
+KEY_ENV = "NVIDIA NIM_API_key"
 
 DISCOVERY_MAX_TOKENS = 24_000
 FALSIFY_MAX_TOKENS = 32_000
 RETRY_DELAYS = (1, 3)
-RETRY_HTTP = {408, 429, 500, 502, 503, 504}
+RETRY_HTTP = {404, 408, 425, 429, 500, 502, 503, 504}
 
 
 class GateError(RuntimeError):
@@ -1567,7 +1567,7 @@ def requirement_quote_valid(candidate: dict[str, Any], authorities: dict[str, Au
     return authority is not None and quote in authority.content
 
 
-class DeepSeekClient:
+class NVIDIA NIMClient:
     def __init__(self, key: str | None = None):
         self._key = key if key is not None else os.environ.get(KEY_ENV, "")
         if not self._key.strip():
@@ -1586,7 +1586,7 @@ class DeepSeekClient:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "thinking": {"type": "disabled"},
+            "chat_template_kwargs": {"enable_thinking": False},
             "stream": False,
             "response_format": {"type": "json_object"},
             "max_tokens": max_tokens,
@@ -1804,7 +1804,7 @@ Return JSON matching this shape:
       "candidate_id":"CODE-A-001",
       "proposed_severity":"HIGH",
       "category":"correctness",
-      "requirement_source":"docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md",
+      "requirement_source":"docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
       "requirement_quote":"exact short quote",
       "scope_link":"why this applies to the current task now",
       "location":"src/example.c:123",
@@ -1891,7 +1891,7 @@ A minimal bootstrap script may:
 
 1. validate a clean committed candidate;
 2. construct its own simple diff + full changed-file packet;
-3. call `deepseek-v4-pro` once with thinking explicitly disabled;
+3. call `nvidia/nemotron-3-ultra-550b-a55b` once with thinking explicitly disabled;
 4. require exact requirement evidence and concrete failure scenarios;
 5. return `PASS`, `FAIL`, or `INCONCLUSIVE`;
 6. fail closed on API/output error.
@@ -1974,7 +1974,7 @@ Use this sequence for every new project.
 ### Ready-to-paste fresh-project installation prompt
 
 ```text
-Install the project's independent DeepSeek review gate according to this document.
+Install the project's independent NVIDIA NIM review gate according to this document.
 
 First inspect the repository and existing workflow. Do not overwrite an existing gate blindly.
 Create/confirm the task-scope schema, private review-artifact area, concise AGENTS.md rule, committed-snapshot policy, external-review data policy, normal review harness, independent bootstrap reviewer, regression tests, precision fixtures, and protected-stage PASS receipt integration.
@@ -2031,7 +2031,7 @@ After several tasks, inspect:
 - unresolved rate;
 - number of developer-visible review rounds;
 - confirmed findings discovered only on later corrected snapshots;
-- DeepSeek API calls/tokens per task;
+- NVIDIA NIM API calls/tokens per task;
 - cache hit ratio.
 
 Interpretation examples:
@@ -2131,7 +2131,7 @@ A fresh project has a production-ready review gate when all of the following are
 - the gate itself was bootstrapped independently without creating a permanent bypass;
 - telemetry can distinguish confirmed defects, false allegations, real non-blocking issues, unresolved candidates, and recall proxies.
 
-The standard should make DeepSeek difficult to satisfy for evidence-backed reasons, not because it is allowed to convert uncertainty into blockers.
+The standard should make NVIDIA NIM difficult to satisfy for evidence-backed reasons, not because it is allowed to convert uncertainty into blockers.
 
 ---
 
@@ -2143,3 +2143,5 @@ This document intentionally separates:
 2. **changeable API configuration** - model name, supported effort levels, context/output limits, and provider-specific request fields.
 
 When the external API changes, update the centralized adapter and the verified API-baseline section. Do not redesign the evidence model unless actual review behavior demonstrates a reason.
+
+

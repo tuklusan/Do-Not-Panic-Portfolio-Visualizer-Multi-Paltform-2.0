@@ -12,7 +12,7 @@
 # SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 # patent, trademark, and governing-law provisions.
 # ============================================================================
-build/deepseek-review/
+build/nvidia-review/
 build/publish/
 build/vm-artifacts/
 artifacts/

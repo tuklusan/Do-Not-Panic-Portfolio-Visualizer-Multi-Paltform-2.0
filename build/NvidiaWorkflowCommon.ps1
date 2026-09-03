@@ -13,10 +13,12 @@
 # ============================================================================
 Set-StrictMode -Version Latest
 
-function Get-DeepSeekSecretPatterns {
+function Get-NvidiaSecretPatterns {
     return @(
         '(?im)(api[_-]?key|secret|token|password)\s*[:=]\s*[''"](?!(test|example|placeholder|dummy|sample|REPLACE_WITH_))([A-Za-z0-9_\-+/=]{16,})[''"]',
         '(?im)(?:export\s+|set\s+)?(api[_-]?key|secret|token|password)\s*[:=]\s*(sk-[A-Za-z0-9_-]{20,}|[A-Za-z0-9_\-+/=]{32,})',
+        '(?im)(?:nvidia[_-]?api[_-]?key|api[_-]?key)\s*[:=]\s*[''\"]?(nvapi-[A-Za-z0-9_-]{20,})[''\"]?',
+        '(?m)nvapi-[A-Za-z0-9_-]{20,}',
         '(?im)Authorization\s*[:=]\s*[''"]Bearer\s+(sk-[A-Za-z0-9_-]{20,}|[A-Za-z0-9_\-+/=]{32,})[''"]',
         '(?im)sk-(?!test|example|placeholder|dummy|sample)[A-Za-z0-9_-]{20,}',
         '(?m)AKIA[0-9A-Z]{16}',
@@ -41,6 +43,7 @@ function Redact-LikelySecretsInText {
         @{ Pattern = '(?i)(\b(api[_-]?key|token|secret|password)\b\s*[:=]\s*["'']?)[^"''\s;&]+'; Replacement = '${1}[redacted]' },
         @{ Pattern = '(?i)([?&](api[_-]?key|token|secret|password)=)[^&\s]+'; Replacement = '${1}[redacted]' },
         @{ Pattern = '(?i)sk-[A-Za-z0-9_-]{20,}'; Replacement = 'sk-[redacted]' },
+        @{ Pattern = '(?i)nvapi-[A-Za-z0-9_-]{20,}'; Replacement = 'nvapi-[redacted]' },
         @{ Pattern = '(?m)(AKIA|ASIA)[0-9A-Z]{16}'; Replacement = '$1[redacted]' },
         @{ Pattern = '(?m)AIza[0-9A-Za-z\-_]{35}'; Replacement = 'AIza[redacted]' },
         @{ Pattern = '(?m)ghp_[A-Za-z0-9_]{30,}'; Replacement = 'ghp_[redacted]' },
@@ -55,25 +58,25 @@ function Redact-LikelySecretsInText {
     return $sanitized
 }
 
-function Get-ValidatedDeepSeekEndpoint {
+function Get-ValidatedNvidiaEndpoint {
     param([Parameter(Mandatory = $true)][string]$Endpoint)
 
     if ([string]::IsNullOrWhiteSpace($Endpoint)) {
-        throw 'DeepSeek review endpoint must not be empty.'
+        throw 'Nvidia review endpoint must not be empty.'
     }
 
     $trimmed = $Endpoint.Trim()
     $uri = $null
     if (-not [Uri]::TryCreate($trimmed, [UriKind]::Absolute, [ref]$uri)) {
-        throw 'DeepSeek review endpoint must be an absolute HTTPS URI.'
+        throw 'Nvidia review endpoint must be an absolute HTTPS URI.'
     }
 
     if (-not [string]::Equals($uri.Scheme, 'https', [StringComparison]::OrdinalIgnoreCase)) {
-        throw 'DeepSeek review endpoint must use HTTPS.'
+        throw 'Nvidia review endpoint must use HTTPS.'
     }
 
     if (-not [string]::IsNullOrWhiteSpace($uri.UserInfo)) {
-        throw 'DeepSeek review endpoint must not include embedded credentials.'
+        throw 'Nvidia review endpoint must not include embedded credentials.'
     }
 
     $builder = [System.UriBuilder]::new($uri)
@@ -84,11 +87,11 @@ function Get-ValidatedDeepSeekEndpoint {
     return $builder.Uri.AbsoluteUri.TrimEnd('/')
 }
 
-function Get-SafeDeepSeekEndpointForLog {
+function Get-SafeNvidiaEndpointForLog {
     param([Parameter(Mandatory = $true)][string]$Endpoint)
 
     try {
-        return Get-ValidatedDeepSeekEndpoint -Endpoint $Endpoint
+        return Get-ValidatedNvidiaEndpoint -Endpoint $Endpoint
     }
     catch {
         return '[invalid-endpoint-redacted]'
@@ -104,16 +107,10 @@ function Get-RepoRoot {
     return $root.Trim()
 }
 
-function Get-DeepSeekApiKey {
+function Get-NvidiaApiKey {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
 
-    $key = [Environment]::GetEnvironmentVariable('DeepSeek_API_key')
-    if (-not [string]::IsNullOrWhiteSpace($key)) { return $key }
-
-    $key = [Environment]::GetEnvironmentVariable('DEEPSEEK_API_KEY')
-    if (-not [string]::IsNullOrWhiteSpace($key)) { return $key }
-
-    $key = [Environment]::GetEnvironmentVariable('PORTFOLIOSAVER_DEEPSEEK_API_KEY')
+    $key = [Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING')
     if (-not [string]::IsNullOrWhiteSpace($key)) { return $key }
 
     # Local-only ignored test secret overlay. This file must never be committed.
@@ -121,23 +118,24 @@ function Get-DeepSeekApiKey {
     if (Test-Path -LiteralPath $secretsPath) {
         try {
             $secrets = Get-Content -Raw -LiteralPath $secretsPath | ConvertFrom-Json
-            if ($secrets.PSObject.Properties.Name -contains 'DeepSeekApiKey' -and
-                -not [string]::IsNullOrWhiteSpace([string]$secrets.DeepSeekApiKey)) {
-                return [string]$secrets.DeepSeekApiKey
+            if ($secrets.PSObject.Properties.Name -contains 'NvidiaApiKeyCoding' -and
+                -not [string]::IsNullOrWhiteSpace([string]$secrets.NvidiaApiKeyCoding)) {
+                return [string]$secrets.NvidiaApiKeyCoding
             }
         }
         catch {
-            Write-Warning 'Invalid JSON in the local ignored DeepSeek secrets file; fix or delete the file if local key resolution needs it.'
+            Write-Warning 'Invalid JSON in the local ignored Nvidia secrets file; fix or delete the file if local key resolution needs it.'
         }
     }
 
-    throw "DeepSeek API access is mandatory for this project's workflow, but no working DeepSeek key was found in the configured local key sources. Hard stop: do not commit, push, or run local/VM validation until DeepSeek access is available."
+    throw "Nvidia API access is mandatory for this project's workflow, but no working Nvidia key was found in the configured local key sources. Hard stop: do not commit, push, or run local/VM validation until Nvidia access is available."
 }
 
 function Assert-NoLikelySecrets {
     param([Parameter(Mandatory = $true)][string]$Text)
 
-    foreach ($pattern in Get-DeepSeekSecretPatterns) {
-        if ($Text -match $pattern) { throw 'Potential secret material detected in the review packet. Inspect the pending changes and remove secrets before sending to DeepSeek.' }
+    foreach ($pattern in Get-NvidiaSecretPatterns) {
+        if ($Text -match $pattern) { throw 'Potential secret material detected in the review packet. Inspect the pending changes and remove secrets before sending to Nvidia.' }
     }
 }
+

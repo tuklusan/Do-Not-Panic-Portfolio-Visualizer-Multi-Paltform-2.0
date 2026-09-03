@@ -15,24 +15,24 @@
 param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
-    [Parameter(ParameterSetName = 'Review')][string]$Endpoint = 'https://api.deepseek.com',
-    [Parameter(ParameterSetName = 'Review')][string]$Model = 'deepseek-v4-pro',
-    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/deepseek-review',
+    [Parameter(ParameterSetName = 'Review')][string]$Endpoint = 'https://integrate.api.nvidia.com/v1',
+    [Parameter(ParameterSetName = 'Review')][string]$Model = 'nvidia/nemotron-3-ultra-550b-a55b',
+    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/nvidia-review',
     [Parameter(ParameterSetName = 'Review')][int]$MaxRequestBytes = 1048576,
     [Parameter(ParameterSetName = 'Review')][ValidateRange(1, 32768)][int]$MaxTokens = 8192,
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 900)][int]$RequestTimeoutSeconds = 600,
+    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 7200)][int]$RequestTimeoutSeconds = 3600,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest,
     [switch]$AcknowledgeEndpointOverride
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$script:LastDeepSeekResponseAt = $null
-$script:MinimumDeepSeekResponseSpacingSeconds = 15
-$script:DeepSeekSpacingRoot = $null
+$script:LastNvidiaResponseAt = $null
+$script:MinimumNvidiaResponseSpacingSeconds = 15
+$script:NvidiaSpacingRoot = $null
 
-$commonPath = Join-Path $PSScriptRoot 'DeepSeekWorkflowCommon.ps1'
-if (-not (Test-Path -LiteralPath $commonPath)) { throw "Missing DeepSeek workflow common module: $commonPath" }
+$commonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
+if (-not (Test-Path -LiteralPath $commonPath)) { throw "Missing Nvidia workflow common module: $commonPath" }
 . $commonPath
 
 function Get-ReviewPasses([string]$Type) {
@@ -160,12 +160,12 @@ function Normalize-ReviewFinding {
     )
 
     if ($null -eq $Finding -or $null -eq $Finding.PSObject) {
-        throw "DeepSeek returned a malformed finding entry for $ExpectedPass."
+        throw "Nvidia returned a malformed finding entry for $ExpectedPass."
     }
 
     $severity = Get-ReviewFindingTextValue -Finding $Finding -PropertyNames @('severity', 'level', 'priority')
     if ([string]::IsNullOrWhiteSpace($severity)) {
-        throw "DeepSeek returned an incomplete finding for ${ExpectedPass}: missing severity."
+        throw "Nvidia returned an incomplete finding for ${ExpectedPass}: missing severity."
     }
 
     $severity = $severity.ToUpperInvariant()
@@ -179,7 +179,7 @@ function Normalize-ReviewFinding {
         'INFO' { return $null }
         'WARNING' { return $null }
         'MINOR' { return $null }
-        default { throw "DeepSeek returned an unsupported severity '$severity' for $ExpectedPass." }
+        default { throw "Nvidia returned an unsupported severity '$severity' for $ExpectedPass." }
     }
 
     $id = Get-ReviewFindingTextValue -Finding $Finding -PropertyNames @('id', 'finding_id', 'key')
@@ -232,33 +232,33 @@ function Normalize-ReviewFinding {
 
 function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
     try { $parsed = $Content | ConvertFrom-Json -ErrorAction Stop }
-    catch { throw "DeepSeek returned malformed JSON for $ExpectedPass." }
+    catch { throw "Nvidia returned malformed JSON for $ExpectedPass." }
 
     if ($null -eq $parsed -or $parsed -is [string] -or $null -eq $parsed.PSObject) {
-        throw "DeepSeek returned an unexpected JSON root for $ExpectedPass."
+        throw "Nvidia returned an unexpected JSON root for $ExpectedPass."
     }
 
     $propertyNames = @(Get-ReviewObjectMemberNames $parsed)
     $passName = Convert-ReviewFieldToText $parsed.pass
     if ([string]::IsNullOrWhiteSpace($passName) -or
         -not [string]::Equals($passName, $ExpectedPass, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "DeepSeek returned a mismatched pass marker for $ExpectedPass."
+        throw "Nvidia returned a mismatched pass marker for $ExpectedPass."
     }
 
     $hasFindings = $propertyNames -contains 'findings'
     $hasBlockingFindings = $propertyNames -contains 'blocking_findings'
     if ($parsed.review_complete -isnot [bool]) {
-        throw "DeepSeek returned a non-boolean review_complete field for $ExpectedPass."
+        throw "Nvidia returned a non-boolean review_complete field for $ExpectedPass."
     }
 
     if ($propertyNames -notcontains 'review_complete' -or
         (-not $hasFindings -and -not $hasBlockingFindings) -or -not $parsed.review_complete) {
-        throw "DeepSeek returned incomplete JSON for $ExpectedPass."
+        throw "Nvidia returned incomplete JSON for $ExpectedPass."
     }
 
     if ([string]::Equals($ExpectedPass, 'CONSOLIDATION', [StringComparison]::OrdinalIgnoreCase) -and
         $propertyNames -notcontains 'root_cause_groups') {
-        throw 'DeepSeek consolidation JSON omitted root_cause_groups.'
+        throw 'Nvidia consolidation JSON omitted root_cause_groups.'
     }
 
     $rawFindings = if ($hasBlockingFindings) { $parsed.blocking_findings } else { $parsed.findings }
@@ -266,7 +266,7 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
         $reviewFindings = @()
     }
     elseif ($rawFindings -is [string]) {
-        throw "DeepSeek returned a non-array findings payload for $ExpectedPass."
+        throw "Nvidia returned a non-array findings payload for $ExpectedPass."
     }
     elseif ($rawFindings -is [System.Collections.IDictionary] -or $rawFindings -is [pscustomobject]) {
         $findingPropertyNames = @(Get-ReviewObjectMemberNames $rawFindings)
@@ -277,7 +277,7 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
             $reviewFindings = @($rawFindings)
         }
         else {
-            throw "DeepSeek returned a non-array findings payload for $ExpectedPass."
+            throw "Nvidia returned a non-array findings payload for $ExpectedPass."
         }
     }
     else {
@@ -288,12 +288,12 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
     for ($index = 0; $index -lt $reviewFindings.Count; $index++) {
         $findingCandidate = $reviewFindings[$index]
         if ($null -eq $findingCandidate) {
-            throw "DeepSeek returned a null finding for ${ExpectedPass} at index $($index + 1)."
+            throw "Nvidia returned a null finding for ${ExpectedPass} at index $($index + 1)."
         }
 
         if ((-not ($findingCandidate -is [System.Collections.IDictionary])) -and
             (-not ($findingCandidate -is [pscustomobject]))) {
-            throw "DeepSeek returned a non-object finding for ${ExpectedPass} at index $($index + 1)."
+            throw "Nvidia returned a non-object finding for ${ExpectedPass} at index $($index + 1)."
         }
 
         try {
@@ -308,7 +308,7 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
                 $rawFinding = '<unserializable finding payload>'
             }
 
-            throw "DeepSeek returned an invalid finding for ${ExpectedPass} at index $($index + 1): $($_.Exception.Message) Raw payload: $rawFinding"
+            throw "Nvidia returned an invalid finding for ${ExpectedPass} at index $($index + 1): $($_.Exception.Message) Raw payload: $rawFinding"
         }
     }
 
@@ -325,7 +325,7 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
             $parsed.root_cause_groups = @()
         }
         elseif ($rootCauseGroups -is [string]) {
-            throw "DeepSeek returned a non-array root_cause_groups payload for $ExpectedPass."
+            throw "Nvidia returned a non-array root_cause_groups payload for $ExpectedPass."
         }
         elseif ($rootCauseGroups -is [System.Collections.IDictionary] -or $rootCauseGroups -is [pscustomobject]) {
             $parsed.root_cause_groups = @($rootCauseGroups)
@@ -338,21 +338,21 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
     return $parsed
 }
 
-function Get-SanitizedDeepSeekErrorMessage([object]$Exception) {
+function Get-SanitizedNvidiaErrorMessage([object]$Exception) {
     $message = [string]$Exception.Message
     if ([string]::IsNullOrWhiteSpace($message)) {
-        return 'DeepSeek request failed without an error message.'
+        return 'Nvidia request failed without an error message.'
     }
 
     return Redact-LikelySecretsInText -Text $message
 }
 
-function Get-SanitizedDeepSeekExceptionSummary([object]$Exception) {
+function Get-SanitizedNvidiaExceptionSummary([object]$Exception) {
     $parts = New-Object System.Collections.Generic.List[string]
     $current = $Exception
     $depth = 0
     while ($null -ne $current -and $depth -lt 6) {
-        $message = Get-SanitizedDeepSeekErrorMessage $current
+        $message = Get-SanitizedNvidiaErrorMessage $current
         if (-not [string]::IsNullOrWhiteSpace($message)) {
             [void]$parts.Add(("{0}: {1}" -f $current.GetType().Name, $message))
         }
@@ -389,24 +389,24 @@ function Write-AtomicTextFile {
     }
 }
 
-function Invoke-DeepSeekRequestWithSpacing {
+function Invoke-NvidiaRequestWithSpacing {
     param(
         [Parameter(Mandatory = $true)][scriptblock]$Request,
         [Parameter(Mandatory = $true)][int]$TimeoutSeconds
     )
 
-    if ([string]::IsNullOrWhiteSpace($script:DeepSeekSpacingRoot)) {
-        throw 'DeepSeek spacing root was not initialized before request dispatch.'
+    if ([string]::IsNullOrWhiteSpace($script:NvidiaSpacingRoot)) {
+        throw 'Nvidia spacing root was not initialized before request dispatch.'
     }
 
-    $spacingPath = Join-Path $script:DeepSeekSpacingRoot 'last-harness-response-at.txt'
+    $spacingPath = Join-Path $script:NvidiaSpacingRoot 'last-harness-response-at.txt'
     $mutexName = if ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT) {
         # Windows named mutexes use the Global\ prefix to synchronize across
         # sessions on the same host. Other platforms use the plain name.
-        'Global\DoNotPanicPortfolioVisualizer.DeepSeekReviewHarness.ResponseSpacing'
+        'Global\DoNotPanicPortfolioVisualizer.NvidiaReviewHarness.ResponseSpacing'
     }
     else {
-        'DoNotPanicPortfolioVisualizer.DeepSeekReviewHarness.ResponseSpacing'
+        'DoNotPanicPortfolioVisualizer.NvidiaReviewHarness.ResponseSpacing'
     }
 
     $mutex = New-Object System.Threading.Mutex($false, $mutexName)
@@ -417,7 +417,7 @@ function Invoke-DeepSeekRequestWithSpacing {
         try {
             $lockTaken = $mutex.WaitOne([TimeSpan]::FromSeconds([Math]::Min(120, [Math]::Max(30, $TimeoutSeconds / 2))))
             if (-not $lockTaken) {
-                throw 'Timed out waiting for the DeepSeek response-spacing mutex.'
+                throw 'Timed out waiting for the Nvidia response-spacing mutex.'
             }
         }
         catch [System.Threading.AbandonedMutexException] {
@@ -432,14 +432,14 @@ function Invoke-DeepSeekRequestWithSpacing {
                 if (-not [string]::IsNullOrWhiteSpace($lastResponseText)) {
                     $lastResponse = [DateTimeOffset]::Parse($lastResponseText)
                     $elapsedSeconds = ([DateTimeOffset]::UtcNow - $lastResponse).TotalSeconds
-                    $remainingSeconds = [Math]::Ceiling($script:MinimumDeepSeekResponseSpacingSeconds - $elapsedSeconds)
+                    $remainingSeconds = [Math]::Ceiling($script:MinimumNvidiaResponseSpacingSeconds - $elapsedSeconds)
                     if ($remainingSeconds -gt 0) {
                         Start-Sleep -Seconds $remainingSeconds
                     }
                 }
             }
             catch {
-                Start-Sleep -Seconds $script:MinimumDeepSeekResponseSpacingSeconds
+                Start-Sleep -Seconds $script:MinimumNvidiaResponseSpacingSeconds
             }
         }
 
@@ -457,12 +457,12 @@ function Invoke-DeepSeekRequestWithSpacing {
         }
         finally {
             if ($observedResponse) {
-                $script:LastDeepSeekResponseAt = [DateTimeOffset]::UtcNow
+                $script:LastNvidiaResponseAt = [DateTimeOffset]::UtcNow
                 try {
-                    Write-AtomicTextFile -Path $spacingPath -Content ($script:LastDeepSeekResponseAt.ToString('o'))
+                    Write-AtomicTextFile -Path $spacingPath -Content ($script:LastNvidiaResponseAt.ToString('o'))
                 }
                 catch {
-                    Write-Warning 'Could not update DeepSeek response-spacing timestamp.'
+                    Write-Warning 'Could not update Nvidia response-spacing timestamp.'
                 }
             }
         }
@@ -485,12 +485,12 @@ function Invoke-DeepSeekRequestWithSpacing {
     }
 }
 
-function Test-IsDeepSeekModel([string]$TargetModel) {
+function Test-IsNvidiaModel([string]$TargetModel) {
     return -not [string]::IsNullOrWhiteSpace($TargetModel) -and
-        $TargetModel.StartsWith('deepseek-', [StringComparison]::OrdinalIgnoreCase)
+        $TargetModel.StartsWith('nvidia/', [StringComparison]::OrdinalIgnoreCase)
 }
 
-function New-DeepSeekHarnessRequestBody {
+function New-NvidiaHarnessRequestBody {
     param(
         [Parameter(Mandatory = $true)][string]$System,
         [Parameter(Mandatory = $true)][string]$User,
@@ -507,12 +507,12 @@ function New-DeepSeekHarnessRequestBody {
         stream = $false
     }
 
-    if (Test-IsDeepSeekModel $TargetModel) {
-        # DeepSeek V4 can spend the output budget in reasoning/thinking content
+    if (Test-IsNvidiaModel $TargetModel) {
+        # Nvidia V4 can spend the output budget in reasoning/thinking content
         # and leave message.content empty or truncated for our JSON contract.
         # Disable thinking for review-harness requests so the gate returns a
         # bounded JSON verdict reliably on larger packets.
-        $body['thinking'] = @{ type = 'disabled' }
+        $body['chat_template_kwargs'] = @{ enable_thinking = $false }
     }
 
     return $body | ConvertTo-Json -Depth 10 -Compress
@@ -520,29 +520,29 @@ function New-DeepSeekHarnessRequestBody {
 
 function Invoke-HarnessSelfTest {
     try {
-        $deepSeekBodyProbe = New-DeepSeekHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'deepseek-v4-pro' -TokenLimit 16 |
+        $deepSeekBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3-ultra-550b-a55b' -TokenLimit 16 |
             ConvertFrom-Json -ErrorAction Stop
-        $genericBodyProbe = New-DeepSeekHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'generic-model' -TokenLimit 16 |
+        $genericBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'generic-model' -TokenLimit 16 |
             ConvertFrom-Json -ErrorAction Stop
     }
     catch {
-        throw "DeepSeek review harness self-test failed; could not parse request body JSON: $($_.Exception.Message)"
+        throw "Nvidia review harness self-test failed; could not parse request body JSON: $($_.Exception.Message)"
     }
 
-    if ($deepSeekBodyProbe.thinking.type -ne 'disabled') {
-        throw 'DeepSeek review harness self-test failed; DeepSeek request body does not disable thinking mode.'
+    if ($deepSeekBodyProbe.chat_template_kwargs.enable_thinking -ne $false) {
+        throw 'Nvidia review harness self-test failed; Nvidia request body does not disable thinking mode.'
     }
 
     if ($deepSeekBodyProbe.PSObject.Properties.Name -contains 'reasoning_effort') {
-        throw 'DeepSeek review harness self-test failed; request body unexpectedly preserved reasoning_effort while thinking is disabled.'
+        throw 'Nvidia review harness self-test failed; request body unexpectedly preserved reasoning_effort while thinking is disabled.'
     }
 
     if ($deepSeekBodyProbe.temperature -ne 0.1 -or $deepSeekBodyProbe.max_tokens -ne 16) {
-        throw 'DeepSeek review harness self-test failed; DeepSeek request body has an unexpected shape.'
+        throw 'Nvidia review harness self-test failed; Nvidia request body has an unexpected shape.'
     }
 
-    if ($genericBodyProbe.PSObject.Properties.Name -contains 'thinking') {
-        throw 'DeepSeek review harness self-test failed; generic request body unexpectedly includes DeepSeek thinking controls.'
+    if ($genericBodyProbe.PSObject.Properties.Name -contains 'chat_template_kwargs') {
+        throw 'Nvidia review harness self-test failed; generic request body unexpectedly includes Nvidia thinking controls.'
     }
 
     try {
@@ -551,11 +551,11 @@ function Invoke-HarnessSelfTest {
         $blockingProbe = ConvertFrom-ReviewJson -Content '{"pass":"CONSOLIDATION","review_complete":true,"blocking_findings":[{"severity":"HIGH","problem":"Missing evidence field."}],"root_cause_groups":[]}' -ExpectedPass 'CONSOLIDATION'
     }
     catch {
-        throw "DeepSeek review harness self-test failed; partial finding normalization raised an error: $($_.Exception.Message)"
+        throw "Nvidia review harness self-test failed; partial finding normalization raised an error: $($_.Exception.Message)"
     }
 
     if (@($normalizedProbe.findings).Count -ne 1) {
-        throw 'DeepSeek review harness self-test failed; partial finding normalization did not preserve the finding.'
+        throw 'Nvidia review harness self-test failed; partial finding normalization did not preserve the finding.'
     }
 
     $normalizedFinding = @($normalizedProbe.findings)[0]
@@ -563,29 +563,29 @@ function Invoke-HarnessSelfTest {
         $normalizedFinding.severity -ne 'HIGH' -or
         $normalizedFinding.problem -ne 'Missing null guard.' -or
         [string]::IsNullOrWhiteSpace([string]$normalizedFinding.required_outcome)) {
-        throw 'DeepSeek review harness self-test failed; partial finding normalization produced an unexpected shape.'
+        throw 'Nvidia review harness self-test failed; partial finding normalization produced an unexpected shape.'
     }
 
     if (@($arrayProbe.findings).Count -ne 1 -or @($blockingProbe.blocking_findings).Count -ne 1) {
-        throw 'DeepSeek review harness self-test failed; array or blocking-findings normalization did not preserve the expected finding count.'
+        throw 'Nvidia review harness self-test failed; array or blocking-findings normalization did not preserve the expected finding count.'
     }
 
     $filteredSeverityProbe = ConvertFrom-ReviewJson -Content '{"pass":"CODE-A","review_complete":true,"findings":{"severity":"MEDIUM","problem":"Wrong severity."}}' -ExpectedPass 'CODE-A'
     if (@($filteredSeverityProbe.findings).Count -ne 0) {
-        throw 'DeepSeek review harness self-test failed; non-blocking severities were not filtered out.'
+        throw 'Nvidia review harness self-test failed; non-blocking severities were not filtered out.'
     }
 
     try {
         $null = ConvertFrom-ReviewJson -Content '{"pass":"CODE-A","review_complete":true,"findings":{"foo":"bar"}}' -ExpectedPass 'CODE-A'
-        throw 'DeepSeek review harness self-test failed; malformed findings payload was accepted unexpectedly.'
+        throw 'Nvidia review harness self-test failed; malformed findings payload was accepted unexpectedly.'
     }
     catch {
-        if ($_.Exception.Message -notlike 'DeepSeek returned a non-array findings payload*') {
+        if ($_.Exception.Message -notlike 'Nvidia returned a non-array findings payload*') {
             throw
         }
     }
 
-    Write-Output 'DEEPSEEK_REVIEW_HARNESS_SELFTEST=Passed'
+    Write-Output 'NVIDIA_REVIEW_HARNESS_SELFTEST=Passed'
 }
 
 function Assert-GitIgnoredPath([string]$Path, [string]$FailureMessage) {
@@ -608,7 +608,7 @@ function Test-IsTransientHttpStatus($Status) {
         return $false
     }
 
-    return $Status -in @(408, 425, 429) -or $Status -ge 500
+    return $Status -in @(404, 408, 425, 429) -or $Status -ge 500
 }
 
 function Test-IsRetryableReviewException([object]$Exception, $Status) {
@@ -635,69 +635,68 @@ function Test-IsRetryableHarnessFailureMessage([string]$Message) {
         return $false
     }
 
-    return $Message -like 'DeepSeek response was absent or truncated.*' -or
-        $Message -like 'DeepSeek response was absent.*' -or
-        $Message -like 'DeepSeek response content was empty.*' -or
-        $Message -like 'DeepSeek response was missing finish_reason.*' -or
+    return $Message -like 'Nvidia response was absent or truncated.*' -or
+        $Message -like 'Nvidia response was absent.*' -or
+        $Message -like 'Nvidia response content was empty.*' -or
+        $Message -like 'Nvidia response was missing finish_reason.*' -or
         $Message -like '*property ''choices'' cannot be found*' -or
         $Message -like '*property ''message'' cannot be found*'
 }
 
 function Get-TransientRetryDelaySeconds([int]$AttemptIndex) {
-    $baseDelays = @(5, 15, 35)
-    $boundedIndex = [Math]::Max(0, [Math]::Min($AttemptIndex, $baseDelays.Count - 1))
+    $boundedIndex = [Math]::Max(0, [Math]::Min($AttemptIndex, 4))
     $jitterSeconds = Get-Random -Minimum 0 -Maximum 4
-    return $baseDelays[$boundedIndex] + $jitterSeconds
+    return [int][Math]::Min(60, ([Math]::Pow(2, $boundedIndex) * 5) + $jitterSeconds)
 }
 
-function Invoke-DeepSeekJsonRequest {
+function Invoke-NvidiaJsonRequest {
     param([Parameter(Mandatory = $true)][string]$System, [Parameter(Mandatory = $true)][string]$User,
         [Parameter(Mandatory = $true)][string]$ApiKey, [Parameter(Mandatory = $true)][string]$TargetEndpoint,
         [Parameter(Mandatory = $true)][string]$TargetModel, [Parameter(Mandatory = $true)][int]$TokenLimit,
         [Parameter(Mandatory = $true)][int]$TimeoutSeconds)
 
-    $body = New-DeepSeekHarnessRequestBody -System $System -User $User -TargetModel $TargetModel -TokenLimit $TokenLimit
+    $body = New-NvidiaHarnessRequestBody -System $System -User $User -TargetModel $TargetModel -TokenLimit $TokenLimit
     if ([Text.Encoding]::UTF8.GetByteCount($body) -gt $MaxRequestBytes) { throw 'Review request exceeds MaxRequestBytes; split the reviewed material into coherent shards before retrying.' }
 
-    $retryDelays = @(0, 1, 2)
+    $retryDelays = @(0, 1, 2, 3)
     for ($attempt = 0; $attempt -le $retryDelays.Count; $attempt++) {
         try {
-            $response = Invoke-DeepSeekRequestWithSpacing -TimeoutSeconds $TimeoutSeconds -Request {
+            $response = Invoke-NvidiaRequestWithSpacing -TimeoutSeconds $TimeoutSeconds -Request {
                 Invoke-RestMethod -Method Post -Uri ($TargetEndpoint.TrimEnd('/') + '/chat/completions') -Headers @{ Authorization = "Bearer $ApiKey"; 'Content-Type' = 'application/json' } -Body $body -TimeoutSec $TimeoutSeconds
             }
             $choice = @($response.choices)[0]
-            if ($null -eq $choice) { throw 'DeepSeek response was absent.' }
+            if ($null -eq $choice) { throw 'Nvidia response was absent.' }
 
             $finishReason = Convert-ReviewFieldToText $choice.finish_reason
             if ([string]::IsNullOrWhiteSpace($finishReason)) {
-                throw 'DeepSeek response was missing finish_reason.'
+                throw 'Nvidia response was missing finish_reason.'
             }
 
             if (-not [string]::Equals($finishReason, 'stop', [StringComparison]::OrdinalIgnoreCase)) {
                 if ([string]::Equals($finishReason, 'length', [StringComparison]::OrdinalIgnoreCase)) {
-                    throw 'DeepSeek response was absent or truncated.'
+                    throw 'Nvidia response was absent or truncated.'
                 }
 
-                throw "DeepSeek response finished with unsupported reason '$finishReason'."
+                throw "Nvidia response finished with unsupported reason '$finishReason'."
             }
 
             $content = [string]$choice.message.content
-            if ([string]::IsNullOrWhiteSpace($content)) { throw 'DeepSeek response content was empty.' }
+            if ([string]::IsNullOrWhiteSpace($content)) { throw 'Nvidia response content was empty.' }
             return @{ Content = $content; Usage = $response.usage; Attempts = $attempt + 1 }
         }
         catch {
             $status = Get-TransientStatus $_.Exception
-            $safeMessage = Get-SanitizedDeepSeekErrorMessage $_.Exception
+            $safeMessage = Get-SanitizedNvidiaErrorMessage $_.Exception
             $shouldRetry = ((Test-IsRetryableReviewException -Exception $_.Exception -Status $status) -or
                 (Test-IsRetryableHarnessFailureMessage -Message $safeMessage)) -and $attempt -lt $retryDelays.Count
             if (-not $shouldRetry) {
                 $statusText = if ($null -ne $status) { "status=$status; " } else { [string]::Empty }
-                throw "DeepSeek review request failed after $($attempt + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name). See ignored DeepSeek telemetry for local diagnostics."
+                throw "Nvidia review request failed after $($attempt + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name). See ignored Nvidia telemetry for local diagnostics."
             }
             Start-Sleep -Seconds (Get-TransientRetryDelaySeconds -AttemptIndex $attempt)
         }
     }
-    throw 'DeepSeek review retry exhaustion.'
+    throw 'Nvidia review retry exhaustion.'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
@@ -728,19 +727,19 @@ $outputCandidate = if ([IO.Path]::IsPathRooted($OutputDirectory)) { $OutputDirec
 $outputRoot = [IO.Path]::GetFullPath($outputCandidate)
 if (-not $outputRoot.StartsWith($repoRootWithSeparator, [StringComparison]::OrdinalIgnoreCase)) { throw 'OutputDirectory must resolve under the repository root.' }
 New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
-$script:DeepSeekSpacingRoot = $outputRoot
+$script:NvidiaSpacingRoot = $outputRoot
 $relativeOutputDirectory = $outputRoot.Substring($repoRootWithSeparator.Length).Replace('\', '/').TrimEnd('/')
 $relativeTelemetryPath = $outputRoot.Substring($repoRootWithSeparator.Length).Replace('\', '/').TrimEnd('/') + '/telemetry.jsonl'
 Push-Location $repoRoot
 try {
-    Assert-GitIgnoredPath $relativeOutputDirectory 'DeepSeek harness output directory must be ignored by git.'
-    Assert-GitIgnoredPath $relativeTelemetryPath 'DeepSeek harness output directory must be ignored by git.'
+    Assert-GitIgnoredPath $relativeOutputDirectory 'Nvidia harness output directory must be ignored by git.'
+    Assert-GitIgnoredPath $relativeTelemetryPath 'Nvidia harness output directory must be ignored by git.'
 }
 finally { Pop-Location }
 
-$Endpoint = Get-ValidatedDeepSeekEndpoint -Endpoint $Endpoint
-if (-not $Endpoint.Equals('https://api.deepseek.com', [StringComparison]::OrdinalIgnoreCase) -and -not $AcknowledgeEndpointOverride) { throw 'Endpoint override requires -AcknowledgeEndpointOverride.' }
-$apiKey = Get-DeepSeekApiKey -RepositoryRoot $repoRoot
+$Endpoint = Get-ValidatedNvidiaEndpoint -Endpoint $Endpoint
+if (-not $Endpoint.Equals('https://integrate.api.nvidia.com/v1', [StringComparison]::OrdinalIgnoreCase) -and -not $AcknowledgeEndpointOverride) { throw 'Endpoint override requires -AcknowledgeEndpointOverride.' }
+$apiKey = Get-NvidiaApiKey -RepositoryRoot $repoRoot
 $sharedSystem = "You are an independent strict $ReviewType reviewer. Return JSON only. Review the entire supplied immutable snapshot, continue after every finding, silently self-challenge before responding, and report only high-confidence BLOCKER or HIGH issues. Exclude praise, style, cosmetic refactoring, tutorials, and speculative redesign. Do not expose reasoning. Each finding requires id, severity, category, requirement, location, problem, evidence, required_outcome. The snapshot identity is $snapshotId."
 $sharedUser = "Immutable review material follows. Do not assume test success proves correctness.\n\n$material"
 $started = [DateTimeOffset]::UtcNow
@@ -750,13 +749,13 @@ $findings = [System.Collections.Generic.List[object]]::new()
 try {
     foreach ($pass in Get-ReviewPasses $ReviewType) {
         $passSystem = $sharedSystem + " Required schema for this pass: {`"pass`":`"$($pass.Id)`",`"review_complete`":true,`"findings`":[],`"uncertainties`":[]}. The pass field must be exactly `"$($pass.Id)`"."
-        $response = Invoke-DeepSeekJsonRequest -System $passSystem -User ($sharedUser + "\n\nPass-specific scope: " + $pass.Focus) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
+        $response = Invoke-NvidiaJsonRequest -System $passSystem -User ($sharedUser + "\n\nPass-specific scope: " + $pass.Focus) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
         $callCount += $response.Attempts
         [void]$results.Add((ConvertFrom-ReviewJson -Content $response.Content -ExpectedPass $pass.Id))
     }
     $specialistJson = $results | ConvertTo-Json -Depth 20 -Compress
     $consolidationSystem = "You are the adversarial consolidation stage for a strict $ReviewType gate. Return JSON only. Recheck each proposed BLOCKER/HIGH finding against the immutable snapshot. Remove duplicates and unsupported or stale claims, group root causes, preserve any independently valid serious finding even if only one specialist found it, and add a serious issue only with concrete evidence. Required schema: {`"pass`":`"CONSOLIDATION`",`"review_complete`":true,`"blocking_findings`":[],`"root_cause_groups`":[],`"uncertainties`":[]}. The pass field must be exactly `"CONSOLIDATION`"."
-    $consolidation = Invoke-DeepSeekJsonRequest -System $consolidationSystem -User ($sharedUser + "\n\nSpecialist JSON:\n" + $specialistJson) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
+    $consolidation = Invoke-NvidiaJsonRequest -System $consolidationSystem -User ($sharedUser + "\n\nSpecialist JSON:\n" + $specialistJson) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
     $callCount += $consolidation.Attempts
     $final = ConvertFrom-ReviewJson -Content $consolidation.Content -ExpectedPass 'CONSOLIDATION'
     $findings = [System.Collections.Generic.List[object]]::new()
@@ -768,11 +767,12 @@ try {
     $result = [ordered]@{ schema_version = 1; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = $verdict; review_complete = $true; blocking_findings = $findings; root_cause_groups = @($final.root_cause_groups); prior_findings = @() }
 }
 catch {
-    $result = [ordered]@{ schema_version = 1; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = 'REVIEW_UNAVAILABLE'; review_complete = $false; reason = 'DeepSeek review could not be completed reliably. See local invocation error.' }
-    $errorSummary = Get-SanitizedDeepSeekExceptionSummary $_.Exception
+    $result = [ordered]@{ schema_version = 1; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = 'REVIEW_UNAVAILABLE'; review_complete = $false; reason = 'Nvidia review could not be completed reliably. See local invocation error.' }
+    $errorSummary = Get-SanitizedNvidiaExceptionSummary $_.Exception
     Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; verdict = 'REVIEW_UNAVAILABLE'; error_class = $_.Exception.GetType().Name; error_status = (Get-TransientStatus $_.Exception); error_summary = $errorSummary }
-    throw ([System.Exception]::new(("DeepSeek review failed. See ignored telemetry for local diagnostics. " + $errorSummary), $_.Exception))
+    throw ([System.Exception]::new(("Nvidia review failed. See ignored telemetry for local diagnostics. " + $errorSummary), $_.Exception))
 }
 
 Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; specialist_passes = @((Get-ReviewPasses $ReviewType | ForEach-Object Id)); final_serious_finding_count = $findings.Count; final_verdict = $result.verdict; elapsed_ms = ([DateTimeOffset]::UtcNow - $started).TotalMilliseconds }
 $result | ConvertTo-Json -Depth 20 -Compress
+

@@ -27,8 +27,8 @@ the fresh DNPPV-2.0 migration workspace.
 
 Only the following retained assets remain in scope:
 
-1. The DeepSeek review gate under `build/` and its supporting standard in
-   `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`.
+1. The NVIDIA NIM review gate under `build/` and its supporting standard in
+   `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`.
 2. The build/test machine access record in `docs/TEST_MACHINE_ACCESS.md`.
 3. The empty migration issue tracker in `docs/AUDIT_STATE.json`.
 
@@ -49,7 +49,7 @@ Before closure, independently rescan the upstream implementation and pass the
 same gate with `-Stage Closure`. Missing or unmapped behavior hard-stops work or
 closure as applicable. Follow `docs/MIGRATION_BEHAVIOR_GATES.md`.
 
-## DeepSeek Review Gate
+## NVIDIA NIM Review Gate
 
 Before executing a newly composed multi-line PowerShell command, a command with
 nested quoting/interpolation, or a Windows native-command bridge, parse it with
@@ -69,11 +69,11 @@ PowerShell invocations so validation and execution happen in one step.
 
 The preserved review-gate entry points are:
 
-- `build/Run-DeepSeekCodeReview.ps1`
-- `build/Invoke-DeepSeekReviewHarness.ps1`
-- `build/Test-DeepSeekWorkflowGate.ps1`
-- `build/DeepSeekWorkflowCommon.ps1`
-- `docs/FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md`
+- `build/Run-NvidiaCodeReview.ps1`
+- `build/Invoke-NvidiaReviewHarness.ps1`
+- `build/Test-NvidiaWorkflowGate.ps1`
+- `build/NvidiaWorkflowCommon.ps1`
+- `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`
 - `build/Invoke-CheckedPowerShell.ps1`
 
 ## Generated Artifact Cleanup

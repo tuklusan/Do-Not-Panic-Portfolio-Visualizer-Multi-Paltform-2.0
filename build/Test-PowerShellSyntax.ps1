@@ -100,7 +100,7 @@ function Find-RepositoryRootFromPath {
         $hasAgentsFile = Test-Path -LiteralPath (Join-Path $current.FullName 'AGENTS.md') -PathType Leaf
         $hasGateLayout =
             (Test-Path -LiteralPath (Join-Path $current.FullName 'build\Test-PowerShellSyntax.ps1') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $current.FullName 'docs\FRESH-PROJECT-DEEPSEEK-REVIEW-GATE.md') -PathType Leaf)
+            (Test-Path -LiteralPath (Join-Path $current.FullName 'docs\FRESH-PROJECT-NVIDIA-REVIEW-GATE.md') -PathType Leaf)
         if ($hasGitDirectory -or $hasAgentsFile -or $hasGateLayout) {
             return $current.FullName
         }
@@ -127,7 +127,7 @@ function Test-IsArchivedSnapshotScriptExcluded {
     $excludedPrefixes = @(
         '.git/',
         '.vs/',
-        'build/deepseek-review/',
+        'build/nvidia-review/',
         'build/validation/artifacts/',
         'build/vm/artifacts/'
     )

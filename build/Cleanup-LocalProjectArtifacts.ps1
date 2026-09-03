@@ -26,7 +26,7 @@ Get-ChildItem -LiteralPath $env:TEMP -Directory -Force |
 
 foreach ($relativePath in @(
     'artifacts',
-    'build/deepseek-review',
+    'build/nvidia-review',
     'build/publish',
     'build/vm-artifacts'
 )) {

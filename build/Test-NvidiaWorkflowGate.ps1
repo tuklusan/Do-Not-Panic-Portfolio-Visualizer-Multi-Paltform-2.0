@@ -12,44 +12,44 @@
 # patent, trademark, and governing-law provisions.
 # ============================================================================
 param(
-    [string]$Endpoint = "https://api.deepseek.com",
-    [string]$Model = "deepseek-v4-pro",
-    [int]$TimeoutSeconds = 60,
+    [string]$Endpoint = "https://integrate.api.nvidia.com/v1",
+    [string]$Model = "nvidia/nemotron-3-ultra-550b-a55b",
+    [ValidateRange(30, 7200)][int]$TimeoutSeconds = 3600,
     [switch]$AcknowledgeEndpointOverride
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$commonPath = Join-Path $PSScriptRoot 'DeepSeekWorkflowCommon.ps1'
+$commonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
 if (-not (Test-Path -LiteralPath $commonPath)) { throw "Missing required module: $commonPath" }
 . $commonPath
 
 if (-not $PSBoundParameters.ContainsKey('Endpoint')) {
-    $configuredEndpoint = [Environment]::GetEnvironmentVariable('DEEPSEEK_ENDPOINT')
+    $configuredEndpoint = [Environment]::GetEnvironmentVariable('NVIDIA_ENDPOINT')
     if (-not [string]::IsNullOrWhiteSpace($configuredEndpoint)) { $Endpoint = $configuredEndpoint }
 }
 
 if (-not $PSBoundParameters.ContainsKey('Model')) {
-    $configuredModel = [Environment]::GetEnvironmentVariable('DEEPSEEK_MODEL')
+    $configuredModel = [Environment]::GetEnvironmentVariable('NVIDIA_MODEL')
     if (-not [string]::IsNullOrWhiteSpace($configuredModel)) { $Model = $configuredModel }
 }
 
-if ([string]::IsNullOrWhiteSpace($Endpoint)) { throw 'DeepSeek endpoint must not be empty.' }
-if ([string]::IsNullOrWhiteSpace($Model)) { throw 'DeepSeek model must not be empty.' }
+if ([string]::IsNullOrWhiteSpace($Endpoint)) { throw 'Nvidia endpoint must not be empty.' }
+if ([string]::IsNullOrWhiteSpace($Model)) { throw 'Nvidia model must not be empty.' }
 if (-not $Endpoint.StartsWith('https://', [StringComparison]::OrdinalIgnoreCase)) {
-    throw 'DeepSeek workflow gate requires an HTTPS endpoint.'
+    throw 'Nvidia workflow gate requires an HTTPS endpoint.'
 }
-$trustedDefaultEndpoint = 'https://api.deepseek.com'
+$trustedDefaultEndpoint = 'https://integrate.api.nvidia.com/v1'
 if (-not $Endpoint.TrimEnd('/').Equals($trustedDefaultEndpoint, [StringComparison]::OrdinalIgnoreCase) -and
     -not $AcknowledgeEndpointOverride) {
-    throw "DeepSeek workflow gate endpoint '$Endpoint' differs from the trusted default '$trustedDefaultEndpoint'. Rerun with -AcknowledgeEndpointOverride only if this destination is intentional."
+    throw "Nvidia workflow gate endpoint '$Endpoint' differs from the trusted default '$trustedDefaultEndpoint'. Rerun with -AcknowledgeEndpointOverride only if this destination is intentional."
 }
 
 $repoRoot = Get-RepoRoot
-$apiKey = Get-DeepSeekApiKey -RepositoryRoot $repoRoot
+$apiKey = Get-NvidiaApiKey -RepositoryRoot $repoRoot
 $uri = [Uri]::new(([string]$Endpoint).TrimEnd('/') + '/chat/completions')
-Write-Output "DEEPSEEK_WORKFLOW_GATE_TARGET=$(([Uri]$uri).GetLeftPart([UriPartial]::Authority));MODEL=$Model"
+Write-Output "NVIDIA_WORKFLOW_GATE_TARGET=$(([Uri]$uri).GetLeftPart([UriPartial]::Authority));MODEL=$Model"
 
 $body = @{
     model = $Model
@@ -60,13 +60,13 @@ $body = @{
     max_tokens = 128
     temperature = 0
     stream = $false
-    # deepseek-v4-pro may exhaust its output allowance in reasoning_content and
+    # nvidia/nvidia/nemotron-3-ultra-550b-a55b may exhaust its output allowance in reasoning_content and
     # return empty final content unless thinking is disabled explicitly.
-    thinking = @{ type = 'disabled' }
+    chat_template_kwargs = @{ enable_thinking = $false }
 } | ConvertTo-Json -Depth 8
 
 $response = $null
-$retryDelaysSeconds = @(5)
+$retryDelaysSeconds = @(5, 10, 20, 40)
 for ($attempt = 1; $attempt -le ($retryDelaysSeconds.Count + 1); $attempt++) {
     try {
         $response = Invoke-RestMethod -Method Post -Uri $uri -Headers @{
@@ -81,38 +81,39 @@ for ($attempt = 1; $attempt -le ($retryDelaysSeconds.Count + 1); $attempt++) {
             $status = [int]$_.Exception.Response.StatusCode
         }
 
-        $isTransient = $null -eq $status -or $status -eq 408 -or $status -eq 425 -or $status -eq 429 -or $status -ge 500
+        $isTransient = $null -eq $status -or $status -in @(404, 408, 425, 429) -or $status -ge 500
         if (-not $isTransient -or $attempt -gt $retryDelaysSeconds.Count) {
-            throw "DeepSeek API access is mandatory for this project's workflow, but the live access probe failed. Hard stop: do not commit, push, or run local/VM validation until DeepSeek access is restored. $($_.Exception.Message)"
+            throw "Nvidia API access is mandatory for this project's workflow, but the live access probe failed. Hard stop: do not commit, push, or run local/VM validation until Nvidia access is restored. $($_.Exception.Message)"
         }
 
-        $delay = $retryDelaysSeconds[$attempt - 1]
-        Write-Warning "DeepSeek workflow gate probe attempt $attempt failed with transient HTTP status $status; retrying in $delay seconds."
+        $delay = [int][Math]::Min(60, [Math]::Pow(2, $attempt - 1) * 5)
+        Write-Warning "Nvidia workflow gate probe attempt $attempt failed with transient HTTP status $status; retrying in $delay seconds."
         Start-Sleep -Seconds $delay
     }
 }
 
 if ($null -eq $response.PSObject.Properties['choices'] -or @($response.choices).Count -eq 0) {
-    throw 'DeepSeek workflow gate received a response without choices. Hard stop.'
+    throw 'Nvidia workflow gate received a response without choices. Hard stop.'
 }
 
 $choice = @($response.choices)[0]
 if ($null -eq $choice) {
-    throw 'DeepSeek workflow gate received a response with a null first choice. Hard stop.'
+    throw 'Nvidia workflow gate received a response with a null first choice. Hard stop.'
 }
 if ($null -eq $choice.message) {
-    throw 'DeepSeek workflow gate received a response with no message. Hard stop.'
+    throw 'Nvidia workflow gate received a response with no message. Hard stop.'
 }
 $content = [string]$choice.message.content
 $finishReason = [string]$choice.finish_reason
 if ([string]::IsNullOrWhiteSpace($content) -and
     [string]::IsNullOrWhiteSpace($finishReason)) {
-    throw 'DeepSeek workflow gate received an empty or malformed response. Hard stop.'
+    throw 'Nvidia workflow gate received an empty or malformed response. Hard stop.'
 }
 if ([string]::IsNullOrWhiteSpace($content) -or
     -not $content.Trim().Equals('OK', [StringComparison]::OrdinalIgnoreCase) -or
     -not $finishReason.Equals('stop', [StringComparison]::OrdinalIgnoreCase)) {
-    throw "DeepSeek workflow gate probe returned unexpected content or finish reason. content='$content'; finish_reason='$finishReason'. Hard stop."
+    throw "Nvidia workflow gate probe returned unexpected content or finish reason. content='$content'; finish_reason='$finishReason'. Hard stop."
 }
 
-Write-Output 'DEEPSEEK_WORKFLOW_GATE=Passed'
+Write-Output 'NVIDIA_WORKFLOW_GATE=Passed'
+

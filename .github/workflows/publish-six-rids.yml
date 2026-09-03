@@ -128,7 +128,7 @@ jobs:
       DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       DNPPV_SOAK_REQUIRE_AI_NEWS: '1'
-      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -182,8 +182,8 @@ jobs:
                  "trace_file=$($_.Name);bytes=$($_.Length);sha256=$hash`n$excerpt"
              })
            ) | Set-Content -LiteralPath $manifest -Encoding utf8
-           if ([string]::IsNullOrWhiteSpace($env:DEEPSEEK_API_KEY)) { throw 'DEEPSEEK_API_KEY is required for soak artifact review.' }
-           ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/deepseek-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+           if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for soak artifact review.' }
+           ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/nvidia-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName) -RequestTimeoutSeconds 7200
       - name: Stop Xvfb
         if: always() && runner.os == 'Linux'
         shell: bash
@@ -196,15 +196,15 @@ jobs:
           name: dnppv2-soak-${{ github.run_id }}-${{ matrix.runner }}-${{ matrix.rid }}
           path: |
             artifacts/soak
-            build/deepseek-review
+            build/nvidia-review
 
   post-long-soak-review:
     if: always() && github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '240'
     needs: real-product-soak
-    timeout-minutes: 45
+    timeout-minutes: 480
     runs-on: ubuntu-24.04
     env:
-      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
     steps:
       - uses: actions/checkout@v4
       - name: Wait ten minutes for post-soak settling
@@ -228,7 +228,7 @@ jobs:
               $failures.Add("AI trace evidence is absent: $($manifest.FullName)")
             }
             $reviewRoot = Join-Path $PWD ('post-soak-review/{0}' -f $manifest.Directory.Name)
-            ./build/Invoke-DeepSeekReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest.FullName -OutputDirectory $reviewRoot
+            ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest.FullName -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200
           }
           if ($failures.Count -gt 0) {
             New-Item -ItemType Directory -Force -Path post-soak-review | Out-Null
