@@ -67,6 +67,7 @@ public sealed class ProviderSecretStoreService
                 !string.IsNullOrWhiteSpace(settings.AiApiKey))
             {
                 settings.NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews;
+                settings.HttpTimeoutSeconds = Math.Max(settings.HttpTimeoutSeconds, 60);
             }
         }
     }

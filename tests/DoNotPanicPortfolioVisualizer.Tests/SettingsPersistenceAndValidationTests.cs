@@ -22,6 +22,7 @@ using DoNotPanicPortfolioVisualizer.Data.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Tests;
 
+[Collection("EnvironmentSerial")]
 public sealed class SettingsPersistenceAndValidationTests
 {
     [Fact]
@@ -69,6 +70,43 @@ public sealed class SettingsPersistenceAndValidationTests
         AppSettings reloaded = Defaults.CreateSettings();
         secretStore.OverlaySecrets(reloaded);
         Assert.Equal("top-secret", reloaded.AiApiKey);
+    }
+
+    [Fact]
+    public void ProviderSecretStoreService_UsesAiAliasAndEnablesSoakNewsMode()
+    {
+        string? previousCanonical = Environment.GetEnvironmentVariable("DNPPV_OPENROUTER_API_KEY");
+        string? previousStandard = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
+        string? previousAiAlias = Environment.GetEnvironmentVariable("OPENROUTER_AI_API_KEY");
+        string? previousSoakMode = Environment.GetEnvironmentVariable("DNPPV_SOAK_REQUIRE_AI_NEWS");
+        try
+        {
+            Environment.SetEnvironmentVariable("DNPPV_OPENROUTER_API_KEY", null);
+            Environment.SetEnvironmentVariable("OPENROUTER_API_KEY", null);
+            Environment.SetEnvironmentVariable("OPENROUTER_AI_API_KEY", "alias-key");
+            Environment.SetEnvironmentVariable("DNPPV_SOAK_REQUIRE_AI_NEWS", "1");
+
+            using TemporaryDirectoryScope directory = new();
+            SettingsProtectionService protection = new(Path.Combine(directory.Path, "settings-protection.key"));
+            ProviderSecretStoreService secretStore = new(
+                protection,
+                Path.Combine(directory.Path, "provider-secrets.json"));
+            AppSettings settings = Defaults.CreateSettings();
+            settings.HttpTimeoutSeconds = 10;
+
+            secretStore.OverlaySecrets(settings);
+
+            Assert.Equal("alias-key", settings.AiApiKey);
+            Assert.Equal(NewsScrollerMode.SummarizedFinancialNews, settings.NewsScrollerMode);
+            Assert.Equal(60, settings.HttpTimeoutSeconds);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DNPPV_OPENROUTER_API_KEY", previousCanonical);
+            Environment.SetEnvironmentVariable("OPENROUTER_API_KEY", previousStandard);
+            Environment.SetEnvironmentVariable("OPENROUTER_AI_API_KEY", previousAiAlias);
+            Environment.SetEnvironmentVariable("DNPPV_SOAK_REQUIRE_AI_NEWS", previousSoakMode);
+        }
     }
 
     [Fact]

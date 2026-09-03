@@ -4838,6 +4838,94 @@
       }
     },
     {
+      "id": "CR-072",
+      "phase": "Phase 7",
+      "title": "Bound Linux desktop screenshot capture",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-067"
+      ],
+      "objective": "Ensure the Linux real-product validation lane captures non-empty desktop evidence with a hard kill timeout for every screenshot utility and no lingering capture process.",
+      "acceptance_criteria": [
+        "The Linux lane prefers the installed X11 capture utility and applies a hard timeout plus kill-after grace period to every fallback.",
+        "A capture failure fails the lane with a step-log reason rather than hanging the soak.",
+        "Fresh Linux evidence contains a non-empty screenshot, circular trace pair, and zero residual product, sidecar, screenshot, or SSH helper processes.",
+        "The upstream behavior gate, syntax, license, build, test, DeepSeek source/evidence review, and artifact checks pass."
+      ],
+      "validation_plan": [
+        "Manual upstream and current-driver capture-path comparison",
+        "Focused Linux capture rehearsal followed by a fresh real-product soak",
+        "Full Release build/test and process-cleanup inspection"
+      ],
+      "artifacts": [
+        "docs/CR-072-LINUX-SCREENSHOT-CAPTURE-HARD-TIMEOUT.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-072-LINUX-SCREENSHOT-CAPTURE-HARD-TIMEOUT.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "build/vm/Run-VmUxValidation.ps1",
+          "build/vm/Guest-UxDeepExercise.ps1",
+          "build/validation/Invoke-AutonomousVisualValidation.ps1",
+          "build/validation/Analyze-VisualValidationArtifacts.ps1",
+          "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs",
+          "build/vm/Invoke-ConfigWindowValidation.ps1"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "build/vm/Run-VmUxValidation.ps1",
+          "build/vm/Guest-UxDeepExercise.ps1",
+          "build/validation/Invoke-AutonomousVisualValidation.ps1",
+          "build/validation/Analyze-VisualValidationArtifacts.ps1",
+          "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs",
+          "build/vm/Invoke-ConfigWindowValidation.ps1"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "build/vm/Run-VmUxValidation.ps1",
+          "build/vm/Guest-UxDeepExercise.ps1",
+          "build/validation/Invoke-AutonomousVisualValidation.ps1",
+          "build/validation/Analyze-VisualValidationArtifacts.ps1",
+          "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs",
+          "build/vm/Invoke-ConfigWindowValidation.ps1"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "Fresh Linux real-product one-minute run completed with non-empty general, menu, validation, motion, fullscreen, and settled product screenshots.",
+          "Linux circular trace pair was retrieved and proved both real product AI-path invocation and YFinance sidecar execution.",
+          "The prior screenshot utility hang was corrected with gnome-screenshot preference and timeout --kill-after=5s 15 on every fallback.",
+          "No residual product, sidecar, screenshot, or SSH helper processes remained after cleanup.",
+          "293 Release tests passed; build completed with 0 warnings and 0 errors; license and PowerShell syntax gates passed; DeepSeek CODE review returned PASS."
+        ]
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "review": "CODE review PASS; zero blocking findings",
+        "automated_tests": "Passed; 293 tests",
+        "physical_acceptance": "Passed; Linux real-product capture and cleanup evidence reviewed"
+      },
+      "closed_on": "2026-09-03"
+    },
+    {
       "id": "CR-070",
       "phase": "Phase 7",
       "title": "Make recovery-policy fault simulation filesystem-independent",
