@@ -4717,6 +4717,8 @@
         "unresolved_gaps": [
           "The first hosted four-hour cycle completed successfully at GitHub but its older-SHA evidence lacks AI access and summary trace events, so it cannot count toward CR-066 acceptance; a fresh current-SHA cycle is required.",
           "The local coordinator is implemented and probe-validated, but the complete four-machine-or-available-machine soak ladder and evidence review are still pending."
+          ,"Local five-minute cycle local-cycle-5m-20260902-233808 found Linux product-scene acceptance passed with non-empty screenshots and circular traces; Windows 10 and Windows 11 reached the real product but foreground acquisition failed before capture; the Mac was unavailable at cycle start."
+          ,"Linux trace proved AiAccessValidationSucceeded but the real AiSummary request ended with a bounded TaskCanceledException, so this evidence does not count as a successful AI summary acceptance."
         ],
         "implementation_progress": [
           "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
@@ -4979,7 +4981,8 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The required hosted soak cycles and full progressive soak family are still pending."
+          "The required hosted soak cycles and full progressive soak family are still pending.",
+          "The local five-minute cycle proved Linux execution but exposed Windows foreground-capture and Linux AI-summary timeout defects routed to CR-077 and CR-073."
         ],
         "evidence": [
           "Full Release test suite passed: 294 passed, 0 failed.",
