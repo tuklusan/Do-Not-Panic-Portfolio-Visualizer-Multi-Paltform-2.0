@@ -33,7 +33,7 @@ to a current 2.0 test or become an actionable follow-up CR.
 | TP-04 | `Services/*Render*Tests.cs`, `*Visualizer*Tests.cs`, `FloatingClockBuilderTests.cs` | Scene layout, motion, graph/ticker selection, clocks, and render heartbeat assertions map to the cross-platform render tests. |
 | TP-05 | `Services/*YFinance*Tests.cs`, `HistoricalCacheServiceTests.cs` | Portable server/client protocol, cache, bounded work, trace, and cleanup assertions map to current YFinance tests. |
 | TP-06 | `Services/*Policy*Tests.cs`, `RetryPolicyServiceTests.cs`, `ProviderHealthServiceTests.cs` | Retry, rate-limit, recovery, health, degraded, and retained-state rules map to current resilience tests. |
-| TP-07 | `Services/DeepSeekCodeReviewGateTests.cs`, `VmHarnessScriptTests.cs`, `DesktopWerLocalDumpsScriptTests.cs` | Review-gate and cross-platform harness behavior maps to build/test verification. |
+| TP-07 | `Services/NVIDIA NIMCodeReviewGateTests.cs`, `VmHarnessScriptTests.cs`, `DesktopWerLocalDumpsScriptTests.cs` | Review-gate and cross-platform harness behavior maps to build/test verification. |
 | TP-08 | `Services/InnoInstallerScriptTests.cs`, `Services/ItchPublishWorkflowTests.cs`, `Services/VirusTotalReleaseReportScriptTests.cs` | Inno installer assertions are retired because 2.0 has no installer; any still-applicable publishing/security behavior is mapped to the current portable release workflow. |
 | TP-09 | `Properties/AssemblyInfo.cs`, `EnvironmentSerialCollection.cs`, project file | Test assembly metadata, serialization, dependencies, and test isolation map to the current test project and workflow. |
 

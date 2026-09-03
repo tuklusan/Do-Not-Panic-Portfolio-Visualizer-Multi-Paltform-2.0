@@ -24,7 +24,7 @@ Pinned upstream source: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 | REL-02 | Release artifacts are generated deterministically and checked for completeness and integrity before publication. | `ReleaseManifestValidator` and the publish workflow validate the generated tree and manifest before any release step. |
 | REL-03 | Diagnostics use the bounded circular trace and redact sensitive values. | `TraceLog`, `CircularTraceSettings`, and `SensitiveDataRedactor` provide the shared bounded diagnostic path used by product and harnesses. |
 | REL-04 | Diagnostic dumps and crash evidence are opt-in/controlled, scoped to the product, and do not silently create unbounded artifacts. | The migrated diagnostics and cleanup tooling keep dump controls explicit, route logs through the circular trace, and review artifact roots. |
-| REL-05 | Reviewer-gate failure blocks workflow completion and publication. | DeepSeek workflow scripts and the pre-push hook enforce reviewer, license, syntax, and upstream-mutation gates. |
+| REL-05 | Reviewer-gate failure blocks workflow completion and publication. | NVIDIA NIM workflow scripts and the pre-push hook enforce reviewer, license, syntax, and upstream-mutation gates. |
 | REL-06 | Validation artifacts are analyzed for required screenshots, traces, completion markers, and forbidden leakage. | VM/artifact validation scripts inspect evidence structure, required files, trace safety, and completion markers before acceptance. |
 
 ## Failure Matrix
@@ -33,7 +33,7 @@ Pinned upstream source: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 | --- | --- | --- |
 | Missing validation checkpoint | Publication is denied. | Publish workflow and checkpoint assertion. |
 | Incomplete or tampered manifest | Release validation fails before publication. | Manifest validator tests. |
-| Reviewer gate failure | Workflow stops and reports failure. | DeepSeek workflow self-tests. |
+| Reviewer gate failure | Workflow stops and reports failure. | NVIDIA NIM workflow self-tests. |
 | Invalid or unredacted diagnostic content | Artifact review rejects or redacts it. | Trace/redaction and artifact analyzer tests. |
 | Missing screenshot/trace/done marker | Acceptance fails rather than passing on partial evidence. | VM validation scripts and artifact tests. |
 | Diagnostic dump disabled | No dump is silently collected. | Explicit diagnostics controls. |

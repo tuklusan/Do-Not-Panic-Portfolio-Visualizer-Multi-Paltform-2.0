@@ -26,7 +26,7 @@ Run and review the real-product profiles in this order on the 18-plus-4 matrix:
 The 4-hour profile must be completed twice as independent full cycles. Both
 cycles must cover all 18 hosted runners and all local machines available when
 that cycle begins, and both must show no new actionable defects after circular
-trace, artifact, and DeepSeek review.
+trace, artifact, and NVIDIA NIM review.
 
 Each profile starts only after the prior profile's artifacts are reviewed and
 the machine is clean. Failures create a JSON CR with the exact run identity,
@@ -52,7 +52,7 @@ availability is recorded, never silently converted into a pass.
 For a manually dispatched 4-hour run, the `post-long-soak-review` workflow job
 starts only after the soak matrix reaches a terminal state, waits ten minutes,
 downloads that run's 18 evidence artifacts, checks for AI-path trace evidence,
-and sends each complete evidence packet through the DeepSeek artifact reviewer.
+and sends each complete evidence packet through the NVIDIA NIM artifact reviewer.
 Its uploaded defect-candidate artifact is the handoff for the JSON CR loop; a
 failed soak or missing evidence does not suppress this review job.
 

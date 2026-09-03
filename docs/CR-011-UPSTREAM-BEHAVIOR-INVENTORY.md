@@ -73,4 +73,4 @@ menu, viewport, fullscreen, and motion states. Product diagnostics were
 collected only from the size-bounded `trace/trace.circular.log` artifact. The
 six self-contained runtime
 publishes, 283 automated tests, license gate, PowerShell syntax gate, and
-mandatory DeepSeek code review also passed at pushed checkpoint `0324d60`.
+mandatory NVIDIA NIM code review also passed at pushed checkpoint `0324d60`.

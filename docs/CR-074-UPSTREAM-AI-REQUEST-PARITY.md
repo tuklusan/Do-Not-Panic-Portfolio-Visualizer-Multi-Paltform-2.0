@@ -38,5 +38,5 @@ scans at closure; any unmapped behavior reopens this CR or creates a successor.
   routing member.
 - OpenRouter requests carry bounded generation, latency routing, attribution,
   and the resolved model without exposing credentials.
-- Focused tests, full build/test, license and syntax gates, DeepSeek source and
+- Focused tests, full build/test, license and syntax gates, NVIDIA NIM source and
   evidence review, and artifact/process cleanup all pass.

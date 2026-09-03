@@ -17,7 +17,7 @@ patent, trademark, and governing-law provisions.
 Create the executable matrix that runs the real product on every available
 GitHub-hosted runner label and the four local lab machines. Availability probes
 may report unavailable labels, but a lane that is available and required must
-build, test, launch, capture, retrieve circular traces, pass DeepSeek review of
+build, test, launch, capture, retrieve circular traces, pass NVIDIA NIM review of
 source and evidence, and clean up before acceptance.
 
 At the beginning of every soak cycle, run

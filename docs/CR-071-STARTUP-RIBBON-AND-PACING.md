@@ -34,7 +34,7 @@ and news playback timers instead of masking the symptom with a fixed delay.
 ## Closure gates
 
 Closure requires the focused and full Release tests, two successive zero-gap
-upstream scans, DeepSeek review of source and generated evidence, and physical
+upstream scans, NVIDIA NIM review of source and generated evidence, and physical
 acceptance on the available local machines with the 30-second observation cadence.
 The circular trace pair is the only product diagnostic log; arbitrary product log
 files are not acceptable.

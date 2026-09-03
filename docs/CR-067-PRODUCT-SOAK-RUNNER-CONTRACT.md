@@ -51,7 +51,7 @@ operator or CI secret store supplies `DNPPV_OPENROUTER_API_KEY`,
 parameter remains available for controlled callers); the key must never
 appear in `soak-result.json`, traces, screenshots, logs, or command output. It is
 a reusable primitive; the hosted
-matrix, four lab machines, DeepSeek evidence review, and six progressive
+matrix, four lab machines, NVIDIA NIM evidence review, and six progressive
 durations are tracked by CR-068 and CR-069.
 
 ## Upstream and reverse gates

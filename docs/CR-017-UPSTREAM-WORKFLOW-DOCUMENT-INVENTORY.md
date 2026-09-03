@@ -27,7 +27,7 @@ behavior mapped to the current public Avalonia workflow or explicitly retired.
 | ID | Upstream area | 2.0 disposition |
 | --- | --- | --- |
 | WD-01 | `.github/CODEOWNERS`, `.github/workflows/itch-publish.yml` | Active review ownership and portable publish workflow mapped to current `.github` workflow policy; schedule-based CODEQL remains prohibited. |
-| WD-02 | `.githooks/pre-push.ps1`, build review and gate scripts | Active license, syntax, upstream-mutation, migration-behavior, and DeepSeek reviewer gates mapped to current `build/` gates. |
+| WD-02 | `.githooks/pre-push.ps1`, build review and gate scripts | Active license, syntax, upstream-mutation, migration-behavior, and NVIDIA NIM reviewer gates mapped to current `build/` gates. |
 | WD-03 | `build/validation/*`, `build/vm/*` | Active local-machine and hosted validation behavior mapped to current cross-platform product acceptance harnesses. |
 | WD-04 | `build/publish.ps1`, release-manifest and release-report scripts | Portable self-contained six-RID publish and artifact verification mapped; no installer is required. |
 | WD-05 | `BUILD_AND_DEPLOY.md`, `README.md`, `AGENTS.md`, `YFinance.net/PORTING_PLAN.md` | Active build, migration, process, and portable-provider guidance mapped to current project documentation. |

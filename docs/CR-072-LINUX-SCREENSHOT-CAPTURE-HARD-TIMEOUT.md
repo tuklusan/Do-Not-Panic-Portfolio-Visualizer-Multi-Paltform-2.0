@@ -46,4 +46,4 @@ forward and reverse behavior scans and record two successive zero-gap results.
 - A failed capture fails the lane with a useful step-log reason and leaves no
   product, sidecar, screenshot, or SSH helper process behind.
 - The focused harness rehearsal, full Release build/test, license/syntax gates,
-  DeepSeek source/evidence review, and local artifact inspection pass.
+  NVIDIA NIM source/evidence review, and local artifact inspection pass.

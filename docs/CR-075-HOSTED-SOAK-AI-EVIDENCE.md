@@ -33,11 +33,11 @@ traces, and each manifest reported key injection, but no trace contained
 is therefore evidence-incomplete, despite its GitHub conclusion being success.
 
 The next cycle must run from current `main`, prove all 18 AI trace paths, pass
-DeepSeek artifact review, and remain separate from the incomplete cycle.
+NVIDIA NIM artifact review, and remain separate from the incomplete cycle.
 
 ## Acceptance
 
 - Every hosted runner has AI access and summary trace evidence.
 - Missing AI trace evidence fails the post-soak review and routes a CR.
 - The evidence set has 18 manifests, non-empty screenshots and trace pairs,
-  cleanup proof, and a passing DeepSeek artifact review.
+  cleanup proof, and a passing NVIDIA NIM artifact review.

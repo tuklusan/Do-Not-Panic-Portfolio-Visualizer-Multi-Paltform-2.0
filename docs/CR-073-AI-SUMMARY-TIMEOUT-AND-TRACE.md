@@ -38,5 +38,5 @@ bounded, explicit failure event.
   exposing the API key.
 - Slow/failing requests terminate within the configured budget and emit
   `AiSummaryFailed` when appropriate.
-- Full build/test, license/syntax, DeepSeek source/evidence, artifact, and
+- Full build/test, license/syntax, NVIDIA NIM source/evidence, artifact, and
   process-cleanup gates pass.
