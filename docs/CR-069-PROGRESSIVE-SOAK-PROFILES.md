@@ -49,5 +49,12 @@ If local machines are unavailable, the profile may still close when all 18
 hosted lanes have provably executed and passed the real-product gates; local
 availability is recorded, never silently converted into a pass.
 
+For a manually dispatched 4-hour run, the `post-long-soak-review` workflow job
+starts only after the soak matrix reaches a terminal state, waits ten minutes,
+downloads that run's 18 evidence artifacts, checks for AI-path trace evidence,
+and sends each complete evidence packet through the DeepSeek artifact reviewer.
+Its uploaded defect-candidate artifact is the handoff for the JSON CR loop; a
+failed soak or missing evidence does not suppress this review job.
+
 **Depends on:** CR-066, CR-067, CR-068  
 **Status:** Open

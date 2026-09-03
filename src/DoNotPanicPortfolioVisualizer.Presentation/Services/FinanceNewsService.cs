@@ -22,6 +22,7 @@ using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Data.Services;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 
@@ -266,7 +267,18 @@ public sealed class FinanceNewsService : IDisposable
             Content = JsonContent.Create(payload)
         };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.AiApiKey);
+        string operationId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+        TraceLog.InfoState("FinanceNewsService", "AiSummaryRequestStarted", [
+            new("operation_id", operationId),
+            new("endpoint", endpoint.GetLeftPart(UriPartial.Authority)),
+            new("model", settings.AiModelId),
+            new("headline_count", headlines.Count)
+        ]);
         using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        TraceLog.InfoState("FinanceNewsService", "AiSummaryResponse", [
+            new("operation_id", operationId),
+            new("status_code", (int)response.StatusCode)
+        ]);
         response.EnsureSuccessStatusCode();
         using JsonDocument document = await JsonDocument.ParseAsync(
             await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
@@ -276,7 +288,17 @@ public sealed class FinanceNewsService : IDisposable
             .GetProperty("message")
             .GetProperty("content")
             .GetString();
-        return string.IsNullOrWhiteSpace(summary) ? null : summary.Trim();
+        if (string.IsNullOrWhiteSpace(summary))
+        {
+            TraceLog.WarnState("FinanceNewsService", "AiSummaryEmpty", [new("operation_id", operationId)]);
+            return null;
+        }
+
+        TraceLog.InfoState("FinanceNewsService", "AiSummarySucceeded", [
+            new("operation_id", operationId),
+            new("summary_length", summary.Length)
+        ]);
+        return summary.Trim();
     }
 
     private static IReadOnlyList<string> BuildSummarizedHeadlines(string summary, AiWritingStyle writingStyle)

@@ -44,6 +44,11 @@ lanes receive the OpenRouter key from a protected CI/local secret and pass it
 only as `DNPPV_OPENROUTER_API_KEY` or `OPENROUTER_API_KEY`; the value is never
 committed or included in review evidence.
 
+When the protected key is available, soak launches set
+`DNPPV_SOAK_REQUIRE_AI_NEWS=1`; circular traces must then show the real AI
+summary request and provider response (or a classified provider failure), not
+RSS-only execution.
+
 ## Observation cadence
 
 The runner's process-health poll and any live soak observer use a 30-second
@@ -58,6 +63,16 @@ The matrix is not considered complete after one successful pass. Closure
 requires two independent full four-hour cycles. Each cycle must execute all 18
 hosted runner labels and every local machine available at that cycle's start;
 unavailable local machines are recorded as unavailable, never as passing lanes.
+
+The checked-in local coordinator is
+`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes <minutes> -LocalPublishRoot <publish-root>`.
+It performs the probe at cycle start, invokes the real-product Linux/Windows
+drivers for each reachable matching endpoint, deploys and invokes the existing
+Mac Big Sur shell driver for a reachable Intel Mac, retrieves the per-lane
+artifacts, and writes `local-lab-cycle.json`. A non-probe cycle hard-stops when
+`DNPPV_LOCAL_LAB_PASSWORD` is absent; credentials are never read from the
+repository. `-ProbeOnly` is the dry-run contract check and is not product
+acceptance evidence.
 
 Ordinary publish-matrix jobs use branch-scoped concurrency and cancel obsolete
 older publish jobs when a newer checkpoint is pushed. The manually dispatched

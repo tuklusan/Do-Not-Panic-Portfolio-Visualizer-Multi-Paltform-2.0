@@ -4699,7 +4699,13 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Current publish workflow publishes six RIDs but does not run the real application or review generated test evidence across the 18-hosted-plus-4-lab matrix."
+          "The hosted four-hour cycle remains in progress and has not yet produced terminal evidence.",
+          "The local coordinator is implemented and probe-validated, but a real local product cycle and evidence review are still pending."
+        ],
+        "implementation_progress": [
+          "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
+          "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
+          "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record."
         ]
       }
     },
@@ -4739,6 +4745,21 @@
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml",
+          "build/vm/Invoke-ProductSceneValidation.ps1",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
@@ -4773,6 +4794,46 @@
         "status": "open",
         "unresolved_gaps": [
           "Hosted and local real-product execution matrix is not implemented."
+        ]
+      }
+    },
+    {
+      "id": "CR-071",
+      "phase": "Phase 7",
+      "title": "Correct startup ribbon alignment and pacing variance",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-069"
+      ],
+      "objective": "Investigate and correct the startup-specific market-ribbon horizontal drift, remove the non-upstream user-visible YFinance connection message, and eliminate the repeated startup speed variance while preserving upstream ticker and news cadence.",
+      "acceptance_criteria": [
+        "Last update remains left-aligned and the market ribbon does not shift when transient data or connection state changes.",
+        "No incidental connecting-to-YFinance message appears in the product UI; startup diagnostics remain in the size-bounded circular trace.",
+        "Startup scheduling and network/news work no longer produce the observed accelerate-stall pattern, with Linux explicitly covered.",
+        "The real product preserves upstream ticker, news, and scene behavior after the correction."
+      ],
+      "validation_plan": [
+        "Fresh upstream line-by-line scan and reverse missing-behavior gate",
+        "Focused regression tests for ribbon geometry, startup status rendering, and scheduling",
+        "Linux-first real-product 5-, 10-, and 30-minute soaks with circular-trace correlation",
+        "Windows and macOS physical acceptance when available, followed by DeepSeek source/evidence review"
+      ],
+      "artifacts": [
+        "docs/CR-071-STARTUP-RIBBON-AND-PACING.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-071-STARTUP-RIBBON-AND-PACING.md",
+        "upstream_commit": "pending",
+        "source_files": [],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Upstream comparison and implementation are pending."
         ]
       }
     },

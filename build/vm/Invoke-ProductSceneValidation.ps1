@@ -63,6 +63,9 @@ param(
     [switch]$ForceNewsFailure,
 
     [Parameter()]
+    [string]$OpenRouterApiKey = $(if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }),
+
+    [Parameter()]
     [switch]$SkipDeployment
 )
 
@@ -95,6 +98,10 @@ $engineParameters = @{
     WindowsTaskName          = $WindowsTaskName
     ProductScene             = $true
     CinematicPlaybackTrace   = $true
+}
+
+if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+    $engineParameters.OpenRouterApiKey = $OpenRouterApiKey
 }
 
 if ($DuplicateInstanceCheck.IsPresent) {

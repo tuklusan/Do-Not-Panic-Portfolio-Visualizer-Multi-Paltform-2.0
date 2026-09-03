@@ -13,6 +13,7 @@
 // ============================================================================
 using System.Collections.Concurrent;
 using System.Text.Json;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Data.Interfaces;
@@ -56,9 +57,16 @@ public sealed class ProviderSecretStoreService
             if (string.IsNullOrWhiteSpace(settings.AiApiKey))
             {
                 string? processKey = Environment.GetEnvironmentVariable(OpenRouterApiKeyEnvironmentVariable)
-                    ?? Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
+                    ?? Environment.GetEnvironmentVariable("OPENROUTER_API_KEY")
+                    ?? Environment.GetEnvironmentVariable("OPENROUTER_AI_API_KEY");
                 if (!string.IsNullOrWhiteSpace(processKey))
                     settings.AiApiKey = processKey.Trim();
+            }
+
+            if (string.Equals(Environment.GetEnvironmentVariable("DNPPV_SOAK_REQUIRE_AI_NEWS"), "1", StringComparison.Ordinal) &&
+                !string.IsNullOrWhiteSpace(settings.AiApiKey))
+            {
+                settings.NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews;
             }
         }
     }

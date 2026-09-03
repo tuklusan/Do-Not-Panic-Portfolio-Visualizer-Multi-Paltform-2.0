@@ -78,7 +78,7 @@ $inventoryItemPattern = if ($inventory.document -eq 'docs/COMPLETED-CR-UPSTREAM-
     '(?m)^Inventory:'
 }
 else {
-    '(?m)^\|\s*[A-Z]{2,3}-[0-9]{2}\s*\|'
+    '(?m)^\|\s*[A-Z][A-Z0-9]{1,7}-[0-9]{2}\s*\|'
 }
 if ($inventorySection -notmatch $inventoryItemPattern) {
     throw "$CrId inventory document does not list functional behavior items."

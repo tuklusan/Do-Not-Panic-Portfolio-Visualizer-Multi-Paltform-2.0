@@ -158,6 +158,15 @@ storage contract above. It must stop product processes before removing only
 generated publish, test, evidence, local-data, and temporary outputs, while
 preserving source and installed test dependencies.
 
+The full cycle entry point is
+`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes <minutes> -LocalPublishRoot <publish-root>`.
+It invokes the availability probe itself, uses the reachable subset fixed at the
+cycle start, and records every lane in `local-lab-cycle.json`. Set
+`DNPPV_LOCAL_LAB_PASSWORD` in the operator environment for a real run; never put
+that value in the ignored inventory, a script argument, or an artifact. The
+coordinator's `-ProbeOnly` mode checks availability and manifest behavior without
+starting DNPPV-2.0.
+
 ## Product-Scene Acceptance
 
 ### Diagnostic artifact contract

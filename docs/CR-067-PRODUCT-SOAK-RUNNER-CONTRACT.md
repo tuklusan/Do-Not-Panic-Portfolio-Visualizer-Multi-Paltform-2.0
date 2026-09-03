@@ -14,7 +14,7 @@ patent, trademark, and governing-law provisions.
 
 # CR-067 Product Soak Runner Contract
 
-## Functional inventory
+## Functional Inventory
 
 | ID | Required behavior | Implementation/evidence |
 | --- | --- | --- |
@@ -29,14 +29,25 @@ patent, trademark, and governing-law provisions.
 | SOAK-09 | In soak mode, capture timestamped settled real-product screenshots after warmup and every 30 minutes thereafter, canceling the capture loop during shutdown. | `DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES=30`, timestamped PNG set, count/hash manifest, and artifact review |
 | SOAK-10 | Poll launched-process health at a 30-second cadence and avoid repeated unchanged status output between observations. | `PollIntervalSeconds=30`; matrix observer contract in CR-068 |
 | SOAK-11 | Permit physical local-lab validation to hold the real product open for the selected soak duration while retaining the existing cleanup, trace retrieval, and periodic settled screenshots. | `Invoke-ProductSceneValidation.ps1 -SoakDurationMinutes`; remote platform engine; duration-aware timeout and recursive screenshot retrieval; Mac soak mode |
+| SOAK-12 | When a protected OpenRouter key is present, select summarized financial news for soak validation and make the real AI request path observable without recording the key or headlines. | `DNPPV_SOAK_REQUIRE_AI_NEWS=1`, provider-secret environment overlay, and circular `AiSummaryRequestStarted`, `AiSummaryResponse`, `AiSummarySucceeded`/failure events |
+
+The local cycle coordinator is `build/Invoke-LocalLabSoakCycle.ps1`. It requires
+the publish root and duration, reads the ignored endpoint inventory, and obtains
+the operator password only from `DNPPV_LOCAL_LAB_PASSWORD`. It never accepts a
+password in a checked-in file or writes one to a cycle manifest. The coordinator
+uses the existing Linux/Windows physical driver and the Big Sur shell driver,
+assigns a unique artifact root to each machine, and writes a partial manifest
+after each lane so a failed lane cannot be mistaken for an unrecorded pass.
+`-ProbeOnly` validates the availability and manifest path without launching a
+product process.
 
 ## Acceptance
 
 The runner must pass script syntax and license gates, execute a short controlled
 real-product rehearsal, produce a passing result with circular trace and
 real-product screenshot evidence, and leave no product process running. When AI-news validation is requested, the
-operator or CI secret store supplies `DNPPV_OPENROUTER_API_KEY` or
-`OPENROUTER_API_KEY` (the explicit
+operator or CI secret store supplies `DNPPV_OPENROUTER_API_KEY`,
+`OPENROUTER_API_KEY`, or the lab's `OPENROUTER_AI_API_KEY` (the explicit
 parameter remains available for controlled callers); the key must never
 appear in `soak-result.json`, traces, screenshots, logs, or command output. It is
 a reusable primitive; the hosted

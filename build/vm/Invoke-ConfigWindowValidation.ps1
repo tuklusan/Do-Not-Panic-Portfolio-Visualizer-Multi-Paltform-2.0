@@ -75,6 +75,9 @@ param(
     [switch]$ForceNewsFailure,
 
     [Parameter()]
+    [string]$OpenRouterApiKey = $(if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }),
+
+    [Parameter()]
     [switch]$SkipDeployment
 )
 
@@ -424,12 +427,11 @@ function Copy-FromRemote {
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
-        $copyArguments = @('-e')
+        $copyArguments = @('-e', 'scp')
         if ($Recursive.IsPresent) {
             $copyArguments += '-r'
         }
         $copyArguments += @(
-            'scp',
             '-O',
             '-o',
             'StrictHostKeyChecking=no',
@@ -469,6 +471,37 @@ function New-TemporaryScriptPath {
     return Join-Path $env:TEMP $uniqueLeafName
 }
 
+function Publish-RemoteOpenRouterSecret {
+    param(
+        [Parameter(Mandatory = $true)][string]$User,
+        [Parameter(Mandatory = $true)][string]$HostName,
+        [Parameter(Mandatory = $true)][string]$Secret,
+        [Parameter(Mandatory = $true)][string]$ApiKey,
+        [Parameter(Mandatory = $true)][string]$RemotePath,
+        [Parameter(Mandatory = $true)][ValidateSet('linux', 'windows')][string]$TargetPlatform
+    )
+    $localPath = New-TemporaryScriptPath -LeafName 'dnppv2-openrouter-secret.txt'
+    try {
+        [IO.File]::WriteAllText($localPath, $ApiKey)
+        $destination = Convert-ToScpRemotePath -TargetPlatform $TargetPlatform -Path $RemotePath
+        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localPath -DestinationPath $destination
+        if ($TargetPlatform -eq 'linux') {
+            $literal = Convert-ToBashSingleQuotedLiteral -Value $RemotePath
+            $previous = $env:SSHPASS
+            $env:SSHPASS = $Secret
+            try {
+                Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @('-e', 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60', "$User@$HostName", "chmod 600 -- $literal")
+            }
+            finally {
+                if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
+            }
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $localPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Invoke-LinuxValidation {
     param(
         [Parameter(Mandatory = $true)][string]$HostName,
@@ -486,6 +519,7 @@ function Invoke-LinuxValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
         [Parameter(Mandatory = $true)][bool]$ForceNewsFailure,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$OpenRouterApiKey,
         [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
@@ -552,6 +586,10 @@ function Invoke-LinuxValidation {
 
     $localScriptPath = New-TemporaryScriptPath -LeafName 'dnppv2-linux-config-window-validation.sh'
     $remoteScriptPath = "$TargetPublishDir/run-validation.sh"
+    $remoteSecretPath = "$TargetPublishDir/.dnppv2-openrouter-secret"
+    if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+        Publish-RemoteOpenRouterSecret -User $User -HostName $HostName -Secret $Secret -ApiKey $OpenRouterApiKey -RemotePath $remoteSecretPath -TargetPlatform 'linux'
+    }
     $scriptLines = @(
         '#!/usr/bin/env bash',
         'set -euo pipefail',
@@ -578,6 +616,7 @@ function Invoke-LinuxValidation {
         '    sleep 2',
         '    pkill -KILL -s "$APPPID" 2>/dev/null || true',
         '  fi',
+        ('  rm -f -- ' + (Convert-ToBashSingleQuotedLiteral -Value $remoteSecretPath)),
         '}',
         'trap cleanup EXIT',
         "trap 'cleanup; exit 143' TERM INT",
@@ -656,9 +695,15 @@ function Invoke-LinuxValidation {
         if ($ForceNewsFailure) {
             $launchEnvironment += 'DNPPV_FORCE_NEWS_FAILURE=1'
         }
+        if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+            $launchEnvironment += ('DNPPV_OPENROUTER_API_KEY="$(cat -- ' + (Convert-ToBashSingleQuotedLiteral -Value $remoteSecretPath) + ')"')
+        }
         if ($SoakMinutes -gt 0) {
             $launchEnvironment += 'DNPPV_PRODUCT_CAPTURE_PATH="$ART/screenshots"'
             $launchEnvironment += 'DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES=30'
+            if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+                $launchEnvironment += 'DNPPV_SOAK_REQUIRE_AI_NEWS=1'
+            }
         }
         $launchPrefix = if ($launchEnvironment.Count -eq 0) { '' } else { ($launchEnvironment -join ' ') + ' ' }
         $launchLine = $launchPrefix + 'setsid ./DoNotPanicPortfolioVisualizer.App > /dev/null 2>&1 &'
@@ -816,14 +861,16 @@ function Invoke-LinuxValidation {
             'echo "FULLSCREEN_EXIT_MENU_CAPTURED" >> step.log',
             'xdotool key --window "$WID" Escape',
             'sleep 1'
-        ) + $(if ($SoakMinutes -gt 0) {
+        )
+        $linuxSoakLines = if ($SoakMinutes -gt 0) {
             @(
                 'mkdir -p "$ART/screenshots"',
                 ('echo "SOAK_STARTED;MINUTES={0}" >> step.log' -f $SoakMinutes),
                 ('sleep {0}' -f ($SoakMinutes * 60)),
                 'echo "SOAK_COMPLETED" >> step.log'
             )
-        } else { @() })
+        } else { @() }
+        $scriptLines = $scriptLines + $linuxSoakLines
     }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`n", $scriptLines) + "`n")
 
@@ -918,10 +965,12 @@ function Invoke-WindowsValidation {
         [Parameter(Mandatory = $true)][bool]$CaptureRenderHeartbeatFixture,
         [Parameter(Mandatory = $true)][bool]$CaptureDuplicateInstanceFixture,
         [Parameter(Mandatory = $true)][bool]$ForceNewsFailure,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$OpenRouterApiKey,
         [Parameter(Mandatory = $true)][bool]$SkipRemoteDeployment
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
+    $remoteSecretPath = Join-Path $TargetPublishDir '.dnppv2-openrouter-secret'
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
     if ($TargetPublishDir -match '^[Dd]:\\SW_DEV\\DO-NOT-PANIC-2\.0(?:\\|$)') {
         Assert-Windows10StorageContract -User $User -HostName $HostName -Secret $Secret
@@ -939,6 +988,24 @@ function Invoke-WindowsValidation {
 
     $localScriptPath = New-TemporaryScriptPath -LeafName 'dnppv2-windows-config-window-validation.ps1'
     $remoteScriptPath = Join-Path $TargetPublishDir 'run-validation.ps1'
+    $captureEnvironmentLine = if ($SoakMinutes -gt 0) {
+        '$captureDirectory = Join-Path $artifactDir ''screenshots''; New-Item -ItemType Directory -Force -Path $captureDirectory | Out-Null; $env:DNPPV_PRODUCT_CAPTURE_PATH = $captureDirectory; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = ''30'''
+    }
+    else {
+        '$env:DNPPV_PRODUCT_CAPTURE_PATH = $null; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = $null'
+    }
+    $windowsSoakLine = if ($SoakMinutes -gt 0) {
+        ('    Add-Content -Path $stepPath -Value ''SOAK_STARTED;MINUTES={0}''; Start-Sleep -Seconds {0}; Add-Content -Path $stepPath -Value ''SOAK_COMPLETED''' -f ($SoakMinutes * 60))
+    }
+    else {
+        '    # No soak requested.'
+    }
+    $requireAiNewsLine = if ($SoakMinutes -gt 0 -and -not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+        '$env:DNPPV_SOAK_REQUIRE_AI_NEWS = ''1'''
+    }
+    else {
+        'Remove-Item Env:DNPPV_SOAK_REQUIRE_AI_NEWS -ErrorAction SilentlyContinue'
+    }
     $scriptLines = @(
         'Add-Type -AssemblyName System.Drawing',
         'Add-Type -AssemblyName System.Windows.Forms',
@@ -1151,6 +1218,12 @@ function Invoke-WindowsValidation {
         else {
             'Remove-Item Env:DNPPV_FORCE_NEWS_FAILURE -ErrorAction SilentlyContinue'
         }
+        $openRouterApiKeyLine = if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+            '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath (Join-Path $artifactDir ''.dnppv2-openrouter-secret'') -Raw).Trim()'
+        }
+        else {
+            'Remove-Item Env:DNPPV_OPENROUTER_API_KEY -ErrorAction SilentlyContinue'
+        }
         $duplicateLines = if ($CaptureDuplicateInstanceFixture) {
             @(
                 '    $duplicate = Start-Process -FilePath $exePath -WorkingDirectory $artifactDir -PassThru',
@@ -1275,11 +1348,11 @@ function Invoke-WindowsValidation {
             '}',
             $fixtureEnabledLine,
             '$env:DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT = $localDataRoot',
-            (if ($SoakMinutes -gt 0) {
-                '$captureDirectory = Join-Path $artifactDir ''screenshots''; New-Item -ItemType Directory -Force -Path $captureDirectory | Out-Null; $env:DNPPV_PRODUCT_CAPTURE_PATH = $captureDirectory; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = ''30'''
-            } else { '$env:DNPPV_PRODUCT_CAPTURE_PATH = $null; $env:DNPPV_PRODUCT_CAPTURE_INTERVAL_MINUTES = $null' }),
+            $captureEnvironmentLine,
             $renderHeartbeatFixtureLine,
             $forceNewsFailureLine,
+            $openRouterApiKeyLine,
+            $requireAiNewsLine,
             '$exePath = Join-Path $artifactDir ''DoNotPanicPortfolioVisualizer.App.exe''',
             '$startInfo = [System.Diagnostics.ProcessStartInfo]::new()',
             '$startInfo.FileName = $exePath',
@@ -1402,9 +1475,7 @@ function Invoke-WindowsValidation {
             '    Add-Content -Path $stepPath -Value ''FULLSCREEN_EXIT_MENU_CAPTURED''',
             '    [System.Windows.Forms.SendKeys]::SendWait(''{ESC}'')',
             '    Start-Sleep -Milliseconds 300',
-            (if ($SoakMinutes -gt 0) {
-                ('    Add-Content -Path $stepPath -Value ''SOAK_STARTED;MINUTES={0}''; Start-Sleep -Seconds {0}; Add-Content -Path $stepPath -Value ''SOAK_COMPLETED''' -f ($SoakMinutes * 60))
-            } else { '    # No soak requested.' }),
+            $windowsSoakLine,
             '    ''DONE'' | Set-Content -Path $donePath',
             '}',
             'catch { $_ | Out-String | Set-Content -Path $donePath; throw }',
@@ -1423,6 +1494,9 @@ function Invoke-WindowsValidation {
     }
     Write-Utf8NoBomFile -Path $localScriptPath -Content ([string]::Join("`r`n", $scriptLines) + "`r`n")
     Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localScriptPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path $remoteScriptPath)
+    if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+        Publish-RemoteOpenRouterSecret -User $User -HostName $HostName -Secret $Secret -ApiKey $OpenRouterApiKey -RemotePath $remoteSecretPath -TargetPlatform 'windows'
+    }
 
     $remoteScriptPathPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteScriptPath
     $remoteUserPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $User
@@ -1484,7 +1558,14 @@ finally {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
 "@
-    Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
+    try {
+        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
+    }
+    finally {
+        if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+            Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText ("Remove-Item -LiteralPath '" + $remoteSecretPath.Replace("'", "''") + "' -Force -ErrorAction SilentlyContinue")
+        }
+    }
 
     $artifactNames = if ($CaptureProductScene) {
         @('small-viewport.png', 'menu-open.png', 'wide-viewport.png', 'fullscreen.png', 'fullscreen-motion.png', 'fullscreen-exit-menu.png', 'step.log', 'done.txt')
@@ -1541,11 +1622,11 @@ New-Item -ItemType Directory -Force -Path $LocalArtifactRoot | Out-Null
 
 switch ($Platform) {
     'linux' {
-        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-LinuxValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -OpenRouterApiKey $OpenRouterApiKey -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     'windows' {
-        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -SkipRemoteDeployment $SkipDeployment.IsPresent
+        Invoke-WindowsValidation -HostName $RemoteHost -User $RemoteUser -Secret $Password -SourcePublishDir $resolvedPublishDir -TargetPublishDir $RemotePublishDir -ArtifactRoot $LocalArtifactRoot -Timeout $TimeoutSeconds -Warmup $SceneWarmupSeconds -SoakMinutes $SoakDurationMinutes -TaskName $WindowsTaskName -CaptureProductScene $ProductScene.IsPresent -CaptureGraphImpulseFixture $GraphImpulseFixture.IsPresent -CaptureCinematicPlaybackTrace $CinematicPlaybackTrace.IsPresent -CaptureRenderHeartbeatFixture $RenderHeartbeatFixture.IsPresent -CaptureDuplicateInstanceFixture $DuplicateInstanceFixture.IsPresent -ForceNewsFailure $ForceNewsFailure.IsPresent -OpenRouterApiKey $OpenRouterApiKey -SkipRemoteDeployment $SkipDeployment.IsPresent
         break
     }
     default {

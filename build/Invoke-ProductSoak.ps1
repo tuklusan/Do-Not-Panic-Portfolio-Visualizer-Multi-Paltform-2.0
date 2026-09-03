@@ -36,7 +36,7 @@ param(
     [string]$LocalDataRoot,
 
     [Parameter()]
-    [string]$OpenRouterApiKey = $(if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } else { $env:OPENROUTER_API_KEY }),
+    [string]$OpenRouterApiKey = $(if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }),
 
     [Parameter()]
     [string[]]$ArgumentList = @('--windowed=1280x800'),
@@ -114,6 +114,7 @@ catch {
 }
 finally {
     if ($null -ne $process) {
+        $primaryFailure = $failure
         try {
             if (-not $process.HasExited) {
                 [void]$process.CloseMainWindow()
@@ -125,7 +126,12 @@ finally {
         }
         catch {
             $outcome = 'Failed'
-            $failure = "Process cleanup failed: $($_.Exception.Message)"
+            if ([string]::IsNullOrWhiteSpace($primaryFailure)) {
+                $failure = "Process cleanup failed: $($_.Exception.Message)"
+            }
+            else {
+                $failure = "$primaryFailure; process cleanup also failed: $($_.Exception.Message)"
+            }
         }
         finally {
             $process.Dispose()
