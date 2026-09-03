@@ -4974,6 +4974,62 @@
       }
     },
     {
+      "id": "CR-076",
+      "phase": "Phase 7",
+      "title": "Isolate soak workflow concurrency",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-075"
+      ],
+      "objective": "Prevent ordinary push validation from canceling a dispatched 18-host soak before its publish artifacts are available.",
+      "acceptance_criteria": [
+        "Push and workflow_dispatch runs use distinct concurrency groups.",
+        "Duplicate runs of the same event and ref remain serialized.",
+        "A fresh current-SHA dispatch reaches all 18 publish and real-product jobs and produces reviewable artifacts."
+      ],
+      "validation_plan": [
+        "Manual workflow concurrency and dependency scan",
+        "Push plus dispatch interaction rehearsal",
+        "Fresh 240-minute hosted cycle",
+        "Artifact and DeepSeek review"
+      ],
+      "artifacts": [
+        "docs/CR-076-SOAK-CONCURRENCY-ISOLATION.md",
+        ".github/workflows/publish-six-rids.yml"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-076-SOAK-CONCURRENCY-ISOLATION.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Fresh current-SHA dispatch proof is pending after the concurrency correction."
+        ]
+      }
+    },
+    {
       "id": "CR-075",
       "phase": "Phase 7",
       "title": "Require AI evidence in hosted soaks",
