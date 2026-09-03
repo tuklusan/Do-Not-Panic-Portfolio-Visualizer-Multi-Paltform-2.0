@@ -4706,7 +4706,8 @@
           "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
           "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
           "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
-          "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test."
+          "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test.",
+          "The 2026-09-03 five-minute local cycle passed on Linux, Windows 10, and Windows 11 after a fresh availability probe; each produced product screenshots, circular traces, and a successful real AI summary response. The Mac was recorded UnavailableAtCycleStart."
         ]
       }
     },
@@ -4896,7 +4897,11 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Fresh local AI-summary evidence after the timeout correction is pending."
+          "The hosted four-hour cycle remains in progress and has not yet produced terminal evidence."
+        ],
+        "evidence": [
+          "2026-09-03 local five-minute cycle passed on Linux, Windows 10, and Windows 11 with real AI summary success events in circular traces.",
+          "DeepSeek artifact review passed for the consolidated local five-minute evidence."
         ]
       }
     },
@@ -4957,7 +4962,13 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Fresh build, reviewer, and real-product AI evidence after the parity change is pending."
+          "The required hosted soak cycles and full progressive soak family are still pending."
+        ],
+        "evidence": [
+          "Full Release test suite passed: 294 passed, 0 failed.",
+          "Release build passed with 0 warnings and 0 errors.",
+          "DeepSeek code review passed with no blocking findings.",
+          "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11."
         ]
       }
     },
