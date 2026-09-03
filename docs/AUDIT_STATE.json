@@ -4700,12 +4700,13 @@
         "status": "open",
         "unresolved_gaps": [
           "The hosted four-hour cycle remains in progress and has not yet produced terminal evidence.",
-          "The local coordinator is implemented and probe-validated, but a real local product cycle and evidence review are still pending."
+          "The local coordinator is implemented and probe-validated, but the complete four-machine-or-available-machine soak ladder and evidence review are still pending."
         ],
         "implementation_progress": [
           "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
           "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
-          "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record."
+          "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
+          "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test."
         ]
       }
     },
