@@ -249,7 +249,7 @@ $cyclePath = if ([string]::IsNullOrWhiteSpace($MachineName)) {
     Join-Path $resolvedArtifactRoot 'local-lab-cycle.json'
 }
 else {
-    Join-Path $resolvedArtifactRoot "$MachineName-machine-result.json"
+    Join-Path (Join-Path $resolvedArtifactRoot $MachineName) "$MachineName-machine-result.json"
 }
 function Save-CycleManifest {
     $cycle | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $cyclePath -Encoding utf8
