@@ -64,7 +64,7 @@ $availabilityPath = if ($SkipAvailabilityProbe) {
     (Resolve-Path -LiteralPath $AvailabilityManifestPath -ErrorAction Stop).Path
 }
 else {
-    & $probePath -InventoryPath $InventoryPath -ArtifactRoot $resolvedArtifactRoot | Write-Output
+    $null = & $probePath -InventoryPath $InventoryPath -ArtifactRoot $resolvedArtifactRoot
     Join-Path $resolvedArtifactRoot 'local-lab-availability.json'
 }
 $availability = Get-Content -LiteralPath $availabilityPath -Raw | ConvertFrom-Json
