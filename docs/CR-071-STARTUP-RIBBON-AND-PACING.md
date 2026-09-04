@@ -40,3 +40,14 @@ The circular trace pair is the only product diagnostic log; arbitrary product lo
 files are not acceptable.
 
 **Status:** Open
+
+## Source Inventory Checkpoint
+
+The upstream scan covered `src/PortfolioSaver.Render/ViewModels/StatusBarViewModel.cs`,
+`src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs`, and
+`src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs`.
+Upstream uses `LOADING - waiting for data` with the neutral loading foreground
+while a network-available quote refresh has not produced values; it does not
+expose a YFinance connection message in the status ribbon. The corresponding
+2.0 refresh state is now aligned to that behavior. Ribbon geometry, scheduling
+variance, and physical settled evidence remain open work for this CR.

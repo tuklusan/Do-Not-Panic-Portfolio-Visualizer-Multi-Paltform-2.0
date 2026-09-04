@@ -630,8 +630,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             ClockDateText = DateTimeOffset.Now.ToString("ddd dd-MMM-yyyy").ToUpperInvariant();
             ClockText = DateTimeOffset.UtcNow.ToString("HH:mm:ss 'UTC'");
-            DataFreshnessText = "LIVE DATA - connecting to local YFinance service";
-            FreshnessBrush = "#F4C95D";
+            DataFreshnessText = "LOADING - waiting for data";
+            FreshnessBrush = "#D8E9F8";
         }, cancellationToken);
 
         Dictionary<string, List<Action<QuoteSnapshot>>> targets = Lanes
