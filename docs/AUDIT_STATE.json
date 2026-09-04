@@ -5446,6 +5446,56 @@
           "Quote lanes currently use black backgrounds and need a production-scene contrast review against the upstream visual behavior."
         ]
       }
+    },
+    {
+      "id": "CR-082",
+      "phase": "Phase 7",
+      "title": "Restore upstream quote flash and graph impulse parity",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-069"
+      ],
+      "objective": "Verify and restore the upstream visual update cues: blue flash for a fresh unchanged ticker value, red/green flash for changed values, and rapid graph-card travel to the ceiling or floor on directional raw-price changes before normal motion resumes.",
+      "acceptance_criteria": [
+        "Fresh positive, negative, unchanged, stale, and initial-hydration quote cases are implemented and covered; unchanged fresh values flash blue, changed positive values flash green, and changed negative values flash red.",
+        "Graph cards travel rapidly to the top boundary after an increase and bottom boundary after a decrease, then restore their prior swimming velocity; unchanged, percent-only, stale, hydration, and structural replacement cases do not create a directed impulse.",
+        "The upstream implementations are read line by line and the forward and reverse behavior inventories record zero unmapped gaps before closure.",
+        "Focused tests and settled real-product screenshots/traces prove the cues on available local machines and hosted smoke lanes without visual fixtures as the demonstrated product.",
+        "NVIDIA review, build/test, license, syntax, artifact-review, cleanup, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Manual comparison with upstream VisualizerSceneControl, TickerTapeControl, FloatingGraphControl, and related view models",
+        "Focused view-model and graph-motion tests for all positive, negative, unchanged, stale, and hydration branches",
+        "Fresh production-scene visual acceptance with trace assertions and artifact review",
+        "Residual-process and temporary-artifact cleanup"
+      ],
+      "artifacts": [
+        "docs/CR-082-QUOTE-FLASH-AND-GRAPH-IMPULSE-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerQuoteViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.Render/Services/FloatingGraphMotionController.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete_initial_finding",
+        "document": "docs/CR-082-QUOTE-FLASH-AND-GRAPH-IMPULSE-PARITY.md",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/ViewModels/TapeItemViewModel.cs",
+          "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Current TickerQuoteViewModel flashes only when the raw value changes, so the upstream fresh unchanged-value blue flash is missing.",
+          "Current graph-motion tests cover directed travel, but full upstream parity still needs fresh production evidence and branch-complete acceptance."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -5455,7 +5505,8 @@
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
     "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated.",
-    "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation."
+    "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
+    "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
