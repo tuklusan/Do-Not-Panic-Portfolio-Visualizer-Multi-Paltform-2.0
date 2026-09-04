@@ -413,7 +413,7 @@ foreach ($record in @($availability.machines)) {
         else {
             $driver = Join-Path $PSScriptRoot 'vm/Invoke-MacConfigWindowValidation.sh'
             if (-not (Test-Path -LiteralPath $driver -PathType Leaf)) { throw "Mac driver is missing: $driver" }
-            $remoteRoot = "~/SOFTWARE_DEV/DNPPV_20/dnppv2-local-cycle-$($cycle.cycleId)"
+            $remoteRoot = "/Users/$($machineRecord.user)/SOFTWARE_DEV/DNPPV_20/dnppv2-local-cycle-$($cycle.cycleId)"
             $macTimeout = [Math]::Max(900, $TimeoutSeconds + 300)
             $remoteCleanupRoot = $remoteRoot
             $remotePublish = "$remoteRoot/publish-cr019"
