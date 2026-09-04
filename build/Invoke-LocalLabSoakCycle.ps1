@@ -169,7 +169,7 @@ function Copy-RemoteTree {
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', "${User}@${HostName}:$RemotePath", $LocalPath)) {
+        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', "${User}@${HostName}:$RemotePath", $LocalPath)) {
             [void]$psi.ArgumentList.Add($argument)
         }
         $process = [Diagnostics.Process]::new()
@@ -207,7 +207,7 @@ function Copy-LocalTree {
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', $LocalPath, "${User}@${HostName}:$RemotePath")) {
+        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', $LocalPath, "${User}@${HostName}:$RemotePath")) {
             [void]$psi.ArgumentList.Add($argument)
         }
         $process = [Diagnostics.Process]::new()
@@ -421,14 +421,14 @@ foreach ($record in @($availability.machines)) {
             $driverRemote = "$remoteRoot/Invoke-MacConfigWindowValidation.sh"
             $remote = "$($machineRecord.user)@$($machineRecord.address):$remoteRoot"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
+                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "if [ -e '$remoteRoot' ]; then echo 'MAC_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'"
             ) -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $publish -RemotePath $remoteRoot -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout $macTimeout
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
+                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "rm -rf -- $remotePublish && mv -- $remoteRoot/$([IO.Path]::GetFileName($publish)) $remotePublish"
             ) -Timeout $macTimeout
@@ -442,7 +442,7 @@ foreach ($record in @($availability.machines)) {
             }
             $remoteStdin += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'`n"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
+                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 'bash -s'
             ) -StandardInput $remoteStdin -Timeout ($TimeoutSeconds + ($DurationMinutes * 60) + 900) | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
@@ -458,7 +458,7 @@ foreach ($record in @($availability.machines)) {
         if ($null -ne $remoteCleanupRoot) {
             try {
                 Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                    'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
+                    'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                     "$($machineRecord.user)@$($machineRecord.address)",
                     "if [ -d '$remoteCleanupRoot' ]; then find '$remoteCleanupRoot' -depth -delete; fi"
                 ) -Timeout $macTimeout | Out-Null
