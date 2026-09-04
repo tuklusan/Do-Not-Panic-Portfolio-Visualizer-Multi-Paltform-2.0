@@ -196,7 +196,13 @@ function Copy-LocalTree {
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', $LocalPath, "${User}@${HostName}:$RemotePath")) {
+        $sourcePaths = if ($LocalPath.EndsWith('*', [StringComparison]::Ordinal)) {
+            $sourceRoot = $LocalPath.Substring(0, $LocalPath.Length - 1).TrimEnd('\', '/')
+            @(Get-ChildItem -LiteralPath $sourceRoot -Force | Select-Object -ExpandProperty FullName)
+        }
+        else { @($LocalPath) }
+        if ($sourcePaths.Count -eq 0) { throw "Local copy source is empty: $LocalPath" }
+        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1') + $sourcePaths + "${User}@${HostName}:$RemotePath") {
             [void]$psi.ArgumentList.Add($argument)
         }
         $process = [Diagnostics.Process]::new()
@@ -221,6 +227,38 @@ function Resolve-PublishDirectory {
         if (Test-Path -LiteralPath (Join-Path $resolvedPublishRoot 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf) { return $resolvedPublishRoot }
     }
     throw "Publish directory for RID $Rid is missing below $resolvedPublishRoot"
+}
+
+function Assert-RemoteProductProcessesClean {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$MachineRecord,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [Parameter(Mandatory = $true)][string]$Secret,
+        [Parameter(Mandatory = $true)][int]$Timeout
+    )
+
+    if ($MachineRecord.user -notmatch '^[A-Za-z0-9._-]+$') {
+        throw "Local lab inventory user contains unsupported characters: $($MachineRecord.user)"
+    }
+    if ($MachineRecord.address -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+        throw "Local lab inventory address contains unsupported characters: $($MachineRecord.address)"
+    }
+
+    $target = "$($MachineRecord.user)@$($MachineRecord.address)"
+    if ($Platform -eq 'windows') {
+        # The command is passed as one SSH argument; it is intentionally
+        # limited to the two project-owned process-name patterns.
+        $command = 'powershell.exe -NoProfile -NonInteractive -Command "Get-Process | Where-Object { $_.ProcessName -match ''DoNotPanicPortfolioVisualizer|YFinance.NET.Server'' } | Stop-Process -Force -ErrorAction SilentlyContinue; if (Get-Process | Where-Object { $_.ProcessName -match ''DoNotPanicPortfolioVisualizer|YFinance.NET.Server'' }) { exit 17 }"'
+    }
+    else {
+        $command = "pkill -f 'DoNotPanicPortfolioVisualizer|YFinance.NET.Server' 2>/dev/null || true; if pgrep -f 'DoNotPanicPortfolioVisualizer|YFinance.NET.Server' >/dev/null 2>&1; then exit 17; fi"
+    }
+
+    Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -Arguments @(
+        'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no',
+        '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no',
+        '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60', $target, $command
+    ) -Timeout $Timeout
 }
 
 $cycle = [ordered]@{
@@ -378,9 +416,11 @@ foreach ($record in @($availability.machines)) {
     else {
         $null
     }
+    $macTimeout = [Math]::Max(900, $TimeoutSeconds + 300)
 
     try {
         if ($platformByMachine.ContainsKey($record.name)) {
+            Assert-RemoteProductProcessesClean -MachineRecord $machineRecord -Platform $platformByMachine[$record.name] -Secret $password -Timeout ([Math]::Min(300, $TimeoutSeconds))
             $driver = Join-Path $PSScriptRoot 'vm/Invoke-ProductSceneValidation.ps1'
             & $driver `
                 -Platform $platformByMachine[$record.name] `
@@ -396,10 +436,10 @@ foreach ($record in @($availability.machines)) {
                 | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
         }
         else {
+            Assert-RemoteProductProcessesClean -MachineRecord $machineRecord -Platform 'macos' -Secret $password -Timeout ([Math]::Min(300, $macTimeout))
             $driver = Join-Path $PSScriptRoot 'vm/Invoke-MacConfigWindowValidation.sh'
             if (-not (Test-Path -LiteralPath $driver -PathType Leaf)) { throw "Mac driver is missing: $driver" }
             $remoteRoot = "/Users/$($machineRecord.user)/SOFTWARE_DEV/DNPPV_20/dnppv2-local-cycle-$($cycle.cycleId)"
-            $macTimeout = [Math]::Max(900, $TimeoutSeconds + 300)
             $remoteCleanupRoot = $remoteRoot
             $remotePublish = "$remoteRoot/publish-cr019"
             $remoteArtifact = "$remoteRoot/artifacts"
