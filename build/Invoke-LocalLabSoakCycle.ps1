@@ -430,7 +430,7 @@ foreach ($record in @($availability.machines)) {
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
-                "rm -rf -- $remotePublish && mv -- $remoteRoot/$([IO.Path]::GetFileName($publish)) $remotePublish"
+                "mv -- $remoteRoot/$([IO.Path]::GetFileName($publish)) $remotePublish"
             ) -Timeout $macTimeout
             Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout $macTimeout
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }

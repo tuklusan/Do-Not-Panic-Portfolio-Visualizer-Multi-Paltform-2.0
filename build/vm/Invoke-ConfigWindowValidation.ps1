@@ -566,7 +566,7 @@ function Invoke-LinuxValidation {
                 '-o',
                 'ConnectTimeout=60',
                 "$User@$HostName",
-                "rm -rf -- $remotePublishDirLiteral && mkdir -p -- $remotePublishDirLiteral"
+                "if [ -e $remotePublishDirLiteral ]; then echo 'LINUX_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- $remotePublishDirLiteral"
             )
         }
         finally {
