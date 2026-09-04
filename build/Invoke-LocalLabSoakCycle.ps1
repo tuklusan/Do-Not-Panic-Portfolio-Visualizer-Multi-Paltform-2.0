@@ -256,9 +256,9 @@ function Assert-RemoteProductProcessesClean {
         # Match the executable command name only. Matching the full command
         # line can kill the SSH session because its own command contains it.
         $command = @'
-pids=$(ps -eo pid=,args= | awk '$0 ~ /DoNotPanicPortfolioVisualizer|YFinance.NET.Server/ && $0 !~ /awk/ && $0 !~ /bash -c/ && $0 !~ /sh -c/ && $0 !~ /run-validation/ && $0 !~ /Invoke-LocalLabSoakCycle/ && $0 !~ /grep/ {print $1}')
+pids=$(ps -eo pid=,args= | grep -E '[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server' | grep -v -E 'ps -eo|awk|bash -c|sh -c|run-validation|Invoke-LocalLabSoakCycle|grep' | awk '{print $1}' || true)
 if [ -n "$pids" ]; then kill -TERM $pids 2>/dev/null || true; sleep 1; kill -KILL $pids 2>/dev/null || true; sleep 2; fi
-remaining=$(ps -eo pid=,args= | awk '$0 ~ /DoNotPanicPortfolioVisualizer|YFinance.NET.Server/ && $0 !~ /awk/ && $0 !~ /bash -c/ && $0 !~ /sh -c/ && $0 !~ /run-validation/ && $0 !~ /Invoke-LocalLabSoakCycle/ && $0 !~ /grep/ {print $1}')
+remaining=$(ps -eo pid=,args= | grep -E '[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server' | grep -v -E 'ps -eo|awk|bash -c|sh -c|run-validation|Invoke-LocalLabSoakCycle|grep' | awk '{print $1}' || true)
 if [ -n "$remaining" ]; then exit 17; fi
 '@
     }
