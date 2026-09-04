@@ -25,6 +25,7 @@ permissions:
 jobs:
   gate:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Validate repository gate configuration
@@ -33,6 +34,7 @@ jobs:
 
   publish:
     needs: gate
+    timeout-minutes: 30
     concurrency:
       group: dnppv2-publish-${{ github.event_name }}-${{ github.ref }}-${{ matrix.runner }}-${{ matrix.rid }}
       cancel-in-progress: true

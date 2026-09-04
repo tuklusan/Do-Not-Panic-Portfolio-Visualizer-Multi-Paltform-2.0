@@ -39,8 +39,19 @@ function Get-MatrixEntries([string]$Workflow, [string]$JobName) {
     return @($entries)
 }
 
+function Assert-JobTimeout([string]$Workflow, [string]$JobName) {
+    $jobPattern = '(?ms)^  ' + [regex]::Escape($JobName) + ':.*?(?=^  [A-Za-z0-9_-]+:|\z)'
+    $job = [regex]::Match($Workflow, $jobPattern).Value
+    if ([string]::IsNullOrWhiteSpace($job) -or $job -notmatch '(?m)^\s+timeout-minutes:\s*[1-9][0-9]*\s*$') {
+        throw "Workflow job '$JobName' must declare a positive timeout-minutes value."
+    }
+}
+
 $workflow = Read-Workflow $WorkflowPath
 $cleanupWorkflow = Read-Workflow $CleanupWorkflowPath
+
+foreach ($jobName in @('gate', 'publish', 'real-product-soak', 'post-soak-review')) { Assert-JobTimeout $workflow $jobName }
+Assert-JobTimeout $cleanupWorkflow 'cleanup'
 
 if ($workflow -match '(?m)^\s+schedule:') { throw 'Scheduled workflow execution is prohibited.' }
 if ($cleanupWorkflow -match '(?m)^\s+(push|pull_request|workflow_call):') { throw 'Cleanup workflow must remain workflow_dispatch-only.' }
