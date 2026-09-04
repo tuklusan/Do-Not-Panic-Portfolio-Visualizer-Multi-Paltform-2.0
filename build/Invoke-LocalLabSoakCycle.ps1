@@ -315,7 +315,20 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
         $resultPath = Join-Path $childInfo.artifactRoot "$($childInfo.record.name)-machine-result.json"
         if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
             $childResult = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-            $cycle.machines.Add($childResult)
+            $childMachine = @($childResult.machines) | Select-Object -First 1
+            if ($null -ne $childMachine -and $null -ne $childMachine.status) {
+                $cycle.machines.Add($childMachine)
+            }
+            else {
+                $cycle.machines.Add([ordered]@{
+                    name = $childInfo.record.name
+                    address = $childInfo.record.address
+                    user = $childInfo.record.user
+                    status = 'Failed'
+                    failure = "Machine child returned an invalid result manifest. See $($childInfo.output)."
+                    artifactRoot = $childInfo.artifactRoot
+                })
+            }
         }
         else {
             $cycle.machines.Add([ordered]@{

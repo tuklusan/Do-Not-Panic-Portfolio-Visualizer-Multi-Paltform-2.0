@@ -5498,6 +5498,47 @@
       }
     },
     {
+      "id": "CR-085",
+      "phase": "Phase 7",
+      "title": "Complete local RSS and AI provider reliability",
+      "status": "open",
+      "depends_on": ["CR-084"],
+      "objective": "Resolve the Windows 11 AI-path omission and Intel macOS slow-lane timeout found during the first fresh concurrent five-minute local real-product cycle.",
+      "acceptance_criteria": [
+        "Windows 11 proves RssPlaybackReady, AiSummaryRequestStarted, and AiSummarySucceeded in its circular trace.",
+        "Intel macOS completes a five-minute real-product cycle within a slow-lane budget and retrieves circular trace and screenshot evidence.",
+        "Two successive targeted reruns pass with no new actionable defect and all remote processes and cycle roots are cleaned."
+      ],
+      "validation_plan": [
+        "Re-read upstream provider overlay and physical validation behavior.",
+        "Fix and review Windows scheduled-task environment propagation and Mac timeout handling.",
+        "Run targeted real-product reruns and inspect evidence artifacts and cleanup."
+      ],
+      "artifacts": [
+        "docs/CR-085-LOCAL-NEWS-PROVIDER-RELIABILITY.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-085-LOCAL-NEWS-PROVIDER-RELIABILITY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/DoNotPanicPortfolioVisualizer.Data/Services/ProviderSecretStoreService.cs",
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Windows 11 did not enter the AI request path in the fresh five-minute cycle.",
+          "Intel macOS exceeded the current 180-second remote-command budget before retrieval."
+        ]
+      }
+    },
+    {
       "id": "CR-084",
       "phase": "Phase 7",
       "title": "Require real RSS and AI evidence in local soaks",
@@ -5604,7 +5645,8 @@
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",
-    "CR-084: local soak acceptance does not yet prove usable RSS playback and successful AI generation per machine."
+    "CR-084: local soak acceptance does not yet prove usable RSS playback and successful AI generation per machine.",
+    "CR-085: Windows 11 AI environment propagation and Intel macOS slow-lane timeout need targeted reruns."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
