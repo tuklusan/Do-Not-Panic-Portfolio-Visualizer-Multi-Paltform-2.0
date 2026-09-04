@@ -5583,7 +5583,7 @@
         "status": "open",
         "unresolved_gaps": [
           "The previous local soak harness retrieved traces but did not gate RSS usability or successful AI generation per machine.",
-          "A fresh concurrent local cycle proved RSS and AI evidence on Linux, Windows 10, and Windows 11; the Intel Mac lane remains incomplete."
+          "Fresh targeted Mac cycles local-yfinance-secure-r43, r44, and r45 proved fresh RSS, successful AI generation, live YFinance responses, screenshots, and cleanup. local-yfinance-secure-r46 and local-macro-startup-current proved fresh RSS and live product evidence but correctly failed the keyed AI gate after OpenRouter returned HTTP 429; two successive complete all-machine cycles and the hosted four-hour cycles remain outstanding."
         ]
       }
     },
@@ -5752,7 +5752,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures, and retrieval of yfinance.circular.log now proves ServerStartup plus multiple QuoteResponseObserved live prices. Two fresh targeted runs remain for closure evidence."
+          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures. Targeted runs local-yfinance-secure-r43, r44, and r45 each prove ServerStartup plus multiple QuoteResponseObserved live prices; r46 also proves live responses but was rejected only for an external OpenRouter HTTP 429. Two fresh targeted runs remain for closure evidence under a successful AI-provider response."
         ]
       }
     },
@@ -5779,20 +5779,22 @@
       ],
       "artifacts": [
         "docs/CR-089-MACRO-BAR-STARTUP-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/MacroQuoteViewModel.cs",
         "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/TickerPresentationTests.cs",
         "src/DoNotPanicPortfolioVisualizer.App/Views",
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "required_before_development",
+        "status": "complete_for_implementation_scope",
         "document": "docs/CR-089-MACRO-BAR-STARTUP-PARITY.md",
-        "zero_known_gaps": false,
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Visual inspection identified that the macro bar is absent until quote values become available, unlike upstream startup behavior."
+          "Startup placeholder gauge implementation and focused regression coverage pass locally; the local-macro-startup-current Win10 real-product screenshot shows the macro bar present with readable labels and gauge values. First-render evidence before network data plus settled screenshots and circular trace evidence on every supported lane remain outstanding."
         ]
       }
     }

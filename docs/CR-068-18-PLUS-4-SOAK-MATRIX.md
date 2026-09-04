@@ -25,10 +25,10 @@ At the beginning of every soak cycle, run
 The script writes `local-lab-availability.json` with a timestamped result for
 each endpoint.
 
-The checked-in probe has been exercised against the current ignored inventory:
-three endpoints were reachable and the Intel Mac was recorded as
-`UnavailableAtCycleStart`. This is availability evidence only; physical product
-acceptance still requires the reachable machines to complete their assigned run.
+The checked-in probe was most recently exercised against the current ignored
+inventory and recorded all four endpoints as `AvailableForCycle`. This is
+availability evidence only; physical product acceptance still requires each
+available machine to complete its assigned run.
 Machines may be powered off or have changing addresses; a cycle uses the
 reachable subset that passes its documented contract and records the others as
 `UnavailableAtCycleStart`. Local-machine non-availability is not a blocker when
@@ -43,6 +43,12 @@ Intel Mac one-GiB ceiling. Hosted publish-only jobs are insufficient. AI-news
 lanes receive the OpenRouter key from a protected CI/local secret and pass it
 only as `DNPPV_OPENROUTER_API_KEY` or `OPENROUTER_API_KEY`; the value is never
 committed or included in review evidence.
+
+Lab SSH passwords are supplied only through the operator secret environment and
+are scoped to the short-lived `sshpass` child invocation. The coordinator does
+not write them to remote files or include them in command arguments. SSH/SCP
+uses `StrictHostKeyChecking=accept-new`, recording a first-seen host key and
+rejecting a changed key on later connections.
 
 When the protected key is available, soak launches set
 `DNPPV_SOAK_REQUIRE_AI_NEWS=1`; circular traces must then show the real AI

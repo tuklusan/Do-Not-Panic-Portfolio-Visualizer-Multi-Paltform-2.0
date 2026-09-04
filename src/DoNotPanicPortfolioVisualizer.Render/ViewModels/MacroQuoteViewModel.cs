@@ -33,10 +33,10 @@ public sealed partial class MacroQuoteViewModel(
     private string _accentBrush = "#B8C4CC";
 
     [ObservableProperty]
-    private string _arcPath = string.Empty;
+    private string _arcPath = BuildArcPath(0d);
 
     [ObservableProperty]
-    private string _needlePath = string.Empty;
+    private string _needlePath = BuildNeedlePath(0d);
 
     public string Label { get; } = label;
     public string Symbol { get; } = symbol;

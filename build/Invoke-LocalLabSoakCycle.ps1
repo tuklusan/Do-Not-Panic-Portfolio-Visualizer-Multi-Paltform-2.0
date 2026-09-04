@@ -116,11 +116,10 @@ function Invoke-RemoteNative {
         [Parameter()][string]$StandardInput,
         [Parameter()][int]$Timeout = 900
     )
-    $previous = $env:SSHPASS
-    $env:SSHPASS = $Secret
-    try {
-        $psi = [Diagnostics.ProcessStartInfo]::new()
-        $psi.FileName = 'sshpass'
+    $psi = [Diagnostics.ProcessStartInfo]::new()
+    $psi.Environment.Remove('SSHPASS')
+    $psi.Environment['SSHPASS'] = $Secret
+    $psi.FileName = 'sshpass'
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
@@ -146,10 +145,6 @@ function Invoke-RemoteNative {
             if ($process.ExitCode -ne 0) { throw "Remote command failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
         finally { $process.Dispose() }
-    }
-    finally {
-        if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
-    }
 }
 
 function Copy-RemoteTree {
@@ -161,15 +156,14 @@ function Copy-RemoteTree {
         [Parameter(Mandatory = $true)][string]$LocalPath,
         [Parameter()][int]$Timeout = 900
     )
-    $previous = $env:SSHPASS
-    $env:SSHPASS = $Secret
-    try {
-        $psi = [Diagnostics.ProcessStartInfo]::new()
-        $psi.FileName = 'sshpass'
+    $psi = [Diagnostics.ProcessStartInfo]::new()
+    $psi.Environment.Remove('SSHPASS')
+    $psi.Environment['SSHPASS'] = $Secret
+    $psi.FileName = 'sshpass'
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', "${User}@${HostName}:$RemotePath", $LocalPath)) {
+        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', "${User}@${HostName}:$RemotePath", $LocalPath)) {
             [void]$psi.ArgumentList.Add($argument)
         }
         $process = [Diagnostics.Process]::new()
@@ -179,15 +173,11 @@ function Copy-RemoteTree {
             $stdoutTask = $process.StandardOutput.ReadToEndAsync()
             $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit($Timeout * 1000)) { $process.Kill($true); throw "Artifact copy timed out after ${Timeout}s." }
-            $stderr = $stderrTask.GetAwaiter().GetResult()
             [void]$stdoutTask.GetAwaiter().GetResult()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
             if ($process.ExitCode -ne 0) { throw "Artifact copy failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
         finally { $process.Dispose() }
-    }
-    finally {
-        if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
-    }
 }
 
 function Copy-LocalTree {
@@ -199,15 +189,14 @@ function Copy-LocalTree {
         [Parameter(Mandatory = $true)][string]$RemotePath,
         [Parameter()][int]$Timeout = 900
     )
-    $previous = $env:SSHPASS
-    $env:SSHPASS = $Secret
-    try {
-        $psi = [Diagnostics.ProcessStartInfo]::new()
-        $psi.FileName = 'sshpass'
+    $psi = [Diagnostics.ProcessStartInfo]::new()
+    $psi.Environment.Remove('SSHPASS')
+    $psi.Environment['SSHPASS'] = $Secret
+    $psi.FileName = 'sshpass'
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', $LocalPath, "${User}@${HostName}:$RemotePath")) {
+        foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', $LocalPath, "${User}@${HostName}:$RemotePath")) {
             [void]$psi.ArgumentList.Add($argument)
         }
         $process = [Diagnostics.Process]::new()
@@ -217,15 +206,11 @@ function Copy-LocalTree {
             $stdoutTask = $process.StandardOutput.ReadToEndAsync()
             $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit($Timeout * 1000)) { $process.Kill($true); throw "Artifact deployment timed out after ${Timeout}s." }
-            $stderr = $stderrTask.GetAwaiter().GetResult()
             [void]$stdoutTask.GetAwaiter().GetResult()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
             if ($process.ExitCode -ne 0) { throw "Artifact deployment failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
         finally { $process.Dispose() }
-    }
-    finally {
-        if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
-    }
 }
 
 function Resolve-PublishDirectory {
@@ -421,7 +406,7 @@ foreach ($record in @($availability.machines)) {
             $driverRemote = "$remoteRoot/Invoke-MacConfigWindowValidation.sh"
             $remote = "$($machineRecord.user)@$($machineRecord.address):$remoteRoot"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "if [ -e '$remoteRoot' ]; then echo 'MAC_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'"
             ) -Timeout $macTimeout
@@ -445,7 +430,7 @@ foreach ($record in @($availability.machines)) {
             }
             $remoteCommand += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 $remoteCommand
             ) -StandardInput $remoteStdin -Timeout ($TimeoutSeconds + ($DurationMinutes * 60) + 900) | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
@@ -474,7 +459,7 @@ foreach ($record in @($availability.machines)) {
         if ($null -ne $remoteCleanupRoot) {
             try {
                 Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                    'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                     "$($machineRecord.user)@$($machineRecord.address)",
                     "if [ -d '$remoteCleanupRoot' ]; then rm -rf -- '$remoteCleanupRoot'; fi"
                 ) -Timeout $macTimeout | Out-Null

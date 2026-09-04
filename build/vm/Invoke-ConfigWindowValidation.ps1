@@ -248,7 +248,7 @@ function Invoke-RemotePowerShell {
             '-e',
             'ssh',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',
@@ -336,7 +336,7 @@ function Copy-ToRemote {
             '-r',
             '-C',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',
@@ -388,7 +388,7 @@ function Copy-LinuxPublishToRemote {
                     '-O',
                     '-C',
                     '-o',
-                    'StrictHostKeyChecking=no',
+                    'StrictHostKeyChecking=accept-new',
                     '-o',
                     'BatchMode=no',
                     '-o',
@@ -415,7 +415,7 @@ function Copy-LinuxPublishToRemote {
             '-e',
             'ssh',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',
@@ -461,7 +461,7 @@ function Copy-FromRemote {
         $copyArguments += @(
             '-O',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',
@@ -517,7 +517,7 @@ function Publish-RemoteOpenRouterSecret {
             $previous = $env:SSHPASS
             $env:SSHPASS = $Secret
             try {
-                Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @('-e', 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60', "$User@$HostName", "chmod 600 -- $literal")
+                Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @('-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60', "$User@$HostName", "chmod 600 -- $literal")
             }
             finally {
                 if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
@@ -560,7 +560,7 @@ function Invoke-LinuxValidation {
                 '-e',
                 'ssh',
                 '-o',
-                'StrictHostKeyChecking=no',
+                'StrictHostKeyChecking=accept-new',
                 '-o',
                 'BatchMode=no',
                 '-o',
@@ -589,7 +589,7 @@ function Invoke-LinuxValidation {
             '-e',
             'ssh',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',
@@ -919,7 +919,7 @@ function Invoke-LinuxValidation {
             '-e',
             'ssh',
             '-o',
-            'StrictHostKeyChecking=no',
+            'StrictHostKeyChecking=accept-new',
             '-o',
             'BatchMode=no',
             '-o',

@@ -25,9 +25,15 @@ the reverse scan at closure.
 
 ## Observed Gap
 
-The current product hides the macro bar until quote values arrive. Upstream
-shows the bar immediately, preserving its labels and layout while values are
-loading or degraded.
+The current product constructs the macro bar before quote values arrive, but
+its empty arc and needle paths make the startup gauges visually disappear
+against the scene. Upstream constructs the bar immediately with stable labels
+and `--` placeholders while values are loading or degraded.
+
+The source comparison covered upstream `MacroMeterViewModel.cs` lines 20-78 and
+`StatusBarControl.xaml` lines 30-149. The Avalonia counterpart now preserves
+the same early construction and placeholder text, and initializes a zero-fill
+arc and needle so the gauge cards have a visible startup state.
 
 ## Required Closure Evidence
 

@@ -111,6 +111,18 @@ public sealed class TickerPresentationTests
     }
 
     [Fact]
+    public void MacroViewModel_StartsWithVisiblePlaceholderGauge()
+    {
+        MacroQuoteViewModel macro = new("VIX", "^VIX", 60m, invertRiskColors: true);
+
+        Assert.Equal("--", macro.ValueText);
+        Assert.Equal("--", macro.ChangeText);
+        Assert.StartsWith("M ", macro.TrackPath, StringComparison.Ordinal);
+        Assert.StartsWith("M ", macro.ArcPath, StringComparison.Ordinal);
+        Assert.StartsWith("M 12,12 L ", macro.NeedlePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TickerQuote_DistinguishesWaitingAndMissingQuoteStates()
     {
         TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO", DisplayName = "VOO" });
