@@ -468,7 +468,9 @@ foreach ($record in @($availability.machines)) {
             }
         }
         $machine.status = 'Failed'
-        if ([string]::IsNullOrWhiteSpace($machine.failure)) { $machine.failure = $primaryFailure }
+        if (-not $machine.Contains('failure') -or [string]::IsNullOrWhiteSpace([string]$machine['failure'])) {
+            $machine['failure'] = $primaryFailure
+        }
     }
     finally {
         if ($null -ne $remoteCleanupRoot) {
