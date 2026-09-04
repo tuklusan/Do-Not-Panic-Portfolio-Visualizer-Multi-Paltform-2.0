@@ -5459,7 +5459,7 @@
       "objective": "Verify and restore the upstream visual update cues: blue flash for a fresh unchanged ticker value, red/green flash for changed values, and rapid graph-card travel to the ceiling or floor on directional raw-price changes before normal motion resumes.",
       "acceptance_criteria": [
         "Fresh positive, negative, unchanged, stale, and initial-hydration quote cases are implemented and covered; unchanged fresh values flash blue, changed positive values flash green, and changed negative values flash red.",
-        "Graph cards travel rapidly to the top boundary after an increase and bottom boundary after a decrease, then restore their prior swimming velocity; unchanged, percent-only, stale, hydration, and structural replacement cases do not create a directed impulse.",
+        "Graph cards visibly flash throughout rapid travel to the top boundary after an increase or bottom boundary after a decrease, then restore their base appearance and prior swimming velocity; unchanged, percent-only, stale, hydration, and structural replacement cases do not create a directed impulse.",
         "The upstream implementations are read line by line and the forward and reverse behavior inventories record zero unmapped gaps before closure.",
         "Focused tests and settled real-product screenshots/traces prove the cues on available local machines and hosted smoke lanes without visual fixtures as the demonstrated product.",
         "NVIDIA review, build/test, license, syntax, artifact-review, cleanup, and commit/push gates pass."

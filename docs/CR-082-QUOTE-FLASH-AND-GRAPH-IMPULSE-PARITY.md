@@ -17,8 +17,9 @@ green for a positive changed value, red for a negative changed value, and blue
 for an unchanged value. Stale quotes do not create this fresh-update cue.
 
 Upstream graph cards use a different rule: a raw last-price change triggers the
-card flash and rapid travel toward the ceiling for an increase or floor for a
-decrease, then restores the normal swimming velocity. An unchanged raw value,
+card itself to flash repeatedly while it makes rapid travel toward the ceiling
+for an increase or floor for a decrease, then restores the normal card
+appearance and swimming velocity. An unchanged raw value,
 initial hydration, percent-only change, stale data, and structural replacement
 must not create the directed impulse. A bounded timeout and boundary completion
 must restore normal motion.
@@ -35,8 +36,10 @@ surface; fixtures may only provide deterministic test inputs.
 
 - Fresh positive, negative, unchanged, stale, and initial-hydration quote cases
   are covered by focused tests and circular trace assertions.
-- Graph increases travel rapidly to the top boundary, decreases to the bottom
-  boundary, and resume their prior velocity; no-op cases remain ordinary.
+- Graph increases flash visibly while travelling rapidly to the top boundary,
+  decreases flash visibly while travelling rapidly to the bottom boundary, and
+  each card then returns to its base appearance and prior swimming velocity;
+  no-op cases remain ordinary.
 - Settled production screenshots show the flash and directed graph motion on an
   available local machine, with hosted smoke coverage where applicable.
 - Upstream forward/reverse inventory, NVIDIA review, build/test, license,
