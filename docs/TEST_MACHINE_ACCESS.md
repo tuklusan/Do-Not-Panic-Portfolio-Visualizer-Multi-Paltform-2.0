@@ -25,8 +25,9 @@ local ignored endpoint inventory such as `build/vm/remote-test-machines.local.tx
 and passwords remain in the operator password manager.
 
 The four physical endpoints were last refreshed on 2026-08-24. Availability is
-dynamic: as of 2026-09-03, only the Windows 11 laptop is available, at
-`192.168.4.103`. Linux, Windows 10, and Intel Big Sur are currently offline.
+dynamic: as of 2026-09-03, all four machines are reported available at the
+current subnet addresses: Linux `192.168.4.76`, Windows 10 `192.168.4.75`,
+Intel Big Sur `192.168.4.77`, and Windows 11 `192.168.4.103`.
 Update the ignored local endpoint inventory whenever DHCP or network topology
 changes; never commit passwords or other live credentials. This document may
 record the operator-supplied current address needed to explain lab state.
@@ -35,8 +36,8 @@ record the operator-supplied current address needed to explain lab state.
 
 ### `linux-x64-lxqt`
 
-- Access: exact current SSH endpoint is kept only in the local ignored endpoint
-  inventory
+- Access: exact current SSH endpoint is kept in the local ignored endpoint
+  inventory; current address is `192.168.4.76`
 - Sudo: available; uses the same password on first prompt
 - OS: Lubuntu Linux 26.04 with LXQt desktop
 - Notes: DHCP details may change
@@ -52,8 +53,8 @@ record the operator-supplied current address needed to explain lab state.
 
 ### `windows-10-reference`
 
-- Access: exact current SSH endpoint is kept only in the local ignored endpoint
-  inventory
+- Access: exact current SSH endpoint is kept in the local ignored endpoint
+  inventory; current address is `192.168.4.75`
 - OS: Windows 10
 - Required project root: `D:\SW_DEV\DO-NOT-PANIC-2.0`
 - Required temp root: `D:\TEMP`
@@ -97,9 +98,8 @@ record the operator-supplied current address needed to explain lab state.
 ### `macos-x64-intel-big-sur`
 
 - Access: exact current SSH endpoint is kept in the local ignored endpoint
-  inventory; subnet discovery found the Mac at `192.168.4.77` using the
-  configured `rumtuk` account. The endpoint was intermittently reachable during
-  verification and must be availability-probed at each cycle start.
+  inventory; current address is `192.168.4.77` using the configured `rumtuk`
+  account. The endpoint must still be availability-probed at each cycle start.
 - OS: macOS Big Sur on Intel x64 hardware
 - Required project root: `~/SOFTWARE_DEV/DNPPV_20/`
 - Confinement rule: every uploaded source, build, test, temporary, log, and
@@ -169,10 +169,10 @@ Each progressive local-lab cycle begins with
 `build/Test-LocalLabAvailability.ps1 -ArtifactRoot <cycle-artifact-root>`.
 Its JSON manifest distinguishes `AvailableForCycle` from
 `UnavailableAtCycleStart`; unavailable machines are never reported as product
-passes. For the current lab state, a cycle must use Windows 11 at
-`192.168.4.103` and record Linux, Windows 10, and macOS/Intel as
-`UnavailableAtCycleStart`; their absence is non-blocking when the full hosted
-matrix supplies the required cross-platform proof. Remote physical-machine cleanup remains governed by each machine's root and
+passes. For the current lab state, a cycle should use all four reachable
+machines and record any machine that disappears during probing as
+`UnavailableAtCycleStart`; unavailable machines are non-blocking when the full
+hosted matrix supplies the required cross-platform proof. Remote physical-machine cleanup remains governed by each machine's root and
 storage contract above. It must stop product processes before removing only
 generated publish, test, evidence, local-data, and temporary outputs, while
 preserving source and installed test dependencies.
