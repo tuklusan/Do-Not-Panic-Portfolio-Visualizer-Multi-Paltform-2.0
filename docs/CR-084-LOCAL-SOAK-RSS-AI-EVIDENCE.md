@@ -51,6 +51,22 @@ is the authoritative runtime record.
 4. Repeat the successful cycle and compare both manifests for the same
    evidence contract before closure.
 
+## RSS-First Runtime Contract
+
+The real product publishes a usable RSS snapshot to the cinematic news lane
+before awaiting optional AI summarization. A slow, rate-limited, malformed, or
+unavailable AI response must therefore never leave the scene on its bootstrap
+text or blank the already-fetched RSS headlines. A successful AI response may
+replace the RSS playback after `AiSummarySucceeded`; otherwise the RSS
+headlines remain visible. The circular trace records the publication stages as
+`NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS` and, when applicable,
+`NEWS_PLAYBACK_PUBLISHED;SOURCE=AI`.
+
+The first post-fix Linux physical run (`local-rss-ai-fix-r31`) proved fresh RSS,
+successful AI generation, cleanup, and a settled real-product screenshot with
+finance-news text. Two successive full local cycles and the required hosted
+four-hour cycles are still required before this CR can close.
+
 ## Upstream And Reverse Checks
 
 The upstream `FinanceNewsService` and cinematic news loop were re-read for the
