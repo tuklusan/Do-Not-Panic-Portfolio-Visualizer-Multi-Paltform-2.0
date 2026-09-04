@@ -95,20 +95,29 @@ if [[ "$soak_minutes" -gt 0 ]]; then
   printf 'MAC_SOAK_COMPLETED\n' >> "$artifact/mac-soak.log"
   check_budget
   trace="$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT/Trace/trace.circular.log"
-  mkdir -p "$artifact/trace"
-  if [[ -s "$trace" ]]; then
-    cp "$trace" "$artifact/trace/trace.circular.log"
-    if [[ -f "${trace%.log}.idx" ]]; then cp "${trace%.log}.idx" "$artifact/trace/trace.circular.idx"; fi
-  fi
   rss_usable=false
   ai_required=false
   ai_requested=false
   ai_succeeded=false
   [[ "${DNPPV_SOAK_REQUIRE_AI_NEWS:-}" == 1 ]] && ai_required=true
+  # The Mac and the AI provider can finish asynchronously after the soak
+  # clock expires. Allow a bounded evidence grace period before hard-stop.
+  for _ in $(seq 1 120); do
+    rss_usable=false
+    ai_requested=false
+    ai_succeeded=false
+    if [[ -s "$trace" ]]; then
+      grep -aEq 'event=RssPlaybackReady / state=(Fresh|Partial) / headline_count=[1-9][0-9]*' "$trace" && rss_usable=true
+      grep -aEq 'event=AiSummaryRequestStarted([[:space:]]|/|$)' "$trace" && ai_requested=true
+      grep -aEq 'event=AiSummarySucceeded([[:space:]]|/|$)' "$trace" && ai_succeeded=true
+    fi
+    if [[ "$rss_usable" == true && ( "$ai_required" != true || "$ai_succeeded" == true ) ]]; then break; fi
+    sleep 1
+  done
+  mkdir -p "$artifact/trace"
   if [[ -s "$trace" ]]; then
-    grep -aEq 'event=RssPlaybackReady / state=(Fresh|Partial) / headline_count=[1-9][0-9]*' "$trace" && rss_usable=true
-    grep -aEq 'event=AiSummaryRequestStarted([[:space:]]|/|$)' "$trace" && ai_requested=true
-    grep -aEq 'event=AiSummarySucceeded([[:space:]]|/|$)' "$trace" && ai_succeeded=true
+    cp "$trace" "$artifact/trace/trace.circular.log"
+    if [[ -f "${trace%.log}.idx" ]]; then cp "${trace%.log}.idx" "$artifact/trace/trace.circular.idx"; fi
   fi
   cat > "$artifact/news-evidence.json" <<EOF
 {
