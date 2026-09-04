@@ -5479,10 +5479,13 @@
         "docs/CR-082-QUOTE-FLASH-AND-GRAPH-IMPULSE-PARITY.md",
         "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerQuoteViewModel.cs",
         "src/DoNotPanicPortfolioVisualizer.Render/Services/FloatingGraphMotionController.cs",
-        "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
       ],
       "upstream_behavior_inventory": {
-    "status": "complete",
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "document": "docs/CR-082-QUOTE-FLASH-AND-GRAPH-IMPULSE-PARITY.md",
         "source_files": [
           "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
@@ -5491,8 +5494,23 @@
           "src/PortfolioSaver.Render/ViewModels/TapeItemViewModel.cs",
           "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs"
         ],
-    "zero_known_gaps": true,
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/Services/FloatingGraphMotionController.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/FloatingGraphViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "open",

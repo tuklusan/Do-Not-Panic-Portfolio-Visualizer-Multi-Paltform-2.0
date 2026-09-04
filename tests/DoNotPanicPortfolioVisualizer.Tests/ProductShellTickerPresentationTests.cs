@@ -43,6 +43,27 @@ public sealed class ProductShellTickerPresentationTests
         Assert.Contains("FontFamily=\"Segoe UI Emoji\"", xaml, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ProductShell_GraphImpulseFlashesWholeCardSurface()
+    {
+        string xaml = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "DoNotPanicPortfolioVisualizer.App",
+            "Views",
+            "ProductShellWindow.axaml"));
+
+        int graphStart = xaml.IndexOf("<ItemsControl ItemsSource=\"{Binding Graphs}\"", StringComparison.Ordinal);
+        int graphEnd = xaml.IndexOf("</ItemsControl>", graphStart, StringComparison.Ordinal);
+        Assert.True(graphStart >= 0 && graphEnd > graphStart);
+
+        string graphTemplate = xaml[graphStart..graphEnd];
+        Assert.Contains("Background=\"{Binding FlashBrush}\"", graphTemplate, StringComparison.Ordinal);
+        Assert.Contains("Opacity=\"{Binding FlashOpacity}\"", graphTemplate, StringComparison.Ordinal);
+        Assert.Contains("<Grid RowDefinitions=\"Auto,*\">", graphTemplate, StringComparison.Ordinal);
+        Assert.DoesNotContain("<Border Grid.Column=\"2\"", graphTemplate, StringComparison.Ordinal);
+    }
+
     private static int CountOccurrences(string text, string value)
     {
         int count = 0;

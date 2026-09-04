@@ -126,6 +126,11 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                 CornerRadius="6"
                                 Padding="7">
                             <Grid>
+                                <!-- Upstream flashes the graph card surface during a quote impulse. -->
+                                <Border Background="{Binding FlashBrush}"
+                                        Opacity="{Binding FlashOpacity}"
+                                        CornerRadius="6"
+                                        IsHitTestVisible="False" />
                                 <Grid RowDefinitions="Auto,*">
                                     <Grid ColumnDefinitions="34,*,42,46">
                                         <TextBlock Text="{Binding Symbol}"
@@ -140,18 +145,13 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                                    FontSize="7"
                                                    TextTrimming="CharacterEllipsis"
                                                    Foreground="#8EA4B4" />
-                                        <Border Grid.Column="2"
-                                                Background="{Binding FlashBrush}"
-                                                Opacity="{Binding FlashOpacity}"
-                                                CornerRadius="2"
-                                                HorizontalAlignment="Right">
-                                            <TextBlock Text="{Binding LastText}"
-                                                       HorizontalAlignment="Right"
-                                                       FontFamily="Consolas"
-                                                       FontSize="9"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Foreground="White" />
-                                        </Border>
+                                         <TextBlock Grid.Column="2"
+                                                    Text="{Binding LastText}"
+                                                    HorizontalAlignment="Right"
+                                                    FontFamily="Consolas"
+                                                    FontSize="9"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    Foreground="White" />
                                         <TextBlock Grid.Column="3"
                                                    Text="{Binding ChangeText}"
                                                    HorizontalAlignment="Right"

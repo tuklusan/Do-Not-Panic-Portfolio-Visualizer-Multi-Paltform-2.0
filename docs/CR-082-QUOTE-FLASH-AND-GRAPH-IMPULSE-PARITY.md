@@ -9,7 +9,7 @@ SANYALnet Labs." See LICENSE for full terms.
 
 # CR-082: Quote Flash And Graph Impulse Parity
 
-## Findings
+## Functional Inventory
 
 The upstream production scene applies a value flash for every fresh usable
 quote, including a quote whose displayed value is unchanged. The flash color is
@@ -28,6 +28,11 @@ the upstream 1.0 product. Both Windows validation launch paths now hard-stop
 before starting when an existing DNPPV-2.0 process is present; the Mac driver
 does the equivalent process check. The Mac driver uses a larger 1920x1080
 window only for its physical acceptance harness.
+
+| CR-082-01 | Fresh usable quote flash scope and direction | `TickerTapeControl.xaml.cs`, `VisualizerSceneControl.xaml.cs` | `TickerQuoteViewModel`, `ProductShellWindow.axaml` |
+| CR-082-02 | Raw-price graph impulse to ceiling/floor and nominal-motion recovery | `VisualizerSceneControl.xaml.cs`, `FloatingGraphControl.xaml.cs` | `FloatingGraphMotionController`, `FloatingGraphViewModel` |
+| CR-082-03 | Stale, hydration, percent-only, structural, timeout, and collision branches | `VisualizerSceneControl.xaml.cs`, `FloatingGraphViewModel.cs` | `ProductSceneViewModel`, motion tests |
+| CR-01 | Fresh quote visual cue and raw-value direction | Upstream ticker and scene controls | 2.0 ticker view model and shell |
 
 Upstream graph cards use a different rule: a raw last-price change triggers the
 card itself to flash repeatedly while it makes rapid travel toward the ceiling
@@ -49,9 +54,11 @@ surface; fixtures may only provide deterministic test inputs.
 
 - Fresh positive, negative, unchanged, stale, and initial-hydration quote cases
   are covered by focused tests and circular trace assertions.
-- The flash is rendered only behind the displayed last-value field and each
-  fresh quote produces one rise/hold/fall pulse; the symbol, overlay, change
-  field, graph, and card background do not flash as collateral.
+- The ticker flash is rendered only behind the displayed last-value field and
+  each fresh quote produces one rise/hold/fall pulse; the symbol, overlay,
+  change field, graph, and card background are not affected by that ticker-only
+  cue. Graph impulses separately flash the complete graph-card surface as
+  upstream does.
 - Graph increases flash visibly while travelling rapidly to the top boundary,
   decreases flash visibly while travelling rapidly to the bottom boundary, and
   each card then returns to its base appearance and prior swimming velocity;
@@ -69,4 +76,7 @@ unchanged, even when daily `ChangePercent` is non-zero; initial hydration and
 stale refreshes remain quiet. Focused tests cover these cases. Shared
 single-instance locking and harness pre-launch guards are implemented. Full
 production-scene visual and circular-trace evidence for the flash and graph
-impulse remains required before closure.
+impulse remains required before closure. The graph template now renders the
+directed and neutral graph flash through a card-surface overlay, matching the
+upstream `FloatingGraphControl` animation target; physical production-scene
+and circular-trace evidence remains required before closure.
