@@ -5820,6 +5820,54 @@
           "Startup placeholder gauge implementation and focused regression coverage pass locally; the local-macro-startup-current Win10 real-product screenshot shows the macro bar present with readable labels and gauge values. First-render evidence before network data plus settled screenshots and circular trace evidence on every supported lane remain outstanding."
         ]
       }
+    },
+    {
+      "id": "CR-090",
+      "phase": "Phase 7",
+      "title": "Preserve upstream single-symbol YFinance refresh semantics",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-069",
+        "CR-082"
+      ],
+      "objective": "Verify and restore upstream request-shape parity: one ticker per YFinance request in the live scene, with the upstream four-deep portfolio pipeline and independently audited ancillary lanes.",
+      "acceptance_criteria": [
+        "Portfolio runtime requests remain one symbol per provider call with upstream bounded depth and round-robin scheduling.",
+        "Macro and global-market lanes are compared independently and use the upstream request shape and scheduling contract.",
+        "Cancellation, timeout, stale fallback, per-symbol ordering, and circular-trace evidence are covered by focused tests and settled real-product runs.",
+        "Two successive forward and reverse upstream scans show zero unmapped request-shape or scheduling behavior.",
+        "NVIDIA review, build/test, license, syntax, artifact-review, cleanup, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Read complete upstream and 2.0 runtime quote paths line by line from disk.",
+        "Add provider-call-shape and bounded-scheduling tests for each affected lane.",
+        "Run settled production acceptance and inspect circular request/response traces."
+      ],
+      "artifacts": [
+        "docs/CR-090-YFINANCE-SINGLE-SYMBOL-REFRESH-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "document": "docs/CR-090-YFINANCE-SINGLE-SYMBOL-REFRESH-PARITY.md",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Ancillary macro and global-market request shape requires the complete source comparison and implementation decision."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
