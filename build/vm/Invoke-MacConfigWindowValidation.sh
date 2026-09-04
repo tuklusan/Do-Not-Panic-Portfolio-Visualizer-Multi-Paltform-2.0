@@ -37,6 +37,10 @@ if [[ -f "$publish/DoNotPanicPortfolioVisualizer.App" ]]; then
   # ZIP extraction on macOS may drop the executable bit from self-contained hosts.
   chmod +x "$publish/DoNotPanicPortfolioVisualizer.App"
 fi
+if [[ -f "$publish/YFinanceServer/YFinance.NET.Server" ]]; then
+  # SCP does not preserve the executable bit on the bundled quote server.
+  chmod +x "$publish/YFinanceServer/YFinance.NET.Server"
+fi
 if [[ ! -x "$publish/DoNotPanicPortfolioVisualizer.App" ]]; then
   echo "MAC_ACCEPTANCE_HARD_STOP=MissingExecutable:$publish" >&2
   exit 2

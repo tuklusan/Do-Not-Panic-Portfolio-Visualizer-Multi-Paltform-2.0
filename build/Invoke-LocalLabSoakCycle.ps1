@@ -449,7 +449,7 @@ foreach ($record in @($availability.machines)) {
                 "$($machineRecord.user)@$($machineRecord.address)",
                 $remoteCommand
             ) -StandardInput $remoteStdin -Timeout ($TimeoutSeconds + ($DurationMinutes * 60) + 900) | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
-            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteArtifact -LocalPath $machine.artifactRoot -Timeout 900
+            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath "$remoteArtifact/*" -LocalPath $machine.artifactRoot -Timeout 900
         }
         $machine.status = 'Passed'
     }
@@ -459,7 +459,7 @@ foreach ($record in @($availability.machines)) {
             try {
                 # Preserve failure evidence before the remote cycle root is
                 # removed; this is key-free trace and screenshot material.
-                Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteArtifact -LocalPath $machine.artifactRoot -Timeout 900
+                Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath "$remoteArtifact/*" -LocalPath $machine.artifactRoot -Timeout 900
             }
             catch {
                 $machine.failure = "$primaryFailure; failure-artifact-retrieval=$($_.Exception.Message)"

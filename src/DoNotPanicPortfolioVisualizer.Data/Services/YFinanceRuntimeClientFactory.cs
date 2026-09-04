@@ -32,7 +32,14 @@ public static class YFinanceRuntimeClientFactory
     // connection state during reconnect/retirement paths. Revisit only if the
     // facade moves to a tested client pool.
     private static readonly SemaphoreSlim SharedClientOperationGate = new(1, 1);
-    private static readonly IYFinanceServerProcessManager ServerProcessManager = new YFinanceServerProcessManager();
+    private static readonly IYFinanceServerProcessManager ServerProcessManager = new YFinanceServerProcessManager(
+        new YFinanceServerProcessManagerOptions
+        {
+            DiagnosticSink = message => DoNotPanicPortfolioVisualizerYFinanceTraceSink.Instance.WarnState(
+                "YFinanceServerProcessManager",
+                "ServerLaunchFailed",
+                [new("message", message)])
+        });
     private static long _operationSequence;
     private static SharedClientEntry? _sharedClient;
     private static readonly List<SharedClientEntry> RetiredClients = [];

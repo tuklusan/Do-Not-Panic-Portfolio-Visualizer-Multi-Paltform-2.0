@@ -58,6 +58,7 @@ public sealed class YFinanceServerProcessManagerOptions
     public TimeSpan StartupPollInterval { get; init; } = TimeSpan.FromMilliseconds(250);
     public TimeSpan ConnectProbeTimeout { get; init; } = TimeSpan.FromMilliseconds(500);
     public string DotNetCommand { get; init; } = "dotnet";
+    public Action<string>? DiagnosticSink { get; init; }
 
     internal void Validate()
     {
@@ -141,6 +142,9 @@ public sealed class YFinanceServerProcessManager : IYFinanceServerProcessManager
             }
             catch (Exception ex)
             {
+                _options.DiagnosticSink?.Invoke(
+                    $"YFinance server launch failed. file={command.FileName}; arguments={command.TraceArguments}; exception_type={ex.GetType().FullName}");
+                _options.DiagnosticSink?.Invoke($"YFinance server launch exception message: {ex.Message}");
                 throw new InvalidOperationException(
                     $"Failed to start {YFinanceLoopbackContract.ServerExecutableFileStem}.",
                     ex);
@@ -155,6 +159,8 @@ public sealed class YFinanceServerProcessManager : IYFinanceServerProcessManager
                 if (_ownedProcess.HasExited)
                 {
                     int exitCode = _ownedProcess.ExitCode;
+                    _options.DiagnosticSink?.Invoke(
+                        $"YFinance server exited during startup. file={command.FileName}; arguments={command.TraceArguments}; exit_code={exitCode}");
                     _ownedProcess.Dispose();
                     _ownedProcess = null;
                     throw new InvalidOperationException(

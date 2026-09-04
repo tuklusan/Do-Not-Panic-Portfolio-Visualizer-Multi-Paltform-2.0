@@ -5713,6 +5713,48 @@
           "The corrected Mac run passed RSS and AI, but Copy-RemoteTree returned the remote artifacts directory nested below the machine artifact root; the layout is usable but inconsistent with Linux and Windows retrieval."
         ]
       }
+    },
+    {
+      "id": "CR-088",
+      "phase": "Phase 7",
+      "title": "Restore Intel Mac YFinance quote-server startup",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-082"
+      ],
+      "objective": "Make the real product start its bundled YFinance.NET.Server on the Intel Mac Big Sur lane so quote ribbons and market lanes receive live data instead of entering degraded mode.",
+      "acceptance_criteria": [
+        "A fresh keyed Intel Mac real-product run records successful YFinance server startup and at least one quote response in the circular trace.",
+        "The four ticker lanes and global market lane show live or explicitly market-closed quote data without repeated server-start failures.",
+        "The fix preserves the 14871 loopback contract, RSS-first news behavior, AI evidence, Mac home confinement, one-gigabyte limit, and cleanup guarantees.",
+        "Focused Mac validation, full tests, license, syntax, upstream forward/reverse, NVIDIA review, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Re-read the upstream quote-server launch and Mac harness behavior before implementation.",
+        "Use the circular-trace launch diagnostic to identify the Big Sur process-start failure and correct the published server launch path or runtime compatibility issue.",
+        "Run two keyed targeted Mac validations and inspect quote, RSS, AI, screenshot, trace, and cleanup evidence.",
+        "Repeat the full local cycle after the targeted fix before reopening the soak ladder."
+      ],
+      "artifacts": [
+        "docs/CR-088-MAC-YFINANCE-QUOTE-STARTUP.md",
+        "src/DoNotPanicPortfolioVisualizer.Shared/Services/YFinanceServerProcessManager.cs",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-088-MAC-YFINANCE-QUOTE-STARTUP.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures, but a subsequent five-minute run still showed placeholder quotes without QuoteResponseObserved evidence."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -5728,7 +5770,8 @@
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest cycle passed Linux, Windows 11, and Intel Mac but failed Windows 10 task launch.",
     "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
     "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
-    "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization."
+    "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization.",
+    "CR-088: Intel Mac YFinance.NET.Server startup fails, leaving quote and market lanes degraded."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

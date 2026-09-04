@@ -226,7 +226,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     public static ProductSceneViewModel CreateDefault()
     {
-        YFinanceServerProcessManager manager = new();
+        YFinanceServerProcessManager manager = new(
+            new YFinanceServerProcessManagerOptions
+            {
+                DiagnosticSink = message => TraceLog.WarnState(
+                    "YFinanceServerProcessManager",
+                    "ServerLaunchFailed",
+                    [new("message", message)])
+            });
         YFinanceProtocolRuntimeClient protocolClient = new();
         ManagedYFinanceRuntimeClient runtimeClient = new(manager, protocolClient, "DNPPV-2.0-Scene");
         YahooFinanceQuoteProvider quoteProvider = new(runtimeClient, throwOnPartial: false);
