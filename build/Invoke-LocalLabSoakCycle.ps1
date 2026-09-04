@@ -196,11 +196,11 @@ function Copy-LocalTree {
         $psi.UseShellExecute = $false
         $psi.RedirectStandardOutput = $true
         $psi.RedirectStandardError = $true
-        $sourcePaths = if ($LocalPath.EndsWith('*', [StringComparison]::Ordinal)) {
+        $sourcePaths = @($LocalPath)
+        if ($LocalPath.EndsWith('*', [StringComparison]::Ordinal)) {
             $sourceRoot = $LocalPath.Substring(0, $LocalPath.Length - 1).TrimEnd('\', '/')
-            @(Get-ChildItem -LiteralPath $sourceRoot -Force | Select-Object -ExpandProperty FullName)
+            $sourcePaths = @(Get-ChildItem -LiteralPath $sourceRoot -Force | Select-Object -ExpandProperty FullName)
         }
-        else { @($LocalPath) }
         if ($sourcePaths.Count -eq 0) { throw "Local copy source is empty: $LocalPath" }
         foreach ($argument in @('-e', 'scp', '-r', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1') + $sourcePaths + "${User}@${HostName}:$RemotePath") {
             [void]$psi.ArgumentList.Add($argument)
