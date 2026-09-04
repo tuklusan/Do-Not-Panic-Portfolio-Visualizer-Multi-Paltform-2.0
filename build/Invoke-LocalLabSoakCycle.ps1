@@ -456,8 +456,19 @@ foreach ($record in @($availability.machines)) {
         $machine.status = 'Passed'
     }
     catch {
+        $primaryFailure = $_.Exception.Message
+        if ($null -ne $remoteCleanupRoot) {
+            try {
+                # Preserve failure evidence before the remote cycle root is
+                # removed; this is key-free trace and screenshot material.
+                Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteArtifact -LocalPath $machine.artifactRoot -Timeout 900
+            }
+            catch {
+                $machine.failure = "$primaryFailure; failure-artifact-retrieval=$($_.Exception.Message)"
+            }
+        }
         $machine.status = 'Failed'
-        $machine.failure = $_.Exception.Message
+        if ([string]::IsNullOrWhiteSpace($machine.failure)) { $machine.failure = $primaryFailure }
     }
     finally {
         if ($null -ne $remoteCleanupRoot) {
