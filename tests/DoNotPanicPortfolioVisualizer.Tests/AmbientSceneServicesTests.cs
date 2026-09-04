@@ -203,6 +203,30 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void TickerQuote_FreshUnchangedValueFlashesBlueAfterHydration()
+    {
+        TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 0m });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 0m });
+
+        Assert.Equal(1, quote.UpdateSequence);
+        Assert.Equal("#F000BFFF", quote.FlashBrush);
+        quote.StepVisuals(TimeSpan.FromMilliseconds(100));
+        Assert.True(quote.FlashOpacity > 0d);
+    }
+
+    [Fact]
+    public void TickerQuote_StaleRefreshDoesNotFlashAfterHydration()
+    {
+        TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 0m });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 0m, IsStale = true });
+
+        Assert.Equal(0, quote.UpdateSequence);
+        Assert.Equal(0d, quote.FlashOpacity);
+    }
+
+    [Fact]
     public void BackgroundImageService_FiltersSupportedFilesAndSortsResults()
     {
         using TemporaryDirectoryScope directory = new();

@@ -47,6 +47,8 @@ surface; fixtures may only provide deterministic test inputs.
 
 ## Status
 
-Open. The current implementation already contains directed graph-travel logic,
-but the upstream-equivalent unchanged-value blue ticker flash is not yet
-implemented or proven.
+The ticker update rule is implemented: post-hydration fresh usable quotes flash
+green/red when their value changes and blue when the displayed value is
+unchanged; initial hydration and stale refreshes remain quiet. Focused tests
+cover these cases. Full production-scene visual and circular-trace evidence
+for the flash and graph impulse remains required before closure.

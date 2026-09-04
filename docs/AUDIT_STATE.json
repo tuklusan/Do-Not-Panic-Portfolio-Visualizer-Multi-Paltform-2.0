@@ -5477,7 +5477,7 @@
         "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
       ],
       "upstream_behavior_inventory": {
-        "status": "complete_initial_finding",
+    "status": "complete",
         "document": "docs/CR-082-QUOTE-FLASH-AND-GRAPH-IMPULSE-PARITY.md",
         "source_files": [
           "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
@@ -5486,13 +5486,13 @@
           "src/PortfolioSaver.Render/ViewModels/TapeItemViewModel.cs",
           "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs"
         ],
-        "zero_known_gaps": false,
+    "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Current TickerQuoteViewModel flashes only when the raw value changes, so the upstream fresh unchanged-value blue flash is missing.",
+          "Fresh unchanged-value blue flashing is implemented and focused-tested; production-scene visual and circular-trace proof remains outstanding.",
           "Current graph-motion tests cover directed travel, but full upstream parity still needs fresh production evidence and branch-complete acceptance."
         ]
       }

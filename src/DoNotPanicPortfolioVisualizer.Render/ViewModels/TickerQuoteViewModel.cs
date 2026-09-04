@@ -72,7 +72,8 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
     public void Apply(QuoteSnapshot quote)
     {
         decimal? usableLast = quote.Last ?? quote.PreviousClose;
-        bool changed = Last.HasValue && usableLast.HasValue && Last.Value != usableLast.Value;
+        bool hydrated = Last is not null;
+        bool changed = hydrated && usableLast.HasValue && Last.GetValueOrDefault() != usableLast.Value;
         PriceText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
         TrendBrush = quote.ChangePercent switch
@@ -88,13 +89,15 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
         HasMissingData = !usableLast.HasValue;
         WaitingGlyphText = HasMissingData ? "◌" : string.Empty;
         WaitingGlyphBrush = HasMissingData ? "#FF8C00" : "#DAA520";
-        if (changed)
+        // Upstream flashes every fresh usable refresh after hydration. The
+        // unchanged-value case is the blue heartbeat that confirms a live feed.
+        if (hydrated && usableLast.HasValue && !quote.IsStale)
         {
             FlashBrush = quote.ChangePercent switch
             {
                 > 0m => "#F039E75F",
                 < 0m => "#F0FF5A36",
-                _ => "#F0FFC440"
+                _ => "#F000BFFF"
             };
             _flashElapsedSeconds = 0d;
             UpdateSequence++;
