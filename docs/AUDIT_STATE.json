@@ -5498,6 +5498,56 @@
       }
     },
     {
+      "id": "CR-084",
+      "phase": "Phase 7",
+      "title": "Require real RSS and AI evidence in local soaks",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-067",
+        "CR-069"
+      ],
+      "objective": "Make every available local real-product soak prove usable configured RSS playback and successful OpenRouter AI summary generation when a protected key is supplied, using only the circular trace as runtime evidence.",
+      "acceptance_criteria": [
+        "Each available local machine is exercised concurrently as a real-product soak.",
+        "A keyed soak hard-stops unless the retrieved circular trace proves Fresh or Partial NEWS_SOURCE state and both AiSummaryRequestStarted and AiSummarySucceeded.",
+        "Each machine result contains key-free news-evidence.json alongside trace.circular.log and trace.circular.idx.",
+        "Missing, stale-only, unavailable, or AI-failed news evidence is a failed machine result and is routed to a defect CR.",
+        "Two successive successful validation passes show no missing RSS or AI evidence."
+      ],
+      "validation_plan": [
+        "Run PowerShell syntax and license gates.",
+        "Run a short concurrent local cycle and inspect every machine manifest, circular trace, screenshot set, and cleanup state.",
+        "Run forced-news-failure and verify the failure is explicit without credential leakage.",
+        "Repeat the successful cycle and compare both evidence manifests before closure."
+      ],
+      "artifacts": [
+        "docs/CR-084-LOCAL-SOAK-RSS-AI-EVIDENCE.md",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-084-LOCAL-SOAK-RSS-AI-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/TraceLog.cs"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The previous local soak harness retrieved traces but did not gate RSS usability or successful AI generation per machine.",
+          "A fresh concurrent local cycle has not yet proved the new evidence gate."
+        ]
+      }
+    },
+    {
       "id": "CR-083",
       "phase": "Phase 7",
       "title": "Retrofit mandatory reverse migration-gate evidence to earlier CRs",
@@ -5553,7 +5603,8 @@
     "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
-    "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract."
+    "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",
+    "CR-084: local soak acceptance does not yet prove usable RSS playback and successful AI generation per machine."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

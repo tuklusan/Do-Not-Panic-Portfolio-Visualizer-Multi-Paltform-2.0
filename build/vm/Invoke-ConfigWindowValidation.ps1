@@ -1651,6 +1651,39 @@ finally {
     }
 }
 
+function Assert-SoakNewsEvidence {
+    param(
+        [Parameter(Mandatory = $true)][string]$ArtifactRoot,
+        [Parameter(Mandatory = $true)][bool]$RequireAiNews
+    )
+
+    $tracePath = Join-Path $ArtifactRoot 'trace/trace.circular.log'
+    if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) {
+        throw "Local soak news evidence is missing its circular trace: $tracePath"
+    }
+
+    $trace = Get-Content -LiteralPath $tracePath -Raw
+    $rssUsable = $trace -match 'NEWS_SOURCE;STATE=(Fresh|Partial)(?:;|\b)'
+    $aiSucceeded = $trace -match 'event=AiSummarySucceeded(?:\s|\||$)'
+    $aiRequested = $trace -match 'event=AiSummaryRequestStarted(?:\s|\||$)'
+    $evidence = [ordered]@{
+        schema = 'dnppv2-soak-news-evidence/v1'
+        rssUsable = [bool]$rssUsable
+        aiRequired = $RequireAiNews
+        aiRequestObserved = [bool]$aiRequested
+        aiSuccessObserved = [bool]$aiSucceeded
+        traceFile = 'trace/trace.circular.log'
+    }
+    $evidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $ArtifactRoot 'news-evidence.json') -Encoding utf8
+
+    if (-not $rssUsable) {
+        throw 'Local soak RSS evidence failed: no Fresh or Partial NEWS_SOURCE state was found in the circular trace.'
+    }
+    if ($RequireAiNews -and (-not $aiRequested -or -not $aiSucceeded)) {
+        throw 'Local soak AI evidence failed: the circular trace did not prove both AiSummaryRequestStarted and AiSummarySucceeded.'
+    }
+}
+
 Assert-RequiredTool -Name 'sshpass'
 Assert-RequiredTool -Name 'ssh'
 Assert-RequiredTool -Name 'scp'
@@ -1669,6 +1702,9 @@ if ($DuplicateInstanceFixture -and -not $ProductScene) {
 }
 if ($ForceNewsFailure -and -not $ProductScene) {
     throw '-ForceNewsFailure requires -ProductScene.'
+}
+if ($ProductScene -and $SoakDurationMinutes -gt 0 -and [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
+    throw 'A real-product soak requires OPENROUTER_API_KEY (or OPENROUTER_AI_API_KEY) so RSS and AI generation are both exercised.'
 }
 
 $resolvedPublishDir = (Resolve-Path -LiteralPath $LocalPublishDir -ErrorAction Stop).Path
@@ -1693,6 +1729,10 @@ switch ($Platform) {
     default {
         throw "Unsupported platform: $Platform"
     }
+}
+
+if ($ProductScene -and $SoakDurationMinutes -gt 0) {
+    Assert-SoakNewsEvidence -ArtifactRoot $LocalArtifactRoot -RequireAiNews (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey))
 }
 
 Write-Output "CONFIG_WINDOW_VALIDATION=Passed;PLATFORM=$Platform;ARTIFACT_ROOT=$LocalArtifactRoot"

@@ -36,7 +36,16 @@ param(
     [int]$SceneWarmupSeconds = 30,
 
     [Parameter()]
-    [switch]$ProbeOnly
+    [string]$MachineName,
+
+    [Parameter()]
+    [string]$AvailabilityManifestPath,
+
+    [Parameter()]
+    [switch]$ProbeOnly,
+
+    [Parameter()]
+    [switch]$SkipAvailabilityProbe
 )
 
 Set-StrictMode -Version Latest
@@ -44,11 +53,20 @@ $ErrorActionPreference = 'Stop'
 
 $resolvedPublishRoot = (Resolve-Path -LiteralPath $LocalPublishRoot -ErrorAction Stop).Path
 $resolvedArtifactRoot = [IO.Path]::GetFullPath($ArtifactRoot)
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 New-Item -ItemType Directory -Path $resolvedArtifactRoot -Force | Out-Null
 
 $probePath = Join-Path $PSScriptRoot 'Test-LocalLabAvailability.ps1'
-& $probePath -InventoryPath $InventoryPath -ArtifactRoot $resolvedArtifactRoot | Write-Output
-$availabilityPath = Join-Path $resolvedArtifactRoot 'local-lab-availability.json'
+$availabilityPath = if ($SkipAvailabilityProbe) {
+    if ([string]::IsNullOrWhiteSpace($AvailabilityManifestPath)) {
+        throw '-AvailabilityManifestPath is required with -SkipAvailabilityProbe.'
+    }
+    (Resolve-Path -LiteralPath $AvailabilityManifestPath -ErrorAction Stop).Path
+}
+else {
+    & $probePath -InventoryPath $InventoryPath -ArtifactRoot $resolvedArtifactRoot | Write-Output
+    Join-Path $resolvedArtifactRoot 'local-lab-availability.json'
+}
 $availability = Get-Content -LiteralPath $availabilityPath -Raw | ConvertFrom-Json
 
 $inventory = @{}
@@ -227,12 +245,108 @@ $cycle = [ordered]@{
     durationMinutes = $DurationMinutes
     machines = [Collections.Generic.List[object]]::new()
 }
-$cyclePath = Join-Path $resolvedArtifactRoot 'local-lab-cycle.json'
+$cyclePath = if ([string]::IsNullOrWhiteSpace($MachineName)) {
+    Join-Path $resolvedArtifactRoot 'local-lab-cycle.json'
+}
+else {
+    Join-Path $resolvedArtifactRoot "$MachineName-machine-result.json"
+}
 function Save-CycleManifest {
     $cycle | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $cyclePath -Encoding utf8
 }
 
+if ([string]::IsNullOrWhiteSpace($MachineName)) {
+    if ($ProbeOnly) {
+        foreach ($record in @($availability.machines)) {
+            $cycle.machines.Add([ordered]@{
+                name = $record.name
+                address = $record.address
+                user = $record.user
+                status = if ($record.reachable) { 'AvailableForCycleProbeOnly' } else { 'UnavailableAtCycleStart' }
+                artifactRoot = Join-Path $resolvedArtifactRoot $record.name
+            })
+        }
+        $cycle.completedUtc = [DateTimeOffset]::UtcNow.ToString('O')
+        Save-CycleManifest
+        Write-Output "LOCAL_LAB_CYCLE_PROBE=Recorded;CYCLE=$($cycle.cycleId);ARTIFACT=$resolvedArtifactRoot"
+        return
+    }
+
+    $childProcesses = [Collections.Generic.List[object]]::new()
+    $pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
+    $reachableRecords = @($availability.machines | Where-Object { $_.reachable })
+    foreach ($record in $reachableRecords) {
+        $machineArtifactRoot = Join-Path $resolvedArtifactRoot $record.name
+        New-Item -ItemType Directory -Path $machineArtifactRoot -Force | Out-Null
+        $childOutput = Join-Path $machineArtifactRoot 'coordinator-output.txt'
+        $childError = Join-Path $machineArtifactRoot 'coordinator-error.txt'
+        $childArguments = @(
+            '-NoProfile',
+            '-File', $PSCommandPath,
+            '-DurationMinutes', $DurationMinutes.ToString(),
+            '-LocalPublishRoot', $resolvedPublishRoot,
+            '-InventoryPath', (Resolve-Path -LiteralPath $InventoryPath).Path,
+            '-ArtifactRoot', $resolvedArtifactRoot,
+            '-TimeoutSeconds', $TimeoutSeconds.ToString(),
+            '-SceneWarmupSeconds', $SceneWarmupSeconds.ToString(),
+            '-MachineName', [string]$record.name,
+            '-AvailabilityManifestPath', $availabilityPath,
+            '-SkipAvailabilityProbe'
+        )
+        $child = Start-Process -FilePath $pwshPath -ArgumentList $childArguments -WorkingDirectory $repoRoot -RedirectStandardOutput $childOutput -RedirectStandardError $childError -PassThru
+        $childProcesses.Add([pscustomobject]@{ record = $record; process = $child; artifactRoot = $machineArtifactRoot; output = $childOutput })
+    }
+
+    foreach ($childInfo in $childProcesses) {
+        $timeoutMilliseconds = [int64]($TimeoutSeconds + ($DurationMinutes * 60) + 1800) * 1000
+        if (-not $childInfo.process.WaitForExit([int]([Math]::Min([int32]::MaxValue, $timeoutMilliseconds)))) {
+            try { $childInfo.process.Kill($true) } catch { }
+            $childInfo.process.WaitForExit()
+            Set-Content -LiteralPath (Join-Path $childInfo.artifactRoot 'machine-result.json') -Value (@{
+                name = $childInfo.record.name
+                address = $childInfo.record.address
+                user = $childInfo.record.user
+                status = 'Failed'
+                failure = "Machine child process timed out after $($timeoutMilliseconds / 1000)s."
+                artifactRoot = $childInfo.artifactRoot
+            } | ConvertTo-Json -Depth 8) -Encoding utf8
+        }
+
+        $resultPath = Join-Path $childInfo.artifactRoot "$($childInfo.record.name)-machine-result.json"
+        if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+            $childResult = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+            $cycle.machines.Add($childResult)
+        }
+        else {
+            $cycle.machines.Add([ordered]@{
+                name = $childInfo.record.name
+                address = $childInfo.record.address
+                user = $childInfo.record.user
+                status = 'Failed'
+                failure = "Machine child process returned without a result manifest. See $($childInfo.output)."
+                artifactRoot = $childInfo.artifactRoot
+            })
+        }
+    }
+
+    foreach ($record in @($availability.machines | Where-Object { -not $_.reachable })) {
+        $cycle.machines.Add([ordered]@{
+            name = $record.name
+            address = $record.address
+            user = $record.user
+            status = 'UnavailableAtCycleStart'
+            artifactRoot = Join-Path $resolvedArtifactRoot $record.name
+        })
+    }
+    $cycle.completedUtc = [DateTimeOffset]::UtcNow.ToString('O')
+    Save-CycleManifest
+    if (@($cycle.machines | Where-Object { $_.status -eq 'Failed' }).Count -gt 0) { throw "Local lab cycle failed; see $cyclePath" }
+    Write-Output "LOCAL_LAB_CYCLE=Recorded;CYCLE=$($cycle.cycleId);ARTIFACT=$resolvedArtifactRoot"
+    return
+}
+
 foreach ($record in @($availability.machines)) {
+    if ($record.name -ne $MachineName) { continue }
     $machine = [ordered]@{
         name = $record.name
         address = $record.address
