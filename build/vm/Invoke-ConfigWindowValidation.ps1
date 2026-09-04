@@ -1233,7 +1233,7 @@ function Invoke-WindowsValidation {
             @(
                 '$openRouterSecretPath = Join-Path $artifactDir ' + $remoteSecretNamePsLiteral
                 '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath $openRouterSecretPath -Raw).Trim()'
-            )
+            ) -join [Environment]::NewLine
         }
         else {
             'Remove-Item Env:DNPPV_OPENROUTER_API_KEY -ErrorAction SilentlyContinue'
