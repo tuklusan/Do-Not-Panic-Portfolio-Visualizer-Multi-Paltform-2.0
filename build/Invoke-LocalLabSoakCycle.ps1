@@ -332,7 +332,18 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
             '-AvailabilityManifestPath', $availabilityPath,
             '-SkipAvailabilityProbe'
         )
-        $child = Start-Process -FilePath $pwshPath -ArgumentList $childArguments -WorkingDirectory $repoRoot -RedirectStandardOutput $childOutput -RedirectStandardError $childError -PassThru
+        $childStartParameters = @{
+            FilePath = $pwshPath
+            ArgumentList = $childArguments
+            WorkingDirectory = $repoRoot
+            RedirectStandardOutput = $childOutput
+            RedirectStandardError = $childError
+            PassThru = $true
+        }
+        if ($IsWindows) {
+            $childStartParameters.WindowStyle = 'Hidden'
+        }
+        $child = Start-Process @childStartParameters
         $childProcesses.Add([pscustomobject]@{ record = $record; process = $child; artifactRoot = $machineArtifactRoot; output = $childOutput })
     }
 

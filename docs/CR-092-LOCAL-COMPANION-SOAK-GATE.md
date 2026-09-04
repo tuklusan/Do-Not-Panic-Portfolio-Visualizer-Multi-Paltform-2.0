@@ -51,13 +51,26 @@ artifact, and commit/push gates before closure.
 
 ## Current Validation State
 
-The first full four-machine execution reached the real product successfully on
-Windows 10 and Windows 11. Both lanes produced product-scene screenshots,
-RSS/AI evidence, and the two circular traces, and both machine manifests
-passed. Linux and Intel macOS were correctly recorded as failures rather than
-silently skipped, but their prelaunch process-cleanliness check falsely
-returned the residual-process hard-stop before the product driver ran. The
-Unix matcher is being corrected to inspect full command lines while excluding
-its own helper shell. CR-092 remains open until a fresh reviewed cycle proves
-Linux and macOS launch, settle, validate, and clean up alongside the hosted
-matrix.
+The latest full four-machine execution reached the real product successfully on
+Windows 10, Windows 11, and Intel macOS. Those lanes produced product-scene
+screenshots, RSS/AI evidence, circular traces, and passed machine manifests.
+The Linux coordinator stopped before writing a result manifest, so that cycle
+is incomplete and does not qualify the four-machine acceptance or the harness
+maintenance lock. CR-092 remains open until a fresh reviewed cycle proves all
+four available machines launch, settle, validate, and clean up alongside the
+hosted matrix.
+
+## Harness maintenance lock
+
+After one complete, reviewed 10-minute cycle records all four local machines as
+available and passed, `build/Invoke-LocalLabSoakCycle.ps1` is considered a
+working harness and is frozen against opportunistic optimization or cleanup
+refactoring. Changes are allowed only for a concrete continuation defect or an
+explicit project requirement, and each exception must include focused syntax,
+test, and acceptance evidence in the same checkpoint. The freeze is not active
+yet: the current cycle produced passed Windows 10, Windows 11, and Intel Mac
+results, but its Linux coordinator stopped before writing a result manifest.
+
+The coordinator launches Windows child PowerShell processes with hidden windows
+so local validation does not disturb the operator's desktop. Unix lanes remain
+headless over SSH and do not require a visible terminal.
