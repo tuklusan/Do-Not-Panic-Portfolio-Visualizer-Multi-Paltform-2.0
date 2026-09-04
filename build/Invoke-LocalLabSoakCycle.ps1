@@ -253,6 +253,11 @@ function Assert-RemoteProductProcessesClean {
         $payload = "Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' } | Stop-Process -Force -ErrorAction SilentlyContinue; if (Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' }) { exit 17 }"
         $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($payload))
         $command = "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded"
+        Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -Arguments @(
+            'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no',
+            '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no',
+            '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60', $target, $command
+        ) -Timeout $Timeout
     }
     else {
         # Deliver the cleanup script over stdin. This keeps its process-name
@@ -263,13 +268,13 @@ if [ -n "$pids" ]; then kill -TERM $pids 2>/dev/null || true; sleep 1; kill -KIL
 remaining=$(ps -eo pid=,user=,args= | awk -v u="$(id -un)" '$2 == u && $0 ~ /[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server/ {print $1}')
 if [ -n "$remaining" ]; then exit 17; fi
 '@
-    }
-
         Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -StandardInput $command -Arguments @(
             'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no',
             '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no',
             '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60', $target, 'bash -s'
         ) -Timeout $Timeout
+    }
+
 }
 
 $cycle = [ordered]@{
