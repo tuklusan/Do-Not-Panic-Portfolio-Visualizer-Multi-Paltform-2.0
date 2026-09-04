@@ -5496,6 +5496,52 @@
           "Current graph-motion tests cover directed travel, but full upstream parity still needs fresh production evidence and branch-complete acceptance."
         ]
       }
+    },
+    {
+      "id": "CR-083",
+      "phase": "Phase 7",
+      "title": "Retrofit mandatory reverse migration-gate evidence to earlier CRs",
+      "status": "open",
+      "depends_on": [
+        "CR-001",
+        "CR-020"
+      ],
+      "objective": "Reconcile every earlier closed CR lacking a recorded reverse upstream gap scan with the current mandatory forward/reverse gate contract.",
+      "acceptance_criteria": [
+        "CR-002 through CR-019, including CR-010A through CR-010J, have complete source-cited reverse scans tied to the validated implementation snapshot.",
+        "Every retrofitted CR records two successive zero-gap scans and no silently deferred behavior.",
+        "The current migration behavior gate passes at closure for every retrofitted CR, and no closed CR retains missing gate evidence.",
+        "Tracker, gate standard, and remaining-gap records pass repeated internal and cross-document consistency scans."
+      ],
+      "validation_plan": [
+        "Audit tracker entries against Test-MigrationBehaviorGate.ps1 requirements",
+        "Manual line-by-line upstream/current reverse scans for each affected CR",
+        "Run the gate for every affected CR and perform repeated document consistency scans"
+      ],
+      "artifacts": [
+        "docs/CR-083-RETROFIT-MIGRATION-GATE-EVIDENCE.md",
+        "docs/AUDIT_STATE.json",
+        "docs/MIGRATION_BEHAVIOR_GATES.md",
+        "build/Test-MigrationBehaviorGate.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-083-RETROFIT-MIGRATION-GATE-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "docs/MIGRATION_BEHAVIOR_GATES.md",
+          "build/Test-MigrationBehaviorGate.ps1",
+          "docs/AUDIT_STATE.json"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Reverse scan records are absent from CR-002 through CR-019 and must be reconstructed before those historical closure labels satisfy the current contract."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -5506,7 +5552,8 @@
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
     "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
-    "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven."
+    "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
+    "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
