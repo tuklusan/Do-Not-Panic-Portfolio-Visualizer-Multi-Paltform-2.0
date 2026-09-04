@@ -223,8 +223,10 @@ function Resolve-PublishDirectory {
     param([Parameter(Mandatory = $true)][string]$Rid)
     $candidate = Join-Path $resolvedPublishRoot $Rid
     if (Test-Path -LiteralPath $candidate -PathType Container) { return (Resolve-Path -LiteralPath $candidate).Path }
-    if ($Rid -eq 'win-x64' -and (Test-Path -LiteralPath $resolvedPublishRoot -PathType Container)) {
-        if (Test-Path -LiteralPath (Join-Path $resolvedPublishRoot 'DoNotPanicPortfolioVisualizer.App.exe') -PathType Leaf) { return $resolvedPublishRoot }
+    if (Test-Path -LiteralPath $resolvedPublishRoot -PathType Container) {
+        foreach ($executableName in @('DoNotPanicPortfolioVisualizer.App.exe', 'DoNotPanicPortfolioVisualizer.App', 'DoNotPanicPortfolioVisualizer')) {
+            if (Test-Path -LiteralPath (Join-Path $resolvedPublishRoot $executableName) -PathType Leaf) { return $resolvedPublishRoot }
+        }
     }
     throw "Publish directory for RID $Rid is missing below $resolvedPublishRoot"
 }
@@ -253,21 +255,21 @@ function Assert-RemoteProductProcessesClean {
         $command = "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded"
     }
     else {
-        # Match the executable command name only. Matching the full command
-        # line can kill the SSH session because its own command contains it.
+        # Deliver the cleanup script over stdin. This keeps its process-name
+        # patterns out of the SSH command line being inspected.
         $command = @'
-pids=$(ps -eo pid=,args= | grep -E '[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server' | grep -v -E 'ps -eo|awk|bash -c|sh -c|run-validation|Invoke-LocalLabSoakCycle|grep' | awk '{print $1}' || true)
+pids=$(ps -eo pid=,user=,args= | awk -v u="$(id -un)" '$2 == u && $0 ~ /[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server/ {print $1}')
 if [ -n "$pids" ]; then kill -TERM $pids 2>/dev/null || true; sleep 1; kill -KILL $pids 2>/dev/null || true; sleep 2; fi
-remaining=$(ps -eo pid=,args= | grep -E '[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server' | grep -v -E 'ps -eo|awk|bash -c|sh -c|run-validation|Invoke-LocalLabSoakCycle|grep' | awk '{print $1}' || true)
+remaining=$(ps -eo pid=,user=,args= | awk -v u="$(id -un)" '$2 == u && $0 ~ /[D]oNotPanicPortfolioVisualizer|[Y]Finance.NET.Server/ {print $1}')
 if [ -n "$remaining" ]; then exit 17; fi
 '@
     }
 
-    Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -Arguments @(
-        'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no',
-        '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no',
-        '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60', $target, $command
-    ) -Timeout $Timeout
+        Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -StandardInput $command -Arguments @(
+            'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no',
+            '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no',
+            '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60', $target, 'bash -s'
+        ) -Timeout $Timeout
 }
 
 $cycle = [ordered]@{
