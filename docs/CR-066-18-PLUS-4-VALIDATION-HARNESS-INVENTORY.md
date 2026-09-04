@@ -21,8 +21,8 @@ patent, trademark, and governing-law provisions.
 | CI-03 | Exercise the four local lab machines: Lubuntu/LXQt, Windows 10, Windows 11, and Intel Mac Big Sur. |
 | CI-04 | Apply platform-specific display handling: Xvfb for headless Linux and bounded physical-display capture for local desktops. |
 | CI-05 | Wait for application settling before screenshots and behavioral assertions. |
-| CI-06 | Run progressively longer soak profiles, beginning with smoke and increasing to sustained runs without overlapping runs on a machine. |
-| CI-07 | Retrieve circular trace files, screenshots, environment manifests, test results, and cleanup reports for every completed run. |
+| CI-06 | While the migration CR queue is open, run the locked 10-minute real-product profile without overlapping runs on a machine; longer profiles are paused by policy. |
+| CI-07 | Retrieve both circular trace families (`trace.circular.*` and `yfinance.circular.*`), screenshots, environment manifests, test results, and cleanup reports for every completed run. |
 | CI-08 | Pass source changes and generated test-result evidence through the mandatory NVIDIA NIM review harness before acceptance. A missing, incomplete, or failed review blocks the lane. |
 | CI-09 | Analyze reviewed evidence, create one JSON CR per actionable defect, and repeat development, review, test, validation, and cleanup until closure. |
 | CI-10 | Keep required validation failures blocking; reserve non-blocking behavior for the explicit availability-probe job only. |
@@ -30,7 +30,7 @@ patent, trademark, and governing-law provisions.
 | CI-12 | Use unique run, machine, RID, and runner artifact names so evidence cannot collide or overwrite. |
 | CI-13 | Leave every machine clean after each run and terminate every application, server, display server, and helper process started by the harness. |
 | CI-14 | At the start of every soak cycle, probe all four local lab machines and use only currently reachable machines whose storage/display contracts pass. | Per-cycle availability manifest; unavailable is distinct from product failure |
-| CI-15 | Do not close the family until two independent complete four-hour soak cycles show no new actionable defects across all 18 hosted runners and every local machine available at each cycle start. | Two reviewed cycle manifests, trace sets, and defect ledgers |
+| CI-15 | While open CRs remain, do not launch four-hour soaks. Close the active 10-minute validation family only after two independent complete cycles show no new actionable defects across all 18 hosted runners and every local machine available at each cycle start. | Two reviewed cycle manifests, dual trace sets, and defect ledgers |
 | TEST-01 | Verify that a successful run has a real-product screenshot, passing test result, circular trace retrieval, review result, and cleanup result. |
 
 ## Reference implementation findings

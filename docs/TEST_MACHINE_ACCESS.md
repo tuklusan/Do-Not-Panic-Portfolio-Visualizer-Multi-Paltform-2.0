@@ -178,7 +178,9 @@ generated publish, test, evidence, local-data, and temporary outputs, while
 preserving source and installed test dependencies.
 
 The full cycle entry point is
-`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes <minutes> -LocalPublishRoot <publish-root>`.
+`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes 10 -LocalPublishRoot <publish-root>`.
+While any migration CR is open, 10 minutes is the only permitted soak
+duration; four-hour runs are paused and must not be started by a harness.
 It invokes the availability probe itself, uses the reachable subset fixed at the
 cycle start, and records every lane in `local-lab-cycle.json`. Set
 `DNPPV_LOCAL_LAB_PASSWORD` in the operator environment for a real run; never put
@@ -196,8 +198,9 @@ size-bounded circular traces under the resolved local-data root:
 - `Trace/trace.circular.log` and `Trace/trace.circular.idx` for the product
 - `Trace/yfinance.circular.log` and `Trace/yfinance.circular.idx` for YFinance
 
-Physical harnesses copy the product trace pair into an artifact `trace/`
-directory for review. `step.log` and `done.txt` are harness control evidence,
+Physical harnesses copy both circular log families into an artifact `trace/`
+directory for review; a missing product or YFinance circular log fails the
+soak evidence gate. `step.log` and `done.txt` are harness control evidence,
 not product logs. Harnesses must discard redirected process output and must
 not create `run.log`, `capture-errors.log`, `cinematic-playback.log`, or
 `graph-impulse.log`.

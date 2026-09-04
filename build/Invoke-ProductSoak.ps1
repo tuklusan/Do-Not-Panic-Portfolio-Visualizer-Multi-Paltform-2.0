@@ -139,7 +139,12 @@ finally {
     }
 
     New-Item -ItemType Directory -Path $traceDestination -Force | Out-Null
-    foreach ($traceName in @('trace.circular.log', 'trace.circular.idx')) {
+    foreach ($traceName in @(
+        'trace.circular.log',
+        'trace.circular.idx',
+        'yfinance.circular.log',
+        'yfinance.circular.idx'
+    )) {
         $source = Join-Path $traceSource $traceName
         if (Test-Path -LiteralPath $source -PathType Leaf) {
             Copy-Item -LiteralPath $source -Destination (Join-Path $traceDestination $traceName) -Force

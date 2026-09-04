@@ -974,7 +974,7 @@ function Invoke-LinuxValidation {
     New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
-    try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/yfinance.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log') } catch { Write-Verbose "Optional YFinance trace was unavailable: $($_.Exception.Message)" }
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/yfinance.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log')
     try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/yfinance.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.idx') } catch { Write-Verbose "Optional YFinance trace index was unavailable: $($_.Exception.Message)" }
 
     if ($null -ne $remoteExecutionFailure -and $null -ne $artifactRetrievalFailure) {
@@ -1683,7 +1683,7 @@ finally {
         New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
-        try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/yfinance.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log') } catch { Write-Verbose "Optional YFinance trace was unavailable: $($_.Exception.Message)" }
+    Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/yfinance.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log')
         try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/yfinance.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.idx') } catch { Write-Verbose "Optional YFinance trace index was unavailable: $($_.Exception.Message)" }
     }
     catch {
@@ -1697,12 +1697,17 @@ function Assert-SoakNewsEvidence {
         [Parameter(Mandatory = $true)][bool]$RequireAiNews
     )
 
-    $tracePath = Join-Path $ArtifactRoot 'trace/trace.circular.log'
-    if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) {
-        throw "Local soak news evidence is missing its circular trace: $tracePath"
+    $tracePaths = @(
+        (Join-Path $ArtifactRoot 'trace/trace.circular.log'),
+        (Join-Path $ArtifactRoot 'trace/yfinance.circular.log')
+    )
+    foreach ($tracePath in $tracePaths) {
+        if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) {
+            throw "Local soak news evidence is missing its required circular trace: $tracePath"
+        }
     }
 
-    $trace = Get-Content -LiteralPath $tracePath -Raw
+    $trace = ($tracePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
     $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
     $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
     $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
@@ -1712,7 +1717,7 @@ function Assert-SoakNewsEvidence {
         aiRequired = $RequireAiNews
         aiRequestObserved = [bool]$aiRequested
         aiSuccessObserved = [bool]$aiSucceeded
-        traceFile = 'trace/trace.circular.log'
+        traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
     }
     $evidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $ArtifactRoot 'news-evidence.json') -Encoding utf8
 

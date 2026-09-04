@@ -5236,20 +5236,20 @@
     {
       "id": "CR-069",
       "phase": "Phase 7",
-      "title": "Run and close the six progressive product soak profiles",
+      "title": "Run and close the 10-minute product soak profile while CRs remain open",
       "status": "open",
       "depends_on": [
         "CR-068"
       ],
-      "objective": "Run 5-minute, 10-minute, 30-minute, 1-hour, 2-hour, and 4-hour real-product soaks in sequence, review traces and evidence, route defects to JSON CRs, and relaunch affected profiles until verified closure.",
+      "objective": "While migration CRs remain open, run the locked 10-minute real-product soak across the 18-hosted-plus-available-local matrix, retrieve both circular log families, review traces and evidence, route defects to JSON CRs, and relaunch affected runs until verified closure.",
       "acceptance_criteria": [
-        "All five durations run on every available required environment without overlapping runs.",
-        "Each run has a reviewed circular trace pair, result manifest, screenshot/evidence manifest, NVIDIA NIM review, and cleanup proof.",
+        "The 10-minute duration runs on every available required environment without overlapping runs; longer profiles remain paused while CRs are open.",
+        "Each run has reviewed product and YFinance circular logs, result manifest, screenshot/evidence manifest, NVIDIA NIM review, and cleanup proof.",
         "Every actionable failure becomes a JSON CR and is retested at the affected duration plus all shorter durations.",
-        "The family closes only after two independent complete 4-hour cycles show no new actionable defects across all 18 hosted runners and available local machines."
+        "The active profile remains open until two independent complete 10-minute cycles show no new actionable defects across all 18 hosted runners and available local machines."
       ],
       "validation_plan": [
-        "Progressive duration execution in order",
+        "Repeated 10-minute execution while the CR queue is open",
         "Trace/artifact analysis and defect-to-CR loop",
         "Repeated acceptance and cleanup scans"
       ],

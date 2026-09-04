@@ -65,13 +65,15 @@ and the scheduler's wake-up behavior. A scheduler or chat continuation must not
 create duplicate soak runs or repeated per-second status messages; it waits for
 the next 30-second observation or a terminal/state-change event.
 
-The matrix is not considered complete after one successful pass. Closure
-requires two independent full four-hour cycles. Each cycle must execute all 18
+While migration CRs remain open, the matrix runs only the locked 10-minute
+profile. Four-hour runs are paused by project policy. The active validation
+family is not considered complete after one successful pass: closure requires
+two independent complete 10-minute cycles. Each cycle must execute all 18
 hosted runner labels and every local machine available at that cycle's start;
 unavailable local machines are recorded as unavailable, never as passing lanes.
 
 The checked-in local coordinator is
-`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes <minutes> -LocalPublishRoot <publish-root>`.
+`build/Invoke-LocalLabSoakCycle.ps1 -DurationMinutes 10 -LocalPublishRoot <publish-root>`.
 It performs the probe at cycle start, invokes the real-product Linux/Windows
 drivers for each reachable matching endpoint, deploys and invokes the existing
 Mac Big Sur shell driver for a reachable Intel Mac, retrieves the per-lane

@@ -12,34 +12,29 @@ SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 patent, trademark, and governing-law provisions.
 -->
 
-# CR-069 Progressive Soak Profiles
+# CR-069 Soak Profile During Open-CR Processing
 
-Run and review the real-product profiles in this order on the 18-plus-4 matrix:
+While the migration CR queue contains open work, run exactly one real-product
+profile on the 18-plus-4 matrix:
 
-1. 5 minutes
-2. 10 minutes
-3. 30 minutes
-4. 1 hour
-5. 2 hours
-6. 4 hours
+1. 10 minutes
 
-The 4-hour profile must be completed twice as independent full cycles. Both
-cycles must cover all 18 hosted runners and all local machines available when
-that cycle begins, and both must show no new actionable defects after circular
-trace, artifact, and NVIDIA NIM review.
+Four-hour profiles are paused by project policy until the CR queue is closed.
+No workflow input, local coordinator invocation, or scheduled job may start a
+four-hour profile during this period.
 
-Each profile starts only after the prior profile's artifacts are reviewed and
-the machine is clean. Failures create a JSON CR with the exact run identity,
-trace pair, screenshot/evidence manifest, and reviewed diagnosis. After a fix,
-the affected profile and every shorter profile are relaunched. The final
-profile closes only when no product process remains and the two complete
-four-hour cycles show zero new actionable defects.
+Each 10-minute cycle starts only after the prior cycle's artifacts are reviewed
+and the machine is clean. Failures create a JSON CR with the exact run identity,
+both circular traces, screenshot/evidence manifest, and reviewed diagnosis.
+After a fix, the affected 10-minute profile is relaunched. The queue remains
+open until two successive accepted 10-minute cycles show no new actionable
+defects across all 18 hosted runners and every local machine available at cycle
+start.
 
-For every profile, hosted lanes capture a settled product screenshot after the
-30-second warmup and then every 30 minutes while the product remains running.
-The lane must produce the expected screenshot count and a SHA-256 manifest for
-each image. Completed artifacts are reviewed visually and by the evidence gate;
-the capture loop is opt-in and is disabled for ordinary product launches.
+Every hosted lane captures a settled product screenshot after the 30-second
+warmup. The lane must retrieve both `trace.circular.*` and
+`yfinance.circular.*` files, and must produce a SHA-256 manifest for each image.
+Completed artifacts are reviewed visually and by the evidence gate.
 
 At the start of each profile cycle, the harness rechecks all four local lab
 machines and runs on the currently reachable contract-compliant subset. The
@@ -49,12 +44,12 @@ If local machines are unavailable, the profile may still close when all 18
 hosted lanes have provably executed and passed the real-product gates; local
 availability is recorded, never silently converted into a pass.
 
-For a manually dispatched 4-hour run, the `post-long-soak-review` workflow job
-starts only after the soak matrix reaches a terminal state, waits ten minutes,
-downloads that run's 18 evidence artifacts, checks for AI-path trace evidence,
-and sends each complete evidence packet through the NVIDIA NIM artifact reviewer.
-Its uploaded defect-candidate artifact is the handoff for the JSON CR loop; a
-failed soak or missing evidence does not suppress this review job.
+For a manually dispatched 10-minute run, the `post-soak-review` workflow job
+starts after the soak matrix reaches a terminal state, downloads that run's 18
+evidence artifacts, checks both trace files and AI-path evidence, and sends each
+complete evidence packet through the NVIDIA NIM artifact reviewer. Its uploaded
+defect-candidate artifact is the handoff for the JSON CR loop; a failed soak or
+missing evidence does not suppress this review job.
 
 **Depends on:** CR-066, CR-067, CR-068  
 **Status:** Open

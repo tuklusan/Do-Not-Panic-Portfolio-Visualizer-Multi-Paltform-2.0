@@ -65,7 +65,8 @@ headlines remain visible. The circular trace records the publication stages as
 The first post-fix Linux physical run (`local-rss-ai-fix-r31`) proved fresh RSS,
 successful AI generation, cleanup, and a settled real-product screenshot with
 finance-news text. Two successive full local cycles and the required hosted
-four-hour cycles are still required before this CR can close.
+two complete 10-minute cycles are still required before this CR can close while
+the migration CR queue remains open; four-hour cycles are paused by policy.
 
 ## Upstream And Reverse Checks
 

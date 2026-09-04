@@ -13,11 +13,11 @@ on:
   workflow_dispatch:
     inputs:
       soak_minutes:
-        description: 'Real-product soak duration in minutes (5, 10, 30, 60, 120, or 240)'
+        description: 'Real-product soak duration; locked to 10 minutes while migration CRs remain open'
         required: true
-        default: '5'
+        default: '10'
         type: choice
-        options: ['5', '10', '30', '60', '120', '240']
+        options: ['10']
 
 permissions:
   contents: read
@@ -81,8 +81,8 @@ jobs:
           path: artifacts/${{ matrix.rid }}
 
   real-product-soak:
-    if: github.event_name == 'workflow_dispatch'
-    timeout-minutes: 370
+    if: github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -150,7 +150,7 @@ jobs:
       - name: Run real-product soak and collect circular trace
         shell: pwsh
         env:
-          DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '5' }}
+          DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '10' }}
         run: |
            $runnerName = '${{ matrix.runner }}'
            $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, '${{ matrix.rid }}')
@@ -161,9 +161,14 @@ jobs:
            $screenshots = @(Get-ChildItem -LiteralPath $screenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue)
            $expectedScreenshotCount = [Math]::Floor((([int]$env:DNPPV_SOAK_DURATION_MINUTES * 60) - 30) / 1800) + 1
            if ($screenshots.Count -lt $expectedScreenshotCount) { throw "Expected at least $expectedScreenshotCount settled screenshots, found $($screenshots.Count)." }
-           $tracePath = Join-Path $artifactRoot 'trace/trace.circular.log'
-           if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { throw "Circular trace is missing: $tracePath" }
-           $trace = Get-Content -LiteralPath $tracePath -Raw
+           $tracePaths = @(
+             (Join-Path $artifactRoot 'trace/trace.circular.log'),
+             (Join-Path $artifactRoot 'trace/yfinance.circular.log')
+           )
+           foreach ($tracePath in $tracePaths) {
+             if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { throw "Required circular trace is missing: $tracePath" }
+           }
+           $trace = ($tracePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
            $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
            $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
@@ -176,7 +181,7 @@ jobs:
              aiRequired = $true
              aiRequestObserved = [bool]$aiRequested
              aiSuccessObserved = [bool]$aiSucceeded
-             traceFile = 'trace/trace.circular.log'
+             traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
            }
            $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
            if (-not $rssUsable -or -not $rssPublished) { throw "Hosted soak RSS evidence failed on $runnerName." }
@@ -219,18 +224,18 @@ jobs:
             artifacts/soak
             build/nvidia-review
 
-  post-long-soak-review:
-    if: always() && github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '240'
+  post-soak-review:
+    if: always() && github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'
     needs: real-product-soak
-    timeout-minutes: 480
+    timeout-minutes: 180
     runs-on: ubuntu-24.04
     env:
       NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
     steps:
       - uses: actions/checkout@v4
-      - name: Wait ten minutes for post-soak settling
+      - name: Wait one minute for artifact publication
         shell: bash
-        run: sleep 600
+        run: sleep 60
       - name: Retrieve this run's soak evidence
         uses: actions/download-artifact@v4
         with:
@@ -245,6 +250,11 @@ jobs:
           $failures = [Collections.Generic.List[string]]::new()
           foreach ($manifest in $manifests | Sort-Object FullName) {
             $material = Get-Content -LiteralPath $manifest.FullName -Raw
+            foreach ($traceName in @('trace.circular.log', 'yfinance.circular.log')) {
+              if ($material -notmatch [regex]::Escape("trace_file=$traceName;")) {
+                $failures.Add("Required circular trace evidence is absent: $traceName in $($manifest.FullName)")
+              }
+            }
             if ($material -notmatch 'Ai(?:Summary|AccessValidation)') {
               $failures.Add("AI trace evidence is absent: $($manifest.FullName)")
             }
