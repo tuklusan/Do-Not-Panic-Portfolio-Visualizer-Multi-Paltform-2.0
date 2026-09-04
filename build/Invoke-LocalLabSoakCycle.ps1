@@ -414,6 +414,7 @@ foreach ($record in @($availability.machines)) {
             $driver = Join-Path $PSScriptRoot 'vm/Invoke-MacConfigWindowValidation.sh'
             if (-not (Test-Path -LiteralPath $driver -PathType Leaf)) { throw "Mac driver is missing: $driver" }
             $remoteRoot = "~/SOFTWARE_DEV/DNPPV_20/dnppv2-local-cycle-$($cycle.cycleId)"
+            $macTimeout = [Math]::Max(900, $TimeoutSeconds + 300)
             $remoteCleanupRoot = $remoteRoot
             $remotePublish = "$remoteRoot/publish-cr019"
             $remoteArtifact = "$remoteRoot/artifacts"
@@ -423,15 +424,15 @@ foreach ($record in @($availability.machines)) {
                 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "rm -rf -- $remoteRoot && mkdir -p -- $remotePublish $remoteArtifact"
-            ) -Timeout 180
-            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $publish -RemotePath $remoteRoot -Timeout $TimeoutSeconds
-            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout 180
+            ) -Timeout $macTimeout
+            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $publish -RemotePath $remoteRoot -Timeout $macTimeout
+            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout $macTimeout
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "rm -rf -- $remotePublish && mv -- $remoteRoot/$([IO.Path]::GetFileName($publish)) $remotePublish"
-            ) -Timeout 180
-            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout 180
+            ) -Timeout $macTimeout
+            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout $macTimeout
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }
             $remoteStdin = ''
             if (-not [string]::IsNullOrWhiteSpace($openRouterKey)) {
@@ -460,7 +461,7 @@ foreach ($record in @($availability.machines)) {
                     'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
                     "$($machineRecord.user)@$($machineRecord.address)",
                     "rm -rf -- $remoteCleanupRoot"
-                ) -Timeout 180 | Out-Null
+                ) -Timeout $macTimeout | Out-Null
             }
             catch {
                 $machine.status = 'Failed'

@@ -17,6 +17,7 @@ using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Core.Storage;
 using DoNotPanicPortfolioVisualizer.Data.Interfaces;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.Data.Services;
 
@@ -68,6 +69,11 @@ public sealed class ProviderSecretStoreService
             {
                 settings.NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews;
                 settings.HttpTimeoutSeconds = Math.Max(settings.HttpTimeoutSeconds, 60);
+                TraceLog.InfoState("ProviderSecretStoreService", "SoakAiNewsEnabled", [
+                    new("mode", settings.NewsScrollerMode),
+                    new("model_configured", !string.IsNullOrWhiteSpace(settings.AiModelId)),
+                    new("timeout_seconds", settings.HttpTimeoutSeconds)
+                ]);
             }
         }
     }
