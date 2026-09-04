@@ -434,17 +434,22 @@ foreach ($record in @($availability.machines)) {
             ) -Timeout $macTimeout
             Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout $macTimeout
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }
-            $remoteStdin = ''
+            $remoteCommand = ''
+            $remoteStdin = $null
             if (-not [string]::IsNullOrWhiteSpace($openRouterKey)) {
-                # The remote bash script consumes the key as stdin data. It is
-                # never placed in an argument, shell command, or remote file.
-                $remoteStdin = "IFS= read -r DNPPV_OPENROUTER_API_KEY`n$openRouterKey`nexport DNPPV_SOAK_REQUIRE_AI_NEWS=1`n"
+                # The fixed remote command consumes the key as stdin data. It
+                # is never placed in an argument, shell command, or remote file.
+                $remoteCommand = "IFS= read -r DNPPV_OPENROUTER_API_KEY; export DNPPV_OPENROUTER_API_KEY; export DNPPV_SOAK_REQUIRE_AI_NEWS=1; "
+                $remoteStdin = "$openRouterKey`n"
             }
-            $remoteStdin += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'`n"
+            else {
+                $remoteCommand = 'unset DNPPV_OPENROUTER_API_KEY DNPPV_SOAK_REQUIRE_AI_NEWS; '
+            }
+            $remoteCommand += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
-                'bash -s'
+                $remoteCommand
             ) -StandardInput $remoteStdin -Timeout ($TimeoutSeconds + ($DurationMinutes * 60) + 900) | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
             Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteArtifact -LocalPath $machine.artifactRoot -Timeout 900
         }
