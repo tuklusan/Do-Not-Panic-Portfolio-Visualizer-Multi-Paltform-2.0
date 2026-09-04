@@ -14,6 +14,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-070 Cross-Platform Recovery Fault Injection
 
+## Functional Inventory
+
+| CR-01 | Inject deterministic state-write failure on every supported platform | recovery policy and focused test | failure-path evidence |
+
 The hosted smoke exposed that the recovery-policy test simulated an unwritable
 state marker with Windows-style file-sharing behavior. Unix filesystems do not
 enforce that sharing mode in the same way, so the test passed locally but failed

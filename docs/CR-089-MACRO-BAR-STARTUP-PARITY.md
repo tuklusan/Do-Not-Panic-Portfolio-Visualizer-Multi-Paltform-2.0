@@ -16,6 +16,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-089: Macro-Bar Startup Parity
 
+## Functional Inventory
+
+| CR-01 | Render the macro bar at startup before live values arrive | product scene and startup coordinator | first-render screenshot |
+
 ## Upstream Behavior Gate
 
 Before implementation, inspect the upstream macro-bar view, view-model,

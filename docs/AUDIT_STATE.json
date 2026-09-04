@@ -4680,6 +4680,11 @@
         "Progressive soak and autonomous defect-routing rehearsal",
         "NVIDIA NIM source/evidence review, license, syntax, upstream, build, test, and cleanup gates"
       ],
+      "artifacts": [
+        "docs/CR-066-18-PLUS-4-VALIDATION-HARNESS-INVENTORY.md",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        ".github/workflows/publish-six-rids.yml"
+      ],
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-066-18-PLUS-4-VALIDATION-HARNESS-INVENTORY.md",
@@ -4753,6 +4758,11 @@
         "Controlled short-process rehearsal plus full Release build and test suite",
         "Secret redaction and process-cleanup inspection"
       ],
+      "artifacts": [
+        "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "build/Invoke-LocalLabSoakCycle.ps1"
+      ],
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
@@ -4812,6 +4822,23 @@
         "Four-machine physical acceptance with documented storage and display contracts",
         "Unique artifact and cleanup verification"
       ],
+      "artifacts": [
+        "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Invoke-LocalLabSoakCycle.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/TEST_MACHINE_ACCESS.md"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
@@ -5219,6 +5246,11 @@
         "Local focused and full test execution",
         "Hosted Linux, macOS, and Windows smoke rerun"
       ],
+      "artifacts": [
+        "docs/CR-070-CROSS-PLATFORM-RECOVERY-FAULT-INJECTION.md",
+        "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/DesktopRenderRecoveryPolicyTests.cs"
+      ],
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-070-CROSS-PLATFORM-RECOVERY-FAULT-INJECTION.md",
@@ -5257,6 +5289,23 @@
         "Trace/artifact analysis and defect-to-CR loop",
         "Repeated acceptance and cleanup scans"
       ],
+      "artifacts": [
+        "docs/CR-069-PROGRESSIVE-SOAK-PROFILES.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Invoke-LocalLabSoakCycle.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-069-PROGRESSIVE-SOAK-PROFILES.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
@@ -5401,6 +5450,18 @@
         "build/vm/Invoke-ConfigWindowValidation.ps1",
         "docs/AUDIT_STATE.json"
       ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-080-LINUX-ARTIFACT-RETRIEVAL-FAILURE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
@@ -5438,6 +5499,11 @@
         "Focused layout and contrast tests at supported window sizes",
         "Fresh settled production-scene captures with ticker motion and dark-background coverage",
         "Artifact review and residual-process cleanup"
+      ],
+      "artifacts": [
+        "docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
       ],
       "upstream_behavior_inventory": {
         "status": "required_before_development",

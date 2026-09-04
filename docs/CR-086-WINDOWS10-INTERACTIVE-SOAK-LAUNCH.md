@@ -9,6 +9,10 @@ SANYALnet Labs." See LICENSE for full terms.
 
 # CR-086: Windows 10 Interactive Soak Launch
 
+## Functional Inventory
+
+| CR-01 | Launch the real product interactively on Windows 10 and retrieve completion evidence | Windows validation driver | result manifest and cleanup |
+
 This CR covers the Windows 10 local validation path after the 2026-09-04
 five-minute cycle produced `DONE_FILE_MISSING` and no retrievable `step.log`.
 The product must launch in the logged-in desktop session, show its window, and

@@ -10,6 +10,10 @@ SANYALnet Labs." See LICENSE for full terms.
 
 # CR-081: Ticker Quote-Lane Contrast
 
+## Functional Inventory
+
+| CR-01 | Preserve readable, distinct ticker lanes over cinematic backgrounds | product shell and ticker styles | settled screenshots |
+
 ## Purpose
 
 Improve the contrast of the four moving quote lanes in the production scene.

@@ -14,6 +14,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-068 18-Plus-4 Soak Matrix
 
+## Functional Inventory
+
+| CR-01 | Execute real-product validation across hosted and available local lanes | matrix workflow and local coordinator | soak evidence |
+
 Create the executable matrix that runs the real product on every available
 GitHub-hosted runner label and the four local lab machines. Availability probes
 may report unavailable labels, but a lane that is available and required must

@@ -14,6 +14,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-069 Soak Profile During Open-CR Processing
 
+## Functional Inventory
+
+| CR-01 | Run the controlled 10-minute profile while open CRs remain | soak workflow and local coordinator | traces and result manifests |
+
 While the migration CR queue contains open work, run exactly one real-product
 profile on the 18-plus-4 matrix:
 

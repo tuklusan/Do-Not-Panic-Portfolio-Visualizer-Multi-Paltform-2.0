@@ -9,6 +9,10 @@ SANYALnet Labs." See LICENSE for full terms.
 
 # CR-083: Retrofit Migration-Gate Evidence
 
+## Functional Inventory
+
+| CR-01 | Record forward and reverse upstream gates for earlier CRs | tracker and gate scripts | two successive zero-gap scans |
+
 ## Finding
 
 The current tracker proves that CR-001 and CR-020 onward have recorded reverse

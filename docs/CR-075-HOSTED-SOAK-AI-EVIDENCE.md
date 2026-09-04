@@ -18,6 +18,10 @@ patent, trademark, and governing-law provisions.
 
 ## Functional Inventory
 
+| CR-01 | Require key-free RSS and AI success evidence on hosted product soaks | hosted workflow and evidence reviewer | circular traces and manifests |
+
+## Functional Inventory
+
 | ID | Required behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
 | SOAK-AI-01 | A hosted soak with an injected OpenRouter key must exercise AI access validation and summary generation. | `DNPPV_SOAK_REQUIRE_AI_NEWS` plus `FinanceNewsService` circular trace events. | Implemented on current main; absent from the older cycle artifact. |

@@ -16,6 +16,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-088: Restore Intel Mac YFinance Quote-Server Startup
 
+## Functional Inventory
+
+| CR-01 | Start the bundled YFinance server and prove live quotes on Intel Mac | Mac runtime and validation driver | circular trace evidence |
+
 ## Upstream Behavior Gate
 
 Before implementation, inspect the upstream YFinance launch manager, published

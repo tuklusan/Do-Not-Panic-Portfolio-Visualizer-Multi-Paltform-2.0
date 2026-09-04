@@ -9,6 +9,10 @@ SANYALnet Labs." See LICENSE for full terms.
 
 # CR-087: Intel Mac Soak Artifact Layout
 
+## Functional Inventory
+
+| CR-01 | Keep Intel Mac soak artifacts in the declared cycle root without unexpected nesting | Mac validation driver | artifact manifest |
+
 This CR normalizes the local artifact copy returned by the slow Intel Mac
 lane. The 2026-09-04 targeted run proved fresh RSS and successful AI
 generation, but the remote `artifacts` directory was copied as a nested

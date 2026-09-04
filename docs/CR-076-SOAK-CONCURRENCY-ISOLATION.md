@@ -18,6 +18,10 @@ patent, trademark, and governing-law provisions.
 
 ## Functional Inventory
 
+| CR-01 | Prevent overlapping soak runs and isolate each run's artifacts | workflow concurrency and unique roots | cleanup evidence |
+
+## Functional Inventory
+
 | ID | Required behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
 | SOAK-CI-01 | A dispatched soak must not be canceled by the ordinary push validation workflow. | Event-qualified workflow concurrency group. | Implemented |
