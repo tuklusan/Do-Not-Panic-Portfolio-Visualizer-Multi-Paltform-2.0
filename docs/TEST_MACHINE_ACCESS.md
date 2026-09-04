@@ -96,8 +96,10 @@ record the operator-supplied current address needed to explain lab state.
 
 ### `macos-x64-intel-big-sur`
 
-- Access: exact current SSH endpoint is kept only in the local ignored endpoint
-  inventory; current lab address is recorded there as `10.0.0.114`
+- Access: exact current SSH endpoint is kept in the local ignored endpoint
+  inventory; subnet discovery found the Mac at `192.168.4.77` using the
+  configured `rumtuk` account. The endpoint was intermittently reachable during
+  verification and must be availability-probed at each cycle start.
 - OS: macOS Big Sur on Intel x64 hardware
 - Required project root: `~/SOFTWARE_DEV/DNPPV_20/`
 - Confinement rule: every uploaded source, build, test, temporary, log, and
