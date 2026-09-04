@@ -96,6 +96,46 @@ public sealed class FinanceNewsService : IDisposable
     public async Task<RssPlaybackSnapshot> GetPlaybackSnapshotAsync(
         AppSettings settings,
         CancellationToken cancellationToken)
+        => await GetPlaybackSnapshotCoreAsync(settings, cancellationToken, includeAi: true).ConfigureAwait(false);
+
+    public async Task<RssPlaybackSnapshot> GetRssPlaybackSnapshotAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken)
+        => await GetPlaybackSnapshotCoreAsync(settings, cancellationToken, includeAi: false).ConfigureAwait(false);
+
+    public async Task<RssPlaybackSnapshot> ApplyAiSummaryAsync(
+        AppSettings settings,
+        RssPlaybackSnapshot rssPlayback,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(rssPlayback);
+        if (settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
+            string.IsNullOrWhiteSpace(settings.AiApiKey) ||
+            string.IsNullOrWhiteSpace(settings.AiModelId) ||
+            rssPlayback.Headlines.Count == 0)
+            return rssPlayback;
+
+        try
+        {
+            string? summary = await SummarizeAsync(settings, rssPlayback.Headlines, cancellationToken).ConfigureAwait(false);
+            return string.IsNullOrWhiteSpace(summary)
+                ? rssPlayback
+                : new RssPlaybackSnapshot(
+                    BuildSummarizedHeadlines(summary, settings.AiWritingStyle),
+                    rssPlayback.Freshness);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            // RSS has already been published to the scene; preserve it when AI is unavailable.
+            return rssPlayback;
+        }
+    }
+
+    private async Task<RssPlaybackSnapshot> GetPlaybackSnapshotCoreAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken,
+        bool includeAi)
     {
         ArgumentNullException.ThrowIfNull(settings);
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -115,22 +155,23 @@ public sealed class FinanceNewsService : IDisposable
             if (!Uri.TryCreate(settings.NewsFeedUrl, UriKind.Absolute, out Uri? legacyUri) ||
                 (legacyUri.Scheme != Uri.UriSchemeHttp && legacyUri.Scheme != Uri.UriSchemeHttps))
                 throw new ArgumentException("The news feed must be an absolute HTTP or HTTPS URL.", nameof(settings));
-            return await GetSinglePlaybackSnapshotAsync(legacyUri, settings, cancellationToken).ConfigureAwait(false);
+            return await GetSinglePlaybackSnapshotAsync(legacyUri, settings, cancellationToken, includeAi).ConfigureAwait(false);
         }
         if (configuredFeeds.Length == 0)
             throw new ArgumentException("At least one news feed must be configured.", nameof(settings));
 
         if (configuredFeeds.SequenceEqual(Defaults.DefaultNewsFeedUrls, StringComparer.OrdinalIgnoreCase))
-            return await GetBuiltInPlaybackSnapshotAsync(settings, cancellationToken).ConfigureAwait(false);
+            return await GetBuiltInPlaybackSnapshotAsync(settings, cancellationToken, includeAi).ConfigureAwait(false);
 
-        RssPlaybackSnapshot multiSource = await GetConfiguredPlaybackSnapshotAsync(configuredFeeds, settings, cancellationToken).ConfigureAwait(false);
+        RssPlaybackSnapshot multiSource = await GetConfiguredPlaybackSnapshotAsync(configuredFeeds, settings, cancellationToken, includeAi).ConfigureAwait(false);
         return multiSource;
     }
 
     private async Task<RssPlaybackSnapshot> GetConfiguredPlaybackSnapshotAsync(
         IReadOnlyList<string> configuredFeeds,
         AppSettings settings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool includeAi)
     {
         RssHeadlineSnapshot[] snapshots = await Task.WhenAll(configuredFeeds.Select(async url =>
         {
@@ -156,7 +197,7 @@ public sealed class FinanceNewsService : IDisposable
             new("state", state),
             new("headline_count", headlines.Count)
         ]);
-        if (settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
+        if (includeAi && settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
             !string.IsNullOrWhiteSpace(settings.AiApiKey) && !string.IsNullOrWhiteSpace(settings.AiModelId))
         {
             try
@@ -173,7 +214,8 @@ public sealed class FinanceNewsService : IDisposable
     private async Task<RssPlaybackSnapshot> GetSinglePlaybackSnapshotAsync(
         Uri feedUri,
         AppSettings settings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool includeAi)
     {
         RssHeadlineSnapshot snapshot;
         try
@@ -216,7 +258,7 @@ public sealed class FinanceNewsService : IDisposable
             ? ["Configured RSS source returned no headlines"]
             : snapshot.Headlines;
 
-        if (settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
+        if (!includeAi || settings.NewsScrollerMode != NewsScrollerMode.SummarizedFinancialNews ||
             string.IsNullOrWhiteSpace(settings.AiApiKey) ||
             string.IsNullOrWhiteSpace(settings.AiModelId))
         {
@@ -456,7 +498,8 @@ public sealed class FinanceNewsService : IDisposable
 
     private async Task<RssPlaybackSnapshot> GetBuiltInPlaybackSnapshotAsync(
         AppSettings settings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool includeAi)
     {
         Task<RssSourceSnapshot>[] fetches = BuiltInFinanceSources
             .Select(source => FetchBuiltInSourceAsync(source, cancellationToken))
@@ -520,7 +563,7 @@ public sealed class FinanceNewsService : IDisposable
                 : state == RssFeedFreshnessState.Stale
                     ? "All built-in finance news sources are stale."
                     : "No current finance news sources are available."];
-        if (settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
+        if (includeAi && settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
             !string.IsNullOrWhiteSpace(settings.AiApiKey) &&
             !string.IsNullOrWhiteSpace(settings.AiModelId) &&
             headlines.Count > 0)

@@ -866,6 +866,25 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_RssFirstPathPublishesWithoutWaitingForAi()
+    {
+        const string rss = "<rss><channel><item><title>RSS arrives before AI</title></item></channel></rss>";
+        SummaryResponseHandler handler = new(rss, "AI replacement arrives later.");
+        using FinanceNewsService service = new(handler);
+        AppSettings settings = CreateSummarizedSettings();
+
+        RssPlaybackSnapshot rssPlayback = await service.GetRssPlaybackSnapshotAsync(settings, CancellationToken.None);
+
+        Assert.Equal(["RSS arrives before AI"], rssPlayback.Headlines);
+        Assert.Equal(string.Empty, handler.RequestBody);
+
+        RssPlaybackSnapshot aiPlayback = await service.ApplyAiSummaryAsync(settings, rssPlayback, CancellationToken.None);
+
+        Assert.Contains("AI replacement arrives later.", aiPlayback.Headlines);
+        Assert.NotEqual(rssPlayback.Headlines, aiPlayback.Headlines);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_UsesOpenRouterRequestContract()
     {
         const string rss = "<rss><channel><item><title>Markets rally</title></item></channel></rss>";

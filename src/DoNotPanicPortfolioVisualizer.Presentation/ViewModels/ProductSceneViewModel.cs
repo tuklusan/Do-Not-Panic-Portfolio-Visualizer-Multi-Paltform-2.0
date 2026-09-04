@@ -821,12 +821,28 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             if (_forceNewsFailure)
                 throw new HttpRequestException("Controlled news-provider failure.");
 
-            RssPlaybackSnapshot playback = await _newsService.GetPlaybackSnapshotAsync(_settings, cancellationToken);
+            RssPlaybackSnapshot playback = await _newsService.GetRssPlaybackSnapshotAsync(_settings, cancellationToken);
             RssFeedFreshnessSnapshot freshness = playback.Freshness;
             string latestPublication = freshness.LatestPublicationUtc?.ToString("O") ?? "NONE";
             WriteCinematicTrace(
                 $"NEWS_SOURCE;STATE={freshness.State};LATEST_UTC={latestPublication}");
             await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(playback.Headlines), cancellationToken);
+            WriteCinematicTrace($"NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT={playback.Headlines.Count}");
+
+            // Publish usable RSS immediately. Optional AI generation may be slow or
+            // rate-limited, and must replace RSS only after it actually succeeds.
+            if (_settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews)
+            {
+                RssPlaybackSnapshot aiPlayback = await _newsService.ApplyAiSummaryAsync(
+                    _settings,
+                    playback,
+                    cancellationToken);
+                if (!ReferenceEquals(aiPlayback, playback))
+                {
+                    await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(aiPlayback.Headlines), cancellationToken);
+                    WriteCinematicTrace($"NEWS_PLAYBACK_PUBLISHED;SOURCE=AI;HEADLINE_COUNT={aiPlayback.Headlines.Count}");
+                }
+            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
