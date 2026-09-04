@@ -28,8 +28,9 @@ if ([string]::IsNullOrWhiteSpace($repoRoot)) {
 $upstreamGuard = Join-Path $repoRoot 'build\Assert-NoUpstreamMutation.ps1'
 $licenseGate = Join-Path $repoRoot 'build\Test-LicenseHeaders.ps1'
 $syntaxGate = Join-Path $repoRoot 'build\Test-PowerShellSyntax.ps1'
+$workflowGate = Join-Path $repoRoot 'build\Test-WorkflowGateConfiguration.ps1'
 
-foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate)) {
+foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflowGate)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
         throw "Missing required pre-push gate: $requiredPath"
     }
@@ -38,5 +39,6 @@ foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate)) {
 & $upstreamGuard -RemoteName $RemoteName -RemoteUrl $RemoteUrl
 & $licenseGate
 & $syntaxGate
+& $workflowGate
 
 Write-Output 'PRE_PUSH_GATES=Passed'

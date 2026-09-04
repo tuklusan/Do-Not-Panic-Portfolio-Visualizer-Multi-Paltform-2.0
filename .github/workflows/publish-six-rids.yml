@@ -23,7 +23,16 @@ permissions:
   contents: read
 
 jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate repository gate configuration
+        shell: pwsh
+        run: ./build/Test-WorkflowGateConfiguration.ps1
+
   publish:
+    needs: gate
     concurrency:
       group: dnppv2-publish-${{ github.event_name }}-${{ github.ref }}-${{ matrix.runner }}-${{ matrix.rid }}
       cancel-in-progress: true
@@ -81,6 +90,7 @@ jobs:
           path: artifacts/${{ matrix.rid }}
 
   real-product-soak:
+    needs: gate
     if: github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'
     timeout-minutes: 180
     strategy:

@@ -72,6 +72,7 @@ The preserved review-gate entry points are:
 - `build/Run-NvidiaCodeReview.ps1`
 - `build/Invoke-NvidiaReviewHarness.ps1`
 - `build/Test-NvidiaWorkflowGate.ps1`
+- `build/Test-WorkflowGateConfiguration.ps1`
 - `build/NvidiaWorkflowCommon.ps1`
 - `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`
 - `build/Invoke-CheckedPowerShell.ps1`

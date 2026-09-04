@@ -21,7 +21,7 @@ Upstream pin: `2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5`.
 | TST-01 | Upstream behavior | 2.0 mapping |
 | --- | --- | --- |
 | TST-01 | Validation runs the real application, captures visible GUI state, records bounded circular trace output, reviews artifacts, and terminates launched processes. | `build/vm/Invoke-ConfigWindowValidation.ps1`, `build/vm/Invoke-ProductSceneValidation.ps1`, `build/Assert-ValidationCheckpoint.ps1`, and `build/Cleanup-LocalProjectArtifacts.ps1`; product traces use the bounded circular trace pair. |
-| TST-02 | Workflow execution is gated by clean committed checkpoints, syntax/license/migration/reviewer checks, platform-specific storage rules, and explicit physical-acceptance evidence. | `build/Test-NvidiaWorkflowGate.ps1`, `build/Test-MigrationBehaviorGate.ps1`, `build/Test-LicenseHeaders.ps1`, `build/Test-PowerShellSyntax.ps1`, `build/Invoke-CheckedPowerShell.ps1`, the VM scripts, and the documented test-machine contracts. |
+| TST-02 | Workflow execution is gated by clean committed checkpoints, syntax/license/migration/reviewer checks, platform-specific storage rules, and explicit physical-acceptance evidence. | `build/Test-WorkflowGateConfiguration.ps1` centrally validates workflow triggers, read-only permissions, the 18-runner matrix parity, .NET 10 pinning, Xvfb cleanup, and post-soak evidence count; `build/Test-NvidiaWorkflowGate.ps1`, `build/Test-MigrationBehaviorGate.ps1`, `build/Test-LicenseHeaders.ps1`, `build/Test-PowerShellSyntax.ps1`, `build/Invoke-CheckedPowerShell.ps1`, the VM scripts, and the documented test-machine contracts provide the remaining gates. |
 
 ## Reverse Upstream Gap Scan
 
