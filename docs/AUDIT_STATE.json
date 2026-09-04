@@ -5934,9 +5934,137 @@
           "Ancillary macro and global-market request shape requires the complete source comparison and implementation decision."
         ]
       }
+    },
+    {
+      "id": "CR-091",
+      "phase": "Phase 7",
+      "title": "Restore AI response-shape parity",
+      "status": "open",
+      "depends_on": [
+        "CR-073",
+        "CR-074",
+        "CR-075"
+      ],
+      "objective": "Accept upstream-compatible scalar and structured AI response content, retry empty successful responses within the bounded budget, and prove real AI generation in hosted evidence.",
+      "acceptance_criteria": [
+        "Scalar, structured-part, empty-content, malformed, retry, timeout, and HTTP failure cases are covered by focused tests.",
+        "Circular traces record redacted request, response, retry, success, and bounded fallback outcomes.",
+        "Two independent complete 10-minute hosted cycles prove AI-backed news evidence on every runner lane.",
+        "NVIDIA review, build/test, migration gates, license, artifact review, cleanup, commit, and push gates pass."
+      ],
+      "validation_plan": [
+        "Read the complete upstream AI response and test implementations line by line.",
+        "Run focused and full Release tests with the new response-shape cases.",
+        "Run NVIDIA NIM review and both migration behavior gates.",
+        "Run two independent complete hosted 10-minute real-product cycles and inspect every evidence set."
+      ],
+      "artifacts": [
+        "docs/CR-091-AI-RESPONSE-SHAPE-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-091-AI-RESPONSE-SHAPE-PARITY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "implementation_in_progress",
+        "unresolved_gaps": [
+          "The hosted 10-minute cycle identified HTTP 200 empty AI content on multiple runners; fresh post-fix cycles are pending."
+        ],
+        "evidence": [
+          "Downloaded run 33913381129 artifacts showed RSS usable, AI request observed, and AI success absent on ubuntu-22.04, ubuntu-latest, and windows-2022.",
+          "Traces showed AiSummaryResponse status 200 followed by AiSummaryEmpty, including a successful 429 retry before the empty response.",
+          "NVIDIA review packet 20260904-165908 identified structured response, bounded-read, XML hardening, and test gaps; packet 20260904-165201's retry-counter finding was evaluated as a C# for-loop false positive.",
+          "NVIDIA review packet 20260904-165908's claim that continue skips the next HTTP request was evaluated as a second C# for-loop false positive; valid observability and exception-boundary findings were addressed."
+        ]
+      }
+    },
+    {
+      "id": "CR-092",
+      "phase": "Phase 7",
+      "title": "Enforce local companion soaks for hosted matrices",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-068"
+      ],
+      "objective": "Discover the four local lab machines at every hosted matrix start, clean residual project-owned processes with a hard gate, and run same-duration real-product companion soaks on every available machine with identical evidence requirements.",
+      "acceptance_criteria": [
+        "Every matrix dispatch creates an availability manifest for all four local machines.",
+        "Every available local machine passes residual-process cleanup before launch or hard-stops its lane.",
+        "Local lanes use the exact hosted duration and real-product RSS, AI, screenshot, circular-trace, settling, and cleanup gates.",
+        "Unavailable machines are explicit skips and all 18 hosted lanes remain mandatory.",
+        "Two independent complete cycles pass all 18 hosted lanes and all available local lanes with no new defects."
+      ],
+      "validation_plan": [
+        "Read the current hosted and local harnesses line by line and compare their acceptance contracts.",
+        "Implement shared profile, manifest, cleanup, aggregation, and artifact-review helpers.",
+        "Run focused harness tests, full Release build/test, migration and NVIDIA gates.",
+        "Execute two independent hosted-plus-available-local cycles and inspect all evidence."
+      ],
+      "artifacts": [
+        "docs/CR-092-LOCAL-COMPANION-SOAK-GATE.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "build/Test-LocalLabAvailability.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete_for_migration_harness_scope",
+        "document": "docs/CR-092-LOCAL-COMPANION-SOAK-GATE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete_for_migration_harness_scope",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "queued",
+        "unresolved_gaps": [
+          "Hosted matrix currently has no mandatory same-duration local companion job."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
+    "CR-092: Hosted matrix cycles do not yet enforce same-duration companion soaks on every available local lab machine with residual-process hard gates.",
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",

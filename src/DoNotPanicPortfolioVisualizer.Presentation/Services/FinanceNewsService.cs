@@ -14,6 +14,7 @@
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -29,6 +30,7 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 
 public sealed class FinanceNewsService : IDisposable
 {
+    private const int MaximumAiResponseBytes = 256 * 1024;
     public static readonly TimeSpan MaximumRssHeadlineAge = TimeSpan.FromDays(7);
     public static readonly IReadOnlyList<RssFeedSource> BuiltInFinanceSources =
     [
@@ -125,9 +127,23 @@ public sealed class FinanceNewsService : IDisposable
                     BuildSummarizedHeadlines(summary, settings.AiWritingStyle),
                     rssPlayback.Freshness);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        catch (HttpRequestException)
+        {
+            return rssPlayback;
+        }
+        catch (JsonException)
+        {
+            return rssPlayback;
+        }
+        catch (InvalidDataException)
         {
             // RSS has already been published to the scene; preserve it when AI is unavailable.
+            TraceLog.WarnState("FinanceNewsService", "AiSummaryFallback", [new("failure", "invalid-data")]);
+            return rssPlayback;
+        }
+        catch (InvalidOperationException)
+        {
+            TraceLog.WarnState("FinanceNewsService", "AiSummaryFallback", [new("failure", "retry-exhausted")]);
             return rssPlayback;
         }
     }
@@ -328,7 +344,7 @@ public sealed class FinanceNewsService : IDisposable
         string operationId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         TraceLog.InfoState("FinanceNewsService", "AiSummaryRequestStarted", [
             new("operation_id", operationId),
-            new("endpoint", endpoint.GetLeftPart(UriPartial.Authority)),
+            new("endpoint_host", endpoint.DnsSafeHost),
             new("model", modelId),
             new("headline_count", headlines.Count)
         ]);
@@ -376,17 +392,31 @@ public sealed class FinanceNewsService : IDisposable
                 }
 
                 response.EnsureSuccessStatusCode();
-                using JsonDocument document = await JsonDocument.ParseAsync(
-                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
-                string? summary = document.RootElement
-                    .GetProperty("choices")[0]
-                    .GetProperty("message")
-                    .GetProperty("content")
-                    .GetString();
+                string responseBody = await ReadBoundedAiResponseAsync(response.Content, cancellationToken).ConfigureAwait(false);
+                using JsonDocument document = JsonDocument.Parse(responseBody, new JsonDocumentOptions { MaxDepth = 32 });
+                string? summary = ExtractAiSummary(document.RootElement, out string extractionPath);
+                TraceLog.InfoState("FinanceNewsService", "AiSummaryResponseParsed", [
+                    new("operation_id", operationId),
+                    new("response_bytes", Encoding.UTF8.GetByteCount(responseBody)),
+                    new("extraction_path", extractionPath)
+                ]);
                 if (string.IsNullOrWhiteSpace(summary))
                 {
                     TraceLog.WarnState("FinanceNewsService", "AiSummaryEmpty", [new("operation_id", operationId)]);
+                    if (attempt < maximumAttempts)
+                    {
+                        TimeSpan delay = attempt == 1 ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(5);
+                        TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
+                            new("operation_id", operationId),
+                            new("attempt", attempt),
+                            new("delay_seconds", delay.TotalSeconds),
+                            new("reason", "empty-content"),
+                            new("extraction_path", extractionPath)
+                        ]);
+                        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     return null;
                 }
 
@@ -399,6 +429,100 @@ public sealed class FinanceNewsService : IDisposable
         }
 
         throw new InvalidOperationException("AI summary request exhausted its retry attempts.");
+    }
+
+    private static async Task<string> ReadBoundedAiResponseAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+        await using Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using MemoryStream buffer = new();
+        byte[] chunk = new byte[8192];
+        int total = 0;
+        int read;
+        while ((read = await source.ReadAsync(chunk, cancellationToken).ConfigureAwait(false)) > 0)
+        {
+            if (read > MaximumAiResponseBytes - total)
+                throw new InvalidDataException("AI response exceeds the bounded response size.");
+            total += read;
+            buffer.Write(chunk, 0, read);
+        }
+
+        return Encoding.UTF8.GetString(buffer.GetBuffer(), 0, checked((int)buffer.Length));
+    }
+
+    private static string? ExtractAiSummary(JsonElement root, out string extractionPath)
+    {
+        extractionPath = "none";
+        if (!root.TryGetProperty("choices", out JsonElement choices) ||
+            choices.ValueKind != JsonValueKind.Array || choices.GetArrayLength() == 0)
+            return null;
+
+        JsonElement choice = choices[0];
+        if (choice.TryGetProperty("message", out JsonElement message))
+        {
+            if (message.TryGetProperty("content", out JsonElement content))
+            {
+                string? text = ExtractContentText(content);
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    extractionPath = content.ValueKind == JsonValueKind.Array ? "message.content.parts" : "message.content";
+                    return text;
+                }
+            }
+
+            if (message.TryGetProperty("reasoning_content", out JsonElement reasoning))
+            {
+                string? text = ExtractContentText(reasoning);
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    extractionPath = "message.reasoning_content";
+                    return text;
+                }
+            }
+        }
+
+        if (!choice.TryGetProperty("text", out JsonElement completionText))
+            return null;
+
+        string? completion = ExtractContentText(completionText);
+        if (!string.IsNullOrWhiteSpace(completion))
+            extractionPath = "choice.text";
+        return completion;
+    }
+
+    private static string? ExtractContentText(JsonElement value)
+    {
+        if (value.ValueKind == JsonValueKind.String)
+            return value.GetString();
+
+        if (value.ValueKind != JsonValueKind.Array)
+            return null;
+
+        List<string> parts = [];
+        foreach (JsonElement part in value.EnumerateArray())
+        {
+            if (part.ValueKind == JsonValueKind.String)
+            {
+                parts.Add(part.GetString() ?? string.Empty);
+            }
+            else if (part.ValueKind == JsonValueKind.Object &&
+                     IsTextContentPart(part) &&
+                     part.TryGetProperty("text", out JsonElement text) &&
+                     text.ValueKind == JsonValueKind.String)
+            {
+                parts.Add(text.GetString() ?? string.Empty);
+            }
+        }
+
+        return string.Join("\n", parts);
+    }
+
+    private static bool IsTextContentPart(JsonElement part)
+    {
+        if (!part.TryGetProperty("type", out JsonElement type))
+            return true;
+
+        return type.ValueKind == JsonValueKind.String &&
+               string.Equals(type.GetString(), "text", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyList<string> BuildSummarizedHeadlines(string summary, AiWritingStyle writingStyle)
