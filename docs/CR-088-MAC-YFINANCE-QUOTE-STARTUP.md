@@ -37,6 +37,12 @@ permission defect was real. A five-minute run still showed placeholder quote
 values and no `QuoteResponseObserved` event, so the downstream Yahoo response
 path remains open for separate diagnosis.
 
+The next run retrieved the previously omitted `yfinance.circular.log`. It
+records `ServerStartup`, successful protocol handshakes, and multiple
+`QuoteResponseObserved` events with live prices. The quote path is therefore
+working after the execute-bit fix; two fresh targeted runs are still required
+for closure evidence.
+
 ## Required Closure Evidence
 
 - Two targeted keyed Mac runs show server startup and quote-response evidence.

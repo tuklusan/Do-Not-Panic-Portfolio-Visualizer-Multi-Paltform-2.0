@@ -968,6 +968,8 @@ function Invoke-LinuxValidation {
     New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
     Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/trace.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
+    try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/yfinance.circular.log") -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log') } catch { Write-Verbose "Optional YFinance trace was unavailable: $($_.Exception.Message)" }
+    try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/local-data/Trace/yfinance.circular.idx") -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.idx') } catch { Write-Verbose "Optional YFinance trace index was unavailable: $($_.Exception.Message)" }
 
     if ($null -ne $remoteExecutionFailure -and $null -ne $artifactRetrievalFailure) {
         throw "Linux validation and artifact retrieval both failed. remote=$($remoteExecutionFailure.Exception.Message); retrieval=$($artifactRetrievalFailure.Exception.Message)"
@@ -1675,6 +1677,8 @@ finally {
         New-Item -ItemType Directory -Force -Path $traceArtifactRoot | Out-Null
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.log')
         Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/trace.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'trace.circular.idx')
+        try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/yfinance.circular.log')) -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.log') } catch { Write-Verbose "Optional YFinance trace was unavailable: $($_.Exception.Message)" }
+        try { Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path (Join-Path $TargetPublishDir 'local-data/Trace/yfinance.circular.idx')) -DestinationPath (Join-Path $traceArtifactRoot 'yfinance.circular.idx') } catch { Write-Verbose "Optional YFinance trace index was unavailable: $($_.Exception.Message)" }
     }
     catch {
         throw "Remote Windows validation completed with done.txt=DONE, but artifact retrieval failed. done.txt=DONE; retrieval_error=$($_.Exception.Message)"

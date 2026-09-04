@@ -5752,7 +5752,47 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures, but a subsequent five-minute run still showed placeholder quotes without QuoteResponseObserved evidence."
+          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures, and retrieval of yfinance.circular.log now proves ServerStartup plus multiple QuoteResponseObserved live prices. Two fresh targeted runs remain for closure evidence."
+        ]
+      }
+    },
+    {
+      "id": "CR-089",
+      "phase": "Phase 7",
+      "title": "Render macro bar immediately during quote startup",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-082"
+      ],
+      "objective": "Preserve the upstream macro-bar presentation at startup by rendering its labels and stable layout immediately, using placeholders or explicit degraded values until quote data arrives.",
+      "acceptance_criteria": [
+        "The macro bar is visible at first render before live quote responses are available.",
+        "Macro labels, ordering, dimensions, and alignment match the upstream startup behavior.",
+        "Loading, market-closed, stale, and failed quote states remain readable without hiding or resizing the bar.",
+        "The change preserves later live updates, screenshots, circular tracing, and cross-platform behavior."
+      ],
+      "validation_plan": [
+        "Read the upstream macro-bar view, view-model, startup, and screenshot behavior line by line.",
+        "Add the missing startup-state implementation and focused regression coverage.",
+        "Validate first-render and settled-render screenshots on the local lab and hosted matrix."
+      ],
+      "artifacts": [
+        "docs/CR-089-MACRO-BAR-STARTUP-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+        "src/DoNotPanicPortfolioVisualizer.App/Views",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-089-MACRO-BAR-STARTUP-PARITY.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Visual inspection identified that the macro bar is absent until quote values become available, unlike upstream startup behavior."
         ]
       }
     }

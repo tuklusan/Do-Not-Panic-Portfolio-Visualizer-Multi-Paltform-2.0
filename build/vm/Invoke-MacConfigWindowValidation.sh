@@ -123,6 +123,11 @@ if [[ "$soak_minutes" -gt 0 ]]; then
     cp "$trace" "$artifact/trace/trace.circular.log"
     if [[ -f "${trace%.log}.idx" ]]; then cp "${trace%.log}.idx" "$artifact/trace/trace.circular.idx"; fi
   fi
+  yfinance_trace="$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT/Trace/yfinance.circular.log"
+  if [[ -s "$yfinance_trace" ]]; then
+    cp "$yfinance_trace" "$artifact/trace/yfinance.circular.log"
+    if [[ -f "${yfinance_trace%.log}.idx" ]]; then cp "${yfinance_trace%.log}.idx" "$artifact/trace/yfinance.circular.idx"; fi
+  fi
   cat > "$artifact/news-evidence.json" <<EOF
 {
   "schema": "dnppv2-soak-news-evidence/v1",
