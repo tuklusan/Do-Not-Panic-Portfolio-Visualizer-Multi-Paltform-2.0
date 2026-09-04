@@ -93,12 +93,9 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
         // unchanged-value case is the blue heartbeat that confirms a live feed.
         if (hydrated && usableLast.HasValue && !quote.IsStale)
         {
-            FlashBrush = quote.ChangePercent switch
-            {
-                > 0m => "#F039E75F",
-                < 0m => "#F0FF5A36",
-                _ => "#F000BFFF"
-            };
+            FlashBrush = !changed ? "#F000BFFF" : usableLast.Value > Last!.Value
+                ? "#F039E75F"
+                : "#F0FF5A36";
             _flashElapsedSeconds = 0d;
             UpdateSequence++;
         }

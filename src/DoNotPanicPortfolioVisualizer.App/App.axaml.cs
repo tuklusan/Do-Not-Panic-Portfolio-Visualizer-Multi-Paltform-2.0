@@ -43,8 +43,9 @@ public partial class App : Application
                 AppIdentity.DesktopSingleInstanceLockFileName,
                 OperatingSystem.IsWindows(),
                 OperatingSystem.IsWindows() ? Process.GetCurrentProcess().SessionId : 0);
-            if (!configurationValidationMode && !SingleInstanceLease.TryAcquire(
-                    Path.Combine(localDataPaths.Root, lockFileName),
+            string instanceLockRoot = LocalDataRootResolver.ResolveSharedInstanceLockRoot();
+            if (!SingleInstanceLease.TryAcquire(
+                    Path.Combine(instanceLockRoot, lockFileName),
                     out _singleInstanceLease))
             {
                 desktop.MainWindow = new DuplicateInstanceWindow();

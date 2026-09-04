@@ -80,6 +80,24 @@ public sealed class RuntimeContractsTests
     }
 
     [Fact]
+    public void SharedInstanceLockRoot_IgnoresPerRunDataOverride()
+    {
+        string sharedRoot = LocalDataRootResolver.ResolveSharedInstanceLockRoot(
+            DesktopPlatformKind.Windows,
+            windowsLocalAppData: @"C:\Users\Tester\AppData\Local",
+            createDirectories: false);
+        LocalDataPaths isolatedRun = LocalDataRootResolver.Resolve(
+            DesktopPlatformKind.Windows,
+            environmentLookup: name => name == AppIdentity.LocalDataRootOverrideEnvironmentVariable
+                ? @"D:\Soaks\run-1"
+                : null,
+            windowsLocalAppData: @"C:\Users\Tester\AppData\Local");
+
+        Assert.Equal(@"C:\Users\Tester\AppData\Local\DoNotPanicPortfolioVisualizer2", sharedRoot);
+        Assert.NotEqual(sharedRoot, isolatedRun.Root);
+    }
+
+    [Fact]
     public void SingleInstanceLease_AcquiresAnExistingButUnlockedCrashRemnant()
     {
         string root = Path.Combine(Path.GetTempPath(), $"dnppv2-stale-lock-{Guid.NewGuid():N}");

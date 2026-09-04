@@ -28,6 +28,34 @@ public static class LocalDataRootResolver
             createDirectories);
     }
 
+    public static string ResolveSharedInstanceLockRoot()
+    {
+        DesktopPlatformKind platform = DetectCurrentPlatform();
+        string? windowsLocalAppData = platform == DesktopPlatformKind.Windows
+            ? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+            : null;
+        string? userHomeDirectory = platform != DesktopPlatformKind.Windows
+            ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+            : null;
+
+        // The per-run data override is deliberately excluded. Test runs may
+        // isolate caches and traces, but all DNPPV-2.0 instances for a user
+        // must still contend for one product-specific lease.
+        return ResolveSharedInstanceLockRoot(platform, windowsLocalAppData, userHomeDirectory);
+    }
+
+    public static string ResolveSharedInstanceLockRoot(
+        DesktopPlatformKind platform,
+        string? windowsLocalAppData = null,
+        string? userHomeDirectory = null,
+        bool createDirectories = true)
+        => Resolve(
+            platform,
+            static _ => null,
+            windowsLocalAppData,
+            userHomeDirectory,
+            createDirectories).Root;
+
     public static LocalDataPaths Resolve(
         DesktopPlatformKind platform,
         Func<string, string?>? environmentLookup = null,

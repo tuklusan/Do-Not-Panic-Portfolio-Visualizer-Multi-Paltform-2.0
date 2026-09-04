@@ -121,6 +121,11 @@ record the operator-supplied current address needed to explain lab state.
   bit after ZIP extraction because macOS artifact extraction may drop it.
   the actual Avalonia window through CoreGraphics. The lower-level
   `build/vm/Test-MacStorageContract.sh` remains available for setup probes.
+  The Mac acceptance driver launches the real product at `1920x1080` by
+  default so this cinematic display can use the available screen area; this
+  is a harness-only argument and does not change the product's normal startup
+  geometry. Set `DNPPV_MAC_WINDOWED_SIZE` only when the physical display
+  requires another bounded size.
 
 ## GitHub-Hosted Build/Test Lanes
 

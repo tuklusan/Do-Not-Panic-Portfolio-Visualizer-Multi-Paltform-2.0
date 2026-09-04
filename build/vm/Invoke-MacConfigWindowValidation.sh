@@ -18,10 +18,15 @@ root="${1:?required project root}"
 publish="$root/publish-cr019"
 artifact="${2:?required artifact root}"
 soak_minutes="${3:-0}"
+mac_windowed_size="${DNPPV_MAC_WINDOWED_SIZE:-1920x1080}"
 max_kib=1048576
 
 if [[ ! "$soak_minutes" =~ ^[0-9]+$ || "$soak_minutes" -gt 240 ]]; then
   echo "MAC_ACCEPTANCE_HARD_STOP=InvalidSoakDuration:$soak_minutes" >&2
+  exit 2
+fi
+if [[ ! "$mac_windowed_size" =~ ^[1-9][0-9]{2,4}x[1-9][0-9]{2,4}$ ]]; then
+  echo "MAC_ACCEPTANCE_HARD_STOP=InvalidWindowedSize:$mac_windowed_size" >&2
   exit 2
 fi
 
@@ -74,7 +79,11 @@ else
 fi
 
 cd "$publish"
-./DoNotPanicPortfolioVisualizer.App >/dev/null 2>&1 &
+if pgrep -x 'DoNotPanicPortfolioVisualizer.App' >/dev/null 2>&1; then
+  echo "MAC_ACCEPTANCE_HARD_STOP=ExistingProductProcess" >&2
+  exit 2
+fi
+./DoNotPanicPortfolioVisualizer.App "--windowed=$mac_windowed_size" >/dev/null 2>&1 &
 app_pid=$!
 cleanup() {
   kill "$app_pid" 2>/dev/null || true

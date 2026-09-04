@@ -5493,7 +5493,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Fresh unchanged-value blue flashing is implemented and focused-tested; production-scene visual and circular-trace proof remains outstanding.",
+        "Fresh unchanged-value blue flashing now uses the raw value delta, preventing non-zero daily ChangePercent from causing false red/green flashes; focused-tested. The shared DNPPV-2.0 single-instance lease now ignores per-run data overrides and applies to configuration validation too; Windows and Mac harnesses hard-stop before launch when an existing product process is detected. Production-scene visual and circular-trace proof remains outstanding.",
           "Current graph-motion tests cover directed travel, but full upstream parity still needs fresh production evidence and branch-complete acceptance."
         ]
       }

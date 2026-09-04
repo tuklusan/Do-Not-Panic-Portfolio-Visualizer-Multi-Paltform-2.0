@@ -15,6 +15,17 @@ The upstream production scene applies a value flash for every fresh usable
 quote, including a quote whose displayed value is unchanged. The flash color is
 green for a positive changed value, red for a negative changed value, and blue
 for an unchanged value. Stale quotes do not create this fresh-update cue.
+The flash direction is based on the raw current-value delta, not merely the
+daily `ChangePercent`; a stable current value with a non-zero daily change must
+remain blue.
+
+The product single-instance lease is also independent of per-run test data
+overrides. This prevents concurrent harness launches from acquiring distinct
+locks, while the DNPPV-2.0 product-specific lock identity remains separate from
+the upstream 1.0 product. Both Windows validation launch paths now hard-stop
+before starting when an existing DNPPV-2.0 process is present; the Mac driver
+does the equivalent process check. The Mac driver uses a larger 1920x1080
+window only for its physical acceptance harness.
 
 Upstream graph cards use a different rule: a raw last-price change triggers the
 card itself to flash repeatedly while it makes rapid travel toward the ceiling
@@ -48,7 +59,9 @@ surface; fixtures may only provide deterministic test inputs.
 ## Status
 
 The ticker update rule is implemented: post-hydration fresh usable quotes flash
-green/red when their value changes and blue when the displayed value is
-unchanged; initial hydration and stale refreshes remain quiet. Focused tests
-cover these cases. Full production-scene visual and circular-trace evidence
-for the flash and graph impulse remains required before closure.
+green/red only when their raw value changes and blue when the displayed value is
+unchanged, even when daily `ChangePercent` is non-zero; initial hydration and
+stale refreshes remain quiet. Focused tests cover these cases. Shared
+single-instance locking and harness pre-launch guards are implemented. Full
+production-scene visual and circular-trace evidence for the flash and graph
+impulse remains required before closure.
