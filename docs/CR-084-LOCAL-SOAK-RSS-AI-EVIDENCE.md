@@ -21,7 +21,7 @@ is the authoritative runtime record.
 
 ## Functional Inventory
 
-| CR-084-01 | The product fetches the configured RSS catalog and records a usable `Fresh` or `Partial` news state. | The local soak must retrieve the circular trace and require `NEWS_SOURCE;STATE=Fresh` or `NEWS_SOURCE;STATE=Partial`. | Open |
+| CR-084-01 | The product fetches the configured RSS catalog and records a usable `Fresh` or `Partial` news state before optional AI work. | The local soak must retrieve the circular trace and require `RssPlaybackReady` with a positive headline count and `Fresh` or `Partial` state. | Open |
 | CR-084-02 | The summarized-news path calls the configured AI endpoint and records a successful generated summary. | When the protected OpenRouter key is supplied, the local soak must require `AiSummarySucceeded`. | Open |
 | CR-084-03 | Provider credentials are process-scoped and never become evidence content. | The harness passes the key only through the child environment/remote secret and writes only boolean/key-free evidence. | Open |
 | CR-084-04 | A failed or unavailable RSS/AI path remains diagnosable without arbitrary logs. | `news-evidence.json` records bounded event-presence booleans and the circular trace remains the source artifact. | Open |

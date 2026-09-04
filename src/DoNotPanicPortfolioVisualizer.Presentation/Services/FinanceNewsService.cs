@@ -59,9 +59,11 @@ public sealed class FinanceNewsService : IDisposable
     public FinanceNewsService(HttpMessageHandler? handler = null, Func<DateTimeOffset>? utcNow = null, string? cachePath = null)
     {
         _client = handler is null
-            ? HttpClientFactory.Create(TimeSpan.FromSeconds(15))
+            ? HttpClientFactory.Create(TimeSpan.FromSeconds(120))
             : new HttpClient(handler, disposeHandler: true);
-        _client.Timeout = TimeSpan.FromSeconds(15);
+        // The per-call settings budget remains authoritative; the client ceiling
+        // must not silently shorten the configured AI/RSS timeout.
+        _client.Timeout = TimeSpan.FromSeconds(120);
         _client.DefaultRequestHeaders.UserAgent.ParseAdd("DNPPV-2.0/2.0");
         _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         _cacheStore = new NewsHeadlineCacheStore(cachePath);
@@ -150,6 +152,10 @@ public sealed class FinanceNewsService : IDisposable
         RssFeedFreshnessState state = usable.Any(static snapshot => snapshot.FreshnessState == RssFeedFreshnessState.Fresh)
             ? RssFeedFreshnessState.Fresh : RssFeedFreshnessState.Partial;
         DateTimeOffset? latest = usable.Select(static snapshot => snapshot.LatestPublicationUtc).Max();
+        TraceLog.InfoState("FinanceNewsService", "RssPlaybackReady", [
+            new("state", state),
+            new("headline_count", headlines.Count)
+        ]);
         if (settings.NewsScrollerMode == NewsScrollerMode.SummarizedFinancialNews &&
             !string.IsNullOrWhiteSpace(settings.AiApiKey) && !string.IsNullOrWhiteSpace(settings.AiModelId))
         {
@@ -184,6 +190,10 @@ public sealed class FinanceNewsService : IDisposable
             return result;
         }
         RecordFreshness(snapshot);
+        TraceLog.InfoState("FinanceNewsService", "RssPlaybackReady", [
+            new("state", snapshot.FreshnessState),
+            new("headline_count", snapshot.Headlines.Count)
+        ]);
         if (snapshot.FreshnessState == RssFeedFreshnessState.Stale)
         {
             NewsHeadlineCacheEntry? cached = await LoadMatchingCacheAsync(settings, feedUri.AbsoluteUri, cancellationToken).ConfigureAwait(false);
@@ -479,6 +489,10 @@ public sealed class FinanceNewsService : IDisposable
             }
         }
         RecordFreshness(new RssHeadlineSnapshot(headlines, [], state, latest));
+        TraceLog.InfoState("FinanceNewsService", "RssPlaybackReady", [
+            new("state", state),
+            new("headline_count", headlines.Count)
+        ]);
         IReadOnlyList<string> playback = headlines.Count > 0
             ? headlines
             : [state == RssFeedFreshnessState.Unavailable

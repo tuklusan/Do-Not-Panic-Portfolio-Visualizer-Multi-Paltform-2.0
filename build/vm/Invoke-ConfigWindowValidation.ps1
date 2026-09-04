@@ -1663,9 +1663,9 @@ function Assert-SoakNewsEvidence {
     }
 
     $trace = Get-Content -LiteralPath $tracePath -Raw
-    $rssUsable = $trace -match 'NEWS_SOURCE;STATE=(Fresh|Partial)(?:;|\b)'
-    $aiSucceeded = $trace -match 'event=AiSummarySucceeded(?:\s|\||$)'
-    $aiRequested = $trace -match 'event=AiSummaryRequestStarted(?:\s|\||$)'
+    $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
+    $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
+    $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
     $evidence = [ordered]@{
         schema = 'dnppv2-soak-news-evidence/v1'
         rssUsable = [bool]$rssUsable
