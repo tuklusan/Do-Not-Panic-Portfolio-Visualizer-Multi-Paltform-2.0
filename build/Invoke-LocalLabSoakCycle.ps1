@@ -116,12 +116,14 @@ function Invoke-RemoteNative {
                 $process.StandardInput.Write($StandardInput)
                 $process.StandardInput.Close()
             }
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit($Timeout * 1000)) {
                 $process.Kill($true)
                 throw "Remote command timed out after ${Timeout}s."
             }
-            $stdout = $process.StandardOutput.ReadToEnd()
-            $stderr = $process.StandardError.ReadToEnd()
+            $stdout = $stdoutTask.GetAwaiter().GetResult()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
             if ($stdout) { Write-Output $stdout.TrimEnd() }
             if ($process.ExitCode -ne 0) { throw "Remote command failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
@@ -156,9 +158,11 @@ function Copy-RemoteTree {
         $process.StartInfo = $psi
         try {
             if (-not $process.Start()) { throw 'Could not start remote artifact copy.' }
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit($Timeout * 1000)) { $process.Kill($true); throw "Artifact copy timed out after ${Timeout}s." }
-            $stderr = $process.StandardError.ReadToEnd()
-            [void]$process.StandardOutput.ReadToEnd()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
+            [void]$stdoutTask.GetAwaiter().GetResult()
             if ($process.ExitCode -ne 0) { throw "Artifact copy failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
         finally { $process.Dispose() }
@@ -192,9 +196,11 @@ function Copy-LocalTree {
         $process.StartInfo = $psi
         try {
             if (-not $process.Start()) { throw 'Could not start local artifact deployment.' }
+            $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+            $stderrTask = $process.StandardError.ReadToEndAsync()
             if (-not $process.WaitForExit($Timeout * 1000)) { $process.Kill($true); throw "Artifact deployment timed out after ${Timeout}s." }
-            $stderr = $process.StandardError.ReadToEnd()
-            [void]$process.StandardOutput.ReadToEnd()
+            $stderr = $stderrTask.GetAwaiter().GetResult()
+            [void]$stdoutTask.GetAwaiter().GetResult()
             if ($process.ExitCode -ne 0) { throw "Artifact deployment failed with exit code $($process.ExitCode): $($stderr.Trim())" }
         }
         finally { $process.Dispose() }

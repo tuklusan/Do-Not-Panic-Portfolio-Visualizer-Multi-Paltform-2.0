@@ -125,13 +125,15 @@ function Invoke-NativeCommand {
             throw "Unable to start native command: $FilePath"
         }
 
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
             Stop-NativeProcessTree -ProcessId $process.Id
             throw "Native command timed out after ${TimeoutSeconds}s: $FilePath $($ArgumentList -join ' ')"
         }
 
-        $stdout = $process.StandardOutput.ReadToEnd()
-        $stderr = $process.StandardError.ReadToEnd()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
         if ($stdout) { Write-Output $stdout.TrimEnd() }
         if ($stderr) { Write-Verbose ("Native command stderr: " + $stderr.TrimEnd()) }
         $exitCode = $process.ExitCode
