@@ -149,7 +149,7 @@
         "AI generation and RSS fallback pass the complete failure matrix",
         "Four-machine production acceptance and six-RID publish pass"
       ]
-    }
+    },
   ],
   "ssh_first_vm_harness": {},
   "change_requests": [
@@ -5410,6 +5410,42 @@
           "resume_from": "start a fresh availability-probed cycle after commit b2eceaf"
         }
       }
+    },
+    {
+      "id": "CR-081",
+      "phase": "Phase 7",
+      "title": "Improve ticker quote-lane contrast over cinematic backgrounds",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-069"
+      ],
+      "objective": "Make the four ticker quote lanes visually distinct from dark cinematic backgrounds while preserving the upstream name-lane treatment, alignment, motion, and readability.",
+      "acceptance_criteria": [
+        "The four quote lanes use a darker neutral grey treatment rather than opaque black, with restrained transparency only where supported without reducing text contrast.",
+        "Ticker names retain their existing grey lane treatment and remain vertically centered; quote values remain aligned and readable during motion and startup settling.",
+        "The implementation is compared line-by-line with the upstream ticker composition and any intentional Avalonia rendering delta is recorded.",
+        "Focused visual tests and fresh real-product screenshots on available local machines plus hosted smoke evidence show no overlap, clipping, or contrast regression.",
+        "Upstream behavior, reverse-gap, license, syntax, build/test, NVIDIA review, artifact-review, cleanup, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Manual upstream/current ticker source and style comparison before implementation",
+        "Focused layout and contrast tests at supported window sizes",
+        "Fresh settled production-scene captures with ticker motion and dark-background coverage",
+        "Artifact review and residual-process cleanup"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Quote lanes currently use black backgrounds and need a production-scene contrast review against the upstream visual behavior."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -5418,7 +5454,8 @@
     "CR-068: hosted and local real-product execution matrix is not implemented.",
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
-    "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated."
+    "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated.",
+    "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
