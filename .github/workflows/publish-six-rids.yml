@@ -161,6 +161,26 @@ jobs:
            $screenshots = @(Get-ChildItem -LiteralPath $screenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue)
            $expectedScreenshotCount = [Math]::Floor((([int]$env:DNPPV_SOAK_DURATION_MINUTES * 60) - 30) / 1800) + 1
            if ($screenshots.Count -lt $expectedScreenshotCount) { throw "Expected at least $expectedScreenshotCount settled screenshots, found $($screenshots.Count)." }
+           $tracePath = Join-Path $artifactRoot 'trace/trace.circular.log'
+           if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { throw "Circular trace is missing: $tracePath" }
+           $trace = Get-Content -LiteralPath $tracePath -Raw
+           $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
+           $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
+           $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
+           $rssPublished = $trace -match 'NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT=[1-9][0-9]*'
+           $newsEvidence = [ordered]@{
+             schema = 'dnppv2-hosted-soak-news-evidence/v1'
+             runner = $runnerName
+             rssUsable = [bool]$rssUsable
+             rssPublished = [bool]$rssPublished
+             aiRequired = $true
+             aiRequestObserved = [bool]$aiRequested
+             aiSuccessObserved = [bool]$aiSucceeded
+             traceFile = 'trace/trace.circular.log'
+           }
+           $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
+           if (-not $rssUsable -or -not $rssPublished) { throw "Hosted soak RSS evidence failed on $runnerName." }
+           if (-not $aiRequested -or -not $aiSucceeded) { throw "Hosted soak AI evidence failed on $runnerName." }
            $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
            @(
              "run_id=$env:GITHUB_RUN_ID"
@@ -169,6 +189,7 @@ jobs:
              (Get-Content -Raw (Join-Path $artifactRoot 'soak-result.json'))
              "screenshot=$screenshotPath"
              "expected_screenshot_count=$expectedScreenshotCount"
+             (Get-Content -Raw (Join-Path $artifactRoot 'news-evidence.json'))
              'screenshots:'
              ($screenshots | Sort-Object Name | ForEach-Object {
                  $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
