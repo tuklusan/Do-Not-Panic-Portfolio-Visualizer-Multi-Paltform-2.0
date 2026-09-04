@@ -423,7 +423,7 @@ foreach ($record in @($availability.machines)) {
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
-                "rm -rf -- $remoteRoot && mkdir -p -- $remotePublish $remoteArtifact"
+                "if [ -e '$remoteRoot' ]; then echo 'MAC_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'"
             ) -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $publish -RemotePath $remoteRoot -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout $macTimeout
