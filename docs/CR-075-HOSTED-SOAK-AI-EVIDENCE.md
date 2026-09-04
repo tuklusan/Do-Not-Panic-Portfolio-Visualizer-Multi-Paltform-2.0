@@ -41,3 +41,12 @@ NVIDIA NIM artifact review, and remain separate from the incomplete cycle.
 - Missing AI trace evidence fails the post-soak review and routes a CR.
 - The evidence set has 18 manifests, non-empty screenshots and trace pairs,
   cleanup proof, and a passing NVIDIA NIM artifact review.
+
+## Latest Evidence
+
+Cycle `33902675076` proved the real product completed its 10-minute soak on
+`macos-26-intel`, but its circular evidence did not contain the required AI
+summary success event. The matrix therefore failed closed rather than treating
+secret injection as proof. The runner-specific environment, endpoint response,
+and trace path must be diagnosed and a fresh current-SHA cycle must pass on all
+18 runners before this CR can close.

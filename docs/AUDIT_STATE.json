@@ -5107,7 +5107,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Completed hosted cycle 33689685166 lacks AI access and summary trace events because it ran from an older SHA; fresh current-main hosted evidence is required."
+          "Completed hosted cycle 33689685166 lacks AI access and summary trace events because it ran from an older SHA; fresh current-main hosted evidence is required. The subsequent 10-minute cycle 33902675076 also failed its required AI evidence on macos-26-intel, so that runner-specific path must be diagnosed and rerun before closure."
         ]
       }
     },
