@@ -6028,6 +6028,7 @@
       "artifacts": [
         "docs/CR-092-LOCAL-COMPANION-SOAK-GATE.md",
         ".github/workflows/publish-six-rids.yml",
+        "build/Invoke-LocalLabSoakCycle.ps1",
         "build/vm/Invoke-ConfigWindowValidation.ps1",
         "build/Test-LocalLabAvailability.ps1"
       ],
@@ -6056,15 +6057,16 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "queued",
+        "status": "in_progress",
         "unresolved_gaps": [
-          "Hosted matrix currently has no mandatory same-duration local companion job."
+          "Linux and Intel macOS companion lanes hard-stopped before product launch because the Unix residual-process matcher was too narrow; the matcher is being corrected and requires a fresh reviewed cycle.",
+          "The latest NVIDIA review contains false-positive truncation findings contradicted by the on-disk parser and test results; this is recorded as advisory and does not replace physical acceptance."
         ]
       }
     }
   ],
   "remaining_validation_gaps": [
-    "CR-092: Hosted matrix cycles do not yet enforce same-duration companion soaks on every available local lab machine with residual-process hard gates.",
+    "CR-092: Linux and Intel macOS companion lanes require a fresh run after Unix residual-process matcher correction; Win10 and Win11 completed the real-product lane in the latest cycle.",
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",

@@ -48,3 +48,16 @@ artifact, and commit/push gates before closure.
 - Local lanes use the exact hosted duration and real-product acceptance rules.
 - Two independent complete cycles pass all 18 hosted lanes and all available
   local lanes with no new defects.
+
+## Current Validation State
+
+The first full four-machine execution reached the real product successfully on
+Windows 10 and Windows 11. Both lanes produced product-scene screenshots,
+RSS/AI evidence, and the two circular traces, and both machine manifests
+passed. Linux and Intel macOS were correctly recorded as failures rather than
+silently skipped, but their prelaunch process-cleanliness check falsely
+returned the residual-process hard-stop before the product driver ran. The
+Unix matcher is being corrected to inspect full command lines while excluding
+its own helper shell. CR-092 remains open until a fresh reviewed cycle proves
+Linux and macOS launch, settle, validate, and clean up alongside the hosted
+matrix.

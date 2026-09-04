@@ -246,12 +246,21 @@ function Assert-RemoteProductProcessesClean {
 
     $target = "$($MachineRecord.user)@$($MachineRecord.address)"
     if ($Platform -eq 'windows') {
-        # The command is passed as one SSH argument; it is intentionally
-        # limited to the two project-owned process-name patterns.
-        $command = 'powershell.exe -NoProfile -NonInteractive -Command "Get-Process | Where-Object { $_.ProcessName -match ''DoNotPanicPortfolioVisualizer|YFinance.NET.Server'' } | Stop-Process -Force -ErrorAction SilentlyContinue; if (Get-Process | Where-Object { $_.ProcessName -match ''DoNotPanicPortfolioVisualizer|YFinance.NET.Server'' }) { exit 17 }"'
+        # Windows OpenSSH commonly dispatches through cmd.exe. Encode the
+        # PowerShell payload so cmd cannot reinterpret its pipeline syntax.
+        $payload = "Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' } | Stop-Process -Force -ErrorAction SilentlyContinue; if (Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' }) { exit 17 }"
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($payload))
+        $command = "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded"
     }
     else {
-        $command = "pkill -f 'DoNotPanicPortfolioVisualizer|YFinance.NET.Server' 2>/dev/null || true; if pgrep -f 'DoNotPanicPortfolioVisualizer|YFinance.NET.Server' >/dev/null 2>&1; then exit 17; fi"
+        # Match the executable command name only. Matching the full command
+        # line can kill the SSH session because its own command contains it.
+        $command = @'
+pids=$(ps -eo pid=,args= | awk '$0 ~ /DoNotPanicPortfolioVisualizer|YFinance.NET.Server/ && $0 !~ /awk/ && $0 !~ /bash -c/ && $0 !~ /grep/ {print $1}')
+if [ -n "$pids" ]; then kill -TERM $pids 2>/dev/null || true; sleep 1; kill -KILL $pids 2>/dev/null || true; fi
+remaining=$(ps -eo pid=,args= | awk '$0 ~ /DoNotPanicPortfolioVisualizer|YFinance.NET.Server/ && $0 !~ /awk/ && $0 !~ /bash -c/ && $0 !~ /grep/ {print $1}')
+if [ -n "$remaining" ]; then exit 17; fi
+'@
     }
 
     Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -Arguments @(
