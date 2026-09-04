@@ -425,13 +425,11 @@ foreach ($record in @($availability.machines)) {
                 "$($machineRecord.user)@$($machineRecord.address)",
                 "if [ -e '$remoteRoot' ]; then echo 'MAC_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'"
             ) -Timeout $macTimeout
-            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $publish -RemotePath $remoteRoot -Timeout $macTimeout
+            # Copy the publish contents into the already-created canonical
+            # directory. Copying the directory itself is scp-layout dependent
+            # and can leave the executable one level deeper on macOS.
+            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath (Join-Path $publish '*') -RemotePath "$remotePublish/" -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout $macTimeout
-            Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
-                "$($machineRecord.user)@$($machineRecord.address)",
-                "mv -- $remoteRoot/$([IO.Path]::GetFileName($publish)) $remotePublish"
-            ) -Timeout $macTimeout
             Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout $macTimeout
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }
             $remoteCommand = ''

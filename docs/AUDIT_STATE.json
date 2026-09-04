@@ -5632,6 +5632,87 @@
           "Reverse scan records are absent from CR-002 through CR-019 and must be reconstructed before those historical closure labels satisfy the current contract."
         ]
       }
+    },
+    {
+      "id": "CR-086",
+      "phase": "Phase 7",
+      "title": "Repair Windows 10 interactive soak task launch",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-084"
+      ],
+      "objective": "Make the Windows 10 local real-product soak launch in the logged-in desktop session, produce done.txt, and retrieve RSS/AI evidence without treating a missing task completion as a pass.",
+      "acceptance_criteria": [
+        "A fresh Windows 10 validation registers and starts the interactive task, records task-start diagnostics, and produces done.txt= DONE only after the product and cleanup complete.",
+        "The real product window is visible to the logged-in Windows 10 desktop user and the circular trace proves usable RSS plus AI request and success when keyed.",
+        "Failure evidence remains retrievable when Task Scheduler does not start the action, and no orphaned product or task remains.",
+        "Syntax, license, upstream forward/reverse, NVIDIA review, focused Windows 10 validation, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Re-read the upstream Windows launch and desktop-session behavior before implementation.",
+        "Add task registration/start diagnostics and verify the interactive principal and action on Windows 10.",
+        "Run a keyed targeted Windows 10 real-product soak and inspect done.txt, step.log, circular trace, screenshot, and cleanup evidence.",
+        "Repeat the targeted run after any defect correction."
+      ],
+      "artifacts": [
+        "docs/CR-086-WINDOWS10-INTERACTIVE-SOAK-LAUNCH.md",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-086-WINDOWS10-INTERACTIVE-SOAK-LAUNCH.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The 2026-09-04 local five-minute cycle reached deployment but Windows 10 returned DONE_FILE_MISSING and no step.log was retrievable; the task launch path needs forensic diagnostics and repair."
+        ]
+      }
+    },
+    {
+      "id": "CR-087",
+      "phase": "Phase 7",
+      "title": "Normalize Intel Mac local soak artifact retrieval",
+      "status": "open",
+      "depends_on": [
+        "CR-066",
+        "CR-084"
+      ],
+      "objective": "Make the Intel Mac local soak return artifacts under the same per-machine local artifact contract as the other local platforms while retaining the required home-confined remote root and one-gigabyte limit.",
+      "acceptance_criteria": [
+        "Mac news-evidence.json, circular trace files, screenshots, and machine result are directly under the machine artifact root without an unexpected nested artifacts directory.",
+        "A keyed Mac real-product soak still proves fresh RSS and successful AI generation and the remote root is cleaned afterward.",
+        "The one-gigabyte limit and slow-machine timeout remain enforced, with no orphaned product or helper process.",
+        "Syntax, license, upstream forward/reverse, NVIDIA review, focused Mac validation, and commit/push gates pass."
+      ],
+      "validation_plan": [
+        "Re-read the upstream Mac harness artifact and cleanup layout.",
+        "Normalize Copy-RemoteTree destination handling without weakening the remote confinement contract.",
+        "Run two keyed targeted Mac soaks and inspect every retrieved artifact and cleanup result."
+      ],
+      "artifacts": [
+        "docs/CR-087-MAC-SOAK-ARTIFACT-LAYOUT.md",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        "build/vm/Invoke-MacConfigWindowValidation.sh",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "required_before_development",
+        "document": "docs/CR-087-MAC-SOAK-ARTIFACT-LAYOUT.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "The corrected Mac run passed RSS and AI, but Copy-RemoteTree returned the remote artifacts directory nested below the machine artifact root; the layout is usable but inconsistent with Linux and Windows retrieval."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -5644,8 +5725,10 @@
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",
-    "CR-084: local soak acceptance does not yet prove usable RSS playback and successful AI generation per machine.",
-    "CR-085: Windows 11 AI environment propagation and Intel macOS slow-lane timeout need targeted reruns."
+    "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest cycle passed Linux, Windows 11, and Intel Mac but failed Windows 10 task launch.",
+    "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
+    "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
+    "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
