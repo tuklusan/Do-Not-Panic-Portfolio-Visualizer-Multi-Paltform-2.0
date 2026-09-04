@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # Test Machine Access Details
 
-Current working record: 2026-08-24
+Current working record: 2026-09-03
 
 This repository is in migration-baseline mode.
 
@@ -24,9 +24,12 @@ Exact live credentials are intentionally not committed. Operators may keep a
 local ignored endpoint inventory such as `build/vm/remote-test-machines.local.txt`,
 and passwords remain in the operator password manager.
 
-The four physical endpoints were refreshed and SSH-verified on 2026-08-24.
-Update only the ignored local endpoint inventory when DHCP or network topology
-changes; do not commit live addresses or credentials.
+The four physical endpoints were last refreshed on 2026-08-24. Availability is
+dynamic: as of 2026-09-03, only the Windows 11 laptop is available, at
+`192.168.4.103`. Linux, Windows 10, and Intel Big Sur are currently offline.
+Update the ignored local endpoint inventory whenever DHCP or network topology
+changes; never commit passwords or other live credentials. This document may
+record the operator-supplied current address needed to explain lab state.
 
 ## Physical Machines
 
@@ -67,7 +70,7 @@ changes; do not commit live addresses or credentials.
 ### `windows-11-laptop`
 
 - Access: exact current SSH endpoint is kept only in the local ignored endpoint
-  inventory
+  inventory; current address is `192.168.4.103`
 - OS: Windows 11
 - Notes: no `D:\SW_DEV\DO-NOT-PANIC-2.0` requirement on this machine
 - SSH: interactive login can take noticeably longer than the other two physical
@@ -136,6 +139,16 @@ GitHub availability changes; `fail-fast: false` preserves results from every
 other lane. The local Windows 10, Windows 11, Lubuntu, and Intel Big Sur
 machines remain physical acceptance lanes, not GitHub-hosted runners.
 
+Hosted-runner wait rule: a queued or slow GitHub job is not a failure and must
+not be replaced, cancelled, or bypassed merely because it has not started or
+has produced no output yet. Use the workflow's `fail-fast: false` matrix and
+wait for each queued/running lane to reach a terminal state, allowing the
+documented long-runner allowance before diagnosing a timeout. Do not start a
+replacement workflow while the current matrix is queued or running. A hosted
+cycle counts only after every required matrix lane has reached a terminal state
+and its build, product-soak, circular-trace, screenshot, and reviewer evidence
+has been retrieved and checked.
+
 ## Baseline Note
 
 These are the retained environment details for the fresh DNPPV-2.0 migration
@@ -154,7 +167,10 @@ Each progressive local-lab cycle begins with
 `build/Test-LocalLabAvailability.ps1 -ArtifactRoot <cycle-artifact-root>`.
 Its JSON manifest distinguishes `AvailableForCycle` from
 `UnavailableAtCycleStart`; unavailable machines are never reported as product
-passes. Remote physical-machine cleanup remains governed by each machine's root and
+passes. For the current lab state, a cycle must use Windows 11 at
+`192.168.4.103` and record Linux, Windows 10, and macOS/Intel as
+`UnavailableAtCycleStart`; their absence is non-blocking when the full hosted
+matrix supplies the required cross-platform proof. Remote physical-machine cleanup remains governed by each machine's root and
 storage contract above. It must stop product processes before removing only
 generated publish, test, evidence, local-data, and temporary outputs, while
 preserving source and installed test dependencies.
