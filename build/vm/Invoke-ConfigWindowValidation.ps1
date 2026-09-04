@@ -1604,7 +1604,8 @@ finally {
     }
     finally {
         if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
-            Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText ("Remove-Item -LiteralPath '" + $remoteSecretPath.Replace("'", "''") + "' -Force -ErrorAction SilentlyContinue")
+            $cleanupSecretLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteSecretPath
+            Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText ("if (Test-Path -LiteralPath " + $cleanupSecretLiteral + " -PathType Leaf) { Remove-Item -LiteralPath " + $cleanupSecretLiteral + " -Force -ErrorAction SilentlyContinue }; exit 0")
         }
     }
 
