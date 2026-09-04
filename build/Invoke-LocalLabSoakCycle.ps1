@@ -460,7 +460,7 @@ foreach ($record in @($availability.machines)) {
                 Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                     'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                     "$($machineRecord.user)@$($machineRecord.address)",
-                    "if [ -d '$remoteCleanupRoot' ]; then find '$remoteCleanupRoot' -depth -delete; fi"
+                    "if [ -d '$remoteCleanupRoot' ]; then rm -rf -- '$remoteCleanupRoot'; fi"
                 ) -Timeout $macTimeout | Out-Null
             }
             catch {
