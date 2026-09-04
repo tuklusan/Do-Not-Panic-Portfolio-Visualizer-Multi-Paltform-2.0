@@ -1230,8 +1230,10 @@ function Invoke-WindowsValidation {
         }
         $remoteSecretNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteSecretName
         $openRouterApiKeyLine = if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
-            '$openRouterSecretPath = Join-Path $artifactDir ' + $remoteSecretNamePsLiteral
-            '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath $openRouterSecretPath -Raw).Trim()'
+            @(
+                '$openRouterSecretPath = Join-Path $artifactDir ' + $remoteSecretNamePsLiteral
+                '$env:DNPPV_OPENROUTER_API_KEY = (Get-Content -LiteralPath $openRouterSecretPath -Raw).Trim()'
+            )
         }
         else {
             'Remove-Item Env:DNPPV_OPENROUTER_API_KEY -ErrorAction SilentlyContinue'
