@@ -23,11 +23,11 @@ observable behavior, UI rule, business rule, or test-depth obligation.
 
 ## Closed Gap Workstreams
 
-Every workstream in this document was routed to a change request and is now
-closed. The status prose in the tables describes the gap at discovery time;
-the authoritative current status is the closed CR entry in
-`docs/AUDIT_STATE.json` and the corresponding closure inventory. No row below
-is an open ticket.
+Every workstream in this document is routed to a change request. The status
+prose in the tables describes the gap at discovery time; the authoritative
+current status is the corresponding CR entry in `docs/AUDIT_STATE.json` and
+its closure inventory. Rows whose CR is still open remain actionable and must
+not be treated as closed merely because they are listed here.
 
 | Item | Upstream line-level evidence | 2.0 status | CR |
 | --- | --- | --- | --- |

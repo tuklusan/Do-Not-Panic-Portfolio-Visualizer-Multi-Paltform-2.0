@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # CR-076: Isolate Soak Workflow Concurrency
 
-## Functional Inventory
+## Objective
 
 | CR-01 | Prevent overlapping soak runs and isolate each run's artifacts | workflow concurrency and unique roots | cleanup evidence |
 

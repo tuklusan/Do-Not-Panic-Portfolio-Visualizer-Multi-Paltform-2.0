@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # CR-075: Require AI Evidence in Hosted Soaks
 
-## Functional Inventory
+## Objective
 
 | CR-01 | Require key-free RSS and AI success evidence on hosted product soaks | hosted workflow and evidence reviewer | circular traces and manifests |
 

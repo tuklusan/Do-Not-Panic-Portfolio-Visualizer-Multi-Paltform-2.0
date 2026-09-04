@@ -254,7 +254,8 @@ The migration program does not:
 
 ## 9. Current Boundary
 
-The Phase 0 through Phase 7 migration baseline is complete and recorded in
-`docs/AUDIT_STATE.json`. Any further implementation must begin with a newly
-scoped CR, a fresh upstream inventory, and the same pre-development and closure
-gates.
+The gate-retrofit baseline is recorded in `docs/AUDIT_STATE.json`, but the
+migration remains in active CR processing. The tracker is authoritative for
+the current open queue and must be reconciled before each phase boundary. Any
+further implementation must begin with a newly scoped CR, a fresh upstream
+inventory, and the same pre-development and closure gates.

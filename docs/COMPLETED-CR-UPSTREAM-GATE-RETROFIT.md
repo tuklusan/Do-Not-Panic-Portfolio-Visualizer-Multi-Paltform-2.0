@@ -23,9 +23,11 @@ acceptance contracts live in the other documents named below.
 
 ## Current Baseline
 
-The Phase 0 through Phase 7 migration baseline is complete at pushed commit
-`ced5c21`. The active product is a .NET 10 Avalonia desktop application on
-Windows, Linux, and macOS. WPF and a Windows installer are not part of the
+The upstream-gate retrofit baseline is complete at pushed commit `ced5c21`.
+The migration itself remains active: the authoritative tracker currently has
+22 open CRs covering validation, visual parity, provider reliability, and
+soak evidence. The active product is a .NET 10 Avalonia desktop application
+on Windows, Linux, and macOS. WPF and a Windows installer are not part of the
 active architecture. The six release RIDs are `win-x64`, `win-arm64`,
 `linux-x64`, `linux-arm64`, `osx-x64`, and `osx-arm64`.
 
@@ -50,8 +52,8 @@ unreviewed artifact cannot satisfy real-product acceptance.
 
 ## Current Result
 
-All tracked CRs through the Phase 7 migration baseline are closed. CR-011
-records real degraded-mode acceptance on all four local machines. CR-012
-records the green six-RID hosted publish and local physical acceptance. CR-013
-records the line-by-line documentation and tracker reconciliation. New work
-must be introduced as a new CR and must not silently alter this baseline.
+The gate-retrofit work recorded by CR-013 is closed. CR-011 records real
+degraded-mode acceptance on all four local machines, and CR-012 records the
+six-RID hosted publish and local physical acceptance. The remaining open CRs
+are listed in `docs/AUDIT_STATE.json`; new work must be introduced as a CR and
+must not silently alter the gate baseline.

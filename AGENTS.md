@@ -25,12 +25,17 @@ complete.
 This repository was intentionally reset on 2026-08-13 and then republished as
 the fresh DNPPV-2.0 migration workspace.
 
-Only the following retained assets remain in scope:
+The inherited product implementation, obsolete packaging lanes, and old
+traceback artifacts were removed. The active project documentation, CR
+inventories, architecture contracts, gate scripts, and test-machine record
+remain intentionally in scope:
 
 1. The NVIDIA NIM review gate under `build/` and its supporting standard in
    `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`.
-2. The build/test machine access record in `docs/TEST_MACHINE_ACCESS.md`.
-3. The empty migration issue tracker in `docs/AUDIT_STATE.json`.
+2. The migration architecture, acceptance, gap-ledger, and CR inventory
+   documents under `docs/`.
+3. The build/test machine access record in `docs/TEST_MACHINE_ACCESS.md`.
+4. The migration issue tracker in `docs/AUDIT_STATE.json`.
 
 All prior product, migration, workflow, validation, and architecture artifacts
 were deliberately removed.
