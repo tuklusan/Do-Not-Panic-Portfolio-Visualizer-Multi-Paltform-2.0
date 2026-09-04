@@ -436,9 +436,9 @@ foreach ($record in @($availability.machines)) {
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }
             $remoteStdin = ''
             if (-not [string]::IsNullOrWhiteSpace($openRouterKey)) {
-                $keyBytes = [Text.Encoding]::UTF8.GetBytes($openRouterKey)
-                $keyBase64 = [Convert]::ToBase64String($keyBytes)
-                $remoteStdin = "export DNPPV_OPENROUTER_API_KEY=`$(printf %s $keyBase64 | base64 -d)`nexport DNPPV_SOAK_REQUIRE_AI_NEWS=1`n"
+                # The remote bash script consumes the key as stdin data. It is
+                # never placed in an argument, shell command, or remote file.
+                $remoteStdin = "IFS= read -r DNPPV_OPENROUTER_API_KEY`nexport DNPPV_SOAK_REQUIRE_AI_NEWS=1`n$openRouterKey`n"
             }
             $remoteStdin += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'`n"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
@@ -460,7 +460,7 @@ foreach ($record in @($availability.machines)) {
                 Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                     'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
                     "$($machineRecord.user)@$($machineRecord.address)",
-                    "rm -rf -- $remoteCleanupRoot"
+                    "if [ -d '$remoteCleanupRoot' ]; then find '$remoteCleanupRoot' -depth -delete; fi"
                 ) -Timeout $macTimeout | Out-Null
             }
             catch {

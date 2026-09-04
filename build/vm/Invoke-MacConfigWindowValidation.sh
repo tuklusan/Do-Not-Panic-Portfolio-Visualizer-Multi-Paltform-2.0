@@ -94,6 +94,31 @@ if [[ "$soak_minutes" -gt 0 ]]; then
   done
   printf 'MAC_SOAK_COMPLETED\n' >> "$artifact/mac-soak.log"
   check_budget
+  trace="$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT/Trace/trace.circular.log"
+  rss_usable=false
+  ai_required=false
+  ai_requested=false
+  ai_succeeded=false
+  [[ "${DNPPV_SOAK_REQUIRE_AI_NEWS:-}" == 1 ]] && ai_required=true
+  if [[ -s "$trace" ]]; then
+    grep -aEq 'event=RssPlaybackReady / state=(Fresh|Partial) / headline_count=[1-9][0-9]*' "$trace" && rss_usable=true
+    grep -aEq 'event=AiSummaryRequestStarted([[:space:]]|/|$)' "$trace" && ai_requested=true
+    grep -aEq 'event=AiSummarySucceeded([[:space:]]|/|$)' "$trace" && ai_succeeded=true
+  fi
+  cat > "$artifact/news-evidence.json" <<EOF
+{
+  "schema": "dnppv2-soak-news-evidence/v1",
+  "rssUsable": $rss_usable,
+  "aiRequired": $ai_required,
+  "aiRequestObserved": $ai_requested,
+  "aiSuccessObserved": $ai_succeeded,
+  "traceFile": "trace/trace.circular.log"
+}
+EOF
+  if [[ "$rss_usable" != true || "${DNPPV_SOAK_REQUIRE_AI_NEWS:-}" == 1 && ( "$ai_requested" != true || "$ai_succeeded" != true ) ]]; then
+    echo "MAC_NEWS_EVIDENCE_HARD_STOP=RSS_OR_AI_TRACE_MISSING" >&2
+    exit 4
+  fi
   printf 'MAC_PRODUCT_SOAK=Passed;MINUTES=%s;ARTIFACT_ROOT=%s\n' "$soak_minutes" "$artifact"
   exit 0
 fi
