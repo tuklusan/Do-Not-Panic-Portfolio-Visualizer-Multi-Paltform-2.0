@@ -72,8 +72,9 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
     public void Apply(QuoteSnapshot quote)
     {
         decimal? usableLast = quote.Last ?? quote.PreviousClose;
-        bool hydrated = Last is not null;
-        bool changed = hydrated && usableLast.HasValue && Last.GetValueOrDefault() != usableLast.Value;
+        decimal? previousLast = Last;
+        bool hydrated = previousLast is not null;
+        bool changed = hydrated && usableLast.HasValue && previousLast.Value != usableLast.Value;
         PriceText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
         TrendBrush = quote.ChangePercent switch
@@ -93,7 +94,7 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
         // unchanged-value case is the blue heartbeat that confirms a live feed.
         if (hydrated && usableLast.HasValue && !quote.IsStale)
         {
-            FlashBrush = !changed ? "#F000BFFF" : usableLast.Value > Last!.Value
+            FlashBrush = !changed ? "#F000BFFF" : usableLast.Value > previousLast!.Value
                 ? "#F039E75F"
                 : "#F0FF5A36";
             _flashElapsedSeconds = 0d;
@@ -117,13 +118,11 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
 
     private static double SampleFlashOpacity(double seconds)
     {
-        if (seconds <= 0.18d)
-            return Interpolate(0d, 0.94d, seconds / 0.18d);
-        if (seconds <= 0.62d)
-            return Interpolate(0.94d, 0.15d, (seconds - 0.18d) / 0.44d);
-        if (seconds <= 0.98d)
-            return Interpolate(0.15d, 0.85d, (seconds - 0.62d) / 0.36d);
-        return Interpolate(0.85d, 0d, (seconds - 0.98d) / 0.70d);
+        if (seconds <= 0.15d)
+            return Interpolate(0d, 0.94d, seconds / 0.15d);
+        if (seconds <= 0.74d)
+            return 0.94d;
+        return Interpolate(0.94d, 0d, (seconds - 0.74d) / 0.94d);
     }
 
     private static double Interpolate(double start, double end, double progress)

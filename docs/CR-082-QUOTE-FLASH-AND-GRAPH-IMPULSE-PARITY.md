@@ -19,7 +19,9 @@ The flash direction is based on the raw current-value delta, not merely the
 daily `ChangePercent`; a stable current value with a non-zero daily change must
 remain blue.
 
-The product single-instance lease is also independent of per-run test data
+The value cue is also scoped to the displayed last-value field rather than the
+whole ticker card, and its envelope is one rise-and-fall pulse per fresh quote.
+The product single-instance lease is independent of per-run test data
 overrides. This prevents concurrent harness launches from acquiring distinct
 locks, while the DNPPV-2.0 product-specific lock identity remains separate from
 the upstream 1.0 product. Both Windows validation launch paths now hard-stop
@@ -47,6 +49,9 @@ surface; fixtures may only provide deterministic test inputs.
 
 - Fresh positive, negative, unchanged, stale, and initial-hydration quote cases
   are covered by focused tests and circular trace assertions.
+- The flash is rendered only behind the displayed last-value field and each
+  fresh quote produces one rise/hold/fall pulse; the symbol, overlay, change
+  field, graph, and card background do not flash as collateral.
 - Graph increases flash visibly while travelling rapidly to the top boundary,
   decreases flash visibly while travelling rapidly to the bottom boundary, and
   each card then returns to its base appearance and prior swimming velocity;

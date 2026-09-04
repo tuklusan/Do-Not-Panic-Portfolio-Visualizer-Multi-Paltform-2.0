@@ -228,6 +228,38 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void TickerQuote_ChangedValueUsesPreviousValueForDirection()
+    {
+        TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m, ChangePercent = 0m });
+
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 11m, ChangePercent = -3m });
+        Assert.Equal("#F039E75F", quote.FlashBrush);
+
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 9m, ChangePercent = 3m });
+        Assert.Equal("#F0FF5A36", quote.FlashBrush);
+    }
+
+    [Fact]
+    public void TickerQuote_FlashEnvelopeHasOnePulseAndNoSecondPeak()
+    {
+        TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 10m });
+        quote.Apply(new QuoteSnapshot { Symbol = "TEST", Last = 11m });
+
+        quote.StepVisuals(TimeSpan.FromMilliseconds(100));
+        double peak = quote.FlashOpacity;
+        quote.StepVisuals(TimeSpan.FromMilliseconds(600));
+        double held = quote.FlashOpacity;
+        quote.StepVisuals(TimeSpan.FromMilliseconds(100));
+        double descending = quote.FlashOpacity;
+
+        Assert.InRange(peak, 0.60d, 0.70d);
+        Assert.InRange(held, 0.93d, 0.95d);
+        Assert.True(descending < held);
+    }
+
+    [Fact]
     public void TickerQuote_StaleRefreshDoesNotFlashAfterHydration()
     {
         TickerQuoteViewModel quote = new(new TickerItem { Symbol = "TEST", Enabled = true });
