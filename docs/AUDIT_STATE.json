@@ -4845,17 +4845,21 @@
         "docs/CR-071-STARTUP-RIBBON-AND-PACING.md"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending",
+        "status": "in_progress",
         "document": "docs/CR-071-STARTUP-RIBBON-AND-PACING.md",
-        "upstream_commit": "pending",
-        "source_files": [],
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Render/ViewModels/StatusBarViewModel.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs"
+        ],
         "zero_known_gaps": false,
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Upstream comparison and implementation are pending."
+          "The startup freshness state now matches upstream's neutral LOADING - waiting for data behavior, but ribbon geometry, pacing diagnosis, focused tests, and settled physical evidence remain open."
         ]
       }
     },
