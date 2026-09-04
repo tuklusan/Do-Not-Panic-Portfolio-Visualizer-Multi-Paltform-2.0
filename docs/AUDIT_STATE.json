@@ -5533,8 +5533,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Windows 11 did not enter the AI request path in the fresh five-minute cycle.",
-          "Intel macOS exceeded the current 180-second remote-command budget before retrieval."
+          "Intel macOS did not complete remote artifact cleanup within the slow-lane budget; the local coordinator was stopped and the lane requires a cleanup-safe rerun."
         ]
       }
     },
@@ -5584,7 +5583,7 @@
         "status": "open",
         "unresolved_gaps": [
           "The previous local soak harness retrieved traces but did not gate RSS usability or successful AI generation per machine.",
-          "A fresh concurrent local cycle has not yet proved the new evidence gate."
+          "A fresh concurrent local cycle proved RSS and AI evidence on Linux, Windows 10, and Windows 11; the Intel Mac lane remains incomplete."
         ]
       }
     },
