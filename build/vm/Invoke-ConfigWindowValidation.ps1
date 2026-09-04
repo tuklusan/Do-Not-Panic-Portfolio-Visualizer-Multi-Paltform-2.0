@@ -556,7 +556,7 @@ function Invoke-LinuxValidation {
         $previous = $env:SSHPASS
         $env:SSHPASS = $Secret
         try {
-            Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+            Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max(60, $Timeout)) -ArgumentList @(
                 '-e',
                 'ssh',
                 '-o',
@@ -585,7 +585,7 @@ function Invoke-LinuxValidation {
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
-        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max(60, $Timeout)) -ArgumentList @(
             '-e',
             'ssh',
             '-o',

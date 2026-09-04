@@ -4720,8 +4720,9 @@
           ,"Local five-minute cycle local-cycle-5m-20260902-233808 found Linux product-scene acceptance passed with non-empty screenshots and circular traces; Windows 10 and Windows 11 reached the real product but foreground acquisition failed before capture; the Mac was unavailable at cycle start."
           ,"Linux trace proved AiAccessValidationSucceeded but the real AiSummary request ended with a bounded TaskCanceledException, so this evidence does not count as a successful AI summary acceptance."
         ],
-        "implementation_progress": [
-          "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
+      "implementation_progress": [
+      "The Linux validation driver now bounds remote deployment and executable preflight probes to the per-command validation timeout instead of allowing a hung setup probe to consume the entire soak duration; the active run exposed this previously unbounded setup wait.",
+        "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
           "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
           "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
           "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test.",
