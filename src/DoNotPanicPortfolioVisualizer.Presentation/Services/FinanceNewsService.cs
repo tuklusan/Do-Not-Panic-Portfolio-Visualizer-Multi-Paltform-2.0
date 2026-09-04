@@ -283,12 +283,6 @@ public sealed class FinanceNewsService : IDisposable
         if (IsOpenRouterEndpoint(endpoint.AbsoluteUri))
             payload["provider"] = new { sort = "latency" };
 
-        using HttpRequestMessage request = new(HttpMethod.Post, requestUri)
-        {
-            Content = JsonContent.Create(payload)
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.AiApiKey);
-        AddOpenRouterAttributionHeaders(request, endpoint.AbsoluteUri);
         string operationId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         TraceLog.InfoState("FinanceNewsService", "AiSummaryRequestStarted", [
             new("operation_id", operationId),
@@ -296,47 +290,73 @@ public sealed class FinanceNewsService : IDisposable
             new("model", modelId),
             new("headline_count", headlines.Count)
         ]);
-        HttpResponseMessage response;
-        try
+        const int maximumAttempts = 3;
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
-            response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception exception)
-        {
-            TraceLog.WarnState("FinanceNewsService", "AiSummaryFailed", [
-                new("operation_id", operationId),
-                new("failure", exception.GetType().Name)
-            ]);
-            throw;
-        }
-
-        using (response)
-        {
-            TraceLog.InfoState("FinanceNewsService", "AiSummaryResponse", [
-                new("operation_id", operationId),
-                new("status_code", (int)response.StatusCode)
-            ]);
-            response.EnsureSuccessStatusCode();
-            using JsonDocument document = await JsonDocument.ParseAsync(
-                await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            string? summary = document.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString();
-            if (string.IsNullOrWhiteSpace(summary))
+            using HttpRequestMessage request = new(HttpMethod.Post, requestUri)
             {
-                TraceLog.WarnState("FinanceNewsService", "AiSummaryEmpty", [new("operation_id", operationId)]);
-                return null;
+                Content = JsonContent.Create(payload)
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.AiApiKey);
+            AddOpenRouterAttributionHeaders(request, endpoint.AbsoluteUri);
+            HttpResponseMessage response;
+            try
+            {
+                response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                TraceLog.WarnState("FinanceNewsService", "AiSummaryFailed", [
+                    new("operation_id", operationId),
+                    new("failure", exception.GetType().Name),
+                    new("attempt", attempt)
+                ]);
+                throw;
             }
 
-            TraceLog.InfoState("FinanceNewsService", "AiSummarySucceeded", [
-                new("operation_id", operationId),
-                new("summary_length", summary.Length)
-            ]);
-            return summary.Trim();
+            using (response)
+            {
+                TraceLog.InfoState("FinanceNewsService", "AiSummaryResponse", [
+                    new("operation_id", operationId),
+                    new("status_code", (int)response.StatusCode),
+                    new("attempt", attempt)
+                ]);
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt < maximumAttempts)
+                {
+                    TimeSpan delay = attempt == 1 ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(5);
+                    TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
+                        new("operation_id", operationId),
+                        new("attempt", attempt),
+                        new("delay_seconds", delay.TotalSeconds)
+                    ]);
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                response.EnsureSuccessStatusCode();
+                using JsonDocument document = await JsonDocument.ParseAsync(
+                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                string? summary = document.RootElement
+                    .GetProperty("choices")[0]
+                    .GetProperty("message")
+                    .GetProperty("content")
+                    .GetString();
+                if (string.IsNullOrWhiteSpace(summary))
+                {
+                    TraceLog.WarnState("FinanceNewsService", "AiSummaryEmpty", [new("operation_id", operationId)]);
+                    return null;
+                }
+
+                TraceLog.InfoState("FinanceNewsService", "AiSummarySucceeded", [
+                    new("operation_id", operationId),
+                    new("summary_length", summary.Length)
+                ]);
+                return summary.Trim();
+            }
         }
+
+        throw new InvalidOperationException("AI summary request exhausted its retry attempts.");
     }
 
     private static IReadOnlyList<string> BuildSummarizedHeadlines(string summary, AiWritingStyle writingStyle)
