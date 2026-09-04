@@ -379,20 +379,38 @@ function Copy-LinuxPublishToRemote {
             $SourcePath,
             '.'
         )
-        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
-            '-e',
-            'scp',
-            '-O',
-            '-C',
-            '-o',
-            'StrictHostKeyChecking=no',
-            '-o',
-            'BatchMode=no',
-            '-o',
-            'ConnectTimeout=60',
-            $archivePath,
-            "${User}@${HostName}:$remoteArchivePath"
-        )
+        $copyFailure = $null
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+                Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
+                    '-e',
+                    'scp',
+                    '-O',
+                    '-C',
+                    '-o',
+                    'StrictHostKeyChecking=no',
+                    '-o',
+                    'BatchMode=no',
+                    '-o',
+                    'PreferredAuthentications=password',
+                    '-o',
+                    'PubkeyAuthentication=no',
+                    '-o',
+                    'NumberOfPasswordPrompts=1',
+                    '-o',
+                    'ConnectTimeout=60',
+                    $archivePath,
+                    "${User}@${HostName}:$remoteArchivePath"
+                )
+                $copyFailure = $null
+                break
+            }
+            catch {
+                $copyFailure = $_
+                if ($attempt -lt 3) { Start-Sleep -Seconds ([int]([Math]::Pow(2, $attempt - 1) * 5)) }
+            }
+        }
+        if ($null -ne $copyFailure) { throw $copyFailure }
         Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
             '-e',
             'ssh',
@@ -400,6 +418,12 @@ function Copy-LinuxPublishToRemote {
             'StrictHostKeyChecking=no',
             '-o',
             'BatchMode=no',
+            '-o',
+            'PreferredAuthentications=password',
+            '-o',
+            'PubkeyAuthentication=no',
+            '-o',
+            'NumberOfPasswordPrompts=1',
             '-o',
             'ConnectTimeout=60',
             "${User}@${HostName}",
