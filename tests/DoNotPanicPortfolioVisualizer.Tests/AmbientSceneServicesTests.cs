@@ -249,7 +249,8 @@ public sealed class AmbientSceneServicesTests
 
         quote.StepVisuals(TimeSpan.FromMilliseconds(100));
         double peak = quote.FlashOpacity;
-        quote.StepVisuals(TimeSpan.FromMilliseconds(600));
+        for (int index = 0; index < 6; index++)
+            quote.StepVisuals(TimeSpan.FromMilliseconds(100));
         double held = quote.FlashOpacity;
         quote.StepVisuals(TimeSpan.FromMilliseconds(100));
         double descending = quote.FlashOpacity;

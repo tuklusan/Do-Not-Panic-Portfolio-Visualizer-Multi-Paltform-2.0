@@ -74,7 +74,7 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
         decimal? usableLast = quote.Last ?? quote.PreviousClose;
         decimal? previousLast = Last;
         bool hydrated = previousLast is not null;
-        bool changed = hydrated && usableLast.HasValue && previousLast.Value != usableLast.Value;
+        bool changed = previousLast.HasValue && usableLast.HasValue && previousLast.Value != usableLast.Value;
         PriceText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
         TrendBrush = quote.ChangePercent switch
