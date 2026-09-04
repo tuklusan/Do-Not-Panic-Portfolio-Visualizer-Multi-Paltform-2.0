@@ -438,7 +438,7 @@ foreach ($record in @($availability.machines)) {
             if (-not [string]::IsNullOrWhiteSpace($openRouterKey)) {
                 # The remote bash script consumes the key as stdin data. It is
                 # never placed in an argument, shell command, or remote file.
-                $remoteStdin = "IFS= read -r DNPPV_OPENROUTER_API_KEY`nexport DNPPV_SOAK_REQUIRE_AI_NEWS=1`n$openRouterKey`n"
+                $remoteStdin = "IFS= read -r DNPPV_OPENROUTER_API_KEY`n$openRouterKey`nexport DNPPV_SOAK_REQUIRE_AI_NEWS=1`n"
             }
             $remoteStdin += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'`n"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(

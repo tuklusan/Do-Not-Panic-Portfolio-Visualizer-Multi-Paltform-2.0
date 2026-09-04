@@ -95,6 +95,11 @@ if [[ "$soak_minutes" -gt 0 ]]; then
   printf 'MAC_SOAK_COMPLETED\n' >> "$artifact/mac-soak.log"
   check_budget
   trace="$DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT/Trace/trace.circular.log"
+  mkdir -p "$artifact/trace"
+  if [[ -s "$trace" ]]; then
+    cp "$trace" "$artifact/trace/trace.circular.log"
+    if [[ -f "${trace%.log}.idx" ]]; then cp "${trace%.log}.idx" "$artifact/trace/trace.circular.idx"; fi
+  fi
   rss_usable=false
   ai_required=false
   ai_requested=false
