@@ -4986,6 +4986,138 @@
       }
     },
       {
+        "id": "CR-098",
+        "phase": "Phase 7",
+        "title": "Restore Windows ARM RSS and AI news soak evidence",
+        "status": "open",
+        "priority": "normal",
+        "depends_on": [
+          "CR-096"
+        ],
+        "objective": "Determine why the Windows ARM hosted product soak succeeds at process execution and AI access validation but emits no usable RSS playback or AI news request evidence.",
+        "acceptance_criteria": [
+          "Windows ARM emits usable RSS playback evidence.",
+          "Windows ARM observes the configured AI news request and success path.",
+          "Failure diagnosis distinguishes feed freshness, playback scheduling, credentials, and platform behavior.",
+          "The lane passes the news evidence gate and retains a complete inspected closure record."
+        ],
+        "validation_plan": [
+          "Run upstream forward and reverse behavior gates over RSS, AI news, startup, and platform launch paths.",
+          "Run focused tests and inspect both circular traces plus news-evidence.json.",
+          "Run mandatory independent review and a serialized hosted matrix lane."
+        ],
+        "artifacts": [
+          "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
+          ".github/workflows/publish-six-rids.yml"
+        ],
+        "upstream_behavior_inventory": {
+          "status": "complete",
+          "document": "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Invoke-ProductSoak.ps1",
+            "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+            "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+          ],
+          "zero_known_gaps": true,
+          "known_gaps_routed_to_change_requests": true
+        },
+        "reverse_upstream_gap_scan": {
+          "status": "complete",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_scanned": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Invoke-ProductSoak.ps1",
+            "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+            "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+          ],
+          "zero_missing_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        },
+        "current_validation": {
+          "status": "pending",
+          "unresolved_gaps": [
+            "Implementation and fresh hosted validation are pending."
+          ],
+          "closure_evidence": []
+        },
+        "upstream_closure_audit": {
+          "status": "pending",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_rescanned": [],
+          "zero_unmapped_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        }
+      },
+      {
+        "id": "CR-099",
+        "phase": "Phase 7",
+        "title": "Preserve Ubuntu Slim soak closure evidence",
+        "status": "open",
+        "priority": "normal",
+        "depends_on": [
+          "CR-096"
+        ],
+        "objective": "Ensure an Ubuntu Slim product soak cannot be cancelled before its required evidence review and closure record are retained.",
+        "acceptance_criteria": [
+          "A completed Ubuntu Slim soak emits an inspected closure record.",
+          "Cancellation or reviewer timeout is represented as an attributable lane failure, never silently omitted.",
+          "Aggregate review consumes every lane artifact and fails closed when a record is missing."
+        ],
+        "validation_plan": [
+          "Inspect the complete soak/evidence dependency graph and runner cancellation behavior.",
+          "Run workflow, syntax, license, migration, and upstream-lock gates.",
+          "Run mandatory independent review and a serialized hosted matrix with all 21 lane records."
+        ],
+        "artifacts": [
+          "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1"
+        ],
+        "upstream_behavior_inventory": {
+          "status": "complete",
+          "document": "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Invoke-ProductSoak.ps1",
+            "build/Test-WorkflowGateConfiguration.ps1"
+          ],
+          "zero_known_gaps": true,
+          "known_gaps_routed_to_change_requests": true
+        },
+        "reverse_upstream_gap_scan": {
+          "status": "complete",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_scanned": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Invoke-ProductSoak.ps1",
+            "build/Test-WorkflowGateConfiguration.ps1"
+          ],
+          "zero_missing_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        },
+        "current_validation": {
+          "status": "pending",
+          "unresolved_gaps": [
+            "Implementation and fresh hosted validation are pending."
+          ],
+          "closure_evidence": []
+        },
+        "upstream_closure_audit": {
+          "status": "pending",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_rescanned": [],
+          "zero_unmapped_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        }
+      },
+      {
         "id": "CR-097",
         "phase": "Phase 7",
         "title": "Vendor-neutral independent code review gate",
@@ -5102,11 +5234,16 @@
           "unresolved_gaps": []
         },
         "current_validation": {
-          "status": "pending",
+          "status": "failed",
+          "run_id": "33979739957",
           "unresolved_gaps": [
-            "Fresh post-fix 21-lane hosted validation is pending."
+            "Windows ARM soak completed product execution but failed RSS and AI news evidence assertions; routed to CR-098.",
+            "Ubuntu Slim soak artifact exists but lane was cancelled before closure record; routed to CR-099.",
+            "Aggregate review found 20 instead of 21 evidence manifests and failed closed."
           ],
-          "closure_evidence": [],
+          "closure_evidence": [
+            "Hosted run 33979739957 completed with 44 jobs and conclusion failure; Windows ARM news-evidence.json and Ubuntu Slim missing closure evidence were inspected from downloaded artifacts."
+          ],
           "nvidia_review": {
             "status": "complete_advisory_fail",
             "reviewed_snapshot": "CR-096 document",
