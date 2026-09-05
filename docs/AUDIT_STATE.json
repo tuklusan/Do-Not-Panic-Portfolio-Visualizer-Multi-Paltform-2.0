@@ -5402,7 +5402,7 @@
         "build/Invoke-LocalLabSoakCycle.ps1"
       ],
       "upstream_behavior_inventory": {
-        "status": "required_before_development",
+        "status": "complete",
         "document": "docs/CR-069-PROGRESSIVE-SOAK-PROFILES.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files": [
@@ -5410,8 +5410,23 @@
           "build/Invoke-LocalLabSoakCycle.ps1",
           "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md"
         ],
-        "zero_known_gaps": false,
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
+          "build/validation/Invoke-AutonomousVisualValidation.ps1",
+          "build/validation/Analyze-VisualValidationArtifacts.ps1",
+          "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "open",

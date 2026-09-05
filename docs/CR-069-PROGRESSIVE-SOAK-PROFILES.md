@@ -16,7 +16,24 @@ patent, trademark, and governing-law provisions.
 
 ## Functional Inventory
 
-| CR-01 | Run the controlled 10-minute profile while open CRs remain | soak workflow and local coordinator | traces and result manifests |
+| SOAK-01 | Run the controlled 10-minute profile while open CRs remain | `.github/workflows/publish-six-rids.yml` and `build/Invoke-LocalLabSoakCycle.ps1` | duration and cycle manifests |
+| SOAK-02 | Exercise each configured hosted runner/RID pair as a real product lane | hosted `real-product-soak` matrix | runner/RID identity and lane result |
+| SOAK-03 | Probe all local machines at the beginning of every cycle and record unavailable machines | local coordinator availability probe | availability manifest with reason |
+| SOAK-04 | Wait for product startup to settle before collecting visual evidence | hosted warmup and local driver settling | settled screenshot evidence |
+| SOAK-05 | Retrieve the product circular trace and YFinance circular trace for every completed lane | trace collection and recursive retrieval | `trace.circular.*` and `yfinance.circular.*` |
+| SOAK-06 | Keep credentials out of product artifacts while enabling the real RSS and AI path | protected environment overlay and redaction | redacted result and evidence manifests |
+| SOAK-07 | Review generated evidence and route actionable failures into the JSON queue | NVIDIA artifact review and post-soak review | review output and CR linkage |
+| SOAK-08 | Terminate product, sidecar, capture, and transfer processes after each lane | `finally` cleanup paths and local cleanup | cleanup proof and process inventory |
+| SOAK-09 | Prevent overlapping cycles and keep four-hour profiles paused while migration CRs remain open | concurrency groups and duration policy | workflow state and dispatch inputs |
+| SOAK-10 | Repeat the affected duration and shorter profiles after every correction | CR queue and relaunch procedure | rerun identity and closure evidence |
+
+The upstream validation and runner patterns were read from the pinned
+upstream revision `65a53bbbf0cf9af1058363f8939d464ca03858f8`, including its
+validation scripts, trace collection, cleanup paths, and the Ludo-Arena
+matrix/desktop execution patterns used as the migration reference. The
+current 2.0 counterparts are listed above; no upstream soak behavior is left
+unmapped for this CR. Product-specific defects found during execution remain
+separate implementation CRs rather than being hidden in this operational CR.
 
 While the migration CR queue contains open work, run exactly one real-product
 profile on the 18-plus-4 matrix:
