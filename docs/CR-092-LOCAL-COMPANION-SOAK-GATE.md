@@ -34,11 +34,11 @@ residual project-owned product processes and prove cleanup before launch.
 
 | ID | Required behavior | Evidence |
 | --- | --- | --- |
-| LOCAL-SOAK-01 | Probe all four lab machines before each matrix cycle and record available/unavailable state. | Availability manifest with timestamp and machine identity. |
-| LOCAL-SOAK-02 | Terminate residual project-owned product and YFinance processes before launch; failure hard-stops that local lane. | Cleanup result and zero-residual verification. |
-| LOCAL-SOAK-03 | Run the real product, not a fixture, for the exact hosted soak duration with identical RSS, AI, trace, screenshot, settling, and cleanup goals. | Shared soak-result schema and two circular traces. |
-| LOCAL-SOAK-04 | Unavailable local machines are explicit skips; all 18 hosted lanes remain mandatory. | Aggregated result distinguishes skipped local lanes from failures. |
-| LOCAL-SOAK-05 | Local and hosted evidence is reviewed together and defects become JSON CRs before the cycle can count. | Combined artifact-review manifest and queue update. |
+| LS-01 | Probe all four lab machines before each matrix cycle and record available/unavailable state. | Availability manifest with timestamp and machine identity. |
+| LS-02 | Terminate residual project-owned product and YFinance processes before launch; failure hard-stops that local lane. | Cleanup result and zero-residual verification. |
+| LS-03 | Run the real product, not a fixture, for the exact hosted soak duration with identical RSS, AI, trace, screenshot, settling, and cleanup goals. | Shared soak-result schema and two circular traces. |
+| LS-04 | Unavailable local machines are explicit skips; all 18 hosted lanes remain mandatory. | Aggregated result distinguishes skipped local lanes from failures. |
+| LS-05 | Local and hosted evidence is reviewed together and defects become JSON CRs before the cycle can count. | Combined artifact-review manifest and queue update. |
 
 ## Required Gates
 

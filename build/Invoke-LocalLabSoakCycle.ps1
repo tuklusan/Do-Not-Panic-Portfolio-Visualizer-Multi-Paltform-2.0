@@ -578,11 +578,37 @@ foreach ($record in @($availability.machines)) {
         }
         if ($null -ne $remoteCleanupRoot) {
             try {
-                Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
-                    'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
-                    "$($machineRecord.user)@$($machineRecord.address)",
-                    "if [ -d '$remoteCleanupRoot' ]; then rm -rf -- '$remoteCleanupRoot'; fi"
-                ) -Timeout $macTimeout | Out-Null
+                if ($platformByMachine.ContainsKey($record.name) -and $platformByMachine[$record.name] -eq 'windows') {
+                    # A forced coordinator stop can leave the interactive
+                    # scheduled task alive and Windows marks its loaded files
+                    # as undeletable. Stop only this cycle's process tree and
+                    # remove the tree through native PowerShell so read-only
+                    # attributes and Windows path semantics are handled.
+                    $cycleToken = [IO.Path]::GetFileName($remoteCleanupRoot)
+                    $cycleTokenLiteral = "'" + $cycleToken.Replace("'", "''") + "'"
+                    $remoteCleanupRootLiteral = "'" + $remoteCleanupRoot.Replace("'", "''") + "'"
+                    $remoteCleanupLines = @(
+                        '$token = ' + $cycleTokenLiteral,
+                        'Get-ScheduledTask -TaskName ''DNPPV_ProductSceneValidation'' -ErrorAction SilentlyContinue | Stop-ScheduledTask -ErrorAction SilentlyContinue',
+                        'Unregister-ScheduledTask -TaskName ''DNPPV_ProductSceneValidation'' -Confirm:$false -ErrorAction SilentlyContinue',
+                        'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like (''*'' + $token + ''*'') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }',
+                        'Start-Sleep -Seconds 2',
+                        'if (Test-Path -LiteralPath ' + $remoteCleanupRootLiteral + ') { Remove-Item -LiteralPath ' + $remoteCleanupRootLiteral + ' -Force -Recurse -ErrorAction SilentlyContinue }'
+                    )
+                    $remoteCleanupPayload = $remoteCleanupLines -join [Environment]::NewLine
+                    $remoteCleanupEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCleanupPayload))
+                    Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
+                        'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                        "$($machineRecord.user)@$($machineRecord.address)", 'powershell.exe', '-NoProfile', '-NonInteractive', '-EncodedCommand', $remoteCleanupEncoded
+                    ) -Timeout $macTimeout | Out-Null
+                }
+                else {
+                    Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
+                        'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                        "$($machineRecord.user)@$($machineRecord.address)",
+                        "if [ -d '$remoteCleanupRoot' ]; then rm -rf -- '$remoteCleanupRoot'; fi"
+                    ) -Timeout $macTimeout | Out-Null
+                }
             }
             catch {
                 $machine.status = 'Failed'
