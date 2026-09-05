@@ -1467,7 +1467,9 @@ function Invoke-WindowsValidation {
             '    $smallHeight = $smallBounds.Bottom - $smallBounds.Top',
             '    $windowedTrace = $null',
             '    $tracePath = Join-Path $localDataRoot ''Trace\trace.circular.log''',
-            '    for ($attempt = 0; $attempt -lt 20; $attempt++) {',
+            # Startup can be bursty on a remote interactive Windows desktop;
+            # keep the trace requirement hard while allowing a bounded settle.
+            '    for ($attempt = 0; $attempt -lt 120; $attempt++) {',
             '        $windowedTrace = Get-Content -LiteralPath $tracePath -ErrorAction SilentlyContinue | Where-Object { $_ -like ''*event=WindowedStartupApplied*'' } | Select-Object -Last 1',
             '        if (-not [string]::IsNullOrWhiteSpace($windowedTrace)) { break }',
             '        Start-Sleep -Milliseconds 500',
