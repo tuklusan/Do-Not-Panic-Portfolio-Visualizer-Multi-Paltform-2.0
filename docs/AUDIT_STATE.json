@@ -6059,14 +6059,14 @@
     "current_validation": {
       "status": "local_soaks_reenabled_after_hosted_checkpoint",
       "unresolved_gaps": [
-        "Cycle dnppv2-local-companion-cycle-r9 passed Linux and Windows 10, but Windows 11 failed its bounded 1024x768 startup-trace acceptance and Intel macOS failed the required RSS/AI evidence gate; both require related CR follow-up and a fresh reviewed four-machine cycle.",
+        "Cycle local-cycle-r10 (2026-09-05) passed the real product, RSS/AI evidence, screenshots, and both circular traces on Windows 10 and Windows 11; Linux timed out during remote secret-file setup and Intel macOS failed in the sshpass process-launch path, so CR-080/CR-087/CR-088 follow-up remains required.",
         "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items."
       ]
     }
     }
   ],
   "remaining_validation_gaps": [
-    "CR-092: Linux and Intel macOS companion lanes require a fresh run after Unix residual-process matcher correction; Win10 and Win11 completed the real-product lane in the latest cycle.",
+    "CR-092: local-cycle-r10 completed the real-product lane on Windows 10 and Windows 11; Linux remote secret-file setup timed out and Intel macOS hit the sshpass process-launch failure, so Unix companion evidence still requires CR follow-up.",
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",

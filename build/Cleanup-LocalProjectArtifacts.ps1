@@ -28,6 +28,7 @@ foreach ($relativePath in @(
     'artifacts',
     'build/nvidia-review',
     'build/publish',
+    'build/local-probe',
     'build/vm-artifacts'
 )) {
     $path = Join-Path $repositoryRoot $relativePath
@@ -35,6 +36,10 @@ foreach ($relativePath in @(
         Remove-Item -LiteralPath $path -Recurse -Force
     }
 }
+
+Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'build') -Directory -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like 'local-cycle-*' } |
+    ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
 
 Get-ChildItem -LiteralPath $repositoryRoot -Directory -Recurse -Force |
     Where-Object { $_.Name -in @('bin', 'obj') } |

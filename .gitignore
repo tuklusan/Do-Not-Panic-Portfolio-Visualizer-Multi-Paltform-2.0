@@ -14,6 +14,8 @@
 # ============================================================================
 build/nvidia-review/
 build/publish/
+build/local-probe/
+build/local-cycle-*/
 build/vm-artifacts/
 artifacts/
 build/vm/test-secrets.json
