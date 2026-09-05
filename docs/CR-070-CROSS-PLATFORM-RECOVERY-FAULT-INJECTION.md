@@ -30,4 +30,12 @@ running marker, emits a warning, and refuses to mark the failed registration as
 a clean exit. This makes the contract portable across Windows, Linux, and
 macOS without weakening the assertion.
 
-**Status:** Open
+## Closure
+
+The deterministic injected state-writer failure passed locally and in hosted
+real-product lanes on Linux, macOS, and Windows in matrix run `33966531458`.
+The stale running marker, fresh run ID, warning, and rejected clean-exit update
+were all covered by the focused test. The full hosted matrix completed with 38
+successful jobs and zero failures.
+
+**Status:** Closed

@@ -5305,7 +5305,7 @@
       "id": "CR-070",
       "phase": "Phase 7",
       "title": "Make recovery-policy fault simulation filesystem-independent",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066"
       ],
@@ -5337,12 +5337,44 @@
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DesktopRenderRecoveryPolicyTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Hosted smoke rerun is pending."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "Focused recovery-policy test passed locally with 36 tests in the class and the full Release suite passed with 311 tests.",
+          "Hosted matrix run 33966531458 completed with 38 successful jobs and zero failures, including Linux, macOS, and Windows product-soak lanes.",
+          "The deterministic injected state-write failure preserved the stale running marker, allocated a new run ID, emitted a warning, and rejected the failed registration's clean-exit update."
         ]
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/DesktopRenderRecoveryPolicyTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "review": "NVIDIA review packet generated; no blocking reviewer result was available and reviewer remains advisory",
+        "automated_tests": "Passed; 311 Release tests and zero-warning Release build",
+        "hosted_acceptance": "Passed; matrix 33966531458, 38 successful jobs, zero failures"
+      },
+      "closed_on": "2026-09-05"
     },
     {
       "id": "CR-069",
@@ -6211,7 +6243,7 @@
       "id": "CR-093",
       "phase": "Phase 7",
       "title": "Make Atom feed parser fixture independent of wall-clock date",
-      "status": "open",
+      "status": "closed",
       "depends_on": [],
       "objective": "Keep the Atom href-link parser test deterministic after the live date passes its seven-day freshness window, without weakening production freshness filtering.",
       "acceptance_criteria": [
@@ -6252,17 +6284,36 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Focused and full local tests pass after the deterministic-clock fix; hosted rerun and closure gates are pending."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "The focused Atom href-link parser test passed locally after injecting a fixed August 29, 2026 clock.",
+          "The full Release suite passed with 311 tests and the zero-warning Release build passed locally.",
+          "Hosted matrix run 33966531458 completed with 38 successful jobs and zero failures, proving the fixture remains deterministic on hosted runners."
         ]
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "review": "NVIDIA review packet generated; no blocking reviewer result was available and reviewer remains advisory",
+        "automated_tests": "Passed; 311 Release tests and zero-warning Release build",
+        "hosted_acceptance": "Passed; matrix 33966531458, 38 successful jobs, zero failures"
+      },
+      "closed_on": "2026-09-05"
     }
   ],
   "remaining_validation_gaps": [
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
-    "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
-    "CR-093: deterministic Atom feed fixture fix is not yet hosted-validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",
