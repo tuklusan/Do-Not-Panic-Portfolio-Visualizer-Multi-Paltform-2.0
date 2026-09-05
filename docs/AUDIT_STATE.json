@@ -5839,9 +5839,9 @@
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
-        "status": "open",
+        "status": "targeted_runtime_evidence_complete_pending_migration_gate",
         "unresolved_gaps": [
-          "The 2026-09-04 Intel Mac trace initially showed repeated QuoteRequestFailed events with Failed to start YFinance.NET.Server; restoring the server executable bit removed those failures. Targeted runs local-yfinance-secure-r43, r44, and r45 each prove ServerStartup plus multiple QuoteResponseObserved live prices; r46 also proves live responses but was rejected only for an external OpenRouter HTTP 429. Two fresh targeted runs remain for closure evidence under a successful AI-provider response."
+          "Two fresh keyed Intel Mac runs on 2026-09-05 prove ServerStartup on loopback port 14871, multiple QuoteResponseObserved live prices, RSS/AI evidence, screenshots, and cleanup. Mandatory fresh upstream forward/reverse gate records and broader queue dependencies remain before closure."
         ]
       }
     },
