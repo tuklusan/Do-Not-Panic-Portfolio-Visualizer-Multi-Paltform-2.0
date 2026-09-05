@@ -7136,6 +7136,84 @@
         "status": "deferred",
         "unresolved_gaps": ["The current run has not reached terminal state; no removal or fresh validation is claimed."]
       }
+    },
+    {
+      "id": "CR-105",
+      "phase": "Phase 7",
+      "title": "Eliminate redundant post-soak re-review and make hosted TEST_ARTIFACT PASS receipts authoritative",
+      "status": "open",
+      "priority": "urgent",
+      "depends_on": [],
+      "objective": "Replace the redundant serial aggregate reviewer loop with deterministic validation of genuine v2 lane receipts while preserving the lane-level TEST_ARTIFACT review and failing closed on historical v1 or incomplete evidence.",
+      "acceptance_criteria": [
+        "Each successful lane emits exactly one machine-readable v2 TEST_ARTIFACT PASS result with zero blocking findings, snapshot identity, commit identity, and exact material SHA-256 binding.",
+        "Each lane emits a v2 closure record binding the run, commit, runner/RID, snapshot, material hash, result hash, cleaned-up soak result, two circular traces, screenshots, and RSS/AI evidence.",
+        "build/Test-HostedSoakClosure.ps1 is the sole provider-neutral deterministic aggregate validator and performs zero remote reviewer calls.",
+        "post-soak-review invokes only the deterministic validator and contains no per-manifest reviewer harness invocation or reviewer API dependency.",
+        "Missing, v1, malformed, stale, mismatched, non-PASS, or hash-inconsistent evidence fails closed; historical run 33988763870 is rejected as v2 closure evidence.",
+        "Two successive fresh line-by-line audits of this CR, the changed workflow, validator, and tests find zero gaps before push; the first post-fix hosted matrix is the authoritative proof."
+      ],
+      "validation_plan": [
+          "Preserve and inventory run 33988763870 before implementation: 43 GitHub artifacts, 21 publish, 21 soak, and one post-soak diagnostic artifact; the protected copy is C:\\Users\\vagab\\Downloads\\dnppv2-historical-run-33988763870, with Ubuntu Slim cancellation retained as diagnostic evidence.",
+        "Run validator self-test, negative identity/hash/schema/duplicate/missing-lane tests, PowerShell syntax, workflow, license, build/test, upstream, reverse, and NVIDIA gates.",
+        "Run the offline validator against the preserved v1 artifact corpus and verify deliberate fail-closed behavior with zero remote calls.",
+        "Push only after two consecutive zero-gap audits, then inspect the first complete 21-lane hosted proof."
+      ],
+      "artifacts": [
+        "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
+        "build/Test-HostedSoakClosure.ps1",
+        ".github/workflows/publish-six-rids.yml",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": ["Two implementation audits remain before push."]
+      },
+      "current_validation": {
+        "status": "implementation_in_progress",
+        "evidence": [
+            "Run 33988763870 cancelled only at the redundant aggregate wait; 43 artifacts downloaded to the protected Downloads corpus.",
+          "Test-HostedSoakClosure.ps1 self-test passed.",
+          "Offline validation of run 33988763870 failed closed because v2 semantic review-result.json receipts are absent, as required."
+        ],
+        "unresolved_gaps": ["First post-fix hosted matrix proof remains required before closure."],
+        "review_disposition": "Latest NVIDIA advisory FAIL was manually reconciled against the exact staged files; its masking/path/pending-file findings are contradicted by current workflow and validator text, while the deterministic local gates pass."
+      }
     }
   ],
   "remaining_validation_gaps": [

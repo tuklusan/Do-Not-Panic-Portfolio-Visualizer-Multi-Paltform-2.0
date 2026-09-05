@@ -49,6 +49,12 @@ function Assert-JobTimeout([string]$Workflow, [string]$JobName) {
 
 $workflow = Read-Workflow $WorkflowPath
 $cleanupWorkflow = Read-Workflow $CleanupWorkflowPath
+$validatorPath = Join-Path $repoRoot 'build/Test-HostedSoakClosure.ps1'
+if (-not (Test-Path -LiteralPath $validatorPath -PathType Leaf)) { throw "Missing deterministic hosted soak validator: $validatorPath" }
+$validatorText = [IO.File]::ReadAllText($validatorPath)
+foreach ($requiredParameter in @('ArtifactRoot', 'ExpectedRunId', 'ExpectedCommitSha', 'ExpectedLaneCount')) {
+    if ($validatorText -notmatch ("\$" + [regex]::Escape($requiredParameter))) { throw "Hosted soak validator is missing required parameter '$requiredParameter'." }
+}
 
 if ($workflow -notmatch '(?ms)^concurrency:\s*\r?\n\s+group:\s+dnppv2-complete-matrix\s*\r?\n\s+cancel-in-progress:\s+false') {
     throw 'Hosted matrix workflow must serialize complete runs and wait for queued lanes and evidence review.'
@@ -58,9 +64,8 @@ $jobsIndex = $workflow.IndexOf("`njobs:", [StringComparison]::Ordinal)
 if ($concurrencyIndex -lt 0 -or $jobsIndex -lt 0 -or $concurrencyIndex -gt $jobsIndex) {
     throw 'Hosted matrix concurrency must be a workflow-root block before jobs.'
 }
-if ($workflow -match '\$artifactDirectory:\s+\$safeMessage' -or
-    $workflow -notmatch '\$\{artifactDirectory\}:\s+\$safeMessage') {
-    throw 'Hosted aggregate review contains unsafe artifact-directory interpolation.'
+if ($workflow -match '(?s)post-soak-review.*artifactDirectory.*safeMessage') {
+    throw 'Hosted aggregate review contains obsolete remote-review error interpolation.'
 }
 
 foreach ($jobName in @('gate', 'publish', 'real-product-soak', 'post-soak-review')) { Assert-JobTimeout $workflow $jobName }
@@ -92,21 +97,24 @@ if (@($publishEntries | Select-Object -Unique).Count -ne 21) { throw 'Hosted run
 foreach ($requiredEntry in @('ubuntu-slim|linux-x64', 'macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
     if ($publishEntries -cnotcontains $requiredEntry) { throw "Hosted runner matrix is missing required entry '$requiredEntry'." }
 }
-if ($workflow -notmatch 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_ARTIFACT') {
+if ([regex]::Matches($workflow, 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
     throw 'Hosted soak workflow is missing mandatory NVIDIA test-artifact review.'
 }
 if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Linux''') {
     throw 'Hosted soak workflow is missing unconditional Linux Xvfb cleanup.'
 }
-if (-not $workflow.Contains("EXPECTED_LANE_COUNT: '21'") -or
-    -not $workflow.Contains('$expectedLaneCount = [int]$env:EXPECTED_LANE_COUNT') -or
-    $workflow -notmatch 'Expected \$expectedLaneCount soak evidence manifests') {
+if ($workflow -notmatch '(?ms)^env:\s*\r?\n\s+EXPECTED_LANE_COUNT:\s*''21''\s*$' -or
+    $workflow -notmatch 'ExpectedLaneCount \(\[int\]\$env:EXPECTED_LANE_COUNT\)') {
     throw 'Hosted post-soak review is missing the complete 21-runner evidence count gate.'
 }
 if ($workflow -notmatch 'Inspect and retain lane closure evidence' -or
-    $workflow -notmatch 'dnppv2-lane-closure-record/v1' -or
+    $workflow -notmatch 'dnppv2-lane-closure-record/v2' -or
+    $workflow -notmatch 'dnppv2-test-artifact-review-result/v2' -or
     $workflow -notmatch 'inspectedEvidenceRetained = \$failures\.Count -eq 0') {
     throw 'Hosted soak workflow is missing the mandatory per-lane closure evidence inspection gate.'
+}
+foreach ($contractToken in @('$review = $safeOutput | ConvertFrom-Json', 'review_complete', 'snapshot_id', 'blocking_findings', 'dnppv2-test-artifact-review-result/v2')) {
+    if (-not $workflow.Contains($contractToken)) { throw "Workflow is missing defensive reviewer contract token: $contractToken" }
 }
 if (-not $workflow.Contains('if: always()') -or
     -not $workflow.Contains('Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"') -or
@@ -127,18 +135,10 @@ if ($workflow -notmatch 'Secret redaction verification failed' -or
     $workflow -notmatch 'Write-Host "::add-mask::\$env:OPENROUTER_API_KEY"') {
     throw 'Hosted soak workflow is missing verified secret redaction for retained evidence.'
 }
-if ($workflow -notmatch 'Expected \$expectedLaneCount inspected lane closure records' -or
-    $workflow -notmatch 'Incomplete inspected lane closure record' -or
-    $workflow -notmatch 'Unreadable inspected lane closure record') {
-    throw 'Hosted post-soak review is missing the complete inspected lane-record validation gate.'
-}
-if (-not $workflow.Contains('$closureRecord.status -ne ''complete''')) {
-    throw 'Hosted post-soak review is missing semantic lane-status enforcement.'
-}
-if (-not $workflow.Contains('$closureRecord.review.complete -ne $true') -or
-    -not $workflow.Contains('$closureRecord.aiEvidence.aiSuccessObserved -ne $true') -or
-    -not $workflow.Contains('$recordStatus = if ($failures.Count -eq 0) { ''complete'' }') ) {
-    throw 'Hosted post-soak review is missing semantic review and AI-evidence enforcement.'
+if ($workflow -notmatch 'Test-HostedSoakClosure\.ps1' -or
+    $workflow -notmatch 'ExpectedCommitSha \$env:GITHUB_SHA' -or
+    $workflow -match '(?s)post-soak-review.*Invoke-NvidiaReviewHarness\.ps1') {
+    throw 'Hosted aggregate must use the deterministic validator and contain no remote reviewer invocation.'
 }
 if ($workflow -notmatch "github\.event_name == 'push'" -or
     $workflow -notmatch "github\.event_name == 'workflow_dispatch'") {
