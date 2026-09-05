@@ -6101,14 +6101,14 @@
       "current_validation": {
         "status": "local_soaks_reenabled_after_hosted_checkpoint",
         "unresolved_gaps": [
-        "One additional independent complete local companion cycle is required after cycle dnppv2-local-cycle-10m-pushed-20260905-062216; the first current-revision cycle passed Linux, Windows 10, Windows 11, and Intel macOS with real-product RSS/AI evidence, screenshots, both circular traces, and cleanup.",
+        "One additional independent complete local companion cycle is required after cycle dnppv2-local-cycle-10m-pushed-20260905-062216. The next cycle dnppv2-local-cycle-10m-second-20260905-064042 passed Windows 10, Windows 11, and Intel macOS but failed Linux preflight because the deployed executable was missing at the expected remote path; a focused one-minute Linux retry reached the real product and produced screenshots, RSS/AI evidence, and both circular traces, but does not replace the required clean four-machine ten-minute cycle.",
         "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items."
       ]
     }
     }
   ],
   "remaining_validation_gaps": [
-    "CR-092: local-cycle-r10 completed the real-product lane on Windows 10 and Windows 11; Linux remote secret-file setup timed out and Intel macOS hit the sshpass process-launch failure, so Unix companion evidence still requires CR follow-up.",
+    "CR-092: one clean four-machine ten-minute local companion cycle is recorded; the next independent cycle passed Windows 10, Windows 11, and Intel macOS but failed Linux executable preflight. A focused one-minute Linux retry passed real-product evidence, but CR-080 deployment-path follow-up and another clean four-machine ten-minute cycle remain required.",
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",

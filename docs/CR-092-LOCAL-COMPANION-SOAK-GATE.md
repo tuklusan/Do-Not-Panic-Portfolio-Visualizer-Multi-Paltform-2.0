@@ -98,6 +98,17 @@ cleanup-hardening revision with all four machines available and passed:
 This is the first clean local companion cycle for the current harness revision.
 One additional independent complete cycle is required before CR-092 closure.
 
+The next independent cycle, `dnppv2-local-cycle-10m-second-20260905-064042`,
+completed its available-machine lanes but did not qualify as a clean cycle:
+Windows 10, Windows 11, and Intel macOS passed the full real-product
+acceptance contract, while Linux failed preflight because the deployed
+executable was missing at the expected remote path. A focused one-minute Linux
+retry subsequently launched the real product and produced product screenshots,
+fresh RSS/AI evidence, and both circular traces. This confirms a transient or
+race-sensitive Linux deployment defect, which remains actionable under CR-080;
+the retry is diagnostic evidence and does not substitute for the required
+independent four-machine ten-minute cycle.
+
 Cycle `dnppv2-local-companion-cycle-r9` completed its coordinator run after the
 startup-settling bound was increased. Linux and Windows 10 completed their
 10-minute real-product lanes successfully. Windows 11 reached the driver but
