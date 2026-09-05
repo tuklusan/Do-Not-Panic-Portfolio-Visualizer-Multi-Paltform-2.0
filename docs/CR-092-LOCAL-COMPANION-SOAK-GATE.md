@@ -84,6 +84,20 @@ headless over SSH and do not require a visible terminal.
 
 ## Latest cycle evidence
 
+Cycle `dnppv2-local-cycle-10m-pushed-20260905-062216` completed on the pushed
+cleanup-hardening revision with all four machines available and passed:
+
+- Linux/LXQt, Windows 10, Windows 11, and Intel macOS each launched the real
+  product for the full 10-minute duration.
+- Every lane produced product screenshots, fresh RSS evidence, successful AI
+  evidence, and both circular traces.
+- Windows cleanup used the native PowerShell finalizer and completed without
+  residual product/coordinator processes; Mac cleanup completed within its
+  slow-lane budget.
+
+This is the first clean local companion cycle for the current harness revision.
+One additional independent complete cycle is required before CR-092 closure.
+
 Cycle `dnppv2-local-companion-cycle-r9` completed its coordinator run after the
 startup-settling bound was increased. Linux and Windows 10 completed their
 10-minute real-product lanes successfully. Windows 11 reached the driver but
