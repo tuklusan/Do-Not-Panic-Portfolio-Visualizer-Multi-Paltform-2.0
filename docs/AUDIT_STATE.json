@@ -7037,6 +7037,60 @@
         "hosted_acceptance": "Passed; matrix 33966531458, 38 successful jobs, zero failures"
       },
       "closed_on": "2026-09-05"
+    },
+    {
+      "id": "CR-103",
+      "phase": "Phase 7",
+      "title": "Immutable committed-candidate review receipt and pre-push enforcement",
+      "status": "deferred",
+      "priority": "low",
+      "depends_on": ["CR-097"],
+      "objective": "Replace mutable working-tree CODE authorization with a deterministic committed-candidate model and an ignored, atomic PASS receipt bound to one exact Git base/head range, immutable snapshot, review material, reviewer result, and CR/task scope.",
+      "acceptance_criteria": [
+        "CR-097 is complete and its vendor-neutral names, schema, verdict semantics, output locations, serious-finding validation, and fail-closed caller contract are used without provider-specific vocabulary.",
+        "A canonical UTF-8, LF, deterministic snapshot descriptor is built only from Git objects, includes exact base/head/tree identities, CR scope, and a sorted encoded changed-file manifest, and is SHA-256 bound together with review material and result.",
+        "Only review_complete=true, exact PASS, and zero blocking findings can create an atomic ignored dnppv2-code-review-receipt/v1 receipt under build/code-review/receipts; all missing, malformed, stale, contradictory, unavailable, inconclusive, failed, or raced states fail closed.",
+        "Protected refs are configured by destination remote ref, initially refs/heads/main; every protected multi-ref update requires exact receipt head/local-object and base/remote-old equality, matching trees/snapshot/scope, ancestry, and fast-forward validation; protected deletion and unapproved new protected refs fail closed.",
+        "The pre-push hook consumes every Git stdin tuple, preserves wrapper arguments and exit status, verifies repository-local core.hooksPath, retains all existing gates, and rejects the entire push if any protected update is invalid.",
+        "Deterministic validator, hook transport, race, worktree, multi-ref, stale-receipt, and real temporary-Git A-to-D integration tests pass; generic instructions, review standard, workflow gate, cleanup policy, and bypass limitation are updated.",
+        "Exact committed-candidate review, receipt creation, normal protected push, hosted validation, evidence inspection, and two successive reverse zero-gap scans pass without changing product behavior or retaining historical traceback artifacts."
+      ],
+      "validation_plan": [
+        "After CR-097 closure, inventory current reviewer callers, pre-push gates, output and cleanup paths, and review-order documentation line by line.",
+        "Implement shared snapshot, generic runner/harness, receipt validator, hook stdin handling, protected-ref configuration, cleanup policy, and deterministic enforcement tests.",
+        "Run real temporary-Git commits A->B->C->D proving exact-base acceptance, remote movement rejection, new-head rejection, and skipped-range rejection; run focused/full Release, syntax, license, workflow, upstream, hosted, and artifact gates.",
+        "Review the exact committed candidate independently, generate a PASS receipt, perform a normal protected push, inspect evidence, and complete two fresh reverse zero-gap scans."
+      ],
+      "artifacts": [
+        "docs/CR-103-IMMUTABLE-COMMITTED-CANDIDATE-REVIEW-RECEIPT.md",
+        "build/Assert-CodeReviewReceipt.ps1",
+        "build/CodeReviewerCommon.ps1",
+        "build/Invoke-CodeReviewHarness.ps1",
+        "build/Run-CodeReview.ps1",
+        "build/Test-CodeReviewerWorkflowGate.ps1",
+        ".githooks/pre-push",
+        ".githooks/pre-push.ps1",
+        "AGENTS.md",
+        "docs/FRESH-PROJECT-CODE-REVIEW-GATE.md",
+        "docs/AUDIT_STATE.json",
+        ".gitignore"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "not_applicable_process_infrastructure",
+        "document": "docs/CR-103-IMMUTABLE-COMMITTED-CANDIDATE-REVIEW-RECEIPT.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending_dependency",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation is intentionally deferred until CR-097 is complete."]
+      },
+      "current_validation": {
+        "status": "deferred_blocked_on_CR-097",
+        "unresolved_gaps": ["No implementation or closure evidence is claimed."]
+      }
     }
   ],
   "remaining_validation_gaps": [
