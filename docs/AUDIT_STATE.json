@@ -4985,8 +4985,81 @@
         ]
       }
     },
-    {
-      "id": "CR-095",
+      {
+        "id": "CR-096",
+        "phase": "Phase 7",
+        "title": "Fix hosted aggregate review PowerShell interpolation",
+        "status": "open",
+        "depends_on": [
+          "CR-094"
+        ],
+        "objective": "Ensure the hosted post-soak aggregate reviewer parses and executes on Linux PowerShell while retaining complete 21-lane evidence reporting.",
+        "acceptance_criteria": [
+          "Aggregate review uses braced artifact-directory interpolation and reports safe failure details.",
+          "The workflow configuration gate rejects the unsafe interpolation form.",
+          "Local validation passes and a fresh serialized 21-lane hosted run reaches terminal aggregate review."
+        ],
+        "validation_plan": [
+          "Run workflow configuration, license, syntax, migration, and upstream-lock gates.",
+          "Run the full Release test suite.",
+          "Run the mandatory NVIDIA review for the CR and inspect its disposition.",
+          "Push only after the existing matrix is terminal, then consume all fresh lane evidence."
+        ],
+        "artifacts": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
+        ],
+        "upstream_behavior_inventory": {
+          "status": "complete",
+          "document": "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Test-WorkflowGateConfiguration.ps1"
+          ],
+          "zero_known_gaps": true,
+          "known_gaps_routed_to_change_requests": true
+        },
+        "reverse_upstream_gap_scan": {
+          "status": "complete",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_scanned": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Test-WorkflowGateConfiguration.ps1",
+            "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
+          ],
+          "zero_missing_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        },
+        "current_validation": {
+          "status": "pending",
+          "unresolved_gaps": [
+            "Fresh post-fix 21-lane hosted validation is pending."
+          ],
+          "closure_evidence": [],
+          "nvidia_review": {
+            "status": "complete_advisory_fail",
+            "reviewed_snapshot": "CR-096 document",
+            "disposition": "Snapshot-scope findings claiming referenced repository files were absent are false positives: the workflow, gate script, and CR-094 authority exist on disk and passed their local gates. The pending hosted-validation finding is valid and remains open."
+          }
+        },
+        "upstream_closure_audit": {
+          "status": "pending",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_rescanned": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Test-WorkflowGateConfiguration.ps1",
+            "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
+          ],
+          "zero_unmapped_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+        }
+      },
+      {
+        "id": "CR-095",
       "phase": "Phase 7",
       "title": "Serialize hosted matrix launches behind queued-run completion",
       "status": "open",

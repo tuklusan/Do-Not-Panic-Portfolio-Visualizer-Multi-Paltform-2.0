@@ -486,7 +486,7 @@ jobs:
                 $safeMessage = $safeMessage.Replace($env:NVIDIA_API_KEY_CODING, '[REDACTED]')
               }
               $safeMessage = $safeMessage -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
-              $failures.Add("NVIDIA artifact review failed for $artifactDirectory: $safeMessage")
+              $failures.Add("NVIDIA artifact review failed for ${artifactDirectory}: $safeMessage")
             }
           }
           if ($failures.Count -gt 0) {

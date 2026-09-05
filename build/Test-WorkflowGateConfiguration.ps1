@@ -58,6 +58,10 @@ $jobsIndex = $workflow.IndexOf("`njobs:", [StringComparison]::Ordinal)
 if ($concurrencyIndex -lt 0 -or $jobsIndex -lt 0 -or $concurrencyIndex -gt $jobsIndex) {
     throw 'Hosted matrix concurrency must be a workflow-root block before jobs.'
 }
+if ($workflow -match '\$artifactDirectory:\s+\$safeMessage' -or
+    $workflow -notmatch '\$\{artifactDirectory\}:\s+\$safeMessage') {
+    throw 'Hosted aggregate review contains unsafe artifact-directory interpolation.'
+}
 
 foreach ($jobName in @('gate', 'publish', 'real-product-soak', 'post-soak-review')) { Assert-JobTimeout $workflow $jobName }
 Assert-JobTimeout $cleanupWorkflow 'cleanup'
