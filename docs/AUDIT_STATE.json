@@ -5477,18 +5477,30 @@
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The first 2026-09-03 local four-hour cycle stopped after Linux because artifact retrieval referenced an uninitialized variable.",
-          "The corrected 2026-09-03-r3 cycle was intentionally interrupted at approximately 56 minutes during the Linux soak; no local-machine pass evidence was claimed."
+          "Staged Linux publish extraction, executable verification, and bounded retry handling are implemented after repeated local-cycle failures where the remote executable was missing after deployment.",
+          "Focused Linux validation on 2026-09-05 passed real-product launch, one-minute soak, product screenshots, fresh RSS/AI evidence, and both circular traces; a complete four-machine ten-minute companion cycle is still required before closure."
         ],
         "checkpoint": {
-          "cycle": "local-cycle-240-20260903-r3",
-          "state": "intentionally-interrupted",
+          "cycle": "dnppv2-local-cycle-10m-third-20260905-071500",
+          "state": "linux-preflight-failed-three-lanes-passed",
           "completed_machine_lanes": [],
-          "cleanup": "local coordinator, SSH helpers, and Linux temporary cycle root removed",
-          "resume_from": "start a fresh availability-probed cycle after commit b2eceaf"
+          "cleanup": "local cycle artifacts and targeted SSH cleanup helpers removed",
+          "resume_from": "run a fresh four-machine ten-minute cycle after the focused Linux deployment pass"
         }
       }
     },
@@ -6114,7 +6126,7 @@
     "CR-068: hosted and local real-product execution matrix is not implemented.",
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
-    "CR-080: local Linux artifact-retrieval failure state fix is not yet fresh-cycle validated.",
+    "CR-080: staged Linux publish extraction and executable verification are implemented, but the fix is not yet fresh-cycle validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",

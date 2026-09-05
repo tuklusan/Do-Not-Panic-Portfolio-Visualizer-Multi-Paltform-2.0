@@ -26,4 +26,7 @@ behavior gate before CR-080 closure.
 
 ## Status
 
-Open. Fresh local-cycle evidence and closure-gate scans remain required.
+Implementation is hardened with staged extraction, executable verification, and
+bounded retries after transfer. Fresh local-cycle evidence and closure-gate
+scans remain required; the CR stays open until the Linux lane passes a complete
+four-machine ten-minute companion cycle.

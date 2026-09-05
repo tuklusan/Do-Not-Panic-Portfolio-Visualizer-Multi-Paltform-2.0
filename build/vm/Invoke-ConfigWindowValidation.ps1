@@ -372,8 +372,11 @@ function Copy-LinuxPublishToRemote {
     Assert-RequiredTool -Name 'tar'
     $archivePath = New-TemporaryScriptPath -LeafName 'dnppv2-linux-publish.tar.gz'
     $remoteArchivePath = "$TargetPublishPath/.dnppv2-linux-publish.tar.gz"
+    $remoteStagingPath = "$TargetPublishPath/.dnppv2-linux-publish-staging"
     $targetLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishPath
     $archiveLiteral = Convert-ToBashSingleQuotedLiteral -Value $remoteArchivePath
+    $stagingLiteral = Convert-ToBashSingleQuotedLiteral -Value $remoteStagingPath
+    $stagedExecutableLiteral = Convert-ToBashSingleQuotedLiteral -Value "$remoteStagingPath/DoNotPanicPortfolioVisualizer.App"
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     try {
@@ -416,24 +419,36 @@ function Copy-LinuxPublishToRemote {
             }
         }
         if ($null -ne $copyFailure) { throw $copyFailure }
-        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
-            '-e',
-            'ssh',
-            '-o',
-            'StrictHostKeyChecking=accept-new',
-            '-o',
-            'BatchMode=no',
-            '-o',
-            'PreferredAuthentications=password',
-            '-o',
-            'PubkeyAuthentication=no',
-            '-o',
-            'NumberOfPasswordPrompts=1',
-            '-o',
-            'ConnectTimeout=60',
-            "${User}@${HostName}",
-            "mkdir -p -- $targetLiteral && tar -xzf $archiveLiteral -C $targetLiteral && rm -f -- $archiveLiteral"
-        )
+        $extractFailure = $null
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+                Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
+                    '-e',
+                    'ssh',
+                    '-o',
+                    'StrictHostKeyChecking=accept-new',
+                    '-o',
+                    'BatchMode=no',
+                    '-o',
+                    'PreferredAuthentications=password',
+                    '-o',
+                    'PubkeyAuthentication=no',
+                    '-o',
+                    'NumberOfPasswordPrompts=1',
+                    '-o',
+                    'ConnectTimeout=60',
+                    "${User}@${HostName}",
+                    "rm -rf -- $stagingLiteral && mkdir -p -- $stagingLiteral && tar -xzf $archiveLiteral -C $stagingLiteral && test -f $stagedExecutableLiteral && cp -a $stagingLiteral/. $targetLiteral/ && rm -rf -- $stagingLiteral $archiveLiteral"
+                )
+                $extractFailure = $null
+                break
+            }
+            catch {
+                $extractFailure = $_
+                if ($attempt -lt 3) { Start-Sleep -Seconds ([int]([Math]::Pow(2, $attempt - 1) * 5)) }
+            }
+        }
+        if ($null -ne $extractFailure) { throw $extractFailure }
     }
     finally {
         Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
