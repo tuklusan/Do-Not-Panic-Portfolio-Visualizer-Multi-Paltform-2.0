@@ -143,7 +143,12 @@ function Invoke-NativeCommand {
     }
 
     if ($AllowedExitCodes -notcontains $exitCode) {
-        throw "Native command failed with exit code ${exitCode}: $FilePath $($ArgumentList -join ' ')"
+        $diagnostic = @(
+            "Native command failed with exit code ${exitCode}: $FilePath $($ArgumentList -join ' ')"
+            if (-not [string]::IsNullOrWhiteSpace($stdout)) { "stdout=$($stdout.Trim())" }
+            if (-not [string]::IsNullOrWhiteSpace($stderr)) { "stderr=$($stderr.Trim())" }
+        ) -join '; '
+        throw $diagnostic
     }
 }
 
