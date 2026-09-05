@@ -447,6 +447,11 @@ foreach ($record in @($availability.machines)) {
     $machine.startedUtc = [DateTimeOffset]::UtcNow.ToString('O')
     $remoteCleanupRoot = $null
     $macPublishArchive = $null
+    $macArtifactArchive = $null
+    $localFailureArchive = $null
+    $remoteArtifact = $null
+    $remoteArtifactArchive = $null
+    $remoteFailureArchive = $null
     $remotePublish = if ($platformByMachine.ContainsKey($record.name) -and $platformByMachine[$record.name] -eq 'linux') {
         "$($remoteRootByMachine[$record.name])/$($cycle.cycleId)"
     }
@@ -518,7 +523,18 @@ foreach ($record in @($availability.machines)) {
                 "$($machineRecord.user)@$($machineRecord.address)",
                 $remoteCommand
             ) -StandardInput $remoteStdin -Timeout ($TimeoutSeconds + ($DurationMinutes * 60) + 900) | Tee-Object -FilePath (Join-Path $machine.artifactRoot 'harness-output.txt')
-            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath "$remoteArtifact/*" -LocalPath $machine.artifactRoot -Timeout 900
+            # Retrieve one bounded archive. Recursive wildcard SCP is prone to
+            # hanging against the slow Big Sur SFTP endpoint.
+            $remoteArtifactArchive = "$remoteRoot/artifacts.tar.gz"
+            $macArtifactArchive = Join-Path $machine.artifactRoot 'mac-artifacts.tar.gz'
+            Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
+                'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                "$($machineRecord.user)@$($machineRecord.address)",
+                "tar -czf '$remoteArtifactArchive' -C '$remoteArtifact' ."
+            ) -Timeout 900
+            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteArtifactArchive -LocalPath $macArtifactArchive -Timeout 900
+            & tar -xzf $macArtifactArchive -C $machine.artifactRoot
+            if ($LASTEXITCODE -ne 0) { throw "Local Mac artifact archive extraction failed with exit code $LASTEXITCODE." }
         }
         $machine.status = 'Passed'
     }
@@ -528,7 +544,18 @@ foreach ($record in @($availability.machines)) {
             try {
                 # Preserve failure evidence before the remote cycle root is
                 # removed; this is key-free trace and screenshot material.
-                Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath "$remoteArtifact/*" -LocalPath $machine.artifactRoot -Timeout 900
+                if (-not [string]::IsNullOrWhiteSpace($remoteArtifact)) {
+                    $remoteFailureArchive = "$remoteCleanupRoot/failure-artifacts.tar.gz"
+                    Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
+                        'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                        "$($machineRecord.user)@$($machineRecord.address)",
+                        "if [ -d '$remoteArtifact' ]; then tar -czf '$remoteFailureArchive' -C '$remoteArtifact' .; fi"
+                    ) -Timeout 900
+                    $localFailureArchive = Join-Path $machine.artifactRoot 'mac-failure-artifacts.tar.gz'
+                    Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $remoteFailureArchive -LocalPath $localFailureArchive -Timeout 900
+                    & tar -xzf $localFailureArchive -C $machine.artifactRoot
+                    if ($LASTEXITCODE -ne 0) { throw "Local Mac failure-artifact archive extraction failed with exit code $LASTEXITCODE." }
+                }
             }
             catch {
                 $machine.failure = "$primaryFailure; failure-artifact-retrieval=$($_.Exception.Message)"
@@ -542,6 +569,12 @@ foreach ($record in @($availability.machines)) {
     finally {
         if ($null -ne $macPublishArchive) {
             Remove-Item -LiteralPath $macPublishArchive -Force -ErrorAction SilentlyContinue
+        }
+        if ($null -ne $macArtifactArchive) {
+            Remove-Item -LiteralPath $macArtifactArchive -Force -ErrorAction SilentlyContinue
+        }
+        if ($null -ne $localFailureArchive) {
+            Remove-Item -LiteralPath $localFailureArchive -Force -ErrorAction SilentlyContinue
         }
         if ($null -ne $remoteCleanupRoot) {
             try {
