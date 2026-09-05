@@ -140,6 +140,19 @@ if ($workflow -notmatch 'Test-HostedSoakClosure\.ps1' -or
     $workflow -match '(?s)post-soak-review.*Invoke-NvidiaReviewHarness\.ps1') {
     throw 'Hosted aggregate must use the deterministic validator and contain no remote reviewer invocation.'
 }
+if (-not $workflow.Contains('-OutputDirectory $reviewRoot') -or $workflow.Contains('-OutputDirectory $harnessRoot')) {
+    throw 'Lane reviewer output must remain under the ignored repository-root review artifact directory.'
+}
+$reviewDirectoryProbe = Join-Path $repoRoot 'artifacts/soak/gate-probe/review'
+$null = & git check-ignore -q --no-index $reviewDirectoryProbe
+$ignoredProbe = $LASTEXITCODE -eq 0
+if (-not $ignoredProbe) { throw 'The per-lane reviewer output directory is not covered by the repository artifact ignore rule.' }
+$harnessPath = Join-Path $repoRoot 'build/Invoke-NvidiaReviewHarness.ps1'
+if (-not (Test-Path -LiteralPath $harnessPath -PathType Leaf)) { throw "Missing NVIDIA review harness: $harnessPath" }
+$harnessText = [IO.File]::ReadAllText($harnessPath)
+foreach ($harnessContractToken in @('OutputDirectory must resolve under the repository root.', 'Assert-GitIgnoredPath $relativeOutputDirectory', 'Assert-GitIgnoredPath $relativeTelemetryPath')) {
+    if (-not $harnessText.Contains($harnessContractToken)) { throw "NVIDIA harness output contract is missing: $harnessContractToken" }
+}
 if ($workflow -notmatch "github\.event_name == 'push'" -or
     $workflow -notmatch "github\.event_name == 'workflow_dispatch'") {
     throw 'Hosted post-soak review must cover both push and manual soak runs.'

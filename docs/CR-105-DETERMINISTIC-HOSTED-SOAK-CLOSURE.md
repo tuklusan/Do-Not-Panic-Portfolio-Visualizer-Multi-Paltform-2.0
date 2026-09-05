@@ -35,6 +35,7 @@ duplicated review semantics.
 | HOST-04 | Aggregate validation counts every lane and rejects missing, duplicate, stale, malformed, or v1 evidence. |
 | HOST-05 | Aggregate validation is deterministic, offline-capable, bounded, and never invokes a remote reviewer. |
 | HOST-06 | Historical artifacts remain diagnostic fixtures and cannot be promoted to authoritative v2 closure. |
+| HOST-07 | The lane reviewer output directory satisfies the reviewer harness repository-root contract and remains inside the ignored per-lane evidence tree. |
 
 The upstream workflow and existing gate behavior were read line by line for
 each inventory item. The migration changes only the duplicate aggregate review
@@ -86,6 +87,13 @@ publish artifacts, 21 soak artifacts, and one post-soak diagnostic artifact.
 Ubuntu Slim's lane evidence is retained
 as historical diagnostic evidence even though its lane reviewer step was
 cancelled. No old artifact is considered authoritative v2 closure evidence.
+
+The first post-fix authoritative run was `33997909763`. Its gate and publish
+lanes ran, but the soak lanes initially failed because the workflow passed
+`$RUNNER_TEMP` to the reviewer harness, which intentionally rejects output
+directories outside the repository root. This is corrected by directing the
+harness to each lane's ignored `artifacts/soak/.../review` directory. The run
+remains diagnostic and is not closure evidence.
 
 ## Closure Audit
 

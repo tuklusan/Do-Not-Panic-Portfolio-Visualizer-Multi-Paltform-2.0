@@ -347,10 +347,8 @@ jobs:
            if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) { throw "Soak evidence manifest is missing: $manifest" }
            $reviewRoot = Join-Path $artifactRoot 'review'
            New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
-           $harnessRoot = Join-Path $env:RUNNER_TEMP ('dnppv2-review-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
-           New-Item -ItemType Directory -Force -Path $harnessRoot | Out-Null
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
-           $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $harnessRoot -RequestTimeoutSeconds 7200 2>&1)
+           $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200 2>&1)
            $reviewExitCode = $LASTEXITCODE
            $safeOutput = ($reviewOutput | Out-String)
            if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {
@@ -386,7 +384,7 @@ jobs:
              materialSha256 = (Get-FileHash -LiteralPath $manifest -Algorithm SHA256).Hash.ToLowerInvariant()
            }
            $semantic | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reviewRoot 'review-result.json') -Encoding utf8
-           $harnessTextFiles = @(Get-ChildItem -LiteralPath $harnessRoot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.txt', '.json', '.jsonl', '.log', '.md') })
+           $harnessTextFiles = @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.txt', '.json', '.jsonl', '.log', '.md') })
            foreach ($harnessTextFile in $harnessTextFiles) {
              $harnessText = Get-Content -LiteralPath $harnessTextFile.FullName -Raw
              foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
@@ -394,7 +392,6 @@ jobs:
              }
              if ($harnessText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { throw "Credential-shaped value found in temporary reviewer output: $($harnessTextFile.FullName)." }
            }
-           Remove-Item -LiteralPath $harnessRoot -Recurse -Force -ErrorAction SilentlyContinue
       - name: Inspect and retain lane closure evidence
         if: always()
         shell: pwsh
@@ -450,6 +447,13 @@ jobs:
                 }
                 if ($retainedText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { $failures.Add("Retained evidence contains a credential-shaped value: $retainedTextPath") }
               }
+            }
+            foreach ($retainedReviewFile in @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.txt', '.json', '.jsonl', '.log', '.md') })) {
+              try { $retainedReviewText = [IO.File]::ReadAllText($retainedReviewFile.FullName) } catch { $failures.Add("Failed to read review file for secret scan: $($retainedReviewFile.FullName)") ; continue }
+              foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+                if ($retainedReviewText.Contains($secret)) { $failures.Add("Review subtree contains an unredacted secret: $($retainedReviewFile.FullName)") }
+              }
+              if ($retainedReviewText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { $failures.Add("Review subtree contains a credential-shaped value: $($retainedReviewFile.FullName)") }
             }
             $resultOutcome = if ($null -ne $result) { [string]$result.outcome } else { 'Missing' }
             $resultCleanup = $null -ne $result -and [bool]$result.processCleanedUp

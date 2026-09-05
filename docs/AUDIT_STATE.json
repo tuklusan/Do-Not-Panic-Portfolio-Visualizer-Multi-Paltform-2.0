@@ -7151,13 +7151,14 @@
         "build/Test-HostedSoakClosure.ps1 is the sole provider-neutral deterministic aggregate validator and performs zero remote reviewer calls.",
         "post-soak-review invokes only the deterministic validator and contains no per-manifest reviewer harness invocation or reviewer API dependency.",
         "Missing, v1, malformed, stale, mismatched, non-PASS, or hash-inconsistent evidence fails closed; historical run 33988763870 is rejected as v2 closure evidence.",
-        "Two successive fresh line-by-line audits of this CR, the changed workflow, validator, and tests find zero gaps before push; the first post-fix hosted matrix is the authoritative proof."
+        "Two successive fresh line-by-line audits of this CR, the changed workflow, validator, and tests find zero gaps before push; the first post-fix hosted matrix is the authoritative proof.",
+        "Each lane passes the reviewer harness repository-root output-directory contract and retains its review output under the ignored per-lane evidence tree."
       ],
       "validation_plan": [
           "Preserve and inventory run 33988763870 before implementation: 43 GitHub artifacts, 21 publish, 21 soak, and one post-soak diagnostic artifact; the protected copy is C:\\Users\\vagab\\Downloads\\dnppv2-historical-run-33988763870, with Ubuntu Slim cancellation retained as diagnostic evidence.",
         "Run validator self-test, negative identity/hash/schema/duplicate/missing-lane tests, PowerShell syntax, workflow, license, build/test, upstream, reverse, and NVIDIA gates.",
         "Run the offline validator against the preserved v1 artifact corpus and verify deliberate fail-closed behavior with zero remote calls.",
-        "Push only after two consecutive zero-gap audits, then inspect the first complete 21-lane hosted proof."
+        "Push only after two consecutive zero-gap audits, then inspect the first complete 21-lane hosted proof; if harness output-path or evidence-contract failures occur, route them into CR-105 and repeat the same gates."
       ],
       "artifacts": [
         "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
@@ -7209,9 +7210,10 @@
         "evidence": [
             "Run 33988763870 cancelled only at the redundant aggregate wait; 43 artifacts downloaded to the protected Downloads corpus.",
           "Test-HostedSoakClosure.ps1 self-test passed.",
-          "Offline validation of run 33988763870 failed closed because v2 semantic review-result.json receipts are absent, as required."
+          "Offline validation of run 33988763870 failed closed because v2 semantic review-result.json receipts are absent, as required.",
+          "Run 33997909763 exposed a real harness contract gap: $RUNNER_TEMP was rejected by Invoke-NvidiaReviewHarness.ps1; the workflow fix now uses the ignored per-lane review directory."
         ],
-        "unresolved_gaps": ["First post-fix hosted matrix proof remains required before closure."],
+        "unresolved_gaps": ["A fresh post-fix hosted matrix proof remains required before closure."],
         "review_disposition": "Latest NVIDIA advisory FAIL was manually reconciled against the exact staged files; its masking/path/pending-file findings are contradicted by current workflow and validator text, while the deterministic local gates pass."
       }
     }
