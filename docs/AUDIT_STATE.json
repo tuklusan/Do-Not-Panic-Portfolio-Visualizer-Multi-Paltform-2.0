@@ -5309,7 +5309,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "No progressive soak evidence exists yet."
+          "Push-triggered run 33955248690 completed 35 jobs successfully, but macos-26 arm64 exposed a ProgressiveQuoteRefreshPipelineTests scheduling race and ubuntu-22.04-arm lacked the required AI-success trace event. The test race was corrected with a bounded scheduling window; the Ubuntu AI evidence failure remains open for rerun. Two successive clean 10-minute cycles are still required."
         ]
       }
     },

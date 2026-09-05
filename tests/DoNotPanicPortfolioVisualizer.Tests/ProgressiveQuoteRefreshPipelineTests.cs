@@ -116,13 +116,16 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         ProgressiveQuoteRefreshPipeline pipeline,
         IQuoteProvider provider)
     {
-        for (int attempt = 0; attempt < 20; attempt++)
+        // The provider completes requests from another task. Allow a bounded
+        // scheduling window on slower arm64 runners before declaring a drain
+        // failure; the production pipeline remains non-blocking.
+        for (int attempt = 0; attempt < 100; attempt++)
         {
             ProgressiveQuoteRefreshResult result = await pipeline.RefreshAsync(["AAA", "BBB"], provider);
             if (result.UpdatedQuotes.Count == 2)
                 return result;
 
-            await Task.Delay(10);
+            await Task.Delay(25);
         }
 
         return await pipeline.RefreshAsync(["AAA", "BBB"], provider);

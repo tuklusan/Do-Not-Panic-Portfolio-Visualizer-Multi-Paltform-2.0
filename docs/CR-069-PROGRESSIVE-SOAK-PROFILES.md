@@ -56,4 +56,11 @@ defect-candidate artifact is the handoff for the JSON CR loop; a failed soak or
 missing evidence does not suppress this review job.
 
 **Depends on:** CR-066, CR-067, CR-068  
-**Status:** Open
+**Status:** Open. Push-triggered run `33955248690` completed 35 jobs
+successfully, while the real-product soak exposed two actionable failures:
+`macos-26` arm64 had a cross-platform timing race in
+`ProgressiveQuoteRefreshPipelineTests`, and `ubuntu-22.04-arm` completed its
+soak but lacked the required AI-success trace event. The test race is now
+bounded more generously for slow arm64 scheduling; the Ubuntu AI evidence
+failure remains routed to the existing AI/soak CRs and requires a rerun after
+the correction. This run does not satisfy the two-clean-cycle closure gate.
