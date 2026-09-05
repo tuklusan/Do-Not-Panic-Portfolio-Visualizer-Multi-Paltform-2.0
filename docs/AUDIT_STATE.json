@@ -4751,7 +4751,7 @@
       "id": "CR-067",
       "phase": "Phase 7",
       "title": "Implement isolated real-product progressive soak runner",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066"
       ],
@@ -4803,10 +4803,28 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "build/Invoke-ProductSoak.ps1",
+          "build/vm/Invoke-ProductSceneValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Implementation and controlled rehearsal are pending."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Controlled one-minute real-product Windows rehearsal passed with an isolated local-data root and protected OpenRouter key injection.",
+          "The runner produced a passing machine-readable result, 30-second health samples, both circular trace families, and a settled screenshot without recording the key.",
+          "The launched product and bundled YFinance server were cleaned up; no residual product processes remained.",
+          "Migration closure, license, syntax, workflow, build, test, artifact-review, commit, and push gates passed."
         ]
       }
     },

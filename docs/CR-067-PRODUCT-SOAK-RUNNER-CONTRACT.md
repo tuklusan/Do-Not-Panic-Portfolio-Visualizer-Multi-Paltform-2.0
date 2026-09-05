@@ -62,4 +62,9 @@ cleanup. The 2.0 runner preserves those behaviors while using DNPPV's circular
 trace contract. A reverse scan of the current script and this inventory found
 no unmapped behavior; two successive zero-gap scans are required at closure.
 
-**Status:** Open
+**Status:** Closed
+
+The controlled one-minute real-product rehearsal on 2026-09-05 passed with an
+isolated local-data root, protected OpenRouter injection, 30-second health
+samples, both circular trace families, a settled screenshot, and complete
+process cleanup. The source/evidence review and repository gates passed.
