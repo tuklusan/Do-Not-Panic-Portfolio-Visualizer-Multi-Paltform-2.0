@@ -1440,6 +1440,7 @@ function Invoke-WindowsValidation {
             '$startInfo.EnvironmentVariables[''DNPPV_OPENROUTER_API_KEY''] = [string]$env:DNPPV_OPENROUTER_API_KEY',
             '$startInfo.EnvironmentVariables[''DNPPV_SOAK_REQUIRE_AI_NEWS''] = [string]$env:DNPPV_SOAK_REQUIRE_AI_NEWS',
             '$startInfo.Arguments = ''--windowed=1024x768''',
+            'Add-Content -Path $stepPath -Value (''CHILD_LOCALDATA_ROOT={0}'' -f $startInfo.EnvironmentVariables[''DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT''])',
             '$duplicate = $null',
             '$proc = [System.Diagnostics.Process]::Start($startInfo)',
             'if ($null -eq $proc) { throw ''Product process launch returned no process handle.'' }',
