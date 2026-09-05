@@ -5309,7 +5309,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Push-triggered run 33955248690 completed 35 jobs successfully, but macos-26 arm64 exposed a ProgressiveQuoteRefreshPipelineTests scheduling race and ubuntu-22.04-arm lacked the required AI-success trace event. The test race was corrected with a bounded scheduling window; the Ubuntu AI evidence failure remains open for rerun. Two successive clean 10-minute cycles are still required."
+          "Replacement run 33956511431 completed successfully with all 18 real-product soak lanes, all per-lane NVIDIA evidence reviews, and 18 non-expired soak artifacts. This is one accepted clean hosted cycle; a second independent clean cycle and available-local-machine companion evidence are still required."
         ]
       }
     },
