@@ -39,6 +39,7 @@ public sealed class ProductShellTickerPresentationTests
         Assert.Contains("Margin=\"4,0,4,0\"", xaml, StringComparison.Ordinal);
         Assert.Contains("ColumnDefinitions=\"64,66,72,*\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Margin=\"9,0,18,0\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Background=\"#C52A3138\"", xaml, StringComparison.Ordinal);
         Assert.Equal(3, CountOccurrences(xaml, "FontSize=\"15\""));
         Assert.Contains("FontFamily=\"Segoe UI Emoji\"", xaml, StringComparison.Ordinal);
     }

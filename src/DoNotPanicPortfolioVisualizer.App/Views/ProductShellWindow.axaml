@@ -381,7 +381,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#E8050607"
+                            <Border Background="#C52A3138"
                                     BorderBrush="#332E3A47"
                                     BorderThickness="1"
                                     CornerRadius="7"
