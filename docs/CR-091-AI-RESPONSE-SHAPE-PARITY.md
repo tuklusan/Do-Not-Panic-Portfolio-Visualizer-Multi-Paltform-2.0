@@ -48,3 +48,19 @@ requirement to accept key presence or request-start evidence alone.
 - The real product produces AI-backed news evidence on all available hosted
   lanes in two independent complete 10-minute cycles.
 - No product process, secret, or disposable artifact remains after validation.
+
+## Implementation And Evidence
+
+`FinanceNewsService.ExtractAiSummary` now accepts scalar chat content,
+structured `text` and `output_text` parts, nested content objects, root
+`output_text`, and Responses-style `output` arrays while retaining RSS
+fallback for empty or malformed results. Focused coverage now includes three
+additional nested/output-text shapes.
+
+The fresh Windows 10 real-product retry `artifacts-win10-ai-retry` on
+2026-09-05 recorded `rssUsable=true`, `aiRequestObserved=true`, and
+`aiSuccessObserved=true`. The circular trace recorded
+`AiSummaryResponseParsed ... extraction_path=message.content` followed by
+`AiSummarySucceeded`, after an earlier run had produced a 200 response with
+empty parsed content. Hosted two-cycle evidence and the mandatory upstream
+gate records remain required before closure.

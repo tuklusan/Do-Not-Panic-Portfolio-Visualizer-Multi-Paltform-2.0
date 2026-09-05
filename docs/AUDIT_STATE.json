@@ -5757,9 +5757,9 @@
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
-        "status": "open",
+        "status": "coordinator_path_corrected_targeted_run_passed_pending_second_run",
         "unresolved_gaps": [
-          "The 2026-09-04 local five-minute cycle reached deployment but Windows 10 returned DONE_FILE_MISSING and no step.log was retrievable; the task launch path needs forensic diagnostics and repair."
+          "The coordinator now resides below the Windows 10 D:\\SW_DEV\\DO-NOT-PANIC-2.0 publish directory and the fresh artifacts-win10-ai-retry cycle completed both configuration and real-product validation with status=Passed. A second targeted run and full closure-gate record remain required."
         ]
       }
     },
@@ -5990,15 +5990,16 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "implementation_in_progress",
+        "status": "response-shape-fix-validated-on-win10-pending-hosted-cycles",
         "unresolved_gaps": [
-          "The hosted 10-minute cycle identified HTTP 200 empty AI content on multiple runners; fresh post-fix cycles are pending."
+          "The parser fix is validated by the fresh Windows 10 real-product cycle artifacts-win10-ai-retry, which records aiSuccessObserved=true and AiSummarySucceeded. Two complete hosted AI-evidence cycles and closure-gate records remain required."
         ],
         "evidence": [
           "Downloaded run 33913381129 artifacts showed RSS usable, AI request observed, and AI success absent on ubuntu-22.04, ubuntu-latest, and windows-2022.",
           "Traces showed AiSummaryResponse status 200 followed by AiSummaryEmpty, including a successful 429 retry before the empty response.",
           "NVIDIA review packet 20260904-165908 identified structured response, bounded-read, XML hardening, and test gaps; packet 20260904-165201's retry-counter finding was evaluated as a C# for-loop false positive.",
-          "NVIDIA review packet 20260904-165908's claim that continue skips the next HTTP request was evaluated as a second C# for-loop false positive; valid observability and exception-boundary findings were addressed."
+          "NVIDIA review packet 20260904-165908's claim that continue skips the next HTTP request was evaluated as a second C# for-loop false positive; valid observability and exception-boundary findings were addressed.",
+          "Fresh Win10 trace at 2026-09-05T08:05:40Z recorded AiSummaryResponseParsed with extraction_path=message.content followed by AiSummarySucceeded after the prior 200-empty-content failure."
         ]
       }
     },

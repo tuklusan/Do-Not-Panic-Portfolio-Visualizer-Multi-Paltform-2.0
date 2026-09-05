@@ -1003,6 +1003,13 @@ public sealed class AmbientSceneServicesTests
             "First\nSecond",
             ExtractAiSummaryForTest("""{"choices":[{"message":{"content":[{"type":"tool_call","id":"ignored"},{"type":"text","text":"First"},{"type":"text","text":"Second"}]}}]}"""));
 
+    [Theory]
+    [InlineData("{\"choices\":[{\"message\":{\"content\":{\"type\":\"output_text\",\"text\":\"Object summary.\"}}}]}", "Object summary.")]
+    [InlineData("{\"output_text\":\"Responses summary.\"}", "Responses summary.")]
+    [InlineData("{\"output\":[{\"content\":[{\"type\":\"output_text\",\"text\":\"Nested summary.\"}]}]}", "Nested summary.")]
+    public void FinanceNewsService_ExtractsNestedAndOutputTextShapes(string json, string expected)
+        => Assert.Equal(expected, ExtractAiSummaryForTest(json));
+
     private static string? ExtractAiSummaryForTest(string json)
     {
         using JsonDocument document = JsonDocument.Parse(json);

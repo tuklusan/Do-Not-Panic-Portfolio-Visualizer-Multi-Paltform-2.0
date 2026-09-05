@@ -452,47 +452,86 @@ public sealed class FinanceNewsService : IDisposable
     private static string? ExtractAiSummary(JsonElement root, out string extractionPath)
     {
         extractionPath = "none";
-        if (!root.TryGetProperty("choices", out JsonElement choices) ||
-            choices.ValueKind != JsonValueKind.Array || choices.GetArrayLength() == 0)
-            return null;
-
-        JsonElement choice = choices[0];
-        if (choice.TryGetProperty("message", out JsonElement message))
+        if (root.TryGetProperty("choices", out JsonElement choices) &&
+            choices.ValueKind == JsonValueKind.Array && choices.GetArrayLength() > 0)
         {
-            if (message.TryGetProperty("content", out JsonElement content))
+            JsonElement choice = choices[0];
+            if (choice.TryGetProperty("message", out JsonElement message))
             {
-                string? text = ExtractContentText(content);
-                if (!string.IsNullOrWhiteSpace(text))
+                if (message.TryGetProperty("content", out JsonElement content))
                 {
-                    extractionPath = content.ValueKind == JsonValueKind.Array ? "message.content.parts" : "message.content";
-                    return text;
+                    string? text = ExtractContentText(content);
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        extractionPath = content.ValueKind == JsonValueKind.Array ? "message.content.parts" : "message.content";
+                        return text;
+                    }
+                }
+
+                if (message.TryGetProperty("reasoning_content", out JsonElement reasoning))
+                {
+                    string? text = ExtractContentText(reasoning);
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        extractionPath = "message.reasoning_content";
+                        return text;
+                    }
                 }
             }
 
-            if (message.TryGetProperty("reasoning_content", out JsonElement reasoning))
+            if (choice.TryGetProperty("text", out JsonElement completionText))
             {
-                string? text = ExtractContentText(reasoning);
-                if (!string.IsNullOrWhiteSpace(text))
+                string? completion = ExtractContentText(completionText);
+                if (!string.IsNullOrWhiteSpace(completion))
                 {
-                    extractionPath = "message.reasoning_content";
-                    return text;
+                    extractionPath = "choice.text";
+                    return completion;
                 }
             }
         }
 
-        if (!choice.TryGetProperty("text", out JsonElement completionText))
-            return null;
+        if (root.TryGetProperty("output_text", out JsonElement outputText))
+        {
+            string? text = ExtractContentText(outputText);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                extractionPath = "output_text";
+                return text;
+            }
+        }
 
-        string? completion = ExtractContentText(completionText);
-        if (!string.IsNullOrWhiteSpace(completion))
-            extractionPath = "choice.text";
-        return completion;
+        if (root.TryGetProperty("output", out JsonElement output))
+        {
+            string? text = ExtractContentText(output);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                extractionPath = "output";
+                return text;
+            }
+        }
+
+        return null;
     }
 
     private static string? ExtractContentText(JsonElement value)
     {
         if (value.ValueKind == JsonValueKind.String)
             return value.GetString();
+
+        if (value.ValueKind == JsonValueKind.Object)
+        {
+            foreach (string propertyName in new[] { "text", "content", "output_text", "value" })
+            {
+                if (value.TryGetProperty(propertyName, out JsonElement nested))
+                {
+                    string? text = ExtractContentText(nested);
+                    if (!string.IsNullOrWhiteSpace(text))
+                        return text;
+                }
+            }
+
+            return null;
+        }
 
         if (value.ValueKind != JsonValueKind.Array)
             return null;
@@ -504,12 +543,11 @@ public sealed class FinanceNewsService : IDisposable
             {
                 parts.Add(part.GetString() ?? string.Empty);
             }
-            else if (part.ValueKind == JsonValueKind.Object &&
-                     IsTextContentPart(part) &&
-                     part.TryGetProperty("text", out JsonElement text) &&
-                     text.ValueKind == JsonValueKind.String)
+            else if (part.ValueKind == JsonValueKind.Object && IsTextContentPart(part))
             {
-                parts.Add(text.GetString() ?? string.Empty);
+                string? text = ExtractContentText(part);
+                if (!string.IsNullOrWhiteSpace(text))
+                    parts.Add(text);
             }
         }
 
@@ -522,7 +560,8 @@ public sealed class FinanceNewsService : IDisposable
             return true;
 
         return type.ValueKind == JsonValueKind.String &&
-               string.Equals(type.GetString(), "text", StringComparison.OrdinalIgnoreCase);
+               (string.Equals(type.GetString(), "text", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(type.GetString(), "output_text", StringComparison.OrdinalIgnoreCase));
     }
 
     private static IReadOnlyList<string> BuildSummarizedHeadlines(string summary, AiWritingStyle writingStyle)

@@ -35,3 +35,12 @@ assumed by the harness.
 - A logged-in Windows 10 user can see the product window.
 - Two successive targeted runs pass and leave no task, product, or temporary
   project process behind.
+
+## Current Evidence
+
+The coordinator destination was corrected to reside below the already-created
+target publish directory, which is `D:\SW_DEV\DO-NOT-PANIC-2.0` for Windows 10.
+The fresh cycle `artifacts-win10-ai-retry` on 2026-09-05 completed with
+`status=Passed`, and both configuration-window and real-product validation
+passed. Its manifest recorded the required `D:\SW_DEV` and `D:\TEMP` storage
+contract. A second targeted run is still required before this CR closes.

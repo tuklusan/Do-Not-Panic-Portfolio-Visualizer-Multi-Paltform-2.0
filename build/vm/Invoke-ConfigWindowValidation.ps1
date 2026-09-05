@@ -1655,7 +1655,7 @@ finally {
     # the Windows OpenSSH command-line limit before powershell.exe starts.
     # Transfer it as a temporary script and invoke it through a short command.
     $localDriverPath = New-TemporaryScriptPath -LeafName 'dnppv2-windows-validation-coordinator.ps1'
-    $remoteDriverPath = "C:\Users\$User\DNPPV2\dnppv2-windows-validation-coordinator-$([Guid]::NewGuid().ToString('N')).ps1"
+    $remoteDriverPath = Join-Path $TargetPublishDir "dnppv2-windows-validation-coordinator-$([Guid]::NewGuid().ToString('N')).ps1"
     Write-Utf8NoBomFile -Path $localDriverPath -Content $remoteDriver
     try {
         Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localDriverPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path $remoteDriverPath)
