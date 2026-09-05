@@ -16,6 +16,14 @@ patent, trademark, and governing-law provisions.
 
 # CR-092: Enforce local companion soaks for hosted matrices
 
+## Temporary execution override
+
+Local-machine soak execution is temporarily paused by operator direction.
+`build/Invoke-LocalLabSoakCycle.ps1` and the four-machine inventory remain
+unchanged and retained for later reactivation. Until this override is removed,
+validation cycles use GitHub-hosted runners only; this pause does not convert
+local acceptance requirements into passes or close CR-092.
+
 ## Objective
 
 Whenever a hosted GitHub runner matrix is dispatched, discover the four local
