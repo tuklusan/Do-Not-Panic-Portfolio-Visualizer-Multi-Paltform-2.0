@@ -362,8 +362,20 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
             } | ConvertTo-Json -Depth 8) -Encoding utf8
         }
 
+        $childInfo.process.Refresh()
+        $childExitCode = $childInfo.process.ExitCode
         $resultPath = Join-Path $childInfo.artifactRoot "$($childInfo.record.name)-machine-result.json"
-        if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+        if ($childExitCode -ne 0) {
+            $cycle.machines.Add([ordered]@{
+                name = $childInfo.record.name
+                address = $childInfo.record.address
+                user = $childInfo.record.user
+                status = 'Failed'
+                failure = "Machine child process exited with code $childExitCode. See $($childInfo.output)."
+                artifactRoot = $childInfo.artifactRoot
+            })
+        }
+        elseif (Test-Path -LiteralPath $resultPath -PathType Leaf) {
             $childResult = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
             $childMachine = @($childResult.machines) | Select-Object -First 1
             if ($null -ne $childMachine -and $null -ne $childMachine.status) {
@@ -434,6 +446,7 @@ foreach ($record in @($availability.machines)) {
     $machine.rid = $rid
     $machine.startedUtc = [DateTimeOffset]::UtcNow.ToString('O')
     $remoteCleanupRoot = $null
+    $macPublishArchive = $null
     $remotePublish = if ($platformByMachine.ContainsKey($record.name) -and $platformByMachine[$record.name] -eq 'linux') {
         "$($remoteRootByMachine[$record.name])/$($cycle.cycleId)"
     }
@@ -472,6 +485,7 @@ foreach ($record in @($availability.machines)) {
             $remoteArtifact = "$remoteRoot/artifacts"
             $driverRemote = "$remoteRoot/Invoke-MacConfigWindowValidation.sh"
             $remote = "$($machineRecord.user)@$($machineRecord.address):$remoteRoot"
+            $macPublishArchive = Join-Path $machine.artifactRoot 'mac-publish.zip'
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
@@ -480,9 +494,12 @@ foreach ($record in @($availability.machines)) {
             # Copy the publish contents into the already-created canonical
             # directory. Copying the directory itself is scp-layout dependent
             # and can leave the executable one level deeper on macOS.
-            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath (Join-Path $publish '*') -RemotePath "$remotePublish/" -Timeout $macTimeout
+            # Archive the resolved RID directory before transfer. Expanding a
+            # self-contained publish into ProcessStartInfo arguments can exceed
+            # the Windows command-line limit before sshpass starts.
+            [IO.Compression.ZipFile]::CreateFromDirectory($publish, $macPublishArchive)
+            Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $macPublishArchive -RemotePath "$remoteRoot/mac-publish.zip" -Timeout $macTimeout
             Copy-LocalTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -LocalPath $driver -RemotePath $remoteRoot -Timeout $macTimeout
-            Copy-RemoteTree -User $machineRecord.user -HostName $machineRecord.address -Secret $password -RemotePath $driverRemote -LocalPath $machine.artifactRoot -Timeout $macTimeout
             $openRouterKey = if ($env:DNPPV_OPENROUTER_API_KEY) { $env:DNPPV_OPENROUTER_API_KEY } elseif ($env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY } else { $env:OPENROUTER_AI_API_KEY }
             $remoteCommand = ''
             $remoteStdin = $null
@@ -495,7 +512,7 @@ foreach ($record in @($availability.machines)) {
             else {
                 $remoteCommand = 'unset DNPPV_OPENROUTER_API_KEY DNPPV_SOAK_REQUIRE_AI_NEWS; '
             }
-            $remoteCommand += "chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'"
+            $remoteCommand += "if [ -f '$remoteRoot/mac-publish.zip' ]; then /usr/bin/unzip -q '$remoteRoot/mac-publish.zip' -d '$remotePublish'; rm -f '$remoteRoot/mac-publish.zip'; else echo 'MAC_ACCEPTANCE_HARD_STOP=PublishedArchiveMissing' >&2; exit 2; fi; chmod +x '$driverRemote' && exec bash '$driverRemote' '$remoteRoot' '$remoteArtifact' '$DurationMinutes'"
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
@@ -523,6 +540,9 @@ foreach ($record in @($availability.machines)) {
         }
     }
     finally {
+        if ($null -ne $macPublishArchive) {
+            Remove-Item -LiteralPath $macPublishArchive -Force -ErrorAction SilentlyContinue
+        }
         if ($null -ne $remoteCleanupRoot) {
             try {
                 Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(

@@ -1608,7 +1608,10 @@ try {
     `$principal = New-ScheduledTaskPrincipal -UserId `$taskUser -LogonType Interactive -RunLevel Limited
     Register-ScheduledTask -TaskName `$taskName -Action `$action -Trigger `$trigger -Principal `$principal -Force | Out-Null
     Start-ScheduledTask -TaskName `$taskName
-    for (`$attempt = 0; `$attempt -lt ($Timeout + ($SoakMinutes * 60)); `$attempt++) {
+    # The task performs warmup, desktop captures, the soak, and bounded
+    # cleanup. Keep the marker wait aligned with the native command timeout
+    # so a valid slow run cannot be relabeled DONE_FILE_MISSING.
+    for (`$attempt = 0; `$attempt -lt ($Timeout + $Warmup + ($SoakMinutes * 60) + 600); `$attempt++) {
         if (Test-Path `$donePath) {
             break
         }
