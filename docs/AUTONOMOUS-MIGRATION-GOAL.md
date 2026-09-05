@@ -39,11 +39,9 @@ The second primary success objective is complete cross-platform validation.
 Maintain CI coverage across all 18 configured GitHub-hosted runner lanes and
 the four local lab machines documented in `docs/TEST_MACHINE_ACCESS.md`.
 
-**Temporary execution override:** local-machine soak launches are paused by
-operator direction. Do not invoke the retained local-lab soak harness while
-this override is present; use the GitHub-hosted runner matrix for active soak
-validation. Local-machine acceptance remains outstanding and must be resumed
-explicitly before the final migration goal can be declared complete.
+Local-machine soak launches are enabled again after the hosted-only checkpoint.
+At the start of each cycle, probe all four retained lab machines and use every
+available contract-compliant machine alongside the GitHub-hosted matrix.
 
 At the start of every local validation or soak cycle, probe all four local
 machines and use only those currently reachable and contract-compliant;

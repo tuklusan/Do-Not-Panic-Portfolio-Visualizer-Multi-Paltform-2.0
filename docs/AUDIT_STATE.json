@@ -6057,9 +6057,8 @@
         "unresolved_gaps": []
       },
     "current_validation": {
-      "status": "local_soaks_temporarily_paused_hosted_only",
+      "status": "local_soaks_reenabled_after_hosted_checkpoint",
       "unresolved_gaps": [
-        "Operator temporarily paused local-machine soak launches; the retained local harness and four-machine inventory are unchanged and local acceptance remains outstanding.",
         "Cycle dnppv2-local-companion-cycle-r9 passed Linux and Windows 10, but Windows 11 failed its bounded 1024x768 startup-trace acceptance and Intel macOS failed the required RSS/AI evidence gate; both require related CR follow-up and a fresh reviewed four-machine cycle.",
         "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items."
       ]
