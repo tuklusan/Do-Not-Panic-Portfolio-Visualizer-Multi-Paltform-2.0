@@ -124,7 +124,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private string _marketStatusText = "Market: New York -- loading";
 
     [ObservableProperty]
-    private string _lastUpdatedText = "Last Updated: waiting for live quote";
+    private string _updatedPrefixText = "Last Updated:";
+
+    [ObservableProperty]
+    private string _updatedTickerFieldText = string.Empty;
 
     [ObservableProperty]
     private string _dataFreshnessText = "LOADING - initializing local market service";
@@ -657,7 +660,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     apply(quote);
 
                 ApplyQuoteToGraph(quote);
-                LastUpdatedText = "Last Updated: " + TickerFormatter.FormatUpdatedSymbol(quote);
+                UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
                 MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
                 bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
                 DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
