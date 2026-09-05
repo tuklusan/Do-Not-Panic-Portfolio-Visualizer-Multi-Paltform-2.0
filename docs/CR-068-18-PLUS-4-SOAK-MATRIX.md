@@ -12,7 +12,10 @@ SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 patent, trademark, and governing-law provisions.
 -->
 
-# CR-068 18-Plus-4 Soak Matrix
+# CR-068 18-Plus-4 Soak Matrix (Baseline Scope)
+
+> **Superseded by:** [CR-094](CR-094-21-PLUS-4-MATRIX-EVIDENCE.md), which
+> defines the current 21-hosted-plus-4-local matrix and per-lane evidence gate.
 
 ## Functional Inventory
 
@@ -36,7 +39,7 @@ available machine to complete its assigned run.
 Machines may be powered off or have changing addresses; a cycle uses the
 reachable subset that passes its documented contract and records the others as
 `UnavailableAtCycleStart`. Local-machine non-availability is not a blocker when
-all 18 hosted runner labels have provably executed the real product; it remains
+ all hosted runner labels in the original 18-lane baseline have provably executed the real product; it remains
 an explicit availability result and must not be reported as a local product
 pass. A machine that was available at cycle start remains a required lane for
 that cycle.
@@ -72,7 +75,8 @@ the next 30-second observation or a terminal/state-change event.
 While migration CRs remain open, the matrix runs only the locked 10-minute
 profile. Four-hour runs are paused by project policy. The active validation
 family is not considered complete after one successful pass: closure requires
-two independent complete 10-minute cycles. Each cycle must execute all 18
+ two independent complete 10-minute cycles. This closed CR records the original
+ baseline only; each historical cycle must execute all 18
 hosted runner labels and every local machine available at that cycle's start;
 unavailable local machines are recorded as unavailable, never as passing lanes.
 
@@ -94,6 +98,12 @@ waited on and is never duplicated or cancelled by a newer source push.
 
 **Depends on:** CR-066, CR-067  
 **Status:** Closed
+
+CR-094 extends the active hosted matrix to 21 lanes by adding `ubuntu-slim`
+(`linux-x64`), `macos-latest`, and `xcode-27` (`osx-arm64` for the latter two)
+and adds a mandatory per-lane closure-evidence
+inspection record. This baseline CR remains closed for its original 18-lane
+scope; current matrix policy is defined by CR-094.
 
 Two independent complete ten-minute hosted cycles and two independent complete
 four-machine local companion cycles have passed the real-product contract. The

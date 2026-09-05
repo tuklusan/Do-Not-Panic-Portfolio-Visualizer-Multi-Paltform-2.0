@@ -36,7 +36,7 @@ recorded. Installer-only, WPF-only, and historical upstream artifacts remain
 retired because 2.0 is Avalonia-only on every supported platform.
 
 The second primary success objective is complete cross-platform validation.
-Maintain CI coverage across all 18 configured GitHub-hosted runner lanes and
+Maintain CI coverage across all 21 configured GitHub-hosted runner lanes and
 the four local lab machines documented in `docs/TEST_MACHINE_ACCESS.md`.
 
 Local-machine soak launches are enabled again after the hosted-only checkpoint.
@@ -75,7 +75,7 @@ development server started by the workflow before declaring a CR closed.
 Continue creating, implementing, testing, debugging, reviewing, committing,
 and pushing CRs autonomously until all currently applicable migration work is
 closed, all required upstream behaviors have an implemented or explicitly
-approved disposition, the 18-runner and available-local-machine evidence is
+ approved disposition, the 21-runner and available-local-machine evidence is
 complete, and the project is ready for the next phase boundary. Escalate only
 when a hard safety/security issue, unavailable required authority, or
 operator-only environment intervention makes further progress impossible.
@@ -89,7 +89,7 @@ operator-only environment intervention makes further progress impossible.
   two successive zero-gap scans.
 - The active NVIDIA review harness passes required code and test-artifact
   reviews, with no stale review result authorizing a changed snapshot.
-- CI demonstrates the complete 18-runner matrix without treating queue delay as
+ - CI demonstrates the complete 21-runner matrix without treating queue delay as
   failure.
 - Each validation cycle checks available local lab machines dynamically and
   preserves the documented storage, display, secret, trace, and cleanup rules.

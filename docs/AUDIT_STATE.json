@@ -4655,7 +4655,7 @@
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
-      }
+      },
     },
     {
       "id": "CR-066",
@@ -4908,6 +4908,84 @@
       }
     },
     {
+      "id": "CR-094",
+      "phase": "Phase 7",
+      "title": "Expand hosted matrix to 21 lanes and require explicit per-lane closure evidence",
+      "status": "open",
+      "depends_on": [
+        "CR-068",
+        "CR-092"
+      ],
+      "objective": "Add macos-latest and xcode-27 as osx-arm64 lanes and make every hosted lane validate, inspect, hash, and retain its complete real-product evidence before success.",
+      "acceptance_criteria": [
+        "Publish and real-product-soak matrices contain the identical 21 runner/RID entries.",
+        "Both macos-latest and xcode-27 complete self-contained osx-arm64 publication and real-product soak jobs.",
+        "Every lane completes build/test, emits soak-result.json and news-evidence.json, captures settled visual evidence where supported, retrieves both circular traces, and passes NVIDIA review.",
+        "Every successful lane produces a redacted lane-closure-record.json with inspected evidence hashes and cleanup proof.",
+        "Aggregate post-soak review rejects any run that does not contain exactly 21 complete evidence manifests."
+      ],
+      "validation_plan": [
+        "Run the workflow configuration, license, syntax, upstream-mutation, and migration gates.",
+        "Run focused and full Release tests.",
+        "Run a fresh 21-lane hosted matrix and wait for every lane to reach terminal state.",
+        "Inspect every lane's screenshots, both circular traces, result/news manifests, and redacted closure record."
+      ],
+      "artifacts": [
+        "docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-WorkflowGateConfiguration.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md",
+          "docs/CR-069-PROGRESSIVE-SOAK-PROFILES.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "pending",
+        "unresolved_gaps": [
+          "A fresh 21-lane hosted run and inspection of every lane's retained evidence remain pending."
+        ],
+        "closure_evidence": []
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": [
+        ]
+      }
+    },
+    {
       "id": "CR-071",
       "phase": "Phase 7",
       "title": "Correct startup ribbon alignment and pacing variance",
@@ -5145,7 +5223,7 @@
       "acceptance_criteria": [
         "Push and workflow_dispatch runs use distinct concurrency groups.",
         "Duplicate runs of the same event and ref remain serialized.",
-        "A fresh current-SHA dispatch reaches all 18 publish and real-product jobs and produces reviewable artifacts."
+        "A fresh current-SHA dispatch reaches all 21 publish and real-product jobs and produces reviewable artifacts."
       ],
       "validation_plan": [
         "Manual workflow concurrency and dependency scan",
@@ -5202,7 +5280,7 @@
       "acceptance_criteria": [
         "Every hosted runner trace contains AI access and summary evidence.",
         "Missing AI trace evidence fails post-soak review and routes a CR.",
-        "The evidence set contains 18 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing NVIDIA NIM artifact review."
+        "The current evidence set contains 21 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing NVIDIA NIM artifact review."
       ],
       "validation_plan": [
         "Manual inspection of completed hosted artifacts",
@@ -6252,8 +6330,8 @@
         "Every matrix dispatch creates an availability manifest for all four local machines.",
         "Every available local machine passes residual-process cleanup before launch or hard-stops its lane.",
         "Local lanes use the exact hosted duration and real-product RSS, AI, screenshot, circular-trace, settling, and cleanup gates.",
-        "Unavailable machines are explicit skips and all 18 hosted lanes remain mandatory.",
-        "Two independent complete cycles pass all 18 hosted lanes and all available local lanes with no new defects."
+        "Unavailable machines are explicit skips and all 21 hosted lanes remain mandatory.",
+        "Two independent complete cycles pass all 21 hosted lanes and all available local lanes with no new defects."
       ],
       "validation_plan": [
         "Read the current hosted and local harnesses line by line and compare their acceptance contracts.",

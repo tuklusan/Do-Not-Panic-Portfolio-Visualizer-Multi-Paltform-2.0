@@ -37,6 +37,6 @@ The source and reverse workflow scans must be repeated after this change.
 ## Acceptance
 
 - A push to `main` cannot cancel a dispatched soak on `main`.
-- A fresh 10-minute dispatch reaches all 18 publish and real-product jobs.
-- All 18 current-SHA artifacts pass screenshot, circular-trace, AI-evidence,
+- A fresh 10-minute dispatch reaches all 21 publish and real-product jobs.
+- All 21 current-SHA artifacts pass screenshot, circular-trace, AI-evidence,
   cleanup, and NVIDIA NIM artifact-review gates.

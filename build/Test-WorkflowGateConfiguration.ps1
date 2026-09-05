@@ -35,7 +35,7 @@ function Get-MatrixEntries([string]$Workflow, [string]$JobName) {
     if ([string]::IsNullOrWhiteSpace($job)) { throw "Workflow job '$JobName' is missing." }
     $entries = [regex]::Matches($job, '(?ms)^\s+- runner:\s*(?<runner>[^\r\n]+)\s*\r?\n\s+rid:\s*(?<rid>[^\r\n]+)') |
         ForEach-Object { '{0}|{1}' -f $_.Groups['runner'].Value.Trim(), $_.Groups['rid'].Value.Trim() }
-    if (@($entries).Count -ne 18) { throw "Workflow job '$JobName' must define exactly 18 runner/RID entries; found $(@($entries).Count)." }
+    if (@($entries).Count -ne 21) { throw "Workflow job '$JobName' must define exactly 21 runner/RID entries; found $(@($entries).Count)." }
     return @($entries)
 }
 
@@ -69,15 +69,32 @@ $soakEntries = Get-MatrixEntries $workflow 'real-product-soak'
 if ((@($publishEntries | Sort-Object) -join "`n") -cne (@($soakEntries | Sort-Object) -join "`n")) {
     throw 'Publish and real-product-soak runner/RID matrices diverge.'
 }
-if (@($publishEntries | Select-Object -Unique).Count -ne 18) { throw 'Hosted runner matrix contains duplicate runner/RID entries.' }
+if (@($publishEntries | Select-Object -Unique).Count -ne 21) { throw 'Hosted runner matrix contains duplicate runner/RID entries.' }
+foreach ($requiredEntry in @('ubuntu-slim|linux-x64', 'macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
+    if ($publishEntries -cnotcontains $requiredEntry) { throw "Hosted runner matrix is missing required entry '$requiredEntry'." }
+}
 if ($workflow -notmatch 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_ARTIFACT') {
     throw 'Hosted soak workflow is missing mandatory NVIDIA test-artifact review.'
 }
 if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Linux''') {
     throw 'Hosted soak workflow is missing unconditional Linux Xvfb cleanup.'
 }
-if ($workflow -notmatch 'Expected 18 soak evidence manifests') {
-    throw 'Hosted post-soak review is missing the complete 18-runner evidence count gate.'
+if ($workflow -notmatch 'Expected 21 soak evidence manifests') {
+    throw 'Hosted post-soak review is missing the complete 21-runner evidence count gate.'
+}
+if ($workflow -notmatch 'Inspect and retain lane closure evidence' -or
+    $workflow -notmatch 'dnppv2-lane-closure-record/v1' -or
+    $workflow -notmatch 'inspectedEvidenceRetained = \$true') {
+    throw 'Hosted soak workflow is missing the mandatory per-lane closure evidence inspection gate.'
+}
+if ($workflow -notmatch 'Expected 21 inspected lane closure records' -or
+    $workflow -notmatch 'Incomplete inspected lane closure record' -or
+    $workflow -notmatch 'Unreadable inspected lane closure record') {
+    throw 'Hosted post-soak review is missing the complete inspected lane-record validation gate.'
+}
+if ($workflow -notmatch "github\.event_name == 'push'" -or
+    $workflow -notmatch "github\.event_name == 'workflow_dispatch'") {
+    throw 'Hosted post-soak review must cover both push and manual soak runs.'
 }
 if ($workflow -notmatch "dotnet-version: '10\.0\.x'") { throw 'Hosted workflow must pin the .NET 10 SDK line.' }
 

@@ -14,6 +14,10 @@ patent, trademark, and governing-law provisions.
 
 # CR-069 Soak Profile During Open-CR Processing
 
+> **Current matrix authority:** [CR-094](CR-094-21-PLUS-4-MATRIX-EVIDENCE.md)
+> supersedes the earlier 18-plus-4 matrix wording in this profile. The 18-lane
+> counts below are retained only as historical evidence for the closed baseline.
+
 ## Functional Inventory
 
 | SOAK-01 | Run the controlled 10-minute profile while open CRs remain | `.github/workflows/publish-six-rids.yml` and `build/Invoke-LocalLabSoakCycle.ps1` | duration and cycle manifests |
@@ -36,7 +40,7 @@ unmapped for this CR. Product-specific defects found during execution remain
 separate implementation CRs rather than being hidden in this operational CR.
 
 While the migration CR queue contains open work, run exactly one real-product
-profile on the 18-plus-4 matrix:
+profile on the 21-plus-4 matrix:
 
 1. 10 minutes
 
@@ -49,7 +53,7 @@ and the machine is clean. Failures create a JSON CR with the exact run identity,
 both circular traces, screenshot/evidence manifest, and reviewed diagnosis.
 After a fix, the affected 10-minute profile is relaunched. The queue remains
 open until two successive accepted 10-minute cycles show no new actionable
-defects across all 18 hosted runners and every local machine available at cycle
+defects across all 21 hosted runners and every local machine available at cycle
 start.
 
 Every hosted lane captures a settled product screenshot after the 30-second
@@ -61,12 +65,12 @@ At the start of each profile cycle, the harness rechecks all four local lab
 machines and runs on the currently reachable contract-compliant subset. The
 cycle manifest records every unavailable machine and its reason; availability
 changes between cycles do not invalidate the evidence from a completed cycle.
-If local machines are unavailable, the profile may still close when all 18
+If local machines are unavailable, the profile may still close when all 21
 hosted lanes have provably executed and passed the real-product gates; local
 availability is recorded, never silently converted into a pass.
 
 For a manually dispatched 10-minute run, the `post-soak-review` workflow job
-starts after the soak matrix reaches a terminal state, downloads that run's 18
+starts after the soak matrix reaches a terminal state, downloads that run's 21
 evidence artifacts, checks both trace files and AI-path evidence, and sends each
 complete evidence packet through the NVIDIA NIM artifact reviewer. Its uploaded
 defect-candidate artifact is the handoff for the JSON CR loop; a failed soak or
