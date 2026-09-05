@@ -5324,7 +5324,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "Replacement run 33956511431 completed successfully with all 18 real-product soak lanes, all per-lane NVIDIA evidence reviews, and 18 non-expired soak artifacts. This is one accepted clean hosted cycle; a second independent clean cycle and available-local-machine companion evidence are still required."
+          "Replacement runs 33956511431 and 33957825572 each completed successfully with all 18 real-product soak lanes, all per-lane NVIDIA evidence reviews, and 18 non-expired soak artifacts per run. The hosted two-cycle requirement is satisfied; available-local-machine companion evidence and broader harness closure gates remain required."
         ]
       }
     },

@@ -70,3 +70,9 @@ soak lanes, all per-lane evidence reviews, and 18 non-expired soak artifacts;
 the corrected arm64 test and the Ubuntu arm64 AI evidence both passed in that
 cycle. This is one accepted clean hosted cycle; a second independent clean
 cycle and the available-local-machine companion evidence are still required.
+
+Second independent run `33957825572` also completed successfully with all 18
+real-product soak lanes, all per-lane evidence reviews, and 18 non-expired
+soak artifacts. The hosted two-cycle requirement is therefore satisfied;
+available-local-machine companion evidence and the broader harness CR closure
+gates remain open.
