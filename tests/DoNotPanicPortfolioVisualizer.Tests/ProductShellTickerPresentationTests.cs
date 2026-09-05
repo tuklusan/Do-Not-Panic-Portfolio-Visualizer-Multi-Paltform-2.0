@@ -65,6 +65,22 @@ public sealed class ProductShellTickerPresentationTests
         Assert.DoesNotContain("<Border Grid.Column=\"2\"", graphTemplate, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ProductShell_UsesFixedSeparateUpdateLabelAndValueFields()
+    {
+        string xaml = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "DoNotPanicPortfolioVisualizer.App",
+            "Views",
+            "ProductShellWindow.axaml"));
+
+        Assert.Contains("Text=\"{Binding UpdatedPrefixText}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Text=\"{Binding UpdatedTickerFieldText}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Width=\"222\"", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Text=\"{Binding LastUpdatedText}\"", xaml, StringComparison.Ordinal);
+    }
+
     private static int CountOccurrences(string text, string value)
     {
         int count = 0;
