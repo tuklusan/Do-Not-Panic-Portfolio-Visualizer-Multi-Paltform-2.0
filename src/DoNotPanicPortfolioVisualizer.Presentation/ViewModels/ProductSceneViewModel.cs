@@ -680,7 +680,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
-            IReadOnlyList<QuoteSnapshot> quotes = await _quoteProvider.GetQuotesAsync(
+            IReadOnlyList<QuoteSnapshot> quotes = await GetSingleSymbolQuotesAsync(
                 MacroQuotes.Select(static macro => macro.Symbol),
                 cancellationToken);
             await InvokeOnUiAsync(() =>
@@ -701,11 +701,30 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         }
     }
 
+    private async Task<IReadOnlyList<QuoteSnapshot>> GetSingleSymbolQuotesAsync(
+        IEnumerable<string> symbols,
+        CancellationToken cancellationToken)
+    {
+        List<QuoteSnapshot> quotes = [];
+        foreach (string symbol in symbols
+                     .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
+                     .Select(static symbol => symbol.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            IReadOnlyList<QuoteSnapshot> response = await _quoteProvider
+                .GetQuotesAsync([symbol], cancellationToken)
+                .ConfigureAwait(false);
+            quotes.AddRange(response);
+        }
+
+        return quotes;
+    }
+
     private async Task RefreshGlobalMarketsAsync(CancellationToken cancellationToken, bool refreshWeather = true)
     {
         try
         {
-            IReadOnlyList<QuoteSnapshot> quotes = await _quoteProvider.GetQuotesAsync(
+            IReadOnlyList<QuoteSnapshot> quotes = await GetSingleSymbolQuotesAsync(
                 GlobalMarkets.Select(static market => market.Symbol),
                 cancellationToken);
             await InvokeOnUiAsync(() =>
