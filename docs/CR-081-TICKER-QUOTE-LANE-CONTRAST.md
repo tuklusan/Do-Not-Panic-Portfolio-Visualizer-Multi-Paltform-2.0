@@ -14,6 +14,30 @@ SANYALnet Labs." See LICENSE for full terms.
 
 | CR-01 | Preserve readable, distinct ticker lanes over cinematic backgrounds | product shell and ticker styles | settled screenshots |
 
+## Upstream Line-Level Mapping
+
+The complete upstream ticker artifacts were read from disk: `TickerTapeControl.xaml`
+and `TickerTapeControl.xaml.cs`, together with the scene composition and shared
+render resources. The upstream lane is an opaque near-black `#EE050505` border
+with a separate grey-blue name lane (`#FF121922`); its viewport is clipped,
+28 pixels high, vertically centered, and the track is rebuilt from fixed-width
+items before a repeating animation starts. The code-behind subscribes to load,
+resize, data-context, collection, and update-sequence events; it stops motion
+when unloaded or empty, defers measurement until a positive viewport exists,
+and flashes only registered value/change borders.
+
+The corresponding Avalonia implementation is `ProductShellWindow.axaml` and
+`ProductSceneViewModel.cs`: the lane uses the darker neutral translucent
+`#C52A3138` background, preserves the upstream grey name lane, clips a fixed
+28-pixel viewport, centers all text vertically, uses fixed ticker columns, and
+binds quote-only flash state to the value/change region. Motion, update
+subscription, startup hydration, and empty-state behavior are covered by the
+existing ticker presentation tests and the real-product soak evidence.
+
+Reverse scan result: no additional upstream ticker contrast, alignment, motion,
+startup, or flash behavior was found unmapped. The remaining work is focused
+visual acceptance on a settled production scene, not a missing implementation.
+
 ## Purpose
 
 Improve the contrast of the four moving quote lanes in the production scene.
@@ -55,5 +79,7 @@ settling behavior. Do not replace the real product scene with a visual fixture.
 
 ## Status
 
-Open. This CR is queued behind the active real-product soak and its required
-upstream inventory gate.
+Open. The upstream forward and reverse inventory is now recorded above and the
+pre-development gate is ready to rerun. Current Avalonia styling already
+contains the requested darker neutral quote-lane treatment; fresh production
+screenshots and closure-gate evidence remain required before closing this CR.

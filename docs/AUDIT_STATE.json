@@ -4839,6 +4839,21 @@
         "zero_known_gaps": false,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Themes/Generic.xaml",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
@@ -5506,16 +5521,42 @@
         "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
       ],
       "upstream_behavior_inventory": {
-        "status": "required_before_development",
+        "status": "complete",
         "document": "docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Themes/Generic.xaml"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Themes/Generic.xaml",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "open",
-        "unresolved_gaps": [
-          "Quote lanes currently use black backgrounds and need a production-scene contrast review against the upstream visual behavior."
-        ]
+      "unresolved_gaps": [
+        "Current Avalonia styling contains the requested darker neutral quote-lane treatment; fresh settled production screenshots, focused visual checks, and closure-gate evidence remain required."
+      ],
+      "evidence": [
+        "Manual upstream/current source mapping recorded in docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md.",
+        "Current ProductShellWindow.axaml uses #C52A3138 for the quote-lane background, preserves the grey name lane, fixed columns, 28-pixel clipping, and vertical centering."
+      ]
       }
     },
     {
