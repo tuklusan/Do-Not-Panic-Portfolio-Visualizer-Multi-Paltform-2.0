@@ -5217,7 +5217,7 @@
       "id": "CR-072",
       "phase": "Phase 7",
       "title": "Bound Linux desktop screenshot capture",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-067"
