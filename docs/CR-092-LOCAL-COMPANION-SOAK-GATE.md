@@ -69,14 +69,18 @@ hosted matrix.
 
 ## Harness maintenance lock
 
-After one complete, reviewed 10-minute cycle records all four local machines as
-available and passed, `build/Invoke-LocalLabSoakCycle.ps1` is considered a
-working harness and is frozen against opportunistic optimization or cleanup
+After two independent, reviewed 10-minute cycles record all four local machines
+as available and passed, `build/Invoke-LocalLabSoakCycle.ps1` is a proven
+working harness and is now locked against opportunistic optimization or cleanup
 refactoring. Changes are allowed only for a concrete continuation defect or an
 explicit project requirement, and each exception must include focused syntax,
-test, and acceptance evidence in the same checkpoint. The freeze is not active
-yet: the current cycle produced passed Windows 10, Windows 11, and Intel Mac
-results, but its Linux coordinator stopped before writing a result manifest.
+test, and acceptance evidence in the same checkpoint. The lock is active after
+cycles `dnppv2-local-cycle-10m-pushed-20260905-062216` and
+`dnppv2-local-cycle-10m-fourth-20260905-074500` passed all four local lanes.
+
+This lock applies to the local-lab harness only; it does not suppress product
+defect work, evidence analysis, or required fixes for a demonstrable harness
+failure.
 
 The coordinator launches Windows child PowerShell processes with hidden windows
 so local validation does not disturb the operator's desktop. Unix lanes remain

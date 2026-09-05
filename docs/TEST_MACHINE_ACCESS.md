@@ -67,6 +67,11 @@ record the operator-supplied current address needed to explain lab state.
   machine-level `TEMP` and `TMP`, and rechecks the contract while the product
   is running. A failed check is fatal; the harness does not continue or clean
   around the failure.
+- Optional native diagnostics: Windows Debuggers are installed under
+  `C:\Program Files (x86)\Windows Kits\10\Debuggers`, with `cdb.exe`,
+  `ntsd.exe`, and `windbg.exe` available for `x86`, `x64`, `arm`, and `arm64`.
+  These tools are escalation diagnostics for a captured crash or hang only;
+  they are not required to launch DNPPV-2.0 or to pass a normal soak.
 
 ### `windows-11-laptop`
 
@@ -94,6 +99,11 @@ record the operator-supplied current address needed to explain lab state.
   `DOTNET_ROOT_X64` set explicitly. Use the licensed helper
   `build/vm/Install-DotNetDesktopRuntime.ps1` only when that diagnostic path
   is required; do not substitute a console-only .NET runtime.
+- Optional native diagnostics: Windows Debuggers are installed under
+  `C:\Program Files (x86)\Windows Kits\10\Debuggers`, with `cdb.exe`,
+  `ntsd.exe`, and `windbg.exe` available for `x86`, `x64`, `arm`, and `arm64`.
+  These tools are escalation diagnostics for a captured crash or hang only;
+  they are not required to launch DNPPV-2.0 or to pass a normal soak.
 
 ### `macos-x64-intel-big-sur`
 

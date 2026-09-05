@@ -6225,7 +6225,8 @@
     "Do not reintroduce WPF, Windows-only target frameworks, or Windows-installer assets into the active 2.0 lane.",
     "Do not claim visual product progress from any scaffold or toy application surface.",
     "Use the repository-local NuGet.Config to keep restore deterministic and independent of machine-wide Visual Studio fallback-folder quirks.",
-    "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment."
+    "Close each CR with reviewed commits, pushed evidence, and a tracker update before opening the next implementation increment.",
+    "The local-lab soak harness is locked after two complete four-machine ten-minute cycles; modify it only for a demonstrated continuation defect or explicit project requirement, with focused evidence in the same checkpoint."
   ],
   "full_codebase_review_records": [
     {
