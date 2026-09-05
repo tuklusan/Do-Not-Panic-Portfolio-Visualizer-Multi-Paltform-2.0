@@ -5380,7 +5380,7 @@
       "id": "CR-069",
       "phase": "Phase 7",
       "title": "Run and close the 10-minute product soak profile while CRs remain open",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-068"
       ],
@@ -5429,11 +5429,38 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Replacement runs 33956511431 and 33957825572 each completed successfully with all 18 real-product soak lanes, all per-lane NVIDIA evidence reviews, and 18 non-expired soak artifacts per run. The hosted two-cycle requirement is satisfied; available-local-machine companion evidence and broader harness closure gates remain required."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "Hosted cycles 33956511431 and 33957825572 completed all 18 real-product soak lanes successfully with per-lane evidence review and non-expired artifacts.",
+          "Local cycle dnppv2-local-cycle-10m-20260905-094111 completed Linux, Windows 10, Windows 11, and Intel Mac with real-product screenshots, RSS usable evidence, AI request/success evidence, both circular trace families, and cleanup.",
+          "The earlier invocation failures were rejected before product acceptance because the caller supplied an empty publish root or reused the literal artifact directory as the cycle identity; no product defect was inferred from those runs.",
+          "Release/build, license, PowerShell syntax, workflow configuration, and artifact checks passed."
         ]
-      }
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/CR-067-PRODUCT-SOAK-RUNNER-CONTRACT.md",
+          "build/validation/Invoke-AutonomousVisualValidation.ps1",
+          "build/validation/Analyze-VisualValidationArtifacts.ps1",
+          "tests/PortfolioSaver.Tests/Services/VmHarnessScriptTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "closure_audit": {
+        "upstream_behavior_gate": "Passed; two successive zero-gap closure scans",
+        "review": "NVIDIA artifact-review packet generated; no blocking finding accepted",
+        "automated_tests": "Release/build/license/syntax/workflow gates passed",
+        "physical_acceptance": "Passed; four-machine 10-minute real-product cycle with RSS/AI evidence, circular traces, screenshots, and cleanup",
+        "hosted_acceptance": "Passed; hosted cycles 33956511431 and 33957825572 covered all 18 lanes"
+      },
+      "closed_on": "2026-09-05"
     },
     {
       "id": "CR-077",

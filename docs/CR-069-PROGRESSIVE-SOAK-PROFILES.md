@@ -73,7 +73,7 @@ defect-candidate artifact is the handoff for the JSON CR loop; a failed soak or
 missing evidence does not suppress this review job.
 
 **Depends on:** CR-066, CR-067, CR-068  
-**Status:** Open. Push-triggered run `33955248690` completed 35 jobs
+**Status:** Closed. Push-triggered run `33955248690` completed 35 jobs
 successfully, while the real-product soak exposed two actionable failures:
 `macos-26` arm64 had a cross-platform timing race in
 `ProgressiveQuoteRefreshPipelineTests`, and `ubuntu-22.04-arm` completed its
@@ -93,3 +93,16 @@ real-product soak lanes, all per-lane evidence reviews, and 18 non-expired
 soak artifacts. The hosted two-cycle requirement is therefore satisfied;
 available-local-machine companion evidence and the broader harness CR closure
 gates remain open.
+
+The corrected local cycle `dnppv2-local-cycle-10m-20260905-094111` completed
+all four machines successfully. Linux, Windows 10, Windows 11, and Intel Mac
+each produced real-product evidence with RSS usable and AI request/success
+events, both circular trace families, and cleanup. This supplies the required
+available-local-machine companion evidence alongside hosted cycles
+`33956511431` and `33957825572`.
+
+Closure review rescanned the workflow, local coordinator, soak runner contract,
+visual-validation scripts, and validation tests twice with zero unmapped
+behaviors. The NVIDIA artifact-review packet was generated, the local
+Release/build/license/syntax/workflow gates passed, and no actionable defect
+remains for this operational CR.
