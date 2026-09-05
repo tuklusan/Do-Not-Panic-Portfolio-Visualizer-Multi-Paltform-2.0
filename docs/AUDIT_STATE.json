@@ -7091,6 +7091,51 @@
         "status": "deferred_blocked_on_CR-097",
         "unresolved_gaps": ["No implementation or closure evidence is claimed."]
       }
+    },
+    {
+      "id": "CR-104",
+      "phase": "Phase 7",
+      "title": "Retire the Ubuntu Slim hosted lane",
+      "status": "deferred",
+      "priority": "low",
+      "depends_on": ["CR-094", "CR-096"],
+      "objective": "Remove ubuntu-slim consistently from the required hosted matrix, gates, harnesses, evidence aggregation, and documentation after the current run is consumed, without weakening remaining lane requirements or product coverage.",
+      "acceptance_criteria": [
+        "Every operational reference to ubuntu-slim is inventoried and either removed or explicitly retained only as historical diagnostic context.",
+        "Publish and real-product soak matrices, expected counts, exact-matrix gates, availability probes, artifact aggregation, and workbooks agree on the same remaining hosted lanes.",
+        "All remaining lanes retain mandatory build/test, manifest, screenshot where supported, dual circular trace, reviewer, inspected closure evidence, cleanup, and aggregate gates.",
+        "Two successive scans find no stale operational ubuntu-slim references, and a fresh serialized hosted run reaches terminal state with every remaining lane's evidence inspected.",
+        "Focused/full validation, applicable upstream and reverse gates, clean checkpoint, commit, and push pass; product behavior and supported targets are unchanged."
+      ],
+      "validation_plan": [
+        "Consume and inspect current run 33988763870 without modifying it, retaining the ubuntu-slim cancellation only as diagnostic evidence.",
+        "Perform a disk-wide reference inventory, update workflow/scripts/gates/workbooks/docs, and run deterministic local gates.",
+        "Run a fresh serialized hosted matrix and inspect every remaining lane's complete evidence set, then perform two successive reverse scans."
+      ],
+      "artifacts": [
+        "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-WorkflowGateConfiguration.ps1",
+        "build/",
+        "docs/AUDIT_STATE.json",
+        "docs/TEST_MACHINE_ACCESS.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending_deferred",
+        "document": "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending_deferred",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation is intentionally deferred until the current hosted run is consumed."]
+      },
+      "current_validation": {
+        "status": "deferred",
+        "unresolved_gaps": ["The current run has not reached terminal state; no removal or fresh validation is claimed."]
+      }
     }
   ],
   "remaining_validation_gaps": [
