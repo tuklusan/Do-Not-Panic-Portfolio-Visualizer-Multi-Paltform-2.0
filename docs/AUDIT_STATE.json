@@ -4965,6 +4965,23 @@
         "unresolved_gaps": [
           "The startup freshness state now matches upstream's neutral LOADING - waiting for data behavior, but ribbon geometry, pacing diagnosis, focused tests, and settled physical evidence remain open."
         ]
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/ViewModels/StatusBarViewModel.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/Services/NewsPlaybackController.cs",
+          "docs/CR-071-STARTUP-RIBBON-AND-PACING.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
