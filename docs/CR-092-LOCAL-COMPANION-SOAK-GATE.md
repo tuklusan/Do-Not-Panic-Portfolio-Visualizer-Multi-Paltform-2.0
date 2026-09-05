@@ -109,6 +109,13 @@ race-sensitive Linux deployment defect, which remains actionable under CR-080;
 the retry is diagnostic evidence and does not substitute for the required
 independent four-machine ten-minute cycle.
 
+The following fresh cycle, `dnppv2-local-cycle-10m-third-20260905-071500`,
+reproduced the same Linux preflight failure while the three other available
+machines again passed their complete ten-minute real-product lanes. The
+repeatable Linux deployment miss is now confirmed as CR-080 work, and CR-092
+cannot count either of these cycles as its second clean cycle until that lane
+is repaired and the complete local acceptance contract passes again.
+
 Cycle `dnppv2-local-companion-cycle-r9` completed its coordinator run after the
 startup-settling bound was increased. Linux and Windows 10 completed their
 10-minute real-product lanes successfully. Windows 11 reached the driver but
