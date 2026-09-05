@@ -6206,11 +6206,63 @@
           "Two independent complete hosted cycles and two independent complete four-machine local companion cycles are recorded; all available local lanes passed the ten-minute real-product contract with screenshots, RSS/AI evidence, circular traces, and cleanup."
         ]
       }
+    },
+    {
+      "id": "CR-093",
+      "phase": "Phase 7",
+      "title": "Make Atom feed parser fixture independent of wall-clock date",
+      "status": "open",
+      "depends_on": [],
+      "objective": "Keep the Atom href-link parser test deterministic after the live date passes its seven-day freshness window, without weakening production freshness filtering.",
+      "acceptance_criteria": [
+        "The Atom href-link test supplies a fixed clock that keeps its fixture fresh.",
+        "Production RSS freshness behavior remains unchanged.",
+        "The focused test and full Release test suite pass locally and on the hosted matrix.",
+        "Upstream behavior, license, syntax, workflow, and NVIDIA NIM review gates pass."
+      ],
+      "validation_plan": [
+        "Manual review of the Atom parsing and freshness filtering path",
+        "Focused Atom parser test and full Release test suite",
+        "Hosted matrix rerun and clean evidence review"
+      ],
+      "artifacts": [
+        "docs/CR-093-DETERMINISTIC-ATOM-FEED-FIXTURE.md",
+        "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-093-DETERMINISTIC-ATOM-FEED-FIXTURE.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "open",
+        "unresolved_gaps": [
+          "Focused and full local tests pass after the deterministic-clock fix; hosted rerun and closure gates are pending."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
+    "CR-093: deterministic Atom feed fixture fix is not yet hosted-validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",

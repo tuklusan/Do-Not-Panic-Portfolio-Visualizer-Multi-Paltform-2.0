@@ -663,7 +663,9 @@ public sealed class AmbientSceneServicesTests
     public async Task FinanceNewsService_ReadsAtomEntriesAndHrefLinks()
     {
         const string atom = "<feed xmlns=\"http://www.w3.org/2005/Atom\"><entry><title>Atom market news</title><link href=\"https://example.test/atom/1\"/><updated>2026-08-29T10:00:00+00:00</updated></entry></feed>";
-        using FinanceNewsService service = new(new StaticResponseHandler(atom));
+        using FinanceNewsService service = new(
+            new StaticResponseHandler(atom),
+            () => new DateTimeOffset(2026, 8, 29, 12, 0, 0, TimeSpan.Zero));
 
         IReadOnlyList<string> headlines = await service.GetHeadlinesAsync(
             "https://example.test/feed", CancellationToken.None);
