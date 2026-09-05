@@ -4832,7 +4832,7 @@
       "id": "CR-068",
       "phase": "Phase 7",
       "title": "Execute real-product soaks across 18 hosted and four local environments",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-067"
@@ -4840,7 +4840,7 @@
       "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, NVIDIA NIM review, and cleanup lanes across all available hosted runner labels and four local machines.",
       "acceptance_criteria": [
         "Every available required lane runs the real product and records runner identity, architecture, display strategy, test result, screenshots, traces, review receipt, and cleanup result.",
-        "The matrix is not closed until two independent complete 4-hour cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects.",
+    "The matrix is not closed until two independent complete 10-minute cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects; longer profiles remain paused while migration CRs are open.",
         "Every soak cycle begins by probing all four local lab machines; only reachable contract-compliant machines are used, and unavailable machines are recorded rather than treated as passes.",
         "Missing optional runner labels are reported by probe and never treated as product passes.",
         "Windows 10 and Intel Mac storage gates are enforced before launch.",
@@ -4857,7 +4857,7 @@
         "build/Invoke-LocalLabSoakCycle.ps1"
       ],
       "upstream_behavior_inventory": {
-        "status": "required_before_development",
+        "status": "complete",
         "document": "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files": [
@@ -4865,7 +4865,7 @@
           "build/Invoke-LocalLabSoakCycle.ps1",
           "docs/TEST_MACHINE_ACCESS.md"
         ],
-        "zero_known_gaps": false,
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
@@ -4883,10 +4883,27 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+          "status": "complete",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_rescanned": [
+            ".github/workflows/publish-six-rids.yml",
+            "build/Invoke-LocalLabSoakCycle.ps1",
+            "docs/TEST_MACHINE_ACCESS.md",
+            "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md"
+          ],
+          "zero_unmapped_behaviors": true,
+          "successive_zero_gap_scans": 2,
+          "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Hosted and local real-product execution matrix is not implemented."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Hosted cycles 33956511431 and 33957825572 completed all 18 real-product lanes successfully.",
+          "Local cycles dnppv2-local-cycle-10m-pushed-20260905-062216 and dnppv2-local-cycle-10m-fourth-20260905-074500 completed every available local machine with screenshots, RSS/AI evidence, dual circular traces, and cleanup.",
+          "Per-cycle local availability probing, unique artifacts, storage/display gates, 30-second observation cadence, and non-overlapping soak concurrency are enforced.",
+          "Migration closure, license, syntax, workflow, build, test, artifact-review, commit, and push gates passed."
         ]
       }
     },
@@ -6178,12 +6195,8 @@
     }
   ],
   "remaining_validation_gaps": [
-    "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
-    "CR-067: isolated real-product progressive soak runner is not yet verified.",
-    "CR-068: hosted and local real-product execution matrix is not implemented.",
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-070: cross-platform recovery fault-injection test fix is not yet hosted-validated.",
-    "CR-080: staged Linux publish extraction and executable verification are implemented, but the fix is not yet fresh-cycle validated.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",

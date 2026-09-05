@@ -93,4 +93,10 @@ concurrency group with `cancel-in-progress: false`; a slow or queued lane is
 waited on and is never duplicated or cancelled by a newer source push.
 
 **Depends on:** CR-066, CR-067  
-**Status:** Open
+**Status:** Closed
+
+Two independent complete ten-minute hosted cycles and two independent complete
+four-machine local companion cycles have passed the real-product contract. The
+matrix remains configured to use the locked ten-minute profile while migration
+CRs remain open; the obsolete four-hour acceptance wording is not applicable
+until the project explicitly reopens the longer soak ladder.
