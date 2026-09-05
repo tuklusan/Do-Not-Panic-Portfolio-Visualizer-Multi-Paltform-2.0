@@ -90,6 +90,19 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         await provider.WaitForCancellationAsync();
     }
 
+    [Fact]
+    public async Task SingleSymbolQuoteRefresh_FetchesDistinctSymbolsSequentially()
+    {
+        RecordingQuoteProvider provider = new();
+
+        IReadOnlyList<QuoteSnapshot> quotes = await SingleSymbolQuoteRefresh.FetchAsync(
+            provider,
+            [" AAA ", "BBB", "aaa", " ", "BBB"]);
+
+        Assert.Equal(["AAA", "BBB"], provider.Requests);
+        Assert.Equal(["AAA", "BBB"], quotes.Select(static quote => quote.Symbol));
+    }
+
     private static QuoteSnapshot Quote(string symbol, decimal last, DateTimeOffset? fetchedAt = null)
         => new()
         {
@@ -188,6 +201,23 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
             RequestCount++;
             return new TaskCompletionSource<IReadOnlyList<QuoteSnapshot>>(
                 TaskCreationOptions.RunContinuationsAsynchronously).Task;
+        }
+
+        public Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+    }
+
+    private sealed class RecordingQuoteProvider : IQuoteProvider
+    {
+        public List<string> Requests { get; } = [];
+
+        public Task<IReadOnlyList<QuoteSnapshot>> GetQuotesAsync(
+            IEnumerable<string> symbols,
+            CancellationToken cancellationToken = default)
+        {
+            string symbol = Assert.Single(symbols);
+            Requests.Add(symbol);
+            return Task.FromResult<IReadOnlyList<QuoteSnapshot>>([Quote(symbol, 1m)]);
         }
 
         public Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)

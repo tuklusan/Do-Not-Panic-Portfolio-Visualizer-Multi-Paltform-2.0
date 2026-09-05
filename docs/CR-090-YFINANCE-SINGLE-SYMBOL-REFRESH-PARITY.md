@@ -57,5 +57,10 @@ concurrency.
 
 ## Status
 
-Open. The portfolio one-symbol/four-deep path is present; ancillary lane
-request-shape parity requires implementation and fresh validation.
+Implementation in progress. The portfolio one-symbol/four-deep path is
+present, and the macro/global-market lanes now share
+`SingleSymbolQuoteRefresh`, which normalizes symbols, removes duplicates, and
+dispatches one provider request per symbol in sequence. The call-shape
+contract is covered by `SingleSymbolQuoteRefresh_FetchesDistinctSymbolsSequentially`.
+Fresh upstream reverse scans and settled real-product trace evidence are still
+required before closure.
