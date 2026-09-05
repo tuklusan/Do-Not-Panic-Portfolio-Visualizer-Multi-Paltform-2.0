@@ -5,6 +5,12 @@
 
 name: Cross-platform publish matrix
 
+# Serialize complete matrix runs so queued lanes and their evidence review
+# finish before another matrix is admitted.
+concurrency:
+  group: dnppv2-complete-matrix
+  cancel-in-progress: false
+
 on:
   push:
     branches: [main]

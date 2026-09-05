@@ -50,6 +50,15 @@ function Assert-JobTimeout([string]$Workflow, [string]$JobName) {
 $workflow = Read-Workflow $WorkflowPath
 $cleanupWorkflow = Read-Workflow $CleanupWorkflowPath
 
+if ($workflow -notmatch '(?ms)^concurrency:\s*\r?\n\s+group:\s+dnppv2-complete-matrix\s*\r?\n\s+cancel-in-progress:\s+false') {
+    throw 'Hosted matrix workflow must serialize complete runs and wait for queued lanes and evidence review.'
+}
+$concurrencyIndex = $workflow.IndexOf("`nconcurrency:", [StringComparison]::Ordinal)
+$jobsIndex = $workflow.IndexOf("`njobs:", [StringComparison]::Ordinal)
+if ($concurrencyIndex -lt 0 -or $jobsIndex -lt 0 -or $concurrencyIndex -gt $jobsIndex) {
+    throw 'Hosted matrix concurrency must be a workflow-root block before jobs.'
+}
+
 foreach ($jobName in @('gate', 'publish', 'real-product-soak', 'post-soak-review')) { Assert-JobTimeout $workflow $jobName }
 Assert-JobTimeout $cleanupWorkflow 'cleanup'
 

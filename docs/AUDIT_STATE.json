@@ -4986,6 +4986,76 @@
       }
     },
     {
+      "id": "CR-095",
+      "phase": "Phase 7",
+      "title": "Serialize hosted matrix launches behind queued-run completion",
+      "status": "open",
+      "depends_on": [
+        "CR-094"
+      ],
+      "objective": "Prevent a new hosted publish/soak matrix from competing with a prior run whose lanes or evidence review are queued or active.",
+      "acceptance_criteria": [
+        "The complete workflow uses the global dnppv2-complete-matrix concurrency group.",
+        "cancel-in-progress is false, so a later trigger waits rather than canceling the active matrix.",
+        "The active run remains responsible for all 21 publish and 21 real-product soak lanes and aggregate evidence review before release.",
+        "The workflow configuration gate rejects removal or weakening of the hard launch serialization gate.",
+        "CR-095 cannot close or accept its own matrix verification until CR-094 is closed with fresh 21-lane evidence and the current matrix run is terminal."
+      ],
+      "validation_plan": [
+        "Run the workflow configuration, license, syntax, migration, and upstream-lock gates.",
+        "Run the full Release test suite.",
+        "Observe the current hosted run reach terminal state before any subsequent matrix launch.",
+        "Confirm the 21-lane evidence and aggregate review requirements remain enforced."
+      ],
+      "artifacts": [
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-WorkflowGateConfiguration.ps1",
+        "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "pending",
+        "unresolved_gaps": [
+          "The current 21-lane hosted run has not reached terminal state."
+        ],
+        "closure_evidence": []
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
       "id": "CR-071",
       "phase": "Phase 7",
       "title": "Correct startup ribbon alignment and pacing variance",
