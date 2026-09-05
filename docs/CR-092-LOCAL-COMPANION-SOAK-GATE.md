@@ -74,3 +74,13 @@ results, but its Linux coordinator stopped before writing a result manifest.
 The coordinator launches Windows child PowerShell processes with hidden windows
 so local validation does not disturb the operator's desktop. Unix lanes remain
 headless over SSH and do not require a visible terminal.
+
+## Latest cycle evidence
+
+Cycle `dnppv2-local-companion-cycle-r9` completed its coordinator run after the
+startup-settling bound was increased. Linux and Windows 10 completed their
+10-minute real-product lanes successfully. Windows 11 reached the driver but
+failed the startup-trace acceptance on that attempt; Intel macOS completed its
+slow lane but failed the required RSS/AI evidence gate. The cycle therefore
+does not activate the maintenance lock and remains actionable under the related
+startup and provider-reliability CRs.

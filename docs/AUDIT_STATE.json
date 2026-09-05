@@ -6059,10 +6059,10 @@
       "current_validation": {
         "status": "in_progress",
         "unresolved_gaps": [
-          "Linux and Intel macOS companion lanes hard-stopped before product launch because the Unix residual-process matcher was too narrow; the matcher is being corrected and requires a fresh reviewed cycle.",
-          "The latest NVIDIA review contains false-positive truncation findings contradicted by the on-disk parser and test results; this is recorded as advisory and does not replace physical acceptance."
-        ]
-      }
+        "Cycle dnppv2-local-companion-cycle-r9 passed Linux and Windows 10, but Windows 11 failed its bounded 1024x768 startup-trace acceptance and Intel macOS failed the required RSS/AI evidence gate; both require related CR follow-up and a fresh reviewed four-machine cycle.",
+        "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items."
+      ]
+    }
     }
   ],
   "remaining_validation_gaps": [
