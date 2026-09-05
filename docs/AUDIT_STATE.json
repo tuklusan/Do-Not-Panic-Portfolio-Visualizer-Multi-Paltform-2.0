@@ -4955,7 +4955,7 @@
       "id": "CR-073",
       "phase": "Phase 7",
       "title": "Bound and trace AI news summary requests",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-067"
@@ -5006,14 +5006,28 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
-      "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "The hosted four-hour cycle remains in progress and has not yet produced terminal evidence."
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Data/Services/AiNewsAccessValidationService.cs",
+          "docs/CR-073-AI-SUMMARY-TIMEOUT-AND-TRACE.md"
         ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
         "evidence": [
           "2026-09-03 local five-minute cycle passed on Linux, Windows 10, and Windows 11 with real AI summary success events in circular traces.",
-          "NVIDIA NIM artifact review passed for the consolidated local five-minute evidence."
+          "NVIDIA NIM artifact review passed for the consolidated local five-minute evidence.",
+          "Focused and full Release tests, syntax/license/workflow gates, real-product local AI evidence, circular traces, and process cleanup passed."
         ]
       }
     },
