@@ -5444,7 +5444,7 @@
       "id": "CR-080",
       "phase": "Phase 7",
       "title": "Initialize Linux artifact retrieval failure state in local soak validation",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066"
       ],
@@ -5489,19 +5489,34 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
-      "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Staged Linux publish extraction, executable verification, and bounded retry handling are implemented after repeated local-cycle failures where the remote executable was missing after deployment.",
-          "Focused Linux validation on 2026-09-05 passed real-product launch, one-minute soak, product screenshots, fresh RSS/AI evidence, and both circular traces; a complete four-machine ten-minute companion cycle is still required before closure."
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
         ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
         "checkpoint": {
-          "cycle": "dnppv2-local-cycle-10m-third-20260905-071500",
-          "state": "linux-preflight-failed-three-lanes-passed",
-          "completed_machine_lanes": [],
-          "cleanup": "local cycle artifacts and targeted SSH cleanup helpers removed",
-          "resume_from": "run a fresh four-machine ten-minute cycle after the focused Linux deployment pass"
-        }
+          "cycle": "dnppv2-local-cycle-10m-fourth-20260905-074500",
+          "state": "passed",
+          "completed_machine_lanes": ["linux-x64-lxqt", "windows-10-reference", "windows-11-laptop", "macos-x64-intel-big-sur"],
+          "cleanup": "all four lanes completed cleanup with no residual project processes",
+          "resume_from": null
+        },
+        "closure_evidence": [
+          "Staged Linux publish extraction, executable verification, and bounded retries were implemented after repeated missing-executable deployment failures.",
+          "Focused Linux validation passed real-product launch, one-minute soak, product screenshots, fresh RSS/AI evidence, and both circular traces.",
+          "Fresh cycle dnppv2-local-cycle-10m-fourth-20260905-074500 passed all four available local machines for the full ten-minute real-product contract; every lane produced screenshots, RSS/AI evidence, and both circular traces.",
+          "Release build passed with zero warnings and zero errors; migration closure gate, license gate, workflow gate, and commit/push gates passed."
+        ]
       }
     },
     {
@@ -6060,7 +6075,7 @@
       "id": "CR-092",
       "phase": "Phase 7",
       "title": "Enforce local companion soaks for hosted matrices",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-068"
@@ -6110,17 +6125,30 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          ".github/workflows/publish-six-rids.yml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "local_soaks_reenabled_after_hosted_checkpoint",
+        "status": "closed",
         "unresolved_gaps": [
-        "One additional independent complete local companion cycle is required after cycle dnppv2-local-cycle-10m-pushed-20260905-062216. Cycle dnppv2-local-cycle-10m-second-20260905-064042 and fresh cycle dnppv2-local-cycle-10m-third-20260905-071500 both passed Windows 10, Windows 11, and Intel macOS but failed Linux preflight because the deployed executable was missing at the expected remote path. A focused one-minute Linux retry reached the real product and produced screenshots, RSS/AI evidence, and both circular traces, but does not replace the required clean four-machine ten-minute cycle; the repeatable deployment miss remains CR-080 work.",
-        "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items."
+        "The first clean cycle was dnppv2-local-cycle-10m-pushed-20260905-062216. After the staged Linux deployment fix, dnppv2-local-cycle-10m-fourth-20260905-074500 passed Linux, Windows 10, Windows 11, and Intel macOS for the full ten-minute real-product contract, with screenshots, fresh RSS/AI evidence, both circular traces, and cleanup.",
+        "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items.",
+        "Two independent complete hosted cycles and two independent complete four-machine local companion cycles are recorded; all available local lanes passed the ten-minute real-product contract with screenshots, RSS/AI evidence, circular traces, and cleanup."
       ]
     }
     }
   ],
   "remaining_validation_gaps": [
-    "CR-092: one clean four-machine ten-minute local companion cycle is recorded; two subsequent independent cycles passed Windows 10, Windows 11, and Intel macOS but failed Linux executable preflight. A focused one-minute Linux retry passed real-product evidence, but the repeatable CR-080 deployment-path defect and another clean four-machine ten-minute cycle remain required.",
     "CR-066: blocking 18-hosted-plus-4-lab real-product validation harness is not implemented.",
     "CR-067: isolated real-product progressive soak runner is not yet verified.",
     "CR-068: hosted and local real-product execution matrix is not implemented.",

@@ -27,6 +27,7 @@ behavior gate before CR-080 closure.
 ## Status
 
 Implementation is hardened with staged extraction, executable verification, and
-bounded retries after transfer. Fresh local-cycle evidence and closure-gate
-scans remain required; the CR stays open until the Linux lane passes a complete
-four-machine ten-minute companion cycle.
+bounded retries after transfer. Focused Linux validation and the fresh
+four-machine ten-minute companion cycle
+`dnppv2-local-cycle-10m-fourth-20260905-074500` passed, and the closure-gate
+scans passed. CR-080 is closed.

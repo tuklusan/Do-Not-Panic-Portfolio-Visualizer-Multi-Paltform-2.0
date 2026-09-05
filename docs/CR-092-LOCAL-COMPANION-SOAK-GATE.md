@@ -116,6 +116,15 @@ repeatable Linux deployment miss is now confirmed as CR-080 work, and CR-092
 cannot count either of these cycles as its second clean cycle until that lane
 is repaired and the complete local acceptance contract passes again.
 
+Following the staged Linux deployment fix, cycle
+`dnppv2-local-cycle-10m-fourth-20260905-074500` passed all four available local
+machines for the complete ten-minute real-product contract. Every lane
+produced product screenshots, fresh RSS/AI evidence, and both circular traces;
+residual product and harness processes were cleaned up. Together with cycle
+`dnppv2-local-cycle-10m-pushed-20260905-062216`, this supplies the two required
+independent clean local companion cycles. CR-092 is closed after the hosted
+matrix evidence, upstream closure audit, and repository gates passed.
+
 Cycle `dnppv2-local-companion-cycle-r9` completed its coordinator run after the
 startup-settling bound was increased. Linux and Windows 10 completed their
 10-minute real-product lanes successfully. Windows 11 reached the driver but
