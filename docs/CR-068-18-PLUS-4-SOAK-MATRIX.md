@@ -86,10 +86,11 @@ artifacts, and writes `local-lab-cycle.json`. A non-probe cycle hard-stops when
 repository. `-ProbeOnly` is the dry-run contract check and is not product
 acceptance evidence.
 
-Ordinary publish-matrix jobs use branch-scoped concurrency and cancel obsolete
-older publish jobs when a newer checkpoint is pushed. The manually dispatched
-real-product soak matrix is intentionally outside that concurrency group and
-must never be cancelled or duplicated by a source push.
+Ordinary publish-matrix jobs use branch-scoped concurrency and may cancel
+obsolete older publish jobs when a newer checkpoint is pushed. Real-product
+soaks run on pushes and explicit 10-minute dispatches in a separate per-runner
+concurrency group with `cancel-in-progress: false`; a slow or queued lane is
+waited on and is never duplicated or cancelled by a newer source push.
 
 **Depends on:** CR-066, CR-067  
 **Status:** Open

@@ -93,8 +93,11 @@ jobs:
 
   real-product-soak:
     needs: gate
-    if: github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')
     timeout-minutes: 180
+    concurrency:
+      group: dnppv2-real-product-soak-${{ matrix.runner }}-${{ matrix.rid }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:

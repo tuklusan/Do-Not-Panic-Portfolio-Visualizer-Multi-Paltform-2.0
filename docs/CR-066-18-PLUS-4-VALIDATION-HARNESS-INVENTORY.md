@@ -43,4 +43,12 @@ blocking and routing both source and evidence through NVIDIA NIM.
 
 ## Status
 
-Open. This inventory defines the required behavior before implementation.
+The hosted workflow now runs the locked 10-minute real-product soak and
+post-soak evidence review on every push to `main` as well as on an explicit
+10-minute dispatch. Pull requests remain publish/test-only because protected
+AI credentials are unavailable in that event. Per-runner concurrency is
+serialized with `cancel-in-progress: false`, so a slow or queued runner is
+waited on rather than treated as a failure or overlapped by a duplicate.
+
+Implementation remains in progress; two complete 18-runner cycles and the
+available-local-machine companion evidence remain required for closure.
