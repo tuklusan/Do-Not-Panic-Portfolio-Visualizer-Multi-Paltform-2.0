@@ -4986,6 +4986,74 @@
       }
     },
       {
+        "id": "CR-097",
+        "phase": "Phase 7",
+        "title": "Vendor-neutral independent code review gate",
+        "status": "deferred",
+        "priority": "low",
+        "depends_on": [
+          "CR-096"
+        ],
+        "objective": "Replace provider-specific reviewer vocabulary and coupling with a generic configured code-review protocol without weakening immutable snapshots, fail-closed verdict enforcement, or retained evidence.",
+        "acceptance_criteria": [
+          "Reviewer implementation and workflow names are vendor-neutral and internally consistent.",
+          "Endpoint, model, secret, and provider-specific request fields are configuration supplied.",
+          "PASS, FAIL, INCONCLUSIVE, and REVIEW_UNAVAILABLE are enforced fail-closed by every direct caller.",
+          "Untracked source files and serious-finding evidence cannot be silently omitted.",
+          "Lane closure records retain reviewComplete, verdict, blockingFindingCount, and cryptographic review evidence.",
+          "The current configured reviewer remains operational after the abstraction change."
+        ],
+        "validation_plan": [
+          "Run upstream forward and reverse behavior gates over all reviewer scripts, workflows, tests, and documentation.",
+          "Run focused and full Release tests plus license, syntax, workflow, and upstream-lock gates.",
+          "Run the mandatory independent reviewer on the complete candidate snapshot.",
+          "Run the serialized hosted matrix and consume every lane manifest, screenshot, trace, and review receipt."
+        ],
+        "artifacts": [
+          "build/CodeReviewerCommon.ps1",
+          "build/Invoke-CodeReviewHarness.ps1",
+          "build/Run-CodeReview.ps1",
+          "build/Test-CodeReviewerWorkflowGate.ps1",
+          "docs/FRESH-PROJECT-CODE-REVIEW-GATE.md",
+          "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md"
+        ],
+        "upstream_behavior_inventory": {
+          "status": "pending_deferred",
+          "document": "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files": [],
+          "zero_known_gaps": false,
+          "known_gaps_routed_to_change_requests": true
+        },
+        "reverse_upstream_gap_scan": {
+          "status": "pending_deferred",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_scanned": [],
+          "zero_missing_behaviors": false,
+          "successive_zero_gap_scans": 0,
+          "unresolved_gaps": [
+            "Deferred until this low-priority CR reaches a queue boundary."
+          ]
+        },
+        "current_validation": {
+          "status": "deferred",
+          "unresolved_gaps": [
+            "Implementation and validation are intentionally deferred."
+          ],
+          "closure_evidence": []
+        },
+        "upstream_closure_audit": {
+          "status": "deferred",
+          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+          "source_files_rescanned": [],
+          "zero_unmapped_behaviors": false,
+          "successive_zero_gap_scans": 0,
+          "unresolved_gaps": [
+            "Deferred until implementation begins."
+          ]
+        }
+      },
+      {
         "id": "CR-096",
         "phase": "Phase 7",
         "title": "Fix hosted aggregate review PowerShell interpolation",
