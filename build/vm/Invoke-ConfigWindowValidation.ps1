@@ -1436,6 +1436,7 @@ function Invoke-WindowsValidation {
             '$startInfo.FileName = $exePath',
             '$startInfo.WorkingDirectory = $artifactDir',
             '$startInfo.UseShellExecute = $false',
+            '$startInfo.Environment[''DONOTPANICPORTFOLIOVISUALIZER2_LOCALDATA_ROOT''] = $localDataRoot',
             '$startInfo.Environment[''DNPPV_OPENROUTER_API_KEY''] = $env:DNPPV_OPENROUTER_API_KEY',
             '$startInfo.Environment[''DNPPV_SOAK_REQUIRE_AI_NEWS''] = $env:DNPPV_SOAK_REQUIRE_AI_NEWS',
             '$startInfo.Arguments = ''--windowed=1024x768''',
@@ -1649,10 +1650,38 @@ finally {
     Unregister-ScheduledTask -TaskName `$taskName -Confirm:`$false -ErrorAction SilentlyContinue | Out-Null
 }
 "@
+    # The coordinator is sizeable. Sending it as -EncodedCommand can exceed
+    # the Windows OpenSSH command-line limit before powershell.exe starts.
+    # Transfer it as a temporary script and invoke it through a short command.
+    $localDriverPath = New-TemporaryScriptPath -LeafName 'dnppv2-windows-validation-coordinator.ps1'
+    $remoteDriverPath = "C:\Users\$User\DNPPV2\dnppv2-windows-validation-coordinator-$([Guid]::NewGuid().ToString('N')).ps1"
+    Write-Utf8NoBomFile -Path $localDriverPath -Content $remoteDriver
     try {
-        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $remoteDriver
+        Copy-ToRemote -User $User -HostName $HostName -Secret $Secret -SourcePath $localDriverPath -DestinationPath (Convert-ToScpRemotePath -TargetPlatform 'windows' -Path $remoteDriverPath)
+        $previous = $env:SSHPASS
+        $env:SSHPASS = $Secret
+        try {
+            Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @(
+                '-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new',
+                '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60',
+                "$User@$HostName", 'powershell', '-NoProfile', '-NonInteractive',
+                '-ExecutionPolicy', 'Bypass',
+                '-File', $remoteDriverPath
+            )
+        }
+        finally {
+            if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
+        }
     }
     finally {
+        Remove-Item -LiteralPath $localDriverPath -Force -ErrorAction SilentlyContinue
+        $cleanupDriverLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteDriverPath
+        try {
+            Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText ("Remove-Item -LiteralPath " + $cleanupDriverLiteral + " -Force -ErrorAction SilentlyContinue; exit 0")
+        }
+        catch {
+            Write-Verbose ("Remote coordinator cleanup failed: " + $_.Exception.Message)
+        }
         if (-not [string]::IsNullOrWhiteSpace($OpenRouterApiKey)) {
             $cleanupSecretLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $remoteSecretPath
             Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText ("if (Test-Path -LiteralPath " + $cleanupSecretLiteral + " -PathType Leaf) { Remove-Item -LiteralPath " + $cleanupSecretLiteral + " -Force -ErrorAction SilentlyContinue }; exit 0")
