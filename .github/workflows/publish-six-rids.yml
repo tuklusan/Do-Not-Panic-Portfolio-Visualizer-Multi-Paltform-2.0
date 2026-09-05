@@ -137,15 +137,22 @@ jobs:
             rid: osx-arm64
     runs-on: ${{ matrix.runner }}
     env:
-      DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       DNPPV_SOAK_REQUIRE_AI_NEWS: '1'
-      NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Validate and mask soak credentials
+        shell: pwsh
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:OPENROUTER_API_KEY)) { throw 'OPENROUTER_API_KEY is required for hosted product soak.' }
+          if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for hosted artifact review.' }
+          Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
+          Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
       - name: Build and test the real product
         run: |
           dotnet build DoNotPanicPortfolioVisualizer.sln --configuration Release
@@ -163,12 +170,16 @@ jobs:
         shell: pwsh
         env:
           DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '10' }}
+          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MATRIX_RID: ${{ matrix.rid }}
         run: |
+           Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
            $runnerName = '${{ matrix.runner }}'
-           $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, '${{ matrix.rid }}')
+           $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, $env:MATRIX_RID)
            $screenshotPath = Join-Path $artifactRoot 'screenshots'
            $exeName = if ($IsWindows) { 'DoNotPanicPortfolioVisualizer.App.exe' } else { 'DoNotPanicPortfolioVisualizer.App' }
-           $exe = Join-Path $PWD ('artifacts/${{ matrix.rid }}/{0}' -f $exeName)
+           $exe = Join-Path $PWD ('artifacts/{0}/{1}' -f $env:MATRIX_RID, $exeName)
            ./build/Invoke-ProductSoak.ps1 -ExecutablePath $exe -DurationMinutes ([int]$env:DNPPV_SOAK_DURATION_MINUTES) -ArtifactRoot $artifactRoot -ScreenshotPath $screenshotPath -ScreenshotIntervalMinutes 30
            $screenshots = @(Get-ChildItem -LiteralPath $screenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue)
            $expectedScreenshotCount = [Math]::Floor((([int]$env:DNPPV_SOAK_DURATION_MINUTES * 60) - 30) / 1800) + 1
@@ -198,8 +209,16 @@ jobs:
            $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
            if (-not $rssUsable -or -not $rssPublished) { throw "Hosted soak RSS evidence failed on $runnerName." }
            if (-not $aiRequested -or -not $aiSucceeded) { throw "Hosted soak AI evidence failed on $runnerName." }
+           foreach ($tracePath in $tracePaths) {
+             $traceText = Get-Content -LiteralPath $tracePath -Raw
+             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+               $traceText = $traceText.Replace($secret, '[REDACTED]')
+             }
+             $traceText = $traceText -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+             Set-Content -LiteralPath $tracePath -Value $traceText -Encoding utf8
+           }
            $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
-           @(
+           $manifestText = @(
              "run_id=$env:GITHUB_RUN_ID"
              "runner=$runnerName"
              "rid=${{ matrix.rid }}"
@@ -219,9 +238,35 @@ jobs:
                  $excerpt = if ($content.Length -le 40000) { $content } else { $content.Substring(0, 20000) + "`n[TRACE_EXCERPT_OMITTED]`n" + $content.Substring($content.Length - 20000) }
                  "trace_file=$($_.Name);bytes=$($_.Length);sha256=$hash`n$excerpt"
              })
-           ) | Set-Content -LiteralPath $manifest -Encoding utf8
-           if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for soak artifact review.' }
-           ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory ('build/nvidia-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName) -RequestTimeoutSeconds 7200
+           ) -join "`n"
+           foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+             $manifestText = $manifestText.Replace($secret, '[REDACTED]')
+           }
+           $manifestText = $manifestText -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+           Set-Content -LiteralPath $manifest -Value $manifestText -Encoding utf8
+      - name: Review soak evidence
+        shell: pwsh
+        env:
+          NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
+          MATRIX_RID: ${{ matrix.rid }}
+        run: |
+           Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
+           $runnerName = '${{ matrix.runner }}'
+           $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, $env:MATRIX_RID)
+           $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
+           if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) { throw "Soak evidence manifest is missing: $manifest" }
+           $reviewRoot = Join-Path $PWD ('build/nvidia-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+           New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
+           $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
+           ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200 *> $reviewLog
+           $reviewExitCode = $LASTEXITCODE
+           $safeOutput = Get-Content -LiteralPath $reviewLog -Raw -ErrorAction SilentlyContinue
+           if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {
+             $safeOutput = $safeOutput.Replace($env:NVIDIA_API_KEY_CODING, '[REDACTED]')
+             $safeOutput = $safeOutput -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+             Set-Content -LiteralPath $reviewLog -Value $safeOutput -Encoding utf8
+           }
+           if ($null -ne $reviewExitCode -and $reviewExitCode -ne 0) { throw "NVIDIA artifact review returned exit code $reviewExitCode." }
       - name: Stop Xvfb
         if: always() && runner.os == 'Linux'
         shell: bash
@@ -241,8 +286,6 @@ jobs:
     needs: real-product-soak
     timeout-minutes: 180
     runs-on: ubuntu-24.04
-    env:
-      NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
     steps:
       - uses: actions/checkout@v4
       - name: Wait one minute for artifact publication
@@ -256,26 +299,96 @@ jobs:
           merge-multiple: false
       - name: Review every runner's traces and evidence
         shell: pwsh
+        env:
+          NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
         run: |
+          Set-Location -LiteralPath $env:GITHUB_WORKSPACE
+          if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for post-soak artifact review.' }
+          Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
           $manifests = @(Get-ChildItem -LiteralPath post-soak-evidence -Recurse -Filter 'evidence-review-input.txt' -File)
-          if ($manifests.Count -ne 18) { throw "Expected 18 soak evidence manifests, found $($manifests.Count)." }
           $failures = [Collections.Generic.List[string]]::new()
+          $actualArtifacts = @($manifests | ForEach-Object { $_.Directory.Parent.Parent.Name })
+          if ($manifests.Count -ne 18) {
+            New-Item -ItemType Directory -Force -Path build/nvidia-review | Out-Null
+            "Expected 18 soak evidence manifests, found $($manifests.Count)." | Set-Content -LiteralPath build/nvidia-review/defect-candidates.txt -Encoding utf8
+            throw "Expected 18 soak evidence manifests, found $($manifests.Count)."
+          }
+          if ($actualArtifacts.Count -ne @($actualArtifacts | Sort-Object -Unique).Count) {
+            $failures.Add('Hosted soak artifact inventory contains duplicate artifact directories.')
+          }
+          if ($manifests.Count -eq 0) {
+            $failures.Add('No hosted soak evidence manifests were downloaded.')
+          }
+          $reviewScript = Join-Path $env:GITHUB_WORKSPACE 'build/Invoke-NvidiaReviewHarness.ps1'
+          if (-not (Test-Path -LiteralPath $reviewScript -PathType Leaf)) {
+            throw "NVIDIA review harness script not found: $reviewScript"
+          }
+          $reviewDirectories = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+          $runnerRidPairs = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
           foreach ($manifest in $manifests | Sort-Object FullName) {
             $material = Get-Content -LiteralPath $manifest.FullName -Raw
+            $manifestValid = $true
             foreach ($traceName in @('trace.circular.log', 'yfinance.circular.log')) {
               if ($material -notmatch [regex]::Escape("trace_file=$traceName;")) {
                 $failures.Add("Required circular trace evidence is absent: $traceName in $($manifest.FullName)")
+                $manifestValid = $false
               }
             }
             if ($material -notmatch 'Ai(?:Summary|AccessValidation)') {
               $failures.Add("AI trace evidence is absent: $($manifest.FullName)")
+              $manifestValid = $false
             }
-            $reviewRoot = Join-Path $PWD ('post-soak-review/{0}' -f $manifest.Directory.Name)
-            ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest.FullName -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200
+            foreach ($requiredEvidenceFile in @('soak-result.json', 'news-evidence.json')) {
+              $requiredEvidencePath = Join-Path $manifest.Directory.FullName $requiredEvidenceFile
+              if (-not (Test-Path -LiteralPath $requiredEvidencePath -PathType Leaf)) {
+                $failures.Add("Required soak evidence file is absent: $requiredEvidencePath")
+                $manifestValid = $false
+              }
+            }
+            $runnerMatch = [regex]::Match($material, '(?m)^runner=(?<runner>[^\r\n]+)$')
+            $ridMatch = [regex]::Match($material, '(?m)^rid=(?<rid>[^\r\n]+)$')
+            if (-not $runnerMatch.Success -or -not $ridMatch.Success) {
+              $failures.Add("Runner/RID identity is absent from $($manifest.FullName)")
+              $manifestValid = $false
+            }
+            $artifactDirectory = $manifest.Directory.Parent.Parent.Name
+            if (-not $reviewDirectories.Add($artifactDirectory)) {
+              $failures.Add("Duplicate hosted soak review directory key: $artifactDirectory")
+            }
+            if ($runnerMatch.Success -and $ridMatch.Success -and
+                -not $runnerRidPairs.Add("$($runnerMatch.Groups['runner'].Value)|$($ridMatch.Groups['rid'].Value)")) {
+              $failures.Add("Duplicate hosted soak runner/RID pair in $($manifest.FullName)")
+            }
+            $reviewRoot = Join-Path $PWD ('build/nvidia-review/post-soak-{0}' -f $artifactDirectory)
+            New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
+            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
+            try {
+              & $reviewScript -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest.FullName -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200 *> $reviewLog
+              $reviewExitCode = $LASTEXITCODE
+              if ($null -ne $reviewExitCode -and $reviewExitCode -ne 0) {
+                throw "Reviewer process returned exit code $reviewExitCode."
+              }
+              $safeOutput = Get-Content -LiteralPath $reviewLog -Raw -ErrorAction SilentlyContinue
+              if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {
+                if (-not [string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) {
+                  $safeOutput = $safeOutput.Replace($env:NVIDIA_API_KEY_CODING, '[REDACTED]')
+                }
+                $safeOutput = $safeOutput -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+                Set-Content -LiteralPath $reviewLog -Value $safeOutput -Encoding utf8
+              }
+            }
+            catch {
+              $safeMessage = [string]$_.Exception.Message
+              if (-not [string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) {
+                $safeMessage = $safeMessage.Replace($env:NVIDIA_API_KEY_CODING, '[REDACTED]')
+              }
+              $safeMessage = $safeMessage -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+              $failures.Add("NVIDIA artifact review failed for $artifactDirectory: $safeMessage")
+            }
           }
           if ($failures.Count -gt 0) {
-            New-Item -ItemType Directory -Force -Path post-soak-review | Out-Null
-            $failures | Set-Content -LiteralPath post-soak-review/defect-candidates.txt -Encoding utf8
+            New-Item -ItemType Directory -Force -Path build/nvidia-review | Out-Null
+            $failures | Set-Content -LiteralPath build/nvidia-review/defect-candidates.txt -Encoding utf8
             throw ($failures -join "`n")
           }
       - name: Upload post-soak review and defect candidates
@@ -283,4 +396,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dnppv2-post-soak-review-${{ github.run_id }}
-          path: post-soak-review
+          path: build/nvidia-review
