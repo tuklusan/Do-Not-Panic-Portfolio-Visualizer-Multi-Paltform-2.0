@@ -39,6 +39,17 @@ acceptance on the available local machines with the 30-second observation cadenc
 The circular trace pair is the only product diagnostic log; arbitrary product log
 files are not acceptable.
 
+## Review Disposition
+
+The NVIDIA NIM review packet for the fixed-field layout change completed with a
+`FAIL` verdict containing five findings. A source inspection dispositioned all
+five as false positives: the split fields intentionally match the upstream
+`StatusBarControl` contract, `UpdatedPrefixText` is the exact generated
+Avalonia binding name, the quote/status assignments are inside
+`InvokeOnUiAsync`, and disposal cancels and awaits the scene loops before
+releasing their dependencies. The reviewer remains advisory; no blocking
+functional finding was substantiated.
+
 **Status:** Open
 
 ## Source Inventory Checkpoint
