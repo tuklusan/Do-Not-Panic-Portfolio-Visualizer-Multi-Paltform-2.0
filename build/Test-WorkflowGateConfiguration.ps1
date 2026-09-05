@@ -79,6 +79,12 @@ foreach ($trigger in @('push:', 'pull_request:', 'workflow_dispatch:')) {
 
 $publishEntries = Get-MatrixEntries $workflow 'publish'
 $soakEntries = Get-MatrixEntries $workflow 'real-product-soak'
+$expectedLaneCountMatch = [regex]::Match($workflow, "EXPECTED_LANE_COUNT:\s*'(?<count>[0-9]+)'")
+if (-not $expectedLaneCountMatch.Success) { throw 'Workflow is missing EXPECTED_LANE_COUNT.' }
+$expectedLaneCount = [int]$expectedLaneCountMatch.Groups['count'].Value
+if (@($publishEntries).Count -ne $expectedLaneCount -or @($soakEntries).Count -ne $expectedLaneCount) {
+    throw 'Declared EXPECTED_LANE_COUNT does not match the actual matrix entry count.'
+}
 if ((@($publishEntries | Sort-Object) -join "`n") -cne (@($soakEntries | Sort-Object) -join "`n")) {
     throw 'Publish and real-product-soak runner/RID matrices diverge.'
 }
@@ -92,18 +98,47 @@ if ($workflow -notmatch 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_AR
 if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Linux''') {
     throw 'Hosted soak workflow is missing unconditional Linux Xvfb cleanup.'
 }
-if ($workflow -notmatch 'Expected 21 soak evidence manifests') {
+if (-not $workflow.Contains("EXPECTED_LANE_COUNT: '21'") -or
+    -not $workflow.Contains('$expectedLaneCount = [int]$env:EXPECTED_LANE_COUNT') -or
+    $workflow -notmatch 'Expected \$expectedLaneCount soak evidence manifests') {
     throw 'Hosted post-soak review is missing the complete 21-runner evidence count gate.'
 }
 if ($workflow -notmatch 'Inspect and retain lane closure evidence' -or
     $workflow -notmatch 'dnppv2-lane-closure-record/v1' -or
-    $workflow -notmatch 'inspectedEvidenceRetained = \$true') {
+    $workflow -notmatch 'inspectedEvidenceRetained = \$failures\.Count -eq 0') {
     throw 'Hosted soak workflow is missing the mandatory per-lane closure evidence inspection gate.'
 }
-if ($workflow -notmatch 'Expected 21 inspected lane closure records' -or
+if (-not $workflow.Contains('if: always()') -or
+    -not $workflow.Contains('Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"') -or
+    -not $workflow.Contains('Write-Host "::add-mask::$env:OPENROUTER_API_KEY"') -or
+    -not $workflow.Contains('Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"')) {
+    throw 'Hosted soak workflow is missing pre-execution secret masking or unconditional evidence finalization.'
+}
+if ($workflow -notmatch 'Initialize lane closure receipt after soak' -or
+    $workflow -notmatch 'if: always\(\)' -or
+    $workflow -notmatch 'soak-failed-or-cancelled' -or
+    $workflow -notmatch 'soak-result-missing-after-cancellation' -or
+    -not $workflow.Contains('aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }')) {
+    throw 'Hosted soak workflow is missing the post-soak attributable lane receipt.'
+}
+if ($workflow -notmatch 'Secret redaction verification failed' -or
+    -not $workflow.Contains('authorization\s*:\s*bearer') -or
+    $workflow -notmatch 'DNPPV_OPENROUTER_API_KEY' -or
+    $workflow -notmatch 'Write-Host "::add-mask::\$env:OPENROUTER_API_KEY"') {
+    throw 'Hosted soak workflow is missing verified secret redaction for retained evidence.'
+}
+if ($workflow -notmatch 'Expected \$expectedLaneCount inspected lane closure records' -or
     $workflow -notmatch 'Incomplete inspected lane closure record' -or
     $workflow -notmatch 'Unreadable inspected lane closure record') {
     throw 'Hosted post-soak review is missing the complete inspected lane-record validation gate.'
+}
+if (-not $workflow.Contains('$closureRecord.status -ne ''complete''')) {
+    throw 'Hosted post-soak review is missing semantic lane-status enforcement.'
+}
+if (-not $workflow.Contains('$closureRecord.review.complete -ne $true') -or
+    -not $workflow.Contains('$closureRecord.aiEvidence.aiSuccessObserved -ne $true') -or
+    -not $workflow.Contains('$recordStatus = if ($failures.Count -eq 0) { ''complete'' }') ) {
+    throw 'Hosted post-soak review is missing semantic review and AI-evidence enforcement.'
 }
 if ($workflow -notmatch "github\.event_name == 'push'" -or
     $workflow -notmatch "github\.event_name == 'workflow_dispatch'") {

@@ -9,14 +9,26 @@
     "checkpoint_commit": "c6c6c43",
     "queue_source": "docs/AUDIT_STATE.json",
     "goal_status": "active",
-    "reviewer_migration": "Complete at commit 460d447; NVIDIA NIM is the active reviewer and CR-066 queue processing may resume."
+    "reviewer_migration": "Complete at commit 460d447; NVIDIA NIM is the active reviewer and CR-066 queue processing may resume.",
+    "deferred_detours": [
+      "CR-102: Complete vendor-neutral code-review gate cleanup when the active product/validation queue reaches a quiet checkpoint."
+    ]
   },
   "active_reviewer": {
     "provider": "NVIDIA NIM",
     "model": "nvidia/nemotron-3-ultra-550b-a55b",
     "base_url": "https://integrate.api.nvidia.com/v1",
     "api_key_environment_variable": "NVIDIA_API_KEY_CODING",
-    "retry_statuses": [404, 408, 425, 429, 500, 502, 503, 504],
+    "retry_statuses": [
+      404,
+      408,
+      425,
+      429,
+      500,
+      502,
+      503,
+      504
+    ],
     "retry_policy": "bounded exponential backoff with jitter; 404 is intentionally treated like 429",
     "request_timeout_seconds": 7200
   },
@@ -149,7 +161,7 @@
         "AI generation and RSS fallback pass the complete failure matrix",
         "Four-machine production acceptance and six-RID publish pass"
       ]
-    },
+    }
   ],
   "ssh_first_vm_harness": {},
   "change_requests": [
@@ -4655,7 +4667,7 @@
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
-      },
+      }
     },
     {
       "id": "CR-066",
@@ -4734,9 +4746,9 @@
       "current_validation": {
         "status": "closed",
         "unresolved_gaps": [],
-      "implementation_progress": [
-      "The Linux validation driver now bounds remote deployment and executable preflight probes to the per-command validation timeout instead of allowing a hung setup probe to consume the entire soak duration; the active run exposed this previously unbounded setup wait.",
-        "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
+        "implementation_progress": [
+          "The Linux validation driver now bounds remote deployment and executable preflight probes to the per-command validation timeout instead of allowing a hung setup probe to consume the entire soak duration; the active run exposed this previously unbounded setup wait.",
+          "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
           "Physical Linux and Windows drivers now accept the protected DNPPV_OPENROUTER_API_KEY input and pass it to the real product child process without writing it to manifests or harness output.",
           "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
           "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test.",
@@ -4840,7 +4852,7 @@
       "objective": "Replace publish-only validation with real-product build, test, launch, evidence, circular-trace retrieval, NVIDIA NIM review, and cleanup lanes across all available hosted runner labels and four local machines.",
       "acceptance_criteria": [
         "Every available required lane runs the real product and records runner identity, architecture, display strategy, test result, screenshots, traces, review receipt, and cleanup result.",
-    "The matrix is not closed until two independent complete 10-minute cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects; longer profiles remain paused while migration CRs are open.",
+        "The matrix is not closed until two independent complete 10-minute cycles execute all 18 hosted runner labels and every local machine available at each cycle start, with no new actionable defects; longer profiles remain paused while migration CRs are open.",
         "Every soak cycle begins by probing all four local lab machines; only reachable contract-compliant machines are used, and unavailable machines are recorded rather than treated as passes.",
         "Missing optional runner labels are reported by probe and never treated as product passes.",
         "Windows 10 and Intel Mac storage gates are enforced before launch.",
@@ -4884,17 +4896,17 @@
         "unresolved_gaps": []
       },
       "upstream_closure_audit": {
-          "status": "complete",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_rescanned": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Invoke-LocalLabSoakCycle.ps1",
-            "docs/TEST_MACHINE_ACCESS.md",
-            "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md"
-          ],
-          "zero_unmapped_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "docs/TEST_MACHINE_ACCESS.md",
+          "docs/CR-068-18-PLUS-4-SOAK-MATRIX.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "closed",
@@ -4981,290 +4993,441 @@
         ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
+      "id": "CR-098",
+      "phase": "Phase 7",
+      "title": "Restore Windows ARM RSS and AI news soak evidence",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": [
+        "CR-096"
+      ],
+      "objective": "Determine why the Windows ARM hosted product soak succeeds at process execution and AI access validation but emits no usable RSS playback or AI news request evidence.",
+      "acceptance_criteria": [
+        "Windows ARM emits usable RSS playback evidence.",
+        "Windows ARM observes the configured AI news request and success path.",
+        "Failure diagnosis distinguishes feed freshness, playback scheduling, credentials, and platform behavior.",
+        "The lane passes the news evidence gate and retains a complete inspected closure record."
+      ],
+      "validation_plan": [
+        "Run upstream forward and reverse behavior gates over RSS, AI news, startup, and platform launch paths.",
+        "Run focused tests and inspect both circular traces plus news-evidence.json.",
+        "Run mandatory independent review and a serialized hosted matrix lane."
+      ],
+      "artifacts": [
+        "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
+        ".github/workflows/publish-six-rids.yml"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "pending_hosted_revalidation",
         "unresolved_gaps": [
+          "Fresh hosted validation of the post-soak receipt and cancellation path is pending."
+        ],
+        "closure_evidence": [
+          "Hosted run 33982819747 reproduced the Ubuntu Slim missing closure record; the same run produced complete Windows ARM closure records.",
+          "NVIDIA review 20260905-145732 identified the receipt lifecycle as actionable; workflow root-block findings were false positives because the current file and local gate contain the required blocks."
+        ],
+        "nvidia_review": {
+          "status": "complete_advisory_fail",
+          "reviewed_snapshot": "2c9a57ae337ac9a8638ab40c8d38586099b31e65:ca06b82920d0bbbafc36a7bbcbb69f52ac5cb159efc9108be7738daf93c0159f",
+          "actionable_findings": [
+            "Receipt must be created after soak completion and accurately distinguish soak failure/cancellation from review pending.",
+            "Retained evidence redaction must be verified after redaction and cover authorization/bearer formats.",
+            "AI evidence failure must not prevent a product soak from producing a closure receipt."
+          ],
+          "false_positive_findings": [
+            "Root concurrency block is present and passes Test-WorkflowGateConfiguration.ps1.",
+            "Required push, pull_request, and workflow_dispatch triggers are present.",
+            "Root contents: read permissions are present."
+          ]
+        }
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
+      "id": "CR-099",
+      "phase": "Phase 7",
+      "title": "Preserve Ubuntu Slim soak closure evidence",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": [
+        "CR-096"
+      ],
+      "objective": "Ensure an Ubuntu Slim product soak cannot be cancelled before its required evidence review and closure record are retained.",
+      "acceptance_criteria": [
+        "A completed Ubuntu Slim soak emits an inspected closure record.",
+        "Cancellation or reviewer timeout is represented as an attributable lane failure, never silently omitted.",
+        "Aggregate review consumes every lane artifact and fails closed when a record is missing."
+      ],
+      "validation_plan": [
+        "Inspect the complete soak/evidence dependency graph and runner cancellation behavior.",
+        "Run workflow, syntax, license, migration, and upstream-lock gates.",
+        "Run mandatory independent review and a serialized hosted matrix with all 21 lane records."
+      ],
+      "artifacts": [
+        "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-WorkflowGateConfiguration.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "pending",
+        "unresolved_gaps": [
+          "Implementation and fresh hosted validation are pending."
+        ],
+        "closure_evidence": [
+          "NVIDIA review 20260905-154958 and 20260905-152916/152248/152916 were inspected; actionable workflow lifecycle, masking, schema, dynamic-count, and gate-test findings were addressed on disk. Advisory requests to allow AI-incomplete lanes to pass conflict with the project acceptance requirement for real AI evidence on every required hosted lane."
+        ]
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
+      "id": "CR-100",
+      "phase": "Phase 7",
+      "title": "Recover AI news from empty successful responses",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": [
+        "CR-098",
+        "CR-099"
+      ],
+      "objective": "Ensure an HTTP-successful but empty AI response is recovered or diagnosed without losing the real AI news success path.",
+      "acceptance_criteria": [
+        "Valid AI response content produces an AI success marker and news output.",
+        "Empty, malformed, throttled, and provider-fallback responses are covered by focused tests.",
+        "Windows 2022 hosted soak records aiRequestObserved=true and aiSuccessObserved=true.",
+        "All hosted evidence and closure gates pass without weakening the real AI output requirement."
+      ],
+      "validation_plan": [
+        "Run the upstream forward and reverse behavior gates over AI request, parsing, retry, fallback, and test paths.",
+        "Run focused and full Release tests plus license, syntax, workflow, and upstream-lock gates.",
+        "Run mandatory NVIDIA review and a serialized hosted matrix with all lane evidence consumed."
+      ],
+      "artifacts": [
+        "docs/CR-100-WINDOWS-2022-AI-EMPTY-CONTENT.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+        ".github/workflows/publish-six-rids.yml"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-100-WINDOWS-2022-AI-EMPTY-CONTENT.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [],
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Implementation and fresh upstream audit are pending."
+        ]
+      },
+      "current_validation": {
+        "status": "pending",
+        "unresolved_gaps": [
+          "Windows 2022 AI response remains empty after HTTP 200 and retry sequence."
+        ],
+        "closure_evidence": [
+          "Hosted run 33982819747 recorded rssUsable=true, aiRequestObserved=true, aiSuccessObserved=false for windows-2022; trace showed HTTP 200, empty parsing, retry, HTTP 429, and another empty HTTP 200 response."
+        ],
+        "nvidia_review": {
+          "status": "complete_advisory_fail",
+          "reviewed_with": "CR-099 review 20260905-145732",
+          "actionable_finding": "Do not couple AI evidence failure to overall soak pass/fail; retain the lane receipt so the AI defect is attributable."
+        }
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Closure audit is pending implementation."
         ]
       }
     },
-      {
-        "id": "CR-098",
-        "phase": "Phase 7",
-        "title": "Restore Windows ARM RSS and AI news soak evidence",
-        "status": "open",
-        "priority": "normal",
-        "depends_on": [
-          "CR-096"
+    {
+      "id": "CR-101",
+      "phase": "Phase 7",
+      "title": "Clean downloaded hosted evidence artifacts",
+      "status": "open",
+      "priority": "low",
+      "depends_on": [
+        "CR-099"
+      ],
+      "objective": "Ensure project cleanup removes downloaded hosted-run evidence without touching tracked project assets.",
+      "acceptance_criteria": [
+        "Cleanup removes build/hosted-run-* directories after evidence inspection.",
+        "Cleanup remains restricted to disposable generated roots and bin/obj outputs.",
+        "A representative post-download cleanup leaves all repository gates passing."
+      ],
+      "validation_plan": [
+        "Run cleanup after hosted artifact retrieval and verify the generated root is absent.",
+        "Run license, syntax, workflow, migration, and upstream-lock gates."
+      ],
+      "artifacts": [
+        "docs/CR-101-CLEANUP-HOSTED-ARTIFACTS.md",
+        "build/Cleanup-LocalProjectArtifacts.ps1"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-101-CLEANUP-HOSTED-ARTIFACTS.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "build/Cleanup-LocalProjectArtifacts.ps1"
         ],
-        "objective": "Determine why the Windows ARM hosted product soak succeeds at process execution and AI access validation but emits no usable RSS playback or AI news request evidence.",
-        "acceptance_criteria": [
-          "Windows ARM emits usable RSS playback evidence.",
-          "Windows ARM observes the configured AI news request and success path.",
-          "Failure diagnosis distinguishes feed freshness, playback scheduling, credentials, and platform behavior.",
-          "The lane passes the news evidence gate and retains a complete inspected closure record."
-        ],
-        "validation_plan": [
-          "Run upstream forward and reverse behavior gates over RSS, AI news, startup, and platform launch paths.",
-          "Run focused tests and inspect both circular traces plus news-evidence.json.",
-          "Run mandatory independent review and a serialized hosted matrix lane."
-        ],
-        "artifacts": [
-          "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
-          ".github/workflows/publish-six-rids.yml"
-        ],
-        "upstream_behavior_inventory": {
-          "status": "complete",
-          "document": "docs/CR-098-WINDOWS-ARM-NEWS-EVIDENCE.md",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Invoke-ProductSoak.ps1",
-            "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
-            "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
-          ],
-          "zero_known_gaps": true,
-          "known_gaps_routed_to_change_requests": true
-        },
-        "reverse_upstream_gap_scan": {
-          "status": "complete",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_scanned": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Invoke-ProductSoak.ps1",
-            "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
-            "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
-          ],
-          "zero_missing_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
-        },
-        "current_validation": {
-          "status": "pending",
-          "unresolved_gaps": [
-            "Implementation and fresh hosted validation are pending."
-          ],
-          "closure_evidence": []
-        },
-        "upstream_closure_audit": {
-          "status": "pending",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_rescanned": [],
-          "zero_unmapped_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
-        }
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
       },
-      {
-        "id": "CR-099",
-        "phase": "Phase 7",
-        "title": "Preserve Ubuntu Slim soak closure evidence",
-        "status": "open",
-        "priority": "normal",
-        "depends_on": [
-          "CR-096"
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [],
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Closure validation is pending."
+        ]
+      },
+      "current_validation": {
+        "status": "pending",
+        "unresolved_gaps": [
+          "Fresh cleanup execution is pending after the script change."
         ],
-        "objective": "Ensure an Ubuntu Slim product soak cannot be cancelled before its required evidence review and closure record are retained.",
-        "acceptance_criteria": [
-          "A completed Ubuntu Slim soak emits an inspected closure record.",
-          "Cancellation or reviewer timeout is represented as an attributable lane failure, never silently omitted.",
-          "Aggregate review consumes every lane artifact and fails closed when a record is missing."
+        "closure_evidence": [
+          "The prior cleanup run left build/hosted-run-33982819747 until the cleanup allowlist was extended; the stale artifact reader was then terminated and cleanup completed."
+        ]
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Closure audit is pending validation."
+        ]
+      }
+    },
+    {
+      "id": "CR-097",
+      "phase": "Phase 7",
+      "title": "Vendor-neutral independent code review gate",
+      "status": "deferred",
+      "priority": "low",
+      "depends_on": [
+        "CR-096"
+      ],
+      "objective": "Replace provider-specific reviewer vocabulary and coupling with a generic configured code-review protocol without weakening immutable snapshots, fail-closed verdict enforcement, or retained evidence.",
+      "acceptance_criteria": [
+        "Reviewer implementation and workflow names are vendor-neutral and internally consistent.",
+        "Endpoint, model, secret, and provider-specific request fields are configuration supplied.",
+        "PASS, FAIL, INCONCLUSIVE, and REVIEW_UNAVAILABLE are enforced fail-closed by every direct caller.",
+        "Untracked source files and serious-finding evidence cannot be silently omitted.",
+        "Lane closure records retain reviewComplete, verdict, blockingFindingCount, and cryptographic review evidence.",
+        "The current configured reviewer remains operational after the abstraction change."
+      ],
+      "validation_plan": [
+        "Run upstream forward and reverse behavior gates over all reviewer scripts, workflows, tests, and documentation.",
+        "Run focused and full Release tests plus license, syntax, workflow, and upstream-lock gates.",
+        "Run the mandatory independent reviewer on the complete candidate snapshot.",
+        "Run the serialized hosted matrix and consume every lane manifest, screenshot, trace, and review receipt."
+      ],
+      "artifacts": [
+        "build/CodeReviewerCommon.ps1",
+        "build/Invoke-CodeReviewHarness.ps1",
+        "build/Run-CodeReview.ps1",
+        "build/Test-CodeReviewerWorkflowGate.ps1",
+        "docs/FRESH-PROJECT-CODE-REVIEW-GATE.md",
+        "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending_deferred",
+        "document": "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending_deferred",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [],
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Deferred until this low-priority CR reaches a queue boundary."
+        ]
+      },
+      "current_validation": {
+        "status": "deferred",
+        "unresolved_gaps": [
+          "Implementation and validation are intentionally deferred."
         ],
-        "validation_plan": [
-          "Inspect the complete soak/evidence dependency graph and runner cancellation behavior.",
-          "Run workflow, syntax, license, migration, and upstream-lock gates.",
-          "Run mandatory independent review and a serialized hosted matrix with all 21 lane records."
-        ],
-        "artifacts": [
-          "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
+        "closure_evidence": []
+      },
+      "upstream_closure_audit": {
+        "status": "deferred",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Deferred until implementation begins."
+        ]
+      }
+    },
+    {
+      "id": "CR-096",
+      "phase": "Phase 7",
+      "title": "Fix hosted aggregate review PowerShell interpolation",
+      "status": "open",
+      "depends_on": [
+        "CR-094"
+      ],
+      "objective": "Ensure the hosted post-soak aggregate reviewer parses and executes on Linux PowerShell while retaining complete 21-lane evidence reporting.",
+      "acceptance_criteria": [
+        "Aggregate review uses braced artifact-directory interpolation and reports safe failure details.",
+        "The workflow configuration gate rejects the unsafe interpolation form.",
+        "Local validation passes and a fresh serialized 21-lane hosted run reaches terminal aggregate review."
+      ],
+      "validation_plan": [
+        "Run workflow configuration, license, syntax, migration, and upstream-lock gates.",
+        "Run the full Release test suite.",
+        "Run the mandatory NVIDIA review for the CR and inspect its disposition.",
+        "Push only after the existing matrix is terminal, then consume all fresh lane evidence."
+      ],
+      "artifacts": [
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-WorkflowGateConfiguration.ps1",
+        "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
           ".github/workflows/publish-six-rids.yml",
           "build/Test-WorkflowGateConfiguration.ps1"
         ],
-        "upstream_behavior_inventory": {
-          "status": "complete",
-          "document": "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Invoke-ProductSoak.ps1",
-            "build/Test-WorkflowGateConfiguration.ps1"
-          ],
-          "zero_known_gaps": true,
-          "known_gaps_routed_to_change_requests": true
-        },
-        "reverse_upstream_gap_scan": {
-          "status": "complete",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_scanned": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Invoke-ProductSoak.ps1",
-            "build/Test-WorkflowGateConfiguration.ps1"
-          ],
-          "zero_missing_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
-        },
-        "current_validation": {
-          "status": "pending",
-          "unresolved_gaps": [
-            "Implementation and fresh hosted validation are pending."
-          ],
-          "closure_evidence": []
-        },
-        "upstream_closure_audit": {
-          "status": "pending",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_rescanned": [],
-          "zero_unmapped_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
-        }
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
       },
-      {
-        "id": "CR-097",
-        "phase": "Phase 7",
-        "title": "Vendor-neutral independent code review gate",
-        "status": "deferred",
-        "priority": "low",
-        "depends_on": [
-          "CR-096"
-        ],
-        "objective": "Replace provider-specific reviewer vocabulary and coupling with a generic configured code-review protocol without weakening immutable snapshots, fail-closed verdict enforcement, or retained evidence.",
-        "acceptance_criteria": [
-          "Reviewer implementation and workflow names are vendor-neutral and internally consistent.",
-          "Endpoint, model, secret, and provider-specific request fields are configuration supplied.",
-          "PASS, FAIL, INCONCLUSIVE, and REVIEW_UNAVAILABLE are enforced fail-closed by every direct caller.",
-          "Untracked source files and serious-finding evidence cannot be silently omitted.",
-          "Lane closure records retain reviewComplete, verdict, blockingFindingCount, and cryptographic review evidence.",
-          "The current configured reviewer remains operational after the abstraction change."
-        ],
-        "validation_plan": [
-          "Run upstream forward and reverse behavior gates over all reviewer scripts, workflows, tests, and documentation.",
-          "Run focused and full Release tests plus license, syntax, workflow, and upstream-lock gates.",
-          "Run the mandatory independent reviewer on the complete candidate snapshot.",
-          "Run the serialized hosted matrix and consume every lane manifest, screenshot, trace, and review receipt."
-        ],
-        "artifacts": [
-          "build/CodeReviewerCommon.ps1",
-          "build/Invoke-CodeReviewHarness.ps1",
-          "build/Run-CodeReview.ps1",
-          "build/Test-CodeReviewerWorkflowGate.ps1",
-          "docs/FRESH-PROJECT-CODE-REVIEW-GATE.md",
-          "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md"
-        ],
-        "upstream_behavior_inventory": {
-          "status": "pending_deferred",
-          "document": "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files": [],
-          "zero_known_gaps": false,
-          "known_gaps_routed_to_change_requests": true
-        },
-        "reverse_upstream_gap_scan": {
-          "status": "pending_deferred",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_scanned": [],
-          "zero_missing_behaviors": false,
-          "successive_zero_gap_scans": 0,
-          "unresolved_gaps": [
-            "Deferred until this low-priority CR reaches a queue boundary."
-          ]
-        },
-        "current_validation": {
-          "status": "deferred",
-          "unresolved_gaps": [
-            "Implementation and validation are intentionally deferred."
-          ],
-          "closure_evidence": []
-        },
-        "upstream_closure_audit": {
-          "status": "deferred",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_rescanned": [],
-          "zero_unmapped_behaviors": false,
-          "successive_zero_gap_scans": 0,
-          "unresolved_gaps": [
-            "Deferred until implementation begins."
-          ]
-        }
-      },
-      {
-        "id": "CR-096",
-        "phase": "Phase 7",
-        "title": "Fix hosted aggregate review PowerShell interpolation",
-        "status": "open",
-        "depends_on": [
-          "CR-094"
-        ],
-        "objective": "Ensure the hosted post-soak aggregate reviewer parses and executes on Linux PowerShell while retaining complete 21-lane evidence reporting.",
-        "acceptance_criteria": [
-          "Aggregate review uses braced artifact-directory interpolation and reports safe failure details.",
-          "The workflow configuration gate rejects the unsafe interpolation form.",
-          "Local validation passes and a fresh serialized 21-lane hosted run reaches terminal aggregate review."
-        ],
-        "validation_plan": [
-          "Run workflow configuration, license, syntax, migration, and upstream-lock gates.",
-          "Run the full Release test suite.",
-          "Run the mandatory NVIDIA review for the CR and inspect its disposition.",
-          "Push only after the existing matrix is terminal, then consume all fresh lane evidence."
-        ],
-        "artifacts": [
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
           ".github/workflows/publish-six-rids.yml",
           "build/Test-WorkflowGateConfiguration.ps1",
           "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
         ],
-        "upstream_behavior_inventory": {
-          "status": "complete",
-          "document": "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Test-WorkflowGateConfiguration.ps1"
-          ],
-          "zero_known_gaps": true,
-          "known_gaps_routed_to_change_requests": true
-        },
-        "reverse_upstream_gap_scan": {
-          "status": "complete",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_scanned": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Test-WorkflowGateConfiguration.ps1",
-            "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
-          ],
-          "zero_missing_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
-        },
-        "current_validation": {
-          "status": "failed",
-          "run_id": "33979739957",
-          "unresolved_gaps": [
-            "Windows ARM soak completed product execution but failed RSS and AI news evidence assertions; routed to CR-098.",
-            "Ubuntu Slim soak artifact exists but lane was cancelled before closure record; routed to CR-099.",
-            "Aggregate review found 20 instead of 21 evidence manifests and failed closed."
-          ],
-          "closure_evidence": [
-            "Hosted run 33979739957 completed with 44 jobs and conclusion failure; Windows ARM news-evidence.json and Ubuntu Slim missing closure evidence were inspected from downloaded artifacts."
-          ],
-          "nvidia_review": {
-            "status": "complete_advisory_fail",
-            "reviewed_snapshot": "CR-096 document",
-            "disposition": "Snapshot-scope findings claiming referenced repository files were absent are false positives: the workflow, gate script, and CR-094 authority exist on disk and passed their local gates. The pending hosted-validation finding is valid and remains open."
-          }
-        },
-        "upstream_closure_audit": {
-          "status": "pending",
-          "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-          "source_files_rescanned": [
-            ".github/workflows/publish-six-rids.yml",
-            "build/Test-WorkflowGateConfiguration.ps1",
-            "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
-          ],
-          "zero_unmapped_behaviors": true,
-          "successive_zero_gap_scans": 2,
-          "unresolved_gaps": []
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "failed",
+        "run_id": "33979739957",
+        "unresolved_gaps": [
+          "Windows ARM soak completed product execution but failed RSS and AI news evidence assertions; routed to CR-098.",
+          "Ubuntu Slim soak artifact exists but lane was cancelled before closure record; routed to CR-099.",
+          "Aggregate review found 20 instead of 21 evidence manifests and failed closed."
+        ],
+        "closure_evidence": [
+          "Hosted run 33979739957 completed with 44 jobs and conclusion failure; Windows ARM news-evidence.json and Ubuntu Slim missing closure evidence were inspected from downloaded artifacts."
+        ],
+        "nvidia_review": {
+          "status": "complete_advisory_fail",
+          "reviewed_snapshot": "CR-096 document",
+          "disposition": "Snapshot-scope findings claiming referenced repository files were absent are false positives: the workflow, gate script, and CR-094 authority exist on disk and passed their local gates. The pending hosted-validation finding is valid and remains open."
         }
       },
-      {
-        "id": "CR-095",
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-096-HOSTED-AGGREGATE-REVIEW-INTERPOLATION.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
+      "id": "CR-095",
       "phase": "Phase 7",
       "title": "Serialize hosted matrix launches behind queued-run completion",
       "status": "open",
@@ -6100,7 +6263,12 @@
         "checkpoint": {
           "cycle": "dnppv2-local-cycle-10m-fourth-20260905-074500",
           "state": "passed",
-          "completed_machine_lanes": ["linux-x64-lxqt", "windows-10-reference", "windows-11-laptop", "macos-x64-intel-big-sur"],
+          "completed_machine_lanes": [
+            "linux-x64-lxqt",
+            "windows-10-reference",
+            "windows-11-laptop",
+            "macos-x64-intel-big-sur"
+          ],
           "cleanup": "all four lanes completed cleanup with no residual project processes",
           "resume_from": null
         },
@@ -6170,13 +6338,13 @@
       },
       "current_validation": {
         "status": "open",
-      "unresolved_gaps": [
-        "Current Avalonia styling contains the requested darker neutral quote-lane treatment; fresh settled production screenshots, focused visual checks, and closure-gate evidence remain required."
-      ],
-      "evidence": [
-        "Manual upstream/current source mapping recorded in docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md.",
-        "Current ProductShellWindow.axaml uses #C52A3138 for the quote-lane background, preserves the grey name lane, fixed columns, 28-pixel clipping, and vertical centering."
-      ]
+        "unresolved_gaps": [
+          "Current Avalonia styling contains the requested darker neutral quote-lane treatment; fresh settled production screenshots, focused visual checks, and closure-gate evidence remain required."
+        ],
+        "evidence": [
+          "Manual upstream/current source mapping recorded in docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md.",
+          "Current ProductShellWindow.axaml uses #C52A3138 for the quote-lane background, preserves the grey name lane, fixed columns, 28-pixel clipping, and vertical centering."
+        ]
       }
     },
     {
@@ -6242,7 +6410,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-        "Fresh unchanged-value blue flashing now uses the raw value delta, preventing non-zero daily ChangePercent from causing false red/green flashes; focused-tested. The shared DNPPV-2.0 single-instance lease now ignores per-run data overrides and applies to configuration validation too; Windows and Mac harnesses hard-stop before launch when an existing product process is detected. Production-scene visual and circular-trace proof remains outstanding.",
+          "Fresh unchanged-value blue flashing now uses the raw value delta, preventing non-zero daily ChangePercent from causing false red/green flashes; focused-tested. The shared DNPPV-2.0 single-instance lease now ignores per-run data overrides and applies to configuration validation too; Windows and Mac harnesses hard-stop before launch when an existing product process is detected. Production-scene visual and circular-trace proof remains outstanding.",
           "Current graph-motion tests cover directed travel, but full upstream parity still needs fresh production evidence and branch-complete acceptance."
         ]
       }
@@ -6252,7 +6420,9 @@
       "phase": "Phase 7",
       "title": "Complete local RSS and AI provider reliability",
       "status": "open",
-      "depends_on": ["CR-084"],
+      "depends_on": [
+        "CR-084"
+      ],
       "objective": "Resolve the Windows 11 AI-path omission and Intel macOS slow-lane timeout found during the first fresh concurrent five-minute local real-product cycle.",
       "acceptance_criteria": [
         "Windows 11 proves RssPlaybackReady, AiSummaryRequestStarted, and AiSummarySucceeded in its circular trace.",
@@ -6737,6 +6907,62 @@
         "closure_evidence": [
           "The first clean cycle was dnppv2-local-cycle-10m-pushed-20260905-062216. After the staged Linux deployment fix, dnppv2-local-cycle-10m-fourth-20260905-074500 passed Linux, Windows 10, Windows 11, and Intel macOS for the full ten-minute real-product contract, with screenshots, fresh RSS/AI evidence, both circular traces, and cleanup.",
           "Two independent complete hosted cycles and two independent complete four-machine local companion cycles are recorded; all available local lanes passed the ten-minute real-product contract with screenshots, RSS/AI evidence, circular traces, and cleanup."
+        ]
+      }
+    },
+    {
+      "id": "CR-102",
+      "phase": "Phase 7",
+      "title": "Complete vendor-neutral code-review gate cleanup",
+      "status": "deferred",
+      "priority": "low",
+      "depends_on": [
+        "CR-097",
+        "CR-099",
+        "CR-100"
+      ],
+      "objective": "Remove provider-specific fossils from the generic external review implementation by renaming the gate and harness vocabulary, making endpoint/model/key/override configuration vendor-neutral, and preserving fail-closed review receipt enforcement.",
+      "acceptance_criteria": [
+        "Generic reviewer scripts, paths, prompts, mutexes, and documentation use CodeReview/CodeReviewer terminology and contain no provider identifiers.",
+        "CODE_REVIEWER_API_KEY, CODE_REVIEWER_ENDPOINT, CODE_REVIEWER_MODEL, and optional CODE_REVIEWER_REQUEST_OVERRIDES_JSON configure the reviewer without source-code provider edits.",
+        "Protected request fields cannot be overridden and malformed override JSON fails closed.",
+        "Direct callers and aggregate gates require review_complete=true, verdict=PASS, and blocking_findings count zero.",
+        "Untracked files, secret-like paths, empty or malformed responses, retries, timeouts, serious findings, and all non-PASS outcomes remain fail closed.",
+        "Mandatory upstream, reverse, reviewer, build/test, license, syntax, workflow, cleanup, hosted acceptance, commit, and push gates pass."
+      ],
+      "validation_plan": [
+        "Line-by-line inventory of current reviewer scripts, workflows, tests, and gate documentation before implementation.",
+        "Focused reviewer protocol, override, receipt, redaction, and failure-path tests plus the full Release suite.",
+        "Mandatory external review of the final candidate snapshot and one serialized hosted validation cycle with inspected receipts.",
+        "Independent closure rescan of all changed reviewer artifacts and the corresponding upstream behavior set."
+      ],
+      "artifacts": [
+        "docs/CR-102-VENDOR-NEUTRAL-REVIEWER-CLEANUP.md",
+        "build/",
+        ".github/workflows/publish-six-rids.yml",
+        "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
+        "AGENTS.md",
+        "tests/"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-102-VENDOR-NEUTRAL-REVIEWER-CLEANUP.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Execution-time reviewer implementation and upstream parity scan are pending by design."
+        ]
+      },
+      "current_validation": {
+        "status": "deferred",
+        "unresolved_gaps": [
+          "The current reviewer remains provider-specific until this low-priority detour is scheduled.",
+          "No implementation or closure evidence is claimed."
         ]
       }
     },

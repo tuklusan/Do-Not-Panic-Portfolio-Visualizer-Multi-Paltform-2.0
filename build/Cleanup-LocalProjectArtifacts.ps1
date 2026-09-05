@@ -29,7 +29,8 @@ foreach ($relativePath in @(
     'build/nvidia-review',
     'build/publish',
     'build/local-probe',
-    'build/vm-artifacts'
+    'build/vm-artifacts',
+    'post-soak-evidence'
 )) {
     $path = Join-Path $repositoryRoot $relativePath
     if (Test-Path -LiteralPath $path) {
@@ -38,7 +39,7 @@ foreach ($relativePath in @(
 }
 
 Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'build') -Directory -Force -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -like 'local-cycle-*' } |
+    Where-Object { $_.Name -like 'local-cycle-*' -or $_.Name -like 'hosted-run-*' } |
     ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
 
 Get-ChildItem -LiteralPath $repositoryRoot -Directory -Recurse -Force |

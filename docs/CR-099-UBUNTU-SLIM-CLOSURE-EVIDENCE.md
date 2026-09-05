@@ -42,8 +42,15 @@ Hosted run `33979739957` produced the Ubuntu Slim soak artifact but cancelled
 the lane before its closure record; aggregate review found 20 instead of 21
 manifests/records and failed closed.
 
+Hosted run `33982819747` reproduced the condition: Ubuntu Slim emitted a passed
+soak result plus usable RSS/AI evidence, but no closure record, while the
+aggregate found 20 closure records. The same run also showed that a completed
+Windows ARM lane can retain a complete closure record, so the gap is in the
+pre-review cancellation path rather than the artifact schema itself.
+
 ## Acceptance
 
 The Ubuntu Slim lane either reaches a complete inspected closure record or
-produces an explicit, attributable failure record, and aggregate review remains
-fail-closed with no lane silently omitted.
+produces an explicit, attributable post-soak receipt: `review-pending` when
+soak output exists or `soak-failed-or-cancelled` when it does not. Aggregate
+review remains fail-closed with no lane silently omitted.

@@ -28,6 +28,9 @@ on:
 permissions:
   contents: read
 
+env:
+  EXPECTED_LANE_COUNT: '21'
+
 jobs:
   gate:
     runs-on: ubuntu-24.04
@@ -168,11 +171,13 @@ jobs:
         shell: pwsh
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:OPENROUTER_API_KEY)) { throw 'OPENROUTER_API_KEY is required for hosted product soak.' }
           if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for hosted artifact review.' }
           Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
+          Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
           Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
       - name: Build and test the real product
         run: |
@@ -187,6 +192,30 @@ jobs:
           Xvfb :99 -screen 0 1280x800x24 >/dev/null 2>&1 &
           echo $! > "$RUNNER_TEMP/dnppv2-xvfb.pid"
           echo "DISPLAY=:99" >> "$GITHUB_ENV"
+      - name: Initialize lane closure receipt before soak
+        if: always()
+        shell: pwsh
+        run: |
+           $runnerName = '${{ matrix.runner }}'
+           $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, '${{ matrix.rid }}')
+           $reviewRoot = Join-Path $PWD ('build/nvidia-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+           New-Item -ItemType Directory -Force -Path $artifactRoot, $reviewRoot | Out-Null
+           $receipt = [ordered]@{
+             schema = 'dnppv2-lane-closure-record/v1'
+             runId = [string]$env:GITHUB_RUN_ID
+             runner = $runnerName
+             rid = '${{ matrix.rid }}'
+             status = 'soak-failed-or-cancelled'
+             failure = 'Soak result not yet available.'
+             inspectedEvidenceRetained = $false
+             result = [ordered]@{ path = 'soak-result.json'; sha256 = $null; outcome = 'Missing'; processCleanedUp = $false }
+             rssAiEvidence = [ordered]@{ path = 'news-evidence.json'; sha256 = $null; inspected = $false }
+             aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }
+             screenshots = @()
+             circularTraces = @()
+             review = [ordered]@{ path = 'build/nvidia-review/harness-output.txt'; sha256 = $null; nonEmpty = $false; complete = $false }
+           }
+           $receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
       - name: Run real-product soak and collect circular trace
         shell: pwsh
         env:
@@ -196,6 +225,7 @@ jobs:
           MATRIX_RID: ${{ matrix.rid }}
         run: |
            Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
+           Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
            $runnerName = '${{ matrix.runner }}'
            $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, $env:MATRIX_RID)
            $screenshotPath = Join-Path $artifactRoot 'screenshots'
@@ -225,18 +255,22 @@ jobs:
              aiRequired = $true
              aiRequestObserved = [bool]$aiRequested
              aiSuccessObserved = [bool]$aiSucceeded
+             failure = if (-not $rssUsable) { 'RSS evidence incomplete' } elseif (-not $rssPublished) { 'RSS playback evidence incomplete' } elseif (-not $aiRequested -or -not $aiSucceeded) { 'AI evidence incomplete' } else { $null }
              traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
            }
            $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
-           if (-not $rssUsable -or -not $rssPublished) { throw "Hosted soak RSS evidence failed on $runnerName." }
-           if (-not $aiRequested -or -not $aiSucceeded) { throw "Hosted soak AI evidence failed on $runnerName." }
+           if (-not $rssUsable -or -not $rssPublished) { Write-Warning "Hosted soak RSS evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
+           if (-not $aiRequested -or -not $aiSucceeded) { Write-Warning "Hosted soak AI evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
            foreach ($tracePath in $tracePaths) {
              $traceText = Get-Content -LiteralPath $tracePath -Raw
-             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
                $traceText = $traceText.Replace($secret, '[REDACTED]')
              }
-             $traceText = $traceText -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
-             Set-Content -LiteralPath $tracePath -Value $traceText -Encoding utf8
+              $traceText = $traceText -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
+              foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+                if ($traceText.Contains($secret)) { throw "Secret redaction verification failed for $tracePath." }
+              }
+              Set-Content -LiteralPath $tracePath -Value $traceText -Encoding utf8
            }
            $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
            $manifestText = @(
@@ -263,15 +297,47 @@ jobs:
            foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
              $manifestText = $manifestText.Replace($secret, '[REDACTED]')
            }
-           $manifestText = $manifestText -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
-           Set-Content -LiteralPath $manifest -Value $manifestText -Encoding utf8
+            $manifestText = $manifestText -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
+            foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+              if ($manifestText.Contains($secret)) { throw "Secret redaction verification failed for $manifest." }
+            }
+            Set-Content -LiteralPath $manifest -Value $manifestText -Encoding utf8
+      - name: Initialize lane closure receipt after soak
+        if: always()
+        shell: pwsh
+        run: |
+           $runnerName = '${{ matrix.runner }}'
+           $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, '${{ matrix.rid }}')
+           $reviewRoot = Join-Path $PWD ('build/nvidia-review/soak-{0}-{1}' -f $env:GITHUB_RUN_ID, $runnerName)
+           New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
+           New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
+           $hasResult = Test-Path -LiteralPath (Join-Path $artifactRoot 'soak-result.json') -PathType Leaf
+           $result = if ($hasResult) { Get-Content -LiteralPath (Join-Path $artifactRoot 'soak-result.json') -Raw | ConvertFrom-Json } else { $null }
+           $soakPassed = $hasResult -and $result.outcome -eq 'Passed'
+           $receipt = [ordered]@{
+             schema = 'dnppv2-lane-closure-record/v1'
+             runId = [string]$env:GITHUB_RUN_ID
+             runner = $runnerName
+             rid = '${{ matrix.rid }}'
+             status = if ($soakPassed) { 'review-pending' } else { 'soak-failed-or-cancelled' }
+             failure = if ($soakPassed) { $null } elseif ($hasResult) { [string]$result.failure } else { 'soak-result-missing-after-cancellation' }
+             inspectedEvidenceRetained = $false
+             result = [ordered]@{ path = 'soak-result.json'; outcome = if ($hasResult) { [string]$result.outcome } else { 'Missing' }; processCleanedUp = if ($hasResult) { [bool]$result.processCleanedUp } else { $false } }
+             aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }
+             review = [ordered]@{ nonEmpty = $false; complete = $false }
+           }
+           $receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
       - name: Review soak evidence
         shell: pwsh
         env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
           MATRIX_RID: ${{ matrix.rid }}
         run: |
            Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
+           Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
+           Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
            $runnerName = '${{ matrix.runner }}'
            $artifactRoot = Join-Path $PWD ('artifacts/soak/{0}-{1}-{2}' -f $env:GITHUB_RUN_ID, $runnerName, $env:MATRIX_RID)
            $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
@@ -283,12 +349,18 @@ jobs:
            $reviewExitCode = $LASTEXITCODE
            $safeOutput = Get-Content -LiteralPath $reviewLog -Raw -ErrorAction SilentlyContinue
            if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {
-             $safeOutput = $safeOutput.Replace($env:NVIDIA_API_KEY_CODING, '[REDACTED]')
-             $safeOutput = $safeOutput -replace '(?i)(api[-_]?key|authorization|bearer|password|token)\s*[=:]\s*[^\s,;]+', '$1=[REDACTED]'
+             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+               $safeOutput = $safeOutput.Replace($secret, '[REDACTED]')
+             }
+              $safeOutput = $safeOutput -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
+              foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+                if ($safeOutput.Contains($secret)) { throw "Secret redaction verification failed for $reviewLog." }
+              }
              Set-Content -LiteralPath $reviewLog -Value $safeOutput -Encoding utf8
            }
            if ($null -ne $reviewExitCode -and $reviewExitCode -ne 0) { throw "NVIDIA artifact review returned exit code $reviewExitCode." }
       - name: Inspect and retain lane closure evidence
+        if: always()
         shell: pwsh
         env:
           MATRIX_RID: ${{ matrix.rid }}
@@ -300,55 +372,82 @@ jobs:
            $newsPath = Join-Path $artifactRoot 'news-evidence.json'
            $manifestPath = Join-Path $artifactRoot 'evidence-review-input.txt'
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
-           foreach ($requiredPath in @($resultPath, $newsPath, $manifestPath, $reviewLog)) {
-             if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) { throw "Required inspected evidence is missing: $requiredPath" }
+           $failures = [Collections.Generic.List[string]]::new()
+           $result = $null
+           if (Test-Path -LiteralPath $resultPath -PathType Leaf) {
+             try { $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json } catch { $failures.Add("Unreadable soak result: $resultPath") }
+           } else { $failures.Add("Required inspected evidence is missing: $resultPath") }
+           foreach ($requiredPath in @($newsPath, $manifestPath, $reviewLog)) {
+             if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) { $failures.Add("Required inspected evidence is missing: $requiredPath") }
            }
-           $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-           if ($result.outcome -ne 'Passed') { throw "Lane result is not Passed: $runnerName" }
-           if ($result.processCleanedUp -ne $true) { throw "Lane cleanup was not proven: $runnerName" }
+           if ($null -ne $result -and $result.outcome -ne 'Passed') { $failures.Add("Lane result is not Passed: $runnerName") }
+           if ($null -ne $result -and $result.processCleanedUp -ne $true) { $failures.Add("Lane cleanup was not proven: $runnerName") }
            $screenshots = @(Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'screenshots') -Filter '*.png' -File -ErrorAction SilentlyContinue)
-           if ($screenshots.Count -lt 1) { throw "Settled visual evidence is missing: $runnerName" }
+           if ($screenshots.Count -lt 1) { $failures.Add("Settled visual evidence is missing: $runnerName") }
+           $news = $null
+           if (Test-Path -LiteralPath $newsPath -PathType Leaf) {
+             try { $news = Get-Content -LiteralPath $newsPath -Raw | ConvertFrom-Json } catch { $failures.Add("Unreadable news evidence: $newsPath") }
+           }
+           $aiRequested = $null -ne $news -and [bool]$news.aiRequestObserved
+           $aiSucceeded = $null -ne $news -and [bool]$news.aiSuccessObserved
            $tracePaths = @(
              (Join-Path $artifactRoot 'trace/trace.circular.log'),
              (Join-Path $artifactRoot 'trace/yfinance.circular.log')
            )
            foreach ($tracePath in $tracePaths) {
-             if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { throw "Required circular trace is missing: $tracePath" }
+             if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { $failures.Add("Required circular trace is missing: $tracePath") }
            }
-           $reviewText = Get-Content -LiteralPath $reviewLog -Raw
-           if ([string]::IsNullOrWhiteSpace($reviewText)) { throw "NVIDIA review output is empty: $reviewLog" }
-           $record = [ordered]@{
-             schema = 'dnppv2-lane-closure-record/v1'
+           $reviewText = if (Test-Path -LiteralPath $reviewLog -PathType Leaf) { Get-Content -LiteralPath $reviewLog -Raw } else { '' }
+           if ([string]::IsNullOrWhiteSpace($reviewText)) { $failures.Add("NVIDIA review output is empty: $reviewLog") }
+           $resultOutcome = if ($null -ne $result) { [string]$result.outcome } else { 'Missing' }
+           $resultCleanup = $null -ne $result -and [bool]$result.processCleanedUp
+           $aiFailure = if ($aiSucceeded) { $null } else { 'AI evidence incomplete: aiRequestObserved={0}; aiSuccessObserved={1}' -f $aiRequested, $aiSucceeded }
+           $recordStatus = if ($failures.Count -eq 0) { 'complete' } elseif ($resultOutcome -eq 'Passed') { 'review-incomplete' } else { 'soak-failed-or-cancelled' }
+           $recordFailureParts = @($failures | ForEach-Object { [string]$_ })
+           if ($null -ne $aiFailure) { $recordFailureParts += $aiFailure }
+           $recordFailure = if ($recordFailureParts.Count -eq 0) { $null } else { $recordFailureParts -join '; ' }
+            $record = [ordered]@{
+              schema = 'dnppv2-lane-closure-record/v1'
              runId = [string]$env:GITHUB_RUN_ID
              runner = $runnerName
              rid = [string]$env:MATRIX_RID
              inspectedUtc = [DateTimeOffset]::UtcNow.ToString('O')
              result = [ordered]@{
                path = 'soak-result.json'
-               sha256 = (Get-FileHash -LiteralPath $resultPath -Algorithm SHA256).Hash
-               outcome = [string]$result.outcome
-               processCleanedUp = [bool]$result.processCleanedUp
+               sha256 = if (Test-Path -LiteralPath $resultPath -PathType Leaf) { (Get-FileHash -LiteralPath $resultPath -Algorithm SHA256).Hash } else { $null }
+               outcome = $resultOutcome
+               processCleanedUp = $resultCleanup
              }
              rssAiEvidence = [ordered]@{
                path = 'news-evidence.json'
-               sha256 = (Get-FileHash -LiteralPath $newsPath -Algorithm SHA256).Hash
-               inspected = $true
+               sha256 = if (Test-Path -LiteralPath $newsPath -PathType Leaf) { (Get-FileHash -LiteralPath $newsPath -Algorithm SHA256).Hash } else { $null }
+               inspected = Test-Path -LiteralPath $newsPath -PathType Leaf
+             }
+             aiEvidence = [ordered]@{
+               aiRequestObserved = $aiRequested
+               aiSuccessObserved = $aiSucceeded
              }
              screenshots = @($screenshots | Sort-Object Name | ForEach-Object {
                [ordered]@{ path = "screenshots/$($_.Name)"; bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
              })
              circularTraces = @($tracePaths | ForEach-Object {
-               $trace = Get-Item -LiteralPath $_
-               [ordered]@{ path = "trace/$($trace.Name)"; bytes = $trace.Length; sha256 = (Get-FileHash -LiteralPath $trace.FullName -Algorithm SHA256).Hash }
+               if (Test-Path -LiteralPath $_ -PathType Leaf) {
+                 $trace = Get-Item -LiteralPath $_
+                 [ordered]@{ path = "trace/$($trace.Name)"; bytes = $trace.Length; sha256 = (Get-FileHash -LiteralPath $trace.FullName -Algorithm SHA256).Hash }
+               }
              })
              review = [ordered]@{
                path = "build/nvidia-review/soak-$env:GITHUB_RUN_ID-$runnerName/harness-output.txt"
-               sha256 = (Get-FileHash -LiteralPath $reviewLog -Algorithm SHA256).Hash
-               nonEmpty = $true
+               sha256 = if (Test-Path -LiteralPath $reviewLog -PathType Leaf) { (Get-FileHash -LiteralPath $reviewLog -Algorithm SHA256).Hash } else { $null }
+                nonEmpty = -not [string]::IsNullOrWhiteSpace($reviewText)
+                complete = $failures.Count -eq 0
              }
-             inspectedEvidenceRetained = $true
+             status = $recordStatus
+             failure = $recordFailure
+             inspectedEvidenceRetained = $failures.Count -eq 0
            }
            $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+           if ($failures.Count -gt 0) { Write-Warning "Lane evidence inspection failed for ${runnerName}: $recordFailure" }
       - name: Stop Xvfb
         if: always() && runner.os == 'Linux'
         shell: bash
@@ -387,28 +486,32 @@ jobs:
           Set-Location -LiteralPath $env:GITHUB_WORKSPACE
           if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for post-soak artifact review.' }
           Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
+          $expectedLaneCount = [int]$env:EXPECTED_LANE_COUNT
           $manifests = @(Get-ChildItem -LiteralPath post-soak-evidence -Recurse -Filter 'evidence-review-input.txt' -File)
           $failures = [Collections.Generic.List[string]]::new()
           $actualArtifacts = @($manifests | ForEach-Object { $_.Directory.Parent.Parent.Name })
-           if ($manifests.Count -ne 21) {
+           if ($manifests.Count -ne $expectedLaneCount) {
              New-Item -ItemType Directory -Force -Path build/nvidia-review | Out-Null
-             "Expected 21 soak evidence manifests, found $($manifests.Count)." | Set-Content -LiteralPath build/nvidia-review/defect-candidates.txt -Encoding utf8
-             throw "Expected 21 soak evidence manifests, found $($manifests.Count)."
+             "Expected $expectedLaneCount soak evidence manifests, found $($manifests.Count)." | Set-Content -LiteralPath build/nvidia-review/defect-candidates.txt -Encoding utf8
+             throw "Expected $expectedLaneCount soak evidence manifests, found $($manifests.Count)."
            }
            $closureRecords = @(Get-ChildItem -LiteralPath post-soak-evidence -Recurse -Filter 'lane-closure-record.json' -File)
-           if ($closureRecords.Count -ne 21) {
-             $failures.Add("Expected 21 inspected lane closure records, found $($closureRecords.Count).")
+           if ($closureRecords.Count -ne $expectedLaneCount) {
+             $failures.Add("Expected $expectedLaneCount inspected lane closure records, found $($closureRecords.Count).")
            }
            foreach ($closureRecordPath in $closureRecords) {
              try {
                $closureRecord = Get-Content -LiteralPath $closureRecordPath.FullName -Raw | ConvertFrom-Json
                if ($closureRecord.schema -ne 'dnppv2-lane-closure-record/v1' -or
+                   $closureRecord.status -ne 'complete' -or
                    $closureRecord.inspectedEvidenceRetained -ne $true -or
                    $closureRecord.result.outcome -ne 'Passed' -or
                    $closureRecord.result.processCleanedUp -ne $true -or
                    @($closureRecord.screenshots).Count -lt 1 -or
                    @($closureRecord.circularTraces).Count -ne 2 -or
-                   $closureRecord.review.nonEmpty -ne $true) {
+                   $closureRecord.review.nonEmpty -ne $true -or
+                   $closureRecord.review.complete -ne $true -or
+                   $closureRecord.aiEvidence.aiSuccessObserved -ne $true) {
                  $failures.Add("Incomplete inspected lane closure record: $($closureRecordPath.FullName)")
                }
              }
