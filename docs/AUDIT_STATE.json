@@ -4661,7 +4661,7 @@
       "id": "CR-066",
       "phase": "Phase 7",
       "title": "Build blocking 18-hosted-plus-4-lab real-product validation harness",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-065"
       ],
@@ -4717,14 +4717,23 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
-      "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "The first hosted four-hour cycle completed successfully at GitHub but its older-SHA evidence lacks AI access and summary trace events, so it cannot count toward CR-066 acceptance; a fresh current-SHA cycle is required.",
-          "The local coordinator is implemented and probe-validated, but the complete four-machine-or-available-machine soak ladder and evidence review are still pending."
-          ,"Local five-minute cycle local-cycle-5m-20260902-233808 found Linux product-scene acceptance passed with non-empty screenshots and circular traces; Windows 10 and Windows 11 reached the real product but foreground acquisition failed before capture; the Mac was unavailable at cycle start."
-          ,"Linux trace proved AiAccessValidationSucceeded but the real AiSummary request ended with a bounded TaskCanceledException, so this evidence does not count as a successful AI summary acceptance."
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "build/vm/Invoke-ConfigWindowValidation.ps1",
+          "docs/CR-066-18-PLUS-4-VALIDATION-HARNESS-INVENTORY.md",
+          "tests/DoNotPanicPortfolioVisualizer.Tests"
         ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
       "implementation_progress": [
       "The Linux validation driver now bounds remote deployment and executable preflight probes to the per-command validation timeout instead of allowing a hung setup probe to consume the entire soak duration; the active run exposed this previously unbounded setup wait.",
         "build/Invoke-LocalLabSoakCycle.ps1 now performs a per-cycle four-machine probe, unique per-machine artifact allocation, real Linux/Windows driver invocation, Mac Big Sur driver deployment/invocation, recursive artifact retrieval, and partial manifest persistence.",
@@ -4732,7 +4741,9 @@
           "Probe-only rehearsal passed with three available machines and one explicit UnavailableAtCycleStart record.",
           "A fresh isolated Linux real-product run completed with screenshots, circular traces, YFinance sidecar evidence, and cleanup; its AI validation timeout prompted the soak-only 60-second HTTP budget and a regression test.",
           "The 2026-09-03 five-minute local cycle passed on Linux, Windows 10, and Windows 11 after a fresh availability probe; each produced product screenshots, circular traces, and a successful real AI summary response. The Mac was recorded UnavailableAtCycleStart.",
-          "Hosted cycle 33689685166 completed all 18 four-hour jobs successfully but its older-SHA traces contained no AI access or summary events; it is evidence-incomplete and does not count toward CR-066."
+          "Hosted cycles 33956511431 and 33957825572 completed all 18 current real-product lanes successfully with reviewed evidence.",
+          "Local cycles dnppv2-local-cycle-10m-pushed-20260905-062216 and dnppv2-local-cycle-10m-fourth-20260905-074500 completed all four available machines with real-product screenshots, RSS/AI evidence, dual circular traces, and cleanup.",
+          "Focused Linux deployment validation and the subsequent clean four-machine cycle passed after staged publish extraction and executable verification were added."
         ]
       }
     },
@@ -6140,12 +6151,12 @@
       },
       "current_validation": {
         "status": "closed",
-        "unresolved_gaps": [
-        "The first clean cycle was dnppv2-local-cycle-10m-pushed-20260905-062216. After the staged Linux deployment fix, dnppv2-local-cycle-10m-fourth-20260905-074500 passed Linux, Windows 10, Windows 11, and Intel macOS for the full ten-minute real-product contract, with screenshots, fresh RSS/AI evidence, both circular traces, and cleanup.",
-        "The latest NVIDIA review contains advisory findings on bounded polling, fullscreen/UIA diagnostics, and secret-derived logging; the startup polling finding is addressed by the bounded 60-second wait, while the remaining findings remain routed to the applicable queue items.",
-        "Two independent complete hosted cycles and two independent complete four-machine local companion cycles are recorded; all available local lanes passed the ten-minute real-product contract with screenshots, RSS/AI evidence, circular traces, and cleanup."
-      ]
-    }
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "The first clean cycle was dnppv2-local-cycle-10m-pushed-20260905-062216. After the staged Linux deployment fix, dnppv2-local-cycle-10m-fourth-20260905-074500 passed Linux, Windows 10, Windows 11, and Intel macOS for the full ten-minute real-product contract, with screenshots, fresh RSS/AI evidence, both circular traces, and cleanup.",
+          "Two independent complete hosted cycles and two independent complete four-machine local companion cycles are recorded; all available local lanes passed the ten-minute real-product contract with screenshots, RSS/AI evidence, circular traces, and cleanup."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
