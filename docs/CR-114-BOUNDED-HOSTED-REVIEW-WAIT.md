@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered during serialized run `34040146263`, where the only remaining
+Closed. Discovered during serialized run `34040146263`, where the only remaining
 lane (`macos-14`, job `101505317624`) remained in NVIDIA evidence review for
 hours after its product soak had passed.
 
@@ -54,6 +54,16 @@ specific run and must be recorded with its run ID before use. It is not the
 default and must not be used to keep CR-114 or routine queue processing
 waiting for hours. A request timeout is still unavailable reviewer output, not
 PASS; the lane's retained evidence is quarantined or failed closed.
+
+## Closure Evidence
+
+Commit `d0e001f` passed the local workflow, license, syntax, migration, NVIDIA
+workflow self-test, and pre-push gates. Hosted run `34048608640` used
+`REVIEW_WAIT_POLICY=bounded-15m`; all 21 publish lanes completed and the
+terminal run contained no old two-hour reviewer wait. Its product/evidence
+failures were dispositioned into CR-108, CR-112, and CR-115; expected NTP
+fallback findings matched CR-039. No semantic PASS was created for failed or
+unavailable review evidence.
 
 ## Scope Boundary
 

@@ -7761,7 +7761,7 @@
       "id": "CR-114",
       "phase": "Phase 7",
       "title": "Bound hosted reviewer wait without weakening evidence gates",
-      "status": "open",
+      "status": "closed",
       "priority": "high",
       "depends_on": ["CR-113"],
       "objective": "Reconcile the emergency-review expectation with the current two-hour per-request NVIDIA timeout so a slow reviewer cannot hold a serialized matrix indefinitely while timeouts remain fail-closed and evidence remains retained.",
@@ -7814,6 +7814,76 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md",
+          "docs/CR-114-BOUNDED-HOSTED-REVIEW-WAIT.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed-with-disposition",
+        "evidence": [
+          "Run 34040146263 was cancelled under the explicit one-time operator exception after the prior 7200-second reviewer wait became excessive; it supplied no PASS evidence.",
+          "Run 34048608640 used REVIEW_WAIT_POLICY=bounded-15m across the matrix; all 21 publish lanes completed and no lane entered the old two-hour reviewer wait.",
+          "The terminal run completed with lane-specific product/evidence failures and aggregate review findings; those were routed to CR-108, CR-112, and CR-115, while expected NTP fallback findings were reconciled against closed CR-039.",
+          "The workflow gate, license gate, PowerShell syntax gate, pre-development migration gate, NVIDIA workflow self-test, and pre-push gates passed for d0e001f."
+        ],
+        "unresolved_gaps": [],
+        "nvidia_review": {
+          "status": "advisory-findings-dispositioned",
+          "run": "34048608640",
+          "non_blocking_or_routed_findings": [
+            "NTP-ALL-HOSTS-FAILED matches the documented upstream local-clock fallback and closed CR-039; hosted UDP reachability is not a product parity failure.",
+            "AI-SUMMARY-NEVER-SUCCEEDED and AI-SUMMARIZATION-FIRST-ATTEMPT-429 remain in CR-112.",
+            "YFINANCE-UPSTREAM-SYNC-STALE-BASELINE remains in CR-108.",
+            "RENDER-RECOVERY-EPISODES is opened as CR-115 for focused investigation."
+          ]
+        }
+      }
+    },
+    {
+      "id": "CR-115",
+      "phase": "Phase 7",
+      "title": "Investigate hosted render-recovery episodes",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-114"],
+      "objective": "Determine whether repeated macOS hosted render-recovery episodes are expected bounded upstream recovery or a real 2.0 render-loop regression, and preserve the upstream recovery contract.",
+      "acceptance_criteria": [
+        "Pinned upstream render-heartbeat, recovery-policy, desktop-shell, and tests are read line by line and inventoried.",
+        "Each observed recovery episode is classified against upstream and 2.0 trace/state behavior.",
+        "A genuine divergence is fixed with deterministic tests and settled real-product evidence; expected recovery is documented with evidence.",
+        "Forward/reverse migration gates, NVIDIA review, complete hosted/local evidence, and cleanup pass."
+      ],
+      "validation_plan": [
+        "Read the upstream and 2.0 recovery implementations and tests from disk.",
+        "Inspect the retained run 34048608640 traces and screenshots for all affected macOS lanes.",
+        "Run focused tests, local gates, reviewer gate, and a fresh serialized proof after any correction.",
+        "Repeat the committed-disk reverse scan twice with zero gaps."
+      ],
+      "artifacts": [
+        "docs/CR-115-HOSTED-RENDER-RECOVERY-INVESTIGATION.md",
+        "docs/CR-011-UPSTREAM-BEHAVIOR-INVENTORY.md",
+        "src/DoNotPanicPortfolioVisualizer.Shared",
+        "src/DoNotPanicPortfolioVisualizer.Presentation",
+        "tests/DoNotPanicPortfolioVisualizer.Tests",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-115-HOSTED-RENDER-RECOVERY-INVESTIGATION.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
       }
     }
   ],
@@ -7831,7 +7901,8 @@
     "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
     "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
-    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof."
+    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof.",
+    "CR-115: hosted macOS render-recovery episodes require upstream parity classification and focused proof."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
