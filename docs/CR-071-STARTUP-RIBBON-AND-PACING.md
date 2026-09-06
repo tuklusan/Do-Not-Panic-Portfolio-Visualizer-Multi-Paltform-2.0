@@ -52,6 +52,15 @@ functional finding was substantiated.
 
 **Status:** Open
 
+## Implementation Progress
+
+The startup freshness field now begins in the upstream-neutral state
+`LOADING - waiting for data`, rather than exposing an internal local-service
+startup description. The status column is also reserved at a stable 248-pixel
+width and left-anchored so quote-field updates cannot reflow the market ribbon.
+The CR remains open because pacing diagnosis, focused behavioral coverage, and
+settled physical acceptance are still required.
+
 ## Source Inventory Checkpoint
 
 The upstream scan covered `src/PortfolioSaver.Render/ViewModels/StatusBarViewModel.cs`,

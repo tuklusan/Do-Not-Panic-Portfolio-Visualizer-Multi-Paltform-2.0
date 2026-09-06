@@ -5552,7 +5552,7 @@
       "current_validation": {
         "status": "open",
         "unresolved_gaps": [
-          "The startup freshness state now matches upstream's neutral LOADING - waiting for data behavior, but ribbon geometry, pacing diagnosis, focused tests, and settled physical evidence remain open."
+          "The startup freshness state now matches upstream's neutral LOADING - waiting for data behavior and the status column is stably left-anchored, but pacing diagnosis, focused behavioral coverage, and settled physical evidence remain open."
         ]
       },
       "upstream_closure_audit": {

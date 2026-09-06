@@ -130,7 +130,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private string _updatedTickerFieldText = string.Empty;
 
     [ObservableProperty]
-    private string _dataFreshnessText = "LOADING - initializing local market service";
+    private string _dataFreshnessText = "LOADING - waiting for data";
 
     [ObservableProperty]
     private string _freshnessBrush = "#D4DEE5";

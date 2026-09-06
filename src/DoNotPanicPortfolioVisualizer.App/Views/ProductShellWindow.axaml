@@ -255,8 +255,10 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         ClipToBounds="True">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                         <StackPanel Grid.Column="0"
+                                    Width="248"
                                     MaxWidth="248"
                                     Margin="0,0,8,0"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Spacing="2">
                             <TextBlock Text="{Binding MarketStatusText}"
