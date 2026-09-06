@@ -7267,10 +7267,19 @@
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation and closure scans are pending."]
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
+          "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "queued",
@@ -7395,12 +7404,13 @@
         "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md",
         ".github/workflows/publish-six-rids.yml",
         "build/Test-HostedSoakClosure.ps1",
+        "build/Test-HostedSoakQuarantine.ps1",
         "build/Test-WorkflowGateConfiguration.ps1",
         "tests/",
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "queued",
+        "status": "complete",
         "document": "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files": [
@@ -7410,6 +7420,64 @@
           "build/Invoke-NvidiaReviewHarness.ps1",
           "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md"
         ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
+          "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [],
+        "unresolved_gaps": ["Snapshot binding, quarantine, aggregate credential removal, and final authoritative hosted proof remain outstanding."]
+      }
+    },
+    {
+      "id": "CR-110",
+      "phase": "Phase 7",
+      "title": "Forward project traces and logs over UDP-only Unix syslog",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": ["CR-109"],
+      "objective": "Forward the project-owned trace and log event set only to sanyalnet-oracle-vps2.duckdns.org:65514 over UDP using documented Unix syslog framing, with bounded nonblocking delivery and complete secret redaction.",
+      "acceptance_criteria": [
+        "Every project-owned event in the documented allowlist uses the single configured UDP destination and no TCP, HTTP, HTTPS, or alternate endpoint fallback exists.",
+        "Datagrams use a documented bounded Unix syslog format with facility, severity, timestamp, hostname, application identity, and deterministic oversize handling.",
+        "DNS, socket, packet-loss, queue, payload, and shutdown failures are nonfatal and cannot delay startup/UI work or alter local circular traces.",
+        "Credentials, API keys, passwords, bearer values, user secrets, and private review material are redacted before serialization and are absent from captured packets.",
+        "The same cross-platform implementation is proven on Windows, Linux, macOS Intel, macOS ARM, hosted runners, and available local lab machines using a local test receiver rather than the production VPS.",
+        "Forward and reverse migration gates, NVIDIA review, wire/failure/security tests, real-product validation, cleanup, commit, and push pass with two successive zero-gap audits."
+      ],
+      "validation_plan": [
+        "Read upstream and current 2.0 logging/tracing implementations line by line and complete the source-cited functional inventory before editing.",
+        "Implement the shared cross-platform UDP syslog transport and focused local UDP receiver tests, including secret and failure matrices.",
+        "Run all repository gates and the locked 10-minute real-product validation cycle; inspect both circular traces and captured forwarding evidence.",
+        "Repeat the reverse scan independently twice and close only after the committed pushed evidence is complete."
+      ],
+      "artifacts": [
+        "docs/CR-110-UDP-SYSLOG-TRACE-FORWARDING.md",
+        "src/",
+        "tests/",
+        "build/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "queued",
+        "document": "docs/CR-110-UDP-SYSLOG-TRACE-FORWARDING.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [],
         "zero_known_gaps": false,
         "known_gaps_routed_to_change_requests": true
       },
@@ -7422,7 +7490,7 @@
       "current_validation": {
         "status": "queued",
         "evidence": [],
-        "unresolved_gaps": ["Snapshot binding, quarantine, aggregate credential removal, and final authoritative hosted proof remain outstanding."]
+        "unresolved_gaps": ["UDP syslog transport is not implemented or validated."]
       }
     }
   ],

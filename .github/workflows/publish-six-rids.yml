@@ -419,6 +419,9 @@ jobs:
            if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) { throw "Soak evidence manifest is missing: $manifest" }
            $reviewRoot = Join-Path $artifactRoot 'review'
            New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
+           function Quarantine-ReviewerEvidence([string]$Reason) {
+             & ./build/Invoke-ReviewerEvidenceQuarantine.ps1 -ReviewRoot $reviewRoot -ArtifactRoot $artifactRoot -RunnerTemp $env:RUNNER_TEMP -RunId $env:GITHUB_RUN_ID -CommitSha $env:GITHUB_SHA -Runner $runnerName -Rid $env:MATRIX_RID -Reason $Reason
+           }
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
            $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200 2>&1)
            $reviewExitCode = $LASTEXITCODE
@@ -429,7 +432,7 @@ jobs:
              }
               $safeOutput = $safeOutput -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
               foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
-                if ($safeOutput.Contains($secret)) { throw "Secret redaction verification failed for $reviewLog." }
+                if ($safeOutput.Contains($secret)) { Quarantine-ReviewerEvidence 'known secret in reviewer output' }
               }
              Set-Content -LiteralPath $reviewLog -Value $safeOutput -Encoding utf8
            }
@@ -456,13 +459,13 @@ jobs:
              materialSha256 = (Get-FileHash -LiteralPath $manifest -Algorithm SHA256).Hash.ToLowerInvariant()
            }
            $semantic | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reviewRoot 'review-result.json') -Encoding utf8
-           $harnessTextFiles = @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.txt', '.json', '.jsonl', '.log', '.md') })
+           $harnessTextFiles = @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue)
            foreach ($harnessTextFile in $harnessTextFiles) {
-             $harnessText = Get-Content -LiteralPath $harnessTextFile.FullName -Raw
-             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
-               if ($harnessText.Contains($secret)) { throw "Secret found in temporary reviewer output: $($harnessTextFile.FullName)." }
+              try { $harnessText = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($harnessTextFile.FullName)) } catch { throw "Failed to read reviewer output file for secret scan: $($harnessTextFile.FullName)" }
+              foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+               if ($harnessText.Contains($secret)) { Quarantine-ReviewerEvidence 'known secret in reviewer subtree' }
              }
-             if ($harnessText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { throw "Credential-shaped value found in temporary reviewer output: $($harnessTextFile.FullName)." }
+             if ($harnessText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { Quarantine-ReviewerEvidence 'credential-shaped value in reviewer subtree' }
            }
       - name: Inspect and retain lane closure evidence
         if: always()
@@ -509,8 +512,11 @@ jobs:
             if (Test-Path -LiteralPath $reviewResultPath -PathType Leaf) {
               try { $reviewResult = Get-Content -LiteralPath $reviewResultPath -Raw | ConvertFrom-Json } catch { $failures.Add("Unreadable semantic review result: $reviewResultPath") }
             }
+            $materialHash = if (Test-Path -LiteralPath $manifestPath -PathType Leaf) { (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant() } else { $null }
+            $expectedSnapshotId = if ($null -ne $materialHash) { ('{0}:{1}' -f ([string]$env:GITHUB_SHA).ToLowerInvariant(), $materialHash).ToLowerInvariant() } else { $null }
             if ($null -eq $reviewResult -or $reviewResult.schema -ne 'dnppv2-test-artifact-review-result/v2' -or $reviewResult.verdict -ne 'PASS' -or $reviewResult.reviewComplete -ne $true -or @($reviewResult.blockingFindings).Count -ne 0) { $failures.Add('Semantic TEST_ARTIFACT PASS receipt is missing, incomplete, or not clean.') }
-            if ($null -ne $reviewResult -and $reviewResult.materialSha256 -ne (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()) { $failures.Add('Semantic review material hash does not match the retained manifest.') }
+            if ($null -ne $reviewResult -and $reviewResult.materialSha256 -ne $materialHash) { $failures.Add('Semantic review material hash does not match the retained manifest.') }
+            if ($null -ne $reviewResult -and ([string]$reviewResult.snapshotId).ToLowerInvariant() -ne $expectedSnapshotId) { $failures.Add('Semantic review snapshot does not match the reconstructed commit/material identity.') }
             foreach ($retainedTextPath in @($manifestPath, $newsPath, $reviewLog, $reviewResultPath, $resultPath) + $tracePaths) {
               if (Test-Path -LiteralPath $retainedTextPath -PathType Leaf) {
                 $retainedText = Get-Content -LiteralPath $retainedTextPath -Raw
@@ -520,8 +526,8 @@ jobs:
                 if ($retainedText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') { $failures.Add("Retained evidence contains a credential-shaped value: $retainedTextPath") }
               }
             }
-            foreach ($retainedReviewFile in @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.txt', '.json', '.jsonl', '.log', '.md') })) {
-              try { $retainedReviewText = [IO.File]::ReadAllText($retainedReviewFile.FullName) } catch { $failures.Add("Failed to read review file for secret scan: $($retainedReviewFile.FullName)") ; continue }
+            foreach ($retainedReviewFile in @(Get-ChildItem -LiteralPath $reviewRoot -Recurse -File -ErrorAction SilentlyContinue)) {
+              try { $retainedReviewText = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($retainedReviewFile.FullName)) } catch { $failures.Add("Failed to read review file for secret scan: $($retainedReviewFile.FullName)") ; continue }
               foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
                 if ($retainedReviewText.Contains($secret)) { $failures.Add("Review subtree contains an unredacted secret: $($retainedReviewFile.FullName)") }
               }
@@ -556,7 +562,7 @@ jobs:
                aiRequestObserved = $aiRequested
                aiSuccessObserved = $aiSucceeded
              }
-             snapshotId = if ($null -ne $reviewResult) { [string]$reviewResult.snapshotId } else { $null }
+             snapshotId = if ($null -ne $reviewResult -and $null -ne $expectedSnapshotId) { [string]$expectedSnapshotId } else { $null }
              screenshots = @($screenshots | Sort-Object Name | ForEach-Object {
                [ordered]@{ path = "screenshots/$($_.Name)"; bytes = $_.Length; sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash }
              })
@@ -569,7 +575,7 @@ jobs:
              review = [ordered]@{
                 path = 'review-result.json'
                 commitSha = [string]$env:GITHUB_SHA
-                snapshotId = if ($null -ne $reviewResult) { [string]$reviewResult.snapshotId } else { $null }
+                snapshotId = if ($null -ne $reviewResult -and $null -ne $expectedSnapshotId) { [string]$expectedSnapshotId } else { $null }
                 materialSha256 = if ($null -ne $reviewResult) { [string]$reviewResult.materialSha256 } else { $null }
                 resultSha256 = if (Test-Path -LiteralPath $reviewResultPath -PathType Leaf) { (Get-FileHash -LiteralPath $reviewResultPath -Algorithm SHA256).Hash.ToLowerInvariant() } else { $null }
                 sha256 = if (Test-Path -LiteralPath $reviewLog -PathType Leaf) { (Get-FileHash -LiteralPath $reviewLog -Algorithm SHA256).Hash } else { $null }
@@ -599,13 +605,10 @@ jobs:
   post-soak-review:
     if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'))
     needs: real-product-soak
-    timeout-minutes: 180
+    timeout-minutes: 60
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Wait one minute for artifact publication
-        shell: bash
-        run: sleep 60
       - name: Retrieve this run's soak evidence
         uses: actions/download-artifact@v4
         with:
@@ -616,14 +619,8 @@ jobs:
         shell: pwsh
         env:
           EXPECTED_LANE_COUNT: '21'
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
         run: |
           Set-Location -LiteralPath $env:GITHUB_WORKSPACE
-          Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
-          Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
-          Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
           New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'build/nvidia-review') | Out-Null
           $validationOutput = @()
           $validationExitCode = 0
@@ -635,11 +632,12 @@ jobs:
             $validationExitCode = 1
           }
           $validationText = ($validationOutput | Out-String)
-          foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) { $validationText = $validationText.Replace($secret, '[REDACTED]') }
           $validationText = $validationText -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
-          foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) { if ($validationText.Contains($secret)) { throw 'Aggregate validation secret redaction failed.' } }
           Set-Content -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'build/nvidia-review/aggregate-validation.txt') -Value $validationText -Encoding utf8
           if ($validationExitCode -ne 0) { throw 'Deterministic hosted soak closure validation failed; inspect aggregate-validation.txt.' }
+      - name: Run hosted quarantine regression test
+        shell: pwsh
+        run: ./build/Test-HostedSoakQuarantine.ps1 -SelfTest
       - name: Upload post-soak review and defect candidates
         if: always()
         uses: actions/upload-artifact@v4

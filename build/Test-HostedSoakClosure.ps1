@@ -109,7 +109,19 @@ function Test-Closure([string]$Root, [string]$RunId, [string]$CommitSha, [int]$L
             if (@($result.blockingFindings).Count -ne 0) { $failures.Add("Review result contains blocking findings: $pair") }
             $materialHash = Get-Sha256 $manifest.FullName
             if ($result.materialSha256 -ne $materialHash) { $failures.Add("Review material hash mismatch: $pair") }
-            if ([string]::IsNullOrWhiteSpace([string]$result.snapshotId) -or $record.snapshotId -ne $result.snapshotId) { $failures.Add("Snapshot identity mismatch: $pair") }
+            $expectedSnapshotId = ('{0}:{1}' -f $CommitSha.ToLowerInvariant(), $materialHash).ToLowerInvariant()
+            if ([string]::IsNullOrWhiteSpace([string]$result.snapshotId) -or
+                ([string]$result.snapshotId).ToLowerInvariant() -ne $expectedSnapshotId) {
+                $failures.Add("Review snapshot reconstruction mismatch: $pair")
+            }
+            if ([string]::IsNullOrWhiteSpace([string]$record.snapshotId) -or
+                ([string]$record.snapshotId).ToLowerInvariant() -ne $expectedSnapshotId) {
+                $failures.Add("Closure snapshot reconstruction mismatch: $pair")
+            }
+            if ($null -ne $record.review -and $record.review.PSObject.Properties.Name -contains 'snapshotId' -and
+                ([string]$record.review.snapshotId).ToLowerInvariant() -ne $expectedSnapshotId) {
+                $failures.Add("Nested review snapshot reconstruction mismatch: $pair")
+            }
             $reviewHash = Get-Sha256 $review[0].FullName
             if ($record.review.resultSha256 -ne $reviewHash) { $failures.Add("Review result hash mismatch: $pair") }
             if ($record.review.materialSha256 -ne $materialHash) { $failures.Add("Closure material hash mismatch: $pair") }
@@ -144,16 +156,18 @@ if ($SelfTest) {
         Set-Content -LiteralPath (Join-Path $lane 'screenshots/settled.png') -Value 'screenshot' -Encoding utf8
         Set-Content -LiteralPath (Join-Path $lane 'trace/trace.circular.log') -Value 'trace' -Encoding utf8
         Set-Content -LiteralPath (Join-Path $lane 'trace/yfinance.circular.log') -Value 'yfinance' -Encoding utf8
-        $review = [ordered]@{ schema='dnppv2-test-artifact-review-result/v2'; reviewType='TEST_ARTIFACT'; runId='1'; commitSha='abc'; runner='test'; rid='linux-x64'; snapshotId='1:snapshot'; verdict='PASS'; reviewComplete=$true; blockingFindings=@(); materialSha256=(Get-Sha256 $manifest) }
+        $manifestHash = Get-Sha256 $manifest
+        $expectedSnapshot = ('abc:{0}' -f $manifestHash).ToLowerInvariant()
+        $review = [ordered]@{ schema='dnppv2-test-artifact-review-result/v2'; reviewType='TEST_ARTIFACT'; runId='1'; commitSha='abc'; runner='test'; rid='linux-x64'; snapshotId=$expectedSnapshot; verdict='PASS'; reviewComplete=$true; blockingFindings=@(); materialSha256=$manifestHash }
         $reviewPath = Join-Path $reviewRoot 'review-result.json'
         $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
         $record = [ordered]@{
-            schema='dnppv2-lane-closure-record/v2'; runId='1'; commitSha='abc'; runner='test'; rid='linux-x64'; status='complete'; inspectedEvidenceRetained=$true; snapshotId='1:snapshot'
+            schema='dnppv2-lane-closure-record/v2'; runId='1'; commitSha='abc'; runner='test'; rid='linux-x64'; status='complete'; inspectedEvidenceRetained=$true; snapshotId=$expectedSnapshot
             result=[ordered]@{ path='soak-result.json'; sha256=(Get-Sha256 (Join-Path $lane 'soak-result.json')); outcome='Passed'; processCleanedUp=$true }
             rssAiEvidence=[ordered]@{ path='news-evidence.json'; sha256=(Get-Sha256 (Join-Path $lane 'news-evidence.json')) }
             circularTraces=@(@{ path='trace/trace.circular.log'; sha256=(Get-Sha256 (Join-Path $lane 'trace/trace.circular.log')) }, @{ path='trace/yfinance.circular.log'; sha256=(Get-Sha256 (Join-Path $lane 'trace/yfinance.circular.log')) }); screenshots=@(@{ path='screenshots/settled.png'; sha256=(Get-Sha256 (Join-Path $lane 'screenshots/settled.png')) })
             aiEvidence=[ordered]@{ aiRequestObserved=$true; aiSuccessObserved=$true }
-            review=[ordered]@{ materialSha256=(Get-Sha256 $manifest); resultSha256=(Get-Sha256 $reviewPath) }
+            review=[ordered]@{ snapshotId=$expectedSnapshot; materialSha256=$manifestHash; resultSha256=(Get-Sha256 $reviewPath) }
         }
         $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         $pass = Test-Closure $temp '1' 'abc' 1
@@ -168,10 +182,28 @@ if ($SelfTest) {
         try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test v1 review result was accepted.' } catch { if ($_.Exception.Message -notmatch 'Review result is not v2') { throw } }
         $review.schema = 'dnppv2-test-artifact-review-result/v2'
         $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
-        $review.snapshotId = 'wrong-snapshot'
+        $review.snapshotId = 'wrongcommit:wronghash'
         $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
-        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test snapshot mismatch was accepted.' } catch { if ($_.Exception.Message -notmatch 'Snapshot identity mismatch') { throw } }
-        $review.snapshotId = '1:snapshot'
+        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test snapshot mismatch was accepted.' } catch { if ($_.Exception.Message -notmatch 'snapshot reconstruction mismatch') { throw } }
+        $review.snapshotId = ('abc:wrong{0}' -f $manifestHash.Substring(5))
+        $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
+        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test wrong material snapshot was accepted.' } catch { if ($_.Exception.Message -notmatch 'snapshot reconstruction mismatch') { throw } }
+        $review.snapshotId = ('wrongcommit:{0}' -f $manifestHash)
+        $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
+        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test wrong commit snapshot was accepted.' } catch { if ($_.Exception.Message -notmatch 'snapshot reconstruction mismatch') { throw } }
+        $review.snapshotId = $expectedSnapshot
+        $record.snapshotId = 'wrongcommit:wronghash'
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test closure snapshot disagreement was accepted.' } catch { if ($_.Exception.Message -notmatch 'Closure snapshot reconstruction mismatch') { throw } }
+        $record.snapshotId = 'wrongcommit:wronghash'
+        $review.snapshotId = 'wrongcommit:wronghash'
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+        $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
+        try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test mutually consistent wrong snapshot was accepted.' } catch { if ($_.Exception.Message -notmatch 'snapshot reconstruction mismatch') { throw } }
+        $record.snapshotId = $expectedSnapshot
+        $review.snapshotId = $expectedSnapshot
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+        $review.snapshotId = $expectedSnapshot
         $review.runId = 'wrong-run'
         $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
         try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test identity mismatch was accepted.' } catch { if ($_.Exception.Message -notmatch 'Review result identity mismatch') { throw } }

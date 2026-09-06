@@ -26,30 +26,19 @@ It closes the remaining trust-boundary gaps around that architecture.
 
 ## Functional Inventory
 
-- `SNAP-01`: Reconstruct the expected snapshot as the canonical expected commit
-  SHA plus the actual SHA-256 of `evidence-review-input.txt`; never trust
-  agreement between two retained snapshot fields alone.
-- `SNAP-02`: Enforce that equation independently in lane finalization and in
-  `Test-HostedSoakClosure.ps1`, including nested review snapshot data.
-- `SNAP-03`: Reject wrong-commit, wrong-material, missing, stale, cross-lane,
-  and mutually-consistent-but-fabricated snapshot receipts.
-- `SEC-01`: Detect known secrets, bearer tokens, and credential-shaped values
-  across the entire reviewer subtree, including future text-bearing files.
-- `SEC-02`: Move contaminated files or the whole reviewer subtree outside the
-  upload root before failure propagation; retain only sanitized metadata.
-- `SEC-03`: Prove quarantined bytes cannot be uploaded by an unconditional
-  artifact-upload step and never appear in receipts or diagnostics.
-- `PRIV-01`: Keep the deterministic `post-soak-review` job free of all live
-  provider credentials, masks, and authenticated network operations.
-- `PRIV-02`: Preserve credentials only in the lane product/reviewer steps that
-  genuinely require them, with immediate masking and fail-closed scanning.
-- `PROOF-01`: Run one complete serialized final hosted matrix against the exact
-  candidate, with every expected publish and real-product-soak lane complete.
-- `PROOF-02`: Retain and inspect every lane's screenshots, both circular traces,
-  RSS/AI evidence, v2 review result, closure receipt, and aggregate result.
-- `PROOF-03`: Record the exact candidate commit, run ID, lane count, aggregate
-  result, snapshot result, security result, credential-free aggregate result,
-  and zero aggregate reviewer-call count.
+| ID | Functional behavior or proof obligation |
+| --- | --- |
+| SNAP-01 | Reconstruct the expected snapshot as the canonical expected commit SHA plus the actual SHA-256 of `evidence-review-input.txt`; never trust agreement between retained fields alone. |
+| SNAP-02 | Enforce that equation independently in lane finalization and in `Test-HostedSoakClosure.ps1`, including nested review snapshot data. |
+| SNAP-03 | Reject wrong-commit, wrong-material, missing, stale, cross-lane, and mutually-consistent-but-fabricated snapshot receipts. |
+| SEC-01 | Detect known secrets, bearer tokens, and credential-shaped values across the entire reviewer subtree, including future text-bearing files. |
+| SEC-02 | Move contaminated files or the whole reviewer subtree outside the upload root before failure propagation; retain only sanitized metadata. |
+| SEC-03 | Prove quarantined bytes cannot be uploaded by an unconditional artifact-upload step and never appear in receipts or diagnostics. |
+| PRIV-01 | Keep the deterministic `post-soak-review` job free of all live provider credentials, masks, and authenticated network operations. |
+| PRIV-02 | Preserve credentials only in the lane product/reviewer steps that genuinely require them, with immediate masking and fail-closed scanning. |
+| PROOF-01 | Run one complete serialized final hosted matrix against the exact candidate, with every expected publish and real-product-soak lane complete. |
+| PROOF-02 | Retain and inspect every lane's screenshots, both circular traces, RSS/AI evidence, v2 review result, closure receipt, and aggregate result. |
+| PROOF-03 | Record the exact candidate commit, run ID, lane count, aggregate result, snapshot result, security result, credential-free aggregate result, and zero aggregate reviewer-call count. |
 
 The upstream behavior and current CR-105 workflow/validator are the sources of
 truth. Installer-only, WPF-only, and historical artifacts remain out of scope.
@@ -72,7 +61,8 @@ truth. Installer-only, WPF-only, and historical artifacts remain out of scope.
    from aggregate configuration.
 6. Keep exactly one lane-level `TEST_ARTIFACT` invocation and no aggregate
    remote reviewer invocation. Bound the deterministic aggregate timeout to a
-   documented defensive limit (recommended maximum: 15 minutes) and remove the
+  documented defensive limit (60 minutes for 21-lane artifact download and
+  hashing) and remove the
    blind artifact-publication sleep unless a bounded race workaround is proven.
 7. Expand `Test-HostedSoakClosure.ps1 -SelfTest` for v1 rejection, malformed and
    non-PASS receipts, all snapshot cases, hash/identity failures, duplicates,
