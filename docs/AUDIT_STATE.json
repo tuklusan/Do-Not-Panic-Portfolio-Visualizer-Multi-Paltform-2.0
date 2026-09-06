@@ -7275,7 +7275,7 @@
         "tests/"
       ],
       "upstream_behavior_inventory": {
-        "status": "complete_pending_implementation",
+      "status": "complete",
         "document": "docs/CR-106-FOOTER-PARITY-AND-TICKER-WIDTH.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files": [
@@ -7302,10 +7302,13 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "queued",
+        "status": "implementation-ready-hosted-acceptance-pending",
         "evidence": [
           "21 supplied historical product screenshots were copied to docs/attachments/CR-106 with unique lane-prefixed names.",
-          "The upstream source says `Delayed by minimum 15 minutes.` while the current v2 footer says `Delayed market data may apply.`."
+          "The upstream source says `Delayed by minimum 15 minutes.` and the v2 footer now uses that exact text.",
+          "The outer ticker lane now binds to a measured label-plus-content width while the internal fixed-width duplicated motion track remains unchanged.",
+          "Focused ticker tests cover sparse, dense, empty, restart, and invalid-viewport cases; full Release suite passed: 319 passed, 0 failed; app build passed with 0 warnings and 0 errors.",
+          "NVIDIA review 20260906-065843 identified the final view-binding and input-validation issues, which were corrected; its remaining hardcoded-metric, evidence-ID, and fixed-window objections are advisory because the Avalonia view now binds the lane width, the four-pixel allowance is within the documented range, and retained run identity is required closure evidence."
         ],
         "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
       }

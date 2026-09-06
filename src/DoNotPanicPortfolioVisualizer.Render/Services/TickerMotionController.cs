@@ -52,6 +52,16 @@ public sealed class TickerMotionController
         NormalizeAndApply();
     }
 
+    public void Stop()
+    {
+        _cycleDistance = 1d;
+        _pixelsPerSecond = 0d;
+        _progress = 0d;
+        _anchorOffset = 0d;
+        _direction = ScrollDirection.Left;
+        Offset = 0d;
+    }
+
     private void NormalizeAndApply()
     {
         _progress %= _cycleDistance;

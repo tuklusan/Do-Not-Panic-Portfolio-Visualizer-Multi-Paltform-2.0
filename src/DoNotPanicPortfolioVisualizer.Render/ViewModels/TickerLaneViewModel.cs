@@ -13,6 +13,7 @@
 // ============================================================================
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using DoNotPanicPortfolioVisualizer.Core.Constants;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Render.Services;
@@ -24,15 +25,27 @@ public sealed partial class TickerLaneViewModel : ObservableObject
     public const int MinimumSequenceItemCount = 18;
     public const double ItemWidth = 230d;
     public const double CopySpacing = 20d;
+    private const int MaximumVisibleTickerItems = 4;
+    private const double LabelCharacterWidth = 7.2d;
+    private const double LabelHorizontalPadding = 14d;
+    private const double LabelToViewportGap = 0d;
+    private const double LaneHorizontalPadding = 4d;
 
     private readonly TickerMotionController _motion = new();
     private int _sideCopies;
+    private double _viewportWidth;
 
     [ObservableProperty]
     private double _trackOffset;
 
     [ObservableProperty]
     private double _trackWidth;
+
+    [ObservableProperty]
+    private double _laneWidth;
+
+    [ObservableProperty]
+    private double _contentViewportWidth;
 
     public TickerLaneViewModel(TickerGroup group)
     {
@@ -42,7 +55,9 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         RowHeight = group.RowHeight <= 0d ? 56d : group.RowHeight;
         Quotes = new ObservableCollection<TickerQuoteViewModel>(
             group.Tickers.Where(static ticker => ticker.Enabled && !string.IsNullOrWhiteSpace(ticker.Symbol))
+                .Take(Defaults.MaxTickersPerTape)
                 .Select(static ticker => new TickerQuoteViewModel(ticker)));
+        Quotes.CollectionChanged += (_, _) => ConfigureViewport(_viewportWidth);
         TrackItems = [];
         ConfigureViewport(1024d);
     }
@@ -57,18 +72,32 @@ public sealed partial class TickerLaneViewModel : ObservableObject
 
     public void ConfigureViewport(double viewportWidth)
     {
+        if (double.IsNaN(viewportWidth) || double.IsInfinity(viewportWidth))
+            throw new ArgumentOutOfRangeException(nameof(viewportWidth), "Viewport width must be finite.");
+        if (viewportWidth < 0d)
+            throw new ArgumentOutOfRangeException(nameof(viewportWidth), "Viewport width cannot be negative.");
+
+        _viewportWidth = Math.Max(1d, viewportWidth);
         if (Quotes.Count == 0)
         {
             TrackItems.Clear();
             TrackWidth = 0d;
             TrackOffset = 0d;
+            LaneWidth = GetLabelWidth() + LaneHorizontalPadding;
+            ContentViewportWidth = 0d;
+            _sideCopies = 0;
+            _motion.Stop();
             return;
         }
 
         IReadOnlyList<TickerQuoteViewModel> sequence = BuildVisualSequence();
         double sequenceWidth = sequence.Count * ItemWidth;
         double cycleDistance = sequenceWidth + CopySpacing;
-        int sideCopies = Math.Max(2, (int)Math.Ceiling(Math.Max(1d, viewportWidth) / cycleDistance) + 2);
+        double measuredContentWidth = Math.Min(
+            Quotes.Count * ItemWidth,
+            MaximumVisibleTickerItems * ItemWidth);
+        ContentViewportWidth = measuredContentWidth;
+        int sideCopies = Math.Max(2, (int)Math.Ceiling(_viewportWidth / cycleDistance) + 2);
         if (sideCopies != _sideCopies || TrackItems.Count == 0)
         {
             _sideCopies = sideCopies;
@@ -84,12 +113,20 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         }
 
         TrackWidth = ((sideCopies * 2) + 1) * cycleDistance;
+        LaneWidth = GetLabelWidth() + LabelToViewportGap + ContentViewportWidth + LaneHorizontalPadding;
         _motion.Configure(cycleDistance, Speed, Direction, sideCopies);
         TrackOffset = _motion.Offset;
     }
 
     public void Step(TimeSpan elapsed, bool isVisible = true)
     {
+        if (Quotes.Count == 0)
+        {
+            _motion.Stop();
+            TrackOffset = 0d;
+            return;
+        }
+
         _motion.Step(elapsed, isVisible);
         TrackOffset = _motion.Offset;
         foreach (TickerQuoteViewModel quote in Quotes)
@@ -105,6 +142,9 @@ public sealed partial class TickerLaneViewModel : ObservableObject
 
         return sequence;
     }
+
+    private double GetLabelWidth()
+        => (Title.Length * LabelCharacterWidth) + LabelHorizontalPadding;
 }
 
 public sealed record TickerTrackItemViewModel(TickerQuoteViewModel Quote, double Width);

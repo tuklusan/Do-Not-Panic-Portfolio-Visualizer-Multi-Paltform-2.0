@@ -72,6 +72,78 @@ public sealed class TickerPresentationTests
     }
 
     [Fact]
+    public void TickerLane_OuterWidthUsesMeasuredContentWithoutStretchingSparseLanes()
+    {
+        TickerGroup source = new()
+        {
+            Name = "SHORT",
+            Tickers =
+            [
+                new TickerItem { Symbol = "AAA", Enabled = true }
+            ]
+        };
+        TickerLaneViewModel lane = new(source);
+
+        lane.ConfigureViewport(1200d);
+
+        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.Equal(4d, lane.LaneWidth - (5d * 7.2d + 14d + lane.ContentViewportWidth));
+        Assert.True(lane.LaneWidth < 1200d);
+    }
+
+    [Fact]
+    public void TickerLane_StopsWhenQuotesAreRemovedAndReconfiguresWhenAdded()
+    {
+        TickerGroup source = new()
+        {
+            Tickers = [new TickerItem { Symbol = "AAA", Enabled = true }]
+        };
+        TickerLaneViewModel lane = new(source);
+        lane.Step(TimeSpan.FromMilliseconds(100));
+        Assert.NotEqual(0d, lane.TrackOffset);
+
+        lane.Quotes.Clear();
+        lane.Step(TimeSpan.FromSeconds(1));
+        Assert.Equal(0d, lane.TrackOffset);
+        Assert.Equal(0d, lane.ContentViewportWidth);
+        Assert.Empty(lane.TrackItems);
+        Assert.True(lane.LaneWidth > 0d);
+
+        lane.Quotes.Add(new TickerQuoteViewModel(new TickerItem { Symbol = "BBB", Enabled = true }));
+        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.NotEmpty(lane.TrackItems);
+    }
+
+    [Fact]
+    public void TickerLane_BoundsVisibleContentWindowForDenseLanes()
+    {
+        TickerGroup source = new();
+        for (int index = 0; index < 8; index++)
+            source.Tickers.Add(new TickerItem { Symbol = $"S{index}", Enabled = true });
+
+        TickerLaneViewModel lane = new(source);
+        lane.ConfigureViewport(1600d);
+
+        Assert.Equal(4d * TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.True(lane.LaneWidth < 1200d);
+    }
+
+    [Theory]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    [InlineData(-1d)]
+    public void TickerLane_RejectsNonFiniteViewport(double viewportWidth)
+    {
+        TickerLaneViewModel lane = new(new TickerGroup
+        {
+            Tickers = [new TickerItem { Symbol = "AAA", Enabled = true }]
+        });
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => lane.ConfigureViewport(viewportWidth));
+    }
+
+    [Fact]
     public void TickerAndMacroViewModels_ApplyQuoteTrendAndStaleness()
     {
         QuoteSnapshot quote = new()

@@ -392,13 +392,15 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Background="#C52A3138"
+                                    Width="{Binding LaneWidth}"
+                                    HorizontalAlignment="Left"
                                     BorderBrush="#332E3A47"
                                     BorderThickness="1"
                                     CornerRadius="7"
                                     Margin="8,3"
                                     Padding="9,4"
                                     VerticalAlignment="Center">
-                                <Grid ColumnDefinitions="Auto,*"
+                                <Grid ColumnDefinitions="Auto,Auto"
                                       VerticalAlignment="Center">
                                     <Border Background="#FF121922"
                                             BorderBrush="#5546637A"
@@ -415,12 +417,13 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                                    Foreground="#9AB5C8" />
                                     </Border>
                                     <Border Grid.Column="1"
+                                            Width="{Binding ContentViewportWidth}"
                                             Height="28"
                                             Margin="4,0,4,0"
                                             VerticalAlignment="Center"
                                             ClipToBounds="True">
                                     <ItemsControl ItemsSource="{Binding TrackItems}"
-                                                  Width="{Binding TrackWidth}"
+                                                   Width="{Binding TrackWidth}"
                                                   HorizontalAlignment="Left">
                                         <ItemsControl.RenderTransform>
                                             <TranslateTransform X="{Binding TrackOffset}" />
@@ -690,7 +693,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                    TextTrimming="CharacterEllipsis"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="1"
-                                   Text="Delayed market data may apply."
+                                   Text="Delayed by minimum 15 minutes."
                                    FontSize="10"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="2"

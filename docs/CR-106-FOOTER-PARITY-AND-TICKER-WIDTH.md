@@ -55,23 +55,21 @@ The current v2 footer is in
 currently says `Delayed market data may apply.`. The current lane template
 uses a full-width quote host and a 230-pixel fixed item width; implementation
 must reconcile that with the upstream measurement contract rather than blindly
-removing fixed geometry needed for seamless motion.
+removing fixed geometry needed for seamless motion. The outer lane now uses
+Avalonia `Auto,Auto` layout for the label and bounded viewport, while the
+duplicated internal track retains its fixed motion geometry.
 
-## Functional inventory
+## Functional Inventory
 
-- `FOOT-01`: exact upstream disclaimer text, punctuation, and casing.
-- `TICKER-01`: four configured lanes remain present and independently moving.
-- `TICKER-02`: the lane background is sized to the label plus measured content,
-  with at most 4 pixels of trailing allowance.
-- `TICKER-03`: label and ticker viewport remain vertically centered and the
-  ticker content remains clipped without overlap or truncation caused by the
-  narrower host.
-- `TICKER-04`: fixed-width fields, duplicated tracks, direction, speed,
-  waiting glyphs, trend colors, and quote-only flash behavior remain intact.
-- `TICKER-05`: empty/unmeasured lanes remain stopped and measured lanes restart
-  correctly when data or viewport geometry changes.
-- `EVID-01`: supplied screenshots are retained with the CR under the unique
-  lane filenames in `docs/attachments/CR-106`.
+| ID | Functional behavior or proof obligation |
+| --- | --- |
+| FOOT-01 | Exact upstream disclaimer text, punctuation, and casing. |
+| TICKER-01 | Four configured lanes remain present and independently moving. |
+| TICKER-02 | The lane background is sized to the label plus measured content, with at most 4 pixels of trailing allowance. |
+| TICKER-03 | Label and ticker viewport remain vertically centered and ticker content remains clipped without overlap or truncation caused by the narrower host. |
+| TICKER-04 | Fixed-width fields, duplicated tracks, direction, speed, waiting glyphs, trend colors, and quote-only flash behavior remain intact. |
+| TICKER-05 | Empty/unmeasured lanes remain stopped and measured lanes restart correctly when data or viewport geometry changes. |
+| EVID-01 | Supplied screenshots are retained with the CR under the unique lane filenames in `docs/attachments/CR-106`. |
 
 ## Acceptance criteria
 
