@@ -107,3 +107,10 @@ trace files, and recorded settled screenshot evidence. The `macos-26`
 `osx-arm64` lane produced no soak manifest, and the aggregate therefore failed
 closed with `Expected 21 soak evidence manifests, found 20`. This CR remains
 open until every lane has a complete, reviewed evidence record.
+
+Hosted run `34063195136` supplied all 21 soak manifests. Every product soak
+reported `Passed`, `processCleanedUp=true`, four circular trace files, and
+settled screenshot evidence. The aggregate still failed closed: only 20
+semantic review results were present because `ubuntu-slim` had none, and 12
+lane reviews contained blocking findings. The run is diagnostic evidence, not
+closure proof.

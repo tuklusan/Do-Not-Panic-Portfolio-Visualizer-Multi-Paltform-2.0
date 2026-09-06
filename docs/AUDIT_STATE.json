@@ -5029,13 +5029,13 @@
       },
       "current_validation": {
         "status": "failed",
-        "run_id": "34061105976",
+        "run_id": "34063195136",
         "unresolved_gaps": [
-          "The aggregate found 20 soak evidence manifests instead of 21 because macos-26/osx-arm64 produced no soak manifest.",
-          "The complete per-lane closure evidence and authoritative aggregate result remain outstanding."
+          "All 21 product soak manifests were present, but only 20 semantic review results were present because ubuntu-slim/linux-x64 had no review result.",
+          "Twelve available lane reviews contained blocking findings, so the authoritative aggregate result remains outstanding."
         ],
         "closure_evidence": [
-          "Run 34061105976 reached terminal failure; all 20 retrieved soak-result.json manifests reported Passed, processCleanedUp=true, four circular trace files, and screenshot evidence; aggregate-validation.txt failed closed with Expected 21 soak evidence manifests, found 20."
+          "Run 34063195136 reached terminal failure; all 21 soak-result.json manifests reported Passed, processCleanedUp=true, four circular trace files, and screenshot evidence; aggregate-validation.txt failed closed because ubuntu-slim had no semantic review result and twelve available reviews contained blocking findings."
         ]
       },
       "upstream_closure_audit": {
@@ -5455,14 +5455,14 @@
       },
       "current_validation": {
         "status": "failed",
-        "run_id": "33979739957",
+        "run_id": "34063195136",
         "unresolved_gaps": [
-          "Windows ARM soak completed product execution but failed RSS and AI news evidence assertions; routed to CR-098.",
-          "Ubuntu Slim soak artifact exists but lane was cancelled before closure record; routed to CR-099.",
-          "Aggregate review found 20 instead of 21 evidence manifests and failed closed."
+          "All 21 product soak manifests completed successfully, but twelve lane reviews contained blocking findings, including AI evidence gaps and already-dispositioned NTP/render diagnostics.",
+          "Ubuntu Slim produced a soak manifest but no semantic review result, so the aggregate failed closed on review completeness.",
+          "The complete authoritative review and closure record set remains outstanding."
         ],
         "closure_evidence": [
-          "Hosted run 33979739957 completed with 44 jobs and conclusion failure; Windows ARM news-evidence.json and Ubuntu Slim missing closure evidence were inspected from downloaded artifacts."
+          "Hosted run 34063195136 completed with 44 jobs and conclusion failure; all 21 soak manifests were inspected, 20 semantic review results were present, ubuntu-slim had none, and the aggregate retained twelve blocking lane reviews."
         ],
         "nvidia_review": {
           "status": "complete_advisory_fail",
@@ -7522,8 +7522,12 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "queued",
-        "evidence": [],
+        "status": "failed",
+        "run_id": "34063195136",
+        "evidence": [
+          "All 21 product soak manifests reported Passed, processCleanedUp=true, four circular trace files, and screenshot evidence.",
+          "The aggregate retained only 20 semantic review results because ubuntu-slim had none; twelve available reviews contained blocking findings."
+        ],
         "unresolved_gaps": ["Snapshot binding, quarantine, aggregate credential removal, and final authoritative hosted proof remain outstanding."]
       }
     },
@@ -7534,12 +7538,12 @@
       "status": "open",
       "priority": "normal",
       "depends_on": ["CR-109"],
-      "objective": "Forward every project-owned trace and log event, including each new entry appended to both bounded circular trace files as it is added, without privacy-based suppression or forwarding-time redaction, only to sanyalnet-oracle-vps2.duckdns.org:65514 over UDP using documented Unix syslog framing, with bounded nonblocking delivery. The requestor explicitly authorizes complete forwarding because the destination is part of the requestor's secure network.",
+      "objective": "When DNPPV_TRACE_FORWARD exists and is exactly Y or 1, forward every project-owned product, hosted-runner-harness, and local-lab-harness trace and log event, including each new entry appended to both bounded circular trace files as it is added, without privacy-based suppression or forwarding-time redaction, only to sanyalnet-oracle-vps2.duckdns.org:65514 over documented Unix syslog framing with bounded nonblocking UDP delivery. With the variable absent or any other value, product and harnesses perform no remote forwarding. The requestor explicitly authorizes complete forwarding when enabled because the destination is part of the requestor's secure network.",
       "acceptance_criteria": [
         "Every project-owned event, including each new bounded-circular-file append, uses the single configured UDP destination and no TCP, HTTP, HTTPS, alternate endpoint fallback, or privacy-based suppression exists.",
         "Datagrams use a documented bounded Unix syslog format with facility, severity, timestamp, hostname, application identity, and deterministic oversize handling.",
         "DNS, socket, packet-loss, queue, payload, and shutdown failures are nonfatal and cannot delay startup/UI work or alter local circular traces.",
-        "The requestor explicitly authorizes complete event forwarding to the secure destination; every circular-file append is forwarded live, and no event is suppressed or redacted for privacy at the forwarding boundary.",
+        "The requestor explicitly authorizes complete product and harness event forwarding to the secure destination when DNPPV_TRACE_FORWARD=Y or 1; every circular-file append is forwarded live, and no event is suppressed or redacted for privacy at the forwarding boundary.",
         "The same cross-platform implementation is proven on Windows, Linux, macOS Intel, macOS ARM, hosted runners, and available local lab machines using a local test receiver rather than the production VPS.",
         "Forward and reverse migration gates, NVIDIA review, wire/failure/security tests, real-product validation, cleanup, commit, and push pass with two successive zero-gap audits."
       ],
@@ -7704,7 +7708,8 @@
           "Current source clamps NewsRefreshMinutes to a 30-minute minimum and performs RSS plus optional AI work in one refresh operation.",
           "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh.",
           "Hosted run 34051000159 recorded AI HTTP 429 outcomes on affected lanes while RSS/news evidence remained present; its aggregate failure routes quota/evidence work to CR-112 and does not establish a cadence violation.",
-          "Hosted run 34058732179 observed RSS publication and an AI request on all 21 lanes; seven lanes had no successful AI response after provider quota/availability responses, while all product soak results passed. This confirms quota/evidence pressure, not a cadence violation, but does not close CR-112 because aggregate proof was not all-green."
+          "Hosted run 34058732179 observed RSS publication and an AI request on all 21 lanes; seven lanes had no successful AI response after provider quota/availability responses, while all product soak results passed. This confirms quota/evidence pressure, not a cadence violation, but does not close CR-112 because aggregate proof was not all-green.",
+          "Hosted run 34063195136 observed RSS publication and an AI request on all 21 lanes; eight lanes had aiSuccessObserved=false after empty or HTTP 429 responses, while all product soak results passed. This confirms AI evidence/quota pressure, not a cadence violation, but aggregate proof was not all-green."
         ],
         "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
         "nvidia_review": {
@@ -7798,9 +7803,10 @@
         "evidence": [
           "Hosted run 34032694317 completed with multiple lanes missing semantic reviewer PASS receipts after empty or unavailable NVIDIA output.",
           "The harness now classifies absent and empty content as retryable with a centralized bounded policy, and its self-test covers exact/contextual output, missing properties, retry boundaries, and secret redaction.",
-          "NVIDIA reviews 20260906-094037 and 20260906-095634 identified and drove retry-policy and self-test corrections; the final 20260906-100720 review was advisory-fail with the 404 contract and unchanged common-module scope recorded as false positives."
-          ,"The 20260906-102830 review drove the final single-source retry boundary, production sanitization, 404/429 self-test, and retry telemetry corrections; its remaining live-HTTP-mock and external-policy configurability requests are recorded as non-blocking advice."
-          ,"Hosted run 34058732179 confirms bounded fail-closed reviewer handling: repeated NVIDIA 429/503 responses produced retry telemetry and no semantic PASS receipt on affected lanes; all 21 product soak results passed, but authoritative review proof remains outstanding."
+          "NVIDIA reviews 20260906-094037 and 20260906-095634 identified and drove retry-policy and self-test corrections; the final 20260906-100720 review was advisory-fail with the 404 contract and unchanged common-module scope recorded as false positives.",
+          "The 20260906-102830 review drove the final single-source retry boundary, production sanitization, 404/429 self-test, and retry telemetry corrections; its remaining live-HTTP-mock and external-policy configurability requests are recorded as non-blocking advice.",
+          "Hosted run 34058732179 confirms bounded fail-closed reviewer handling: repeated NVIDIA 429/503 responses produced retry telemetry and no semantic PASS receipt on affected lanes; all 21 product soak results passed, but authoritative review proof remains outstanding.",
+          "Hosted run 34063195136 provided complete 21-lane soak evidence and bounded retry handling, but eight lanes lacked successful AI evidence and the aggregate lacked a complete semantic review set; the authoritative proof obligation remains open."
         ],
         "unresolved_gaps": ["Fresh mandatory gates and authoritative serialized 21-lane proof remain outstanding."],
         "nvidia_review": {

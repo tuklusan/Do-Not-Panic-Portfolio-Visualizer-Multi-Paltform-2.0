@@ -84,3 +84,9 @@ retry telemetry and no semantic PASS receipt, so the aggregate retained them
 as failures. The product soak results themselves passed on all 21 lanes. This
 is evidence that the reviewer-availability path remains open for authoritative
 proof; it is not permission to convert unavailable review output into PASS.
+
+Run `34063195136` provided bounded retry evidence across the complete 21-lane
+soak set, but product-facing AI evidence remained incomplete on eight lanes
+and the aggregate did not receive a complete semantic review set. The run
+confirms fail-closed behavior without closing the authoritative proof
+obligation.

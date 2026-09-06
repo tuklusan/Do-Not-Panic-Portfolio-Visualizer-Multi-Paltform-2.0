@@ -135,6 +135,13 @@ therefore routes to CR-112 as quota/evidence work; it does not establish a
 cadence violation. The run remains non-closure evidence because the aggregate
 validator did not pass for all 21 lanes.
 
+Run `34063195136` again observed RSS publication and an AI request on all 21
+lanes. Eight lanes had `aiSuccessObserved=false`; their traces show empty
+successful responses or HTTP 429 outcomes without a later successful summary.
+The product soaks all passed, so this remains an AI evidence/quota finding,
+not evidence of a cadence violation. The aggregate was not all-green and CR
+112 remains open.
+
 Run `34058732179` adds a complete 21-lane inspection. RSS was published and an
 AI request was observed on every lane; seven lanes recorded no successful AI
 response after provider quota/availability responses, while the remaining lanes

@@ -59,3 +59,9 @@ reached terminal failure and the aggregate reported `Expected 21 soak evidence
 manifests, found 20`; the missing lane was `macos-26` (`osx-arm64`). The
 interpolation path therefore failed closed as designed, but the hosted
 verification criterion remains open.
+
+Run `34063195136` reached the aggregate with all 21 soak manifests present and
+again failed closed on review completeness: 20 semantic review results were
+available and `ubuntu-slim|linux-x64` had none. The aggregate also retained
+blocking findings from 12 lanes, including AI evidence gaps; interpolation is
+working, but the CR remains open pending a complete authoritative review set.
