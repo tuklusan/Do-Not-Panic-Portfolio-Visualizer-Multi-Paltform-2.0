@@ -24,12 +24,19 @@ on:
         default: '10'
         type: choice
         options: ['10']
+      review_wait_policy:
+        description: 'Reviewer wait policy; use one-time-slow-review only with explicit operator authorization'
+        required: true
+        default: 'bounded-15m'
+        type: choice
+        options: ['bounded-15m', 'one-time-slow-review']
 
 permissions:
   contents: read
 
 env:
   EXPECTED_LANE_COUNT: '21'
+  REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-15m' }}
 
 jobs:
   gate:
@@ -423,7 +430,9 @@ jobs:
              & ./build/Invoke-ReviewerEvidenceQuarantine.ps1 -ReviewRoot $reviewRoot -ArtifactRoot $artifactRoot -RunnerTemp $env:RUNNER_TEMP -RunId $env:GITHUB_RUN_ID -CommitSha $env:GITHUB_SHA -Runner $runnerName -Rid $env:MATRIX_RID -Reason $Reason
            }
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
-           $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds 7200 2>&1)
+           $reviewTimeoutSeconds = if ($env:REVIEW_WAIT_POLICY -eq 'one-time-slow-review') { 7200 } else { 900 }
+           Write-Host "REVIEW_WAIT_POLICY=$env:REVIEW_WAIT_POLICY;REQUEST_TIMEOUT_SECONDS=$reviewTimeoutSeconds"
+           $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
            $reviewExitCode = $LASTEXITCODE
            $safeOutput = ($reviewOutput | Out-String)
            if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {

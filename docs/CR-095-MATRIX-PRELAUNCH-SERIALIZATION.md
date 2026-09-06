@@ -70,5 +70,7 @@ the threshold. It authorizes continued waiting beyond 90 minutes because the
 review service may be slow; it does not authorize cancellation, a duplicate
 matrix, acceptance of a non-terminal lane, or relaxation of any build, test,
 manifest, screenshot, trace, cleanup, or reviewer-evidence requirement. The
-exception expires when that job reaches a terminal state and must not be
-reused for a later run.
+exception was exercised by cancelling the run at operator request after the
+reviewer wait became operationally excessive; the run therefore remains
+incomplete and supplies no PASS evidence. The exception expires with that
+terminal cancellation and must not be reused for a later run.

@@ -7786,10 +7786,34 @@
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending",
+        "status": "complete",
         "document": "docs/CR-114-BOUNDED-HOSTED-REVIEW-WAIT.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md",
+          "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-095-MATRIX-PRELAUNCH-SERIALIZATION.md",
+          "docs/CR-114-BOUNDED-HOSTED-REVIEW-WAIT.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     }
   ],

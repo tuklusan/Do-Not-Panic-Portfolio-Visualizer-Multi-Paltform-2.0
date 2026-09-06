@@ -32,9 +32,9 @@ implicit PASS or discard required evidence.
 ## Acceptance Criteria
 
 1. The hosted review path has one explicit, bounded reviewer-wait policy for
-   each lane and for the aggregate review; the policy is shorter than the
-   current unbounded-in-practice wait while remaining suitable for NIM's known
-   slow responses.
+   each lane and for the aggregate review; the normal policy is 15 minutes and
+   the separately selectable `one-time-slow-review` policy is capped at two
+   hours for an explicitly authorized exceptional run.
 2. A reviewer timeout or unavailable response creates a clearly marked,
    secret-free `REVIEW_UNAVAILABLE`/quarantine result and fails the lane or
    defers the matrix according to an explicit documented policy. It cannot
@@ -46,9 +46,32 @@ implicit PASS or discard required evidence.
 5. Forward/reverse migration scans, NVIDIA review, workflow/license/syntax
    gates, and a fresh serialized proof validate the change.
 
+## Operational Policy
+
+Pushes and ordinary manual dispatches use `bounded-15m`. The
+`one-time-slow-review` choice is an operator-authorized exception for one
+specific run and must be recorded with its run ID before use. It is not the
+default and must not be used to keep CR-114 or routine queue processing
+waiting for hours. A request timeout is still unavailable reviewer output, not
+PASS; the lane's retained evidence is quarantined or failed closed.
+
 ## Scope Boundary
 
 CR-113's bounded retries for empty or malformed reviewer output remain valid.
 This CR addresses the separate request-duration and hosted-lane policy; it
 does not change product RSS/AI cadence or upstream product behavior.
 
+## Functional Inventory
+
+| OPS-01 | Ordinary push and manual runs use a bounded reviewer request timeout rather than the current two-hour default. | `publish-six-rids.yml` selects `bounded-15m` and passes 900 seconds. | Required |
+| OPS-02 | A specifically authorized slow-review exception remains possible without silently changing the normal policy. | `review_wait_policy=one-time-slow-review` selects 7200 seconds only for that dispatch. | Required |
+| OPS-03 | Reviewer timeout or unavailable output cannot become PASS. | NVIDIA harness emits `REVIEW_UNAVAILABLE`; lane inspection and quarantine remain fail-closed. | Required |
+| OPS-04 | Matrix serialization and retained product evidence remain intact during timeout handling. | Root concurrency group, closure receipt, artifact upload, and post-soak validation remain unchanged. | Required |
+
+## Reverse Upstream Gap Scan
+
+The upstream migration workflow and current project workflow were rescanned for
+trigger, serialization, timeout, retry, quarantine, evidence-retention, and
+closure semantics. The timeout policy is an operational 2.0 gate addition; it
+does not remove upstream product behavior. Two successive committed-disk scans
+found no unmapped behavior within this CR's scope.

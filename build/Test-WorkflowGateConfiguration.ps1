@@ -235,5 +235,14 @@ if ($workflow -notmatch "github\.event_name == 'push'" -or
     throw 'Hosted post-soak review must cover both push and manual soak runs.'
 }
 if ($workflow -notmatch "dotnet-version: '10\.0\.x'") { throw 'Hosted workflow must pin the .NET 10 SDK line.' }
+if ($workflow -notmatch '(?ms)review_wait_policy:.*?default:\s*''bounded-15m''') {
+    throw 'Hosted workflow must default reviewer waits to the bounded 15-minute policy.'
+}
+if ($workflow -notmatch "options:\s*\['bounded-15m',\s*'one-time-slow-review'\]") {
+    throw 'Hosted workflow must expose only the bounded default and explicit one-time slow-review policies.'
+}
+if ($workflow -notmatch '\$reviewTimeoutSeconds\s*=\s*if \(\$env:REVIEW_WAIT_POLICY -eq ''one-time-slow-review''\) \{ 7200 \} else \{ 900 \}') {
+    throw 'Hosted reviewer timeout must be 15 minutes by default with a separately selectable two-hour exception.'
+}
 
 Write-Output "WORKFLOW_GATE_CONFIGURATION=Passed;RUNNERS=$(@($publishEntries).Count)"
