@@ -222,9 +222,9 @@ jobs:
         shell: pwsh
         env:
           DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '10' }}
-           DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-           MATRIX_RID: ${{ matrix.rid }}
+          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MATRIX_RID: ${{ matrix.rid }}
         run: |
            Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
            Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
