@@ -128,6 +128,13 @@ second refresh faster than 30 minutes. The run also retained one screenshot
 and two circular traces for each of 20 lanes; `macos-14` was cancelled before
 evidence generation and remains an explicit acceptance gap.
 
+Run `34051000159` provides the next retained evidence set. Its lane traces
+show AI HTTP 429 outcomes on affected lanes, including lanes with no eventual
+AI success, while the RSS/news evidence remains present. The aggregate failure
+therefore routes to CR-112 as quota/evidence work; it does not establish a
+cadence violation. The run remains non-closure evidence because the aggregate
+validator did not pass for all 21 lanes.
+
 ## Closure Gates
 
 Run the focused tests named above and the full Release suite. Run

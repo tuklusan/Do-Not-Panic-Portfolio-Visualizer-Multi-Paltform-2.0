@@ -94,3 +94,12 @@ duplicated internal track retains its fixed motion geometry.
 3. Validate at compact, normal, wide, and high-DPI working areas.
 4. Run the full real-product acceptance workflow and inspect every retained
    screenshot and both circular traces per lane.
+
+## Latest Evidence Review
+
+Run `34051000159` supplied one real-product screenshot for each of the 21
+hosted lanes. The inspected screenshots show the exact footer wording and the
+outer lane geometry is label-plus-measured-content rather than full-scene
+stretching. The run is not closure evidence because its aggregate validator
+failed on unrelated AI, NTP, and hosted-render findings; CR-106 therefore
+remains open pending a successful aggregate acceptance.

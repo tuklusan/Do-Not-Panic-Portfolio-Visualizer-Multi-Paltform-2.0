@@ -7308,7 +7308,8 @@
           "The upstream source says `Delayed by minimum 15 minutes.` and the v2 footer now uses that exact text.",
           "The outer ticker lane now binds to a measured label-plus-content width while the internal fixed-width duplicated motion track remains unchanged.",
           "Focused ticker tests cover sparse, dense, empty, restart, and invalid-viewport cases; full Release suite passed: 319 passed, 0 failed; app build passed with 0 warnings and 0 errors.",
-          "NVIDIA review 20260906-065843 identified the final view-binding and input-validation issues, which were corrected; its remaining hardcoded-metric, evidence-ID, and fixed-window objections are advisory because the Avalonia view now binds the lane width, the four-pixel allowance is within the documented range, and retained run identity is required closure evidence."
+          "NVIDIA review 20260906-065843 identified the final view-binding and input-validation issues, which were corrected; its remaining hardcoded-metric, evidence-ID, and fixed-window objections are advisory because the Avalonia view now binds the lane width, the four-pixel allowance is within the documented range, and retained run identity is required closure evidence.",
+          "Hosted run 34051000159 supplied one real-product screenshot for each of the 21 lanes; inspected screenshots show the exact upstream footer and measured narrow-lane composition, but the run's aggregate validator failed on unrelated AI, NTP, and render findings, so this is not closure evidence."
         ],
         "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
       }
@@ -7642,7 +7643,8 @@
         "status": "queued",
         "evidence": [
           "Current source clamps NewsRefreshMinutes to a 30-minute minimum and performs RSS plus optional AI work in one refresh operation.",
-          "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh."
+          "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh.",
+          "Hosted run 34051000159 recorded AI HTTP 429 outcomes on affected lanes while RSS/news evidence remained present; its aggregate failure routes quota/evidence work to CR-112 and does not establish a cadence violation."
         ],
         "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
         "nvidia_review": {
