@@ -180,6 +180,16 @@ Documentation and test-artifact reviews follow this document.
 Never expose reviewer API secrets.
 ```
 
+For this migration's `TEST_ARTIFACT` review, upstream-compatible optional AI
+retry behavior is not a defect by itself. A recovered HTTP `429` may appear in
+the circular trace when independently started hosted lanes share a provider
+quota; it must not be converted into a BLOCKER merely because the first
+attempt was rate-limited. The reviewer must instead verify the 30-minute
+upstream effective refresh cadence, bounded retry/fallback behavior, and the
+lane's eventual AI-success or attributable fallback evidence. Existing queued
+CRs, such as the reviewed YFinance baseline refresh, are context rather than
+new blockers unless the current candidate introduces a new failure.
+
 ### Recommended task wrapper prompt for a development agent
 
 At the start of a task, use a short wrapper rather than pasting reviewer conversations into the developer context:

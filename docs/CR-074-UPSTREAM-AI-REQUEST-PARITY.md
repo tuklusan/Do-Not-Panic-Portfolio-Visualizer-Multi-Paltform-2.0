@@ -42,5 +42,10 @@ scans at closure; any unmapped behavior reopens this CR or creates a successor.
 - RSS retrieval and optional AI summarization use the upstream effective refresh
   cadence: 30 minutes minimum/default, with no extra external calls from a
   faster scheduler poll.
+- A provider HTTP `429` during an optional AI request is not itself a cadence
+  or parity defect when the bounded upstream retry/fallback path is exercised;
+  acceptance requires eventual AI success evidence or an attributable
+  upstream-compatible fallback, not first-attempt success under concurrent
+  hosted lanes.
 - Focused tests, full build/test, license and syntax gates, NVIDIA NIM source and
   evidence review, and artifact/process cleanup all pass.
