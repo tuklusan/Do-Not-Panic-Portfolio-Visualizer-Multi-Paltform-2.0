@@ -21,33 +21,38 @@ Open. Queued for execution after the current higher-priority closure work.
 
 Forward project traces and logs to exactly
 `sanyalnet-oracle-vps2.duckdns.org:65514` using UDP-only Unix syslog framing.
-The existing bounded local circular traces remain authoritative local evidence;
-forwarding is an additional transport and must never weaken local retention,
-secret scanning, cleanup, or reviewer gates.
+The requestor explicitly authorizes forwarding **all project-owned logs and
+traces** because the destination is part of the requestor's secure network.
+There must be no privacy-based suppression, event allowlist, content filtering,
+or forwarding-time redaction. The existing bounded local circular traces remain
+authoritative local evidence. Each new entry appended to either circular trace
+file must be forwarded live as it is added; forwarding is an additional
+transport and must never weaken local retention, cleanup, or reviewer gates.
 
 ## Functional Inventory
 
 | ID | Requirement |
 | --- | --- |
-| LOG-01 | Every project-owned trace/log event selected by the logging contract is forwarded to the configured hostname and UDP port only. |
+| LOG-01 | Every project-owned trace/log event emitted by the product or its test/review harnesses, including every new entry appended to each bounded circular trace file, is forwarded live to the configured hostname and UDP port only; no event is suppressed for privacy reasons. |
 | LOG-02 | The destination hostname is resolved and transmitted with a UDP socket; no TCP, HTTP, HTTPS, or alternate endpoint fallback is permitted. |
 | LOG-03 | Every datagram uses a documented Unix syslog format, facility/severity mapping, timestamp, hostname/app identity, and bounded payload length. |
 | LOG-04 | Oversized events are deterministically bounded or split without corrupting syslog framing; a single event cannot block product startup or UI work. |
 | LOG-05 | Forwarding is best-effort and non-blocking; DNS failure, socket failure, packet loss, and shutdown do not crash the product or alter local circular traces. |
-| LOG-06 | Credentials, API keys, passwords, bearer values, private review material, and user secrets are redacted before serialization and never sent in a datagram. |
+| LOG-06 | Forwarding performs no privacy-based content suppression or redaction. Datagrams contain the complete event content exactly as emitted by the source logger; this is explicitly authorized for the secure destination. |
 | LOG-07 | The destination is configuration-locked to the stated endpoint unless an explicitly documented test override is used; overrides cannot silently reach production. |
-| LOG-08 | UDP forwarding itself is observable through bounded local trace metadata without recursively forwarding or duplicating its own diagnostics. |
+| LOG-08 | UDP forwarding itself is observable through bounded local trace metadata without recursively forwarding or duplicating its own diagnostics; each circular-file append is forwarded once, at append time. |
 | LOG-09 | Windows, Linux, macOS Intel, macOS ARM, hosted runners, and local lab harnesses use the same cross-platform implementation. |
-| LOG-10 | Unit, integration, wire-format, failure, secret, shutdown, and cross-platform tests prove the contract; test packets use a local UDP receiver and never the production VPS. |
+| LOG-10 | Unit, integration, wire-format, failure, complete-payload-fidelity, shutdown, and cross-platform tests prove the contract; test packets use a local UDP receiver and never the production VPS. |
 
 ## Scope and Safety Boundary
 
 This CR does not replace the two circular trace files, change their size
-limits, add a remote reviewer, or permit arbitrary log exfiltration. The
-implementation must define the exact project-owned event set, redact before
-the network boundary, and document whether forwarding is enabled by default.
-No TCP fallback, HTTP fallback, alternate DNS target, unbounded queue, or
-blocking network call is acceptable.
+limits, or add a remote reviewer. The implementation forwards the complete
+project-owned event stream and both circular-file append streams under the
+explicit secure-network authorization;
+there is no privacy-based event allowlist or forwarding-time redaction. No
+TCP fallback, HTTP fallback, alternate DNS target, unbounded queue, or blocking
+network call is acceptable.
 
 ## Acceptance Criteria
 
@@ -57,10 +62,12 @@ blocking network call is acceptable.
   configured port and that no TCP/HTTP connection is attempted.
 - Tests prove DNS failure, unreachable endpoint, full socket, malformed input,
   packet-size boundary, shutdown, and sustained-event behavior are nonfatal.
-- Synthetic API keys, bearer tokens, passwords, and review material are absent
-  from every captured datagram and local forwarding diagnostic.
+- Captured datagrams and local forwarding diagnostics prove that complete
+  project-owned event content is forwarded without privacy-based suppression;
+  forwarding must not silently drop or redact an event.
 - The implementation passes NVIDIA review, license/syntax/build/test gates,
   real-product 10-minute hosted/local validation, trace inspection, cleanup,
   commit, and push requirements.
 - The final CR record documents the exact wire format, facility/severity map,
-  event allowlist, redaction rules, default/override policy, and evidence.
+  complete-event forwarding authorization, default/override policy, and
+  evidence.

@@ -7534,12 +7534,12 @@
       "status": "open",
       "priority": "normal",
       "depends_on": ["CR-109"],
-      "objective": "Forward the project-owned trace and log event set only to sanyalnet-oracle-vps2.duckdns.org:65514 over UDP using documented Unix syslog framing, with bounded nonblocking delivery and complete secret redaction.",
+      "objective": "Forward every project-owned trace and log event, including each new entry appended to both bounded circular trace files as it is added, without privacy-based suppression or forwarding-time redaction, only to sanyalnet-oracle-vps2.duckdns.org:65514 over UDP using documented Unix syslog framing, with bounded nonblocking delivery. The requestor explicitly authorizes complete forwarding because the destination is part of the requestor's secure network.",
       "acceptance_criteria": [
-        "Every project-owned event in the documented allowlist uses the single configured UDP destination and no TCP, HTTP, HTTPS, or alternate endpoint fallback exists.",
+        "Every project-owned event, including each new bounded-circular-file append, uses the single configured UDP destination and no TCP, HTTP, HTTPS, alternate endpoint fallback, or privacy-based suppression exists.",
         "Datagrams use a documented bounded Unix syslog format with facility, severity, timestamp, hostname, application identity, and deterministic oversize handling.",
         "DNS, socket, packet-loss, queue, payload, and shutdown failures are nonfatal and cannot delay startup/UI work or alter local circular traces.",
-        "Credentials, API keys, passwords, bearer values, user secrets, and private review material are redacted before serialization and are absent from captured packets.",
+        "The requestor explicitly authorizes complete event forwarding to the secure destination; every circular-file append is forwarded live, and no event is suppressed or redacted for privacy at the forwarding boundary.",
         "The same cross-platform implementation is proven on Windows, Linux, macOS Intel, macOS ARM, hosted runners, and available local lab machines using a local test receiver rather than the production VPS.",
         "Forward and reverse migration gates, NVIDIA review, wire/failure/security tests, real-product validation, cleanup, commit, and push pass with two successive zero-gap audits."
       ],
