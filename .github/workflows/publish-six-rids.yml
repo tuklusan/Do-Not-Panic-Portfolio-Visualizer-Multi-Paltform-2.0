@@ -307,8 +307,8 @@ jobs:
               $originalTraceBytes = [IO.File]::ReadAllBytes($tracePath)
               foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
                 $secretBytes = [Text.Encoding]::UTF8.GetBytes($secret)
-                if (Test-ByteSequence $originalTraceBytes $secretBytes -or
-                    Test-ByteSequenceIgnoringNul $originalTraceBytes $secretBytes -or
+                if ((Test-ByteSequence $originalTraceBytes $secretBytes) -or
+                    (Test-ByteSequenceIgnoringNul $originalTraceBytes $secretBytes) -or
                     $normalizedTraceByPath[$tracePath].Contains($secret)) {
                   $quarantine = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetRandomFileName())
                   Move-Item -LiteralPath $tracePath -Destination $quarantine -Force
