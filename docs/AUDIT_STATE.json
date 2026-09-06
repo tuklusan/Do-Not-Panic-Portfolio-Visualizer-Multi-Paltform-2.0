@@ -7756,6 +7756,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "CR-114",
+      "phase": "Phase 7",
+      "title": "Bound hosted reviewer wait without weakening evidence gates",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-113"],
+      "objective": "Reconcile the emergency-review expectation with the current two-hour per-request NVIDIA timeout so a slow reviewer cannot hold a serialized matrix indefinitely while timeouts remain fail-closed and evidence remains retained.",
+      "acceptance_criteria": [
+        "The hosted review path has one explicit bounded reviewer-wait policy for each lane and aggregate review.",
+        "Reviewer timeout or unavailability produces a secret-free REVIEW_UNAVAILABLE or quarantine result and cannot create a semantic PASS receipt.",
+        "Build/test, screenshots, circular traces, RSS/AI evidence, manifests, and cleanup evidence remain retained and inspectable on timeout.",
+        "The pre-launch serialization rule remains intact and no overlapping matrix is started as a timeout workaround.",
+        "Forward/reverse migration scans, NVIDIA review, workflow/license/syntax gates, and a fresh serialized proof pass."
+      ],
+      "validation_plan": [
+        "Read the hosted review workflow, NVIDIA harness, receipt validator, and CR-113 contract line by line.",
+        "Add deterministic timeout and quarantine tests without making a timeout a PASS.",
+        "Run all local gates and the mandatory NVIDIA review.",
+        "Run one fresh serialized matrix and inspect every retained lane result and timeout disposition."
+      ],
+      "artifacts": [
+        "docs/CR-114-BOUNDED-HOSTED-REVIEW-WAIT.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Invoke-NvidiaReviewHarness.ps1",
+        "build/Test-HostedSoakClosure.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "pending",
+        "document": "docs/CR-114-BOUNDED-HOSTED-REVIEW-WAIT.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      }
     }
   ],
   "remaining_validation_gaps": [
