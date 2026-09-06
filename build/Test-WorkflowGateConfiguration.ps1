@@ -124,12 +124,12 @@ if ($workflow.Contains('Set-Content -LiteralPath $tracePath')) {
 }
 if ($workflow -notmatch '\$trace\s*=.*normalizedTraceByPath' -or
     $workflow -notmatch '\$rssUsable\s*=\s*\$trace' -or
-    $workflow -notmatch '\$content\s*=\s*\$normalizedTraceByPath\[\$_.FullName\]') {
+    $workflow -notmatch '\$content\s*=\s*\$normalizedTraceByName\[\$_.Name\]') {
     throw 'Hosted workflow must read complete binary circular traces before evidence extraction and manifest excerpting.'
 }
 $traceReadIndex = $workflow.IndexOf('$trace =', [StringComparison]::Ordinal)
 $rssEvidenceIndex = $workflow.IndexOf('$rssUsable = $trace', [StringComparison]::Ordinal)
-$manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByPath[$_.FullName]', [StringComparison]::Ordinal)
+$manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByName[$_.Name]', [StringComparison]::Ordinal)
 $excerptIndex = $workflow.IndexOf('$excerpt = if ($content.Length -le 120000)', [StringComparison]::Ordinal)
 if ($traceReadIndex -lt 0 -or $rssEvidenceIndex -le $traceReadIndex -or
     $manifestContentIndex -lt 0 -or $excerptIndex -le $manifestContentIndex) {
@@ -160,6 +160,7 @@ if ($workflow -notmatch 'Secret redaction verification failed' -or
 foreach ($binaryToken in @('ReadAllBytes($tracePath)', 'Test-ByteSequence', 'Test-ByteSequenceIgnoringNul', 'normalizedTraceByPath', 'quarantine', 'Move-Item -LiteralPath $tracePath')) {
     if (-not $workflow.Contains($binaryToken)) { throw "Hosted workflow is missing binary-safe trace secret handling: $binaryToken" }
 }
+if (-not $workflow.Contains('normalizedTraceByName') -or -not $workflow.Contains('Normalized circular trace content is missing')) { throw 'Hosted workflow is missing filename-keyed normalized trace packaging.' }
 if (-not $workflow.Contains('NUL_SECRET_SCAN_SELF_TEST=Passed')) { throw 'Hosted workflow is missing the binary secret scanner NUL-boundary self-test.' }
 if ($workflow -notmatch 'ProductShellWindow\.axaml\.cs:153-181' -or $workflow -notmatch 'Invoke-ProductSoak\.ps1') { throw 'Hosted screenshot timing gate is missing source references.' }
 $soakJob = [regex]::Match($workflow, '(?ms)^  real-product-soak:.*?(?=^  [A-Za-z0-9_-]+:|\z)').Value

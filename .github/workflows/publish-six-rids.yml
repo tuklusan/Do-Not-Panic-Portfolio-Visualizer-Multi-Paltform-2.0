@@ -280,7 +280,12 @@ jobs:
             # byte scan below is authoritative; normalized text is never used
             # to decide whether a retained original is safe.
             $normalizedTraceByPath = @{}
-            foreach ($tracePath in $tracePaths) { $normalizedTraceByPath[$tracePath] = Read-CircularTraceText $tracePath }
+            $normalizedTraceByName = @{}
+            foreach ($tracePath in $tracePaths) {
+              $traceText = Read-CircularTraceText $tracePath
+              $normalizedTraceByPath[$tracePath] = $traceText
+              $normalizedTraceByName[[IO.Path]::GetFileName($tracePath)] = $traceText
+            }
             $trace = ($tracePaths | ForEach-Object { $normalizedTraceByPath[$_] }) -join "`n"
            $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
@@ -340,7 +345,8 @@ jobs:
              'trace_files:'
              (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object {
                  $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
-                   $content = $normalizedTraceByPath[$_.FullName]
+                   $content = $normalizedTraceByName[$_.Name]
+                   if ($null -eq $content) { throw "Normalized circular trace content is missing: $($_.FullName)" }
                  foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
                    $content = $content.Replace($secret, '[REDACTED]')
                  }
