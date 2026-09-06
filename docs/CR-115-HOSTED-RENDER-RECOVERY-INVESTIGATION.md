@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered in hosted run `34048608640`, where several macOS lanes
+Closed with disposition. Discovered in hosted run `34048608640`, where several macOS lanes
 reported two render-recovery episodes during a ten-minute real-product soak.
 
 ## Objective
@@ -84,3 +84,23 @@ the hosted episodes still require classification using fresh trace timing and
 settled real-product evidence. A recovery episode is actionable only if it
 exceeds the upstream bounded policy, repeats after recovery, or leaves the
 scene without a recovered heartbeat.
+
+## Closure Disposition
+
+The retained run evidence reports two recovery episodes on affected macOS
+lanes, not an unbounded stall. The Avalonia controller's audited contract is a
+five-second missing-frame threshold, thirty-second recovery-request spacing,
+three attempts per episode, recovery on the next accepted frame, and a
+visible-scene guard. The focused controller tests cover the grace period,
+attempt cap, recovery reset, and pause/resume behavior. No evidence showed a
+recovery count beyond the contract, a missing recovered heartbeat, a product
+process left behind, or a scene that silently terminated.
+
+Disposition: the observed episodes are expected bounded hosted-render recovery,
+not a 2.0 behavior gap. No product or harness change is warranted. The
+macOS-specific NTP findings remain covered by CR-039; unrelated AI and stale
+YFinance findings remain routed to CR-112 and CR-108.
+
+Closure evidence: hosted run `34048608640`, the source/test inventory above,
+two successive reverse zero-gap scans, focused render-heartbeat tests, and the
+pre-push validation gates on commit `b7a788f`.

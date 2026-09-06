@@ -7855,7 +7855,7 @@
       "id": "CR-115",
       "phase": "Phase 7",
       "title": "Investigate hosted render-recovery episodes",
-      "status": "open",
+      "status": "closed",
       "priority": "high",
       "depends_on": ["CR-114"],
       "objective": "Determine whether repeated macOS hosted render-recovery episodes are expected bounded upstream recovery or a real 2.0 render-loop regression, and preserve the upstream recovery contract.",
@@ -7910,6 +7910,43 @@
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryDataRootResolver.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryPolicyTests.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryDataRootResolverTests.cs",
+          "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed-with-disposition",
+        "evidence": [
+          "Hosted run 34048608640 reported bounded recovery episodes on affected macOS lanes; no unbounded stall or unrecovered heartbeat was evidenced.",
+          "The Avalonia heartbeat controller and product-scene callback preserve the pinned upstream recovery contract.",
+          "Focused render-heartbeat tests cover grace, cadence, episode cap, recovery reset, and pause/resume behavior.",
+          "CR-039 covers expected NTP fallback; AI and stale YFinance findings remain routed to CR-112 and CR-108.",
+          "License, JSON, workflow, migration, cleanup, and pre-push gates passed on the closure checkpoint."
+        ],
+        "unresolved_gaps": [],
+        "disposition": "Expected bounded hosted-render recovery; no code or harness change required.",
+        "nvidia_review": {
+          "status": "advisory-findings-dispositioned",
+          "run": "34048608640",
+          "findings_routed": [
+            "CR-108",
+            "CR-112",
+            "CR-039"
+          ]
+        }
       }
     }
   ],
@@ -7927,8 +7964,7 @@
     "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
     "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
-    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof.",
-    "CR-115: hosted macOS render-recovery episodes require upstream parity classification and focused proof."
+    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
