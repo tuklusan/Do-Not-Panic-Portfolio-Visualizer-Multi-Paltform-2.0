@@ -7366,6 +7366,64 @@
         "evidence": ["Hosted run 33999741342 reports UpstreamYFinanceNewerThanReviewed; quote requests nevertheless returned HTTP 200 in the sampled lane."],
         "unresolved_gaps": ["Upstream commit verification and reviewed-baseline decision remain outstanding."]
       }
+    },
+    {
+      "id": "CR-109",
+      "phase": "Phase 7",
+      "title": "Complete hosted soak closure binding, quarantine, secret-free aggregation, and authoritative proof",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-105"],
+      "objective": "Harden the closed CR-105 hosted closure architecture by reconstructing snapshot identity, quarantining contaminated reviewer evidence, removing credentials from deterministic aggregation, and proving the final corrected workflow with one complete all-green hosted matrix.",
+      "acceptance_criteria": [
+        "The lane and aggregate independently require ExpectedCommitSha plus the actual evidence-review-input.txt SHA-256 as the exact snapshot identity.",
+        "Wrong, stale, missing, cross-lane, and mutually-consistent-but-fabricated snapshot receipts are rejected by negative tests.",
+        "Known-secret, bearer-token, credential-shaped, and nested reviewer contamination is moved outside the upload tree before failure propagation, with only sanitized failure metadata retained.",
+        "The post-soak-review job receives no provider credentials, performs no authenticated provider operation, and invokes no remote reviewer.",
+        "Exactly one lane-level TEST_ARTIFACT reviewer invocation remains and v2 semantic receipts remain mandatory.",
+        "Deterministic aggregate timeout is bounded and blind artifact-publication sleep is removed or justified by a bounded race test.",
+        "One complete serialized hosted matrix runs against the final candidate, completes successfully across every expected lane, and produces authoritative v2 closure evidence.",
+        "Two successive committed-disk closure audits find zero gaps and record the exact final commit, run ID, lane count, aggregate result, snapshot result, and security result."
+      ],
+      "validation_plan": [
+        "Read CR-105, the current hosted workflow, validator, review harness, and upstream workflow line by line before implementation; record the forward inventory.",
+        "Run snapshot-binding and actual-file quarantine negative tests, then PowerShell syntax, workflow, license, migration, reverse-gap, build/test, harness, and NVIDIA gates.",
+        "Run one complete serialized hosted matrix on the final committed candidate and inspect every lane's screenshots, both circular traces, RSS/AI evidence, review receipt, closure receipt, and aggregate result.",
+        "Repeat the complete closure audit independently from disk; any gap or change resets the two-pass requirement."
+      ],
+      "artifacts": [
+        "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-HostedSoakClosure.ps1",
+        "build/Test-WorkflowGateConfiguration.ps1",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "queued",
+        "document": "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md"
+        ],
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation and closure scans are pending."]
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [],
+        "unresolved_gaps": ["Snapshot binding, quarantine, aggregate credential removal, and final authoritative hosted proof remain outstanding."]
+      }
     }
   ],
   "remaining_validation_gaps": [

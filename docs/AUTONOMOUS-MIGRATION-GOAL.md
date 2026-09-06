@@ -50,6 +50,12 @@ hosted matrix provides proof. Wait for queued or slow hosted runners to finish
 before classifying a lane as failed. Validate the real production application,
 never a toy or visual fixture, on every available target and every hosted RID.
 
+The hosted-runner and local-lab harnesses are frozen working infrastructure.
+Do not optimize, refactor, or cosmetically revise them while product CRs remain
+open. Modify a harness only when a reproducible blocker prevents a required
+product proof; record that blocker and preserve the existing acceptance
+contract in the same change.
+
 For every validation cycle, build from a committed checkpoint, run the
 required tests, exercise real product behavior including RSS and AI news when
 credentials are supplied, capture settled screenshots where the platform
