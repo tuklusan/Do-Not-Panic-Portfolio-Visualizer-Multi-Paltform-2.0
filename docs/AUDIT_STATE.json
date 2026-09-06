@@ -7578,6 +7578,88 @@
         ],
         "unresolved_gaps": ["Receipt normalization and fresh authoritative proof remain outstanding."]
       }
+    },
+    {
+      "id": "CR-112",
+      "phase": "Phase 7",
+      "title": "Preserve upstream news cadence under hosted AI quota pressure",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-074", "CR-075"],
+      "objective": "Prove that RSS refresh and optional AI generation remain in the upstream 30-minute refresh operation while hosted matrix acceptance distinguishes parallel-provider HTTP 429 quota pressure from a product cadence violation.",
+      "acceptance_criteria": [
+        "The product keeps a 30-minute minimum news refresh and performs RSS and optional AI work in one refresh operation.",
+        "HTTP 429 or AI failure preserves usable RSS and does not create an extra refresh outside the upstream cadence.",
+        "Hosted evidence records cadence, RSS, AI request, AI result, status, and redacted traces for every lane.",
+        "The serialized 21-lane workflow does not falsely classify provider quota exhaustion as a cadence defect and retains it for follow-up.",
+        "Forward/reverse upstream scans, tests, reviewer gates, cleanup, and fresh serialized acceptance pass."
+      ],
+      "validation_plan": [
+        "Read the upstream news scheduler, current FinanceNewsService, evidence schema, and hosted workflow line by line.",
+        "Add focused cadence and quota-failure tests without shortening or otherwise changing the product cadence.",
+        "Run full repository gates and the mandatory NVIDIA source/evidence review.",
+        "Run one fresh serialized 21-lane acceptance and inspect every available screenshot, both circular traces, RSS/AI evidence, receipt, and aggregate output.",
+        "Repeat the committed-disk forward/reverse audit twice with zero gaps."
+      ],
+      "artifacts": [
+        "docs/CR-112-HOSTED-AI-CADENCE-QUOTA-ACCEPTANCE.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-HostedSoakClosure.ps1",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-112-HOSTED-AI-CADENCE-QUOTA-ACCEPTANCE.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-112-HOSTED-AI-CADENCE-QUOTA-ACCEPTANCE.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [
+          "Current source clamps NewsRefreshMinutes to a 30-minute minimum and performs RSS plus optional AI work in one refresh operation.",
+          "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh."
+        ],
+        "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
+        "nvidia_review": {
+          "status": "complete_advisory_fail",
+          "reviewed_snapshots": [
+            "1eeea8a2b0506fea1c4cb59641502d8df7466aec:bdfccd1c809bad8e00e58dc2932594e4efa167c32d5ca300f185f1c226d5203d",
+            "1eeea8a2b0506fea1c4cb59641502d8df7466aec:248ce5d407d63ad0303bd9dcb82ffa67baa98dbb20b821e127afe93f72bec187"
+          ],
+          "actionable_findings": [
+            "The closure work still needs an automated quota-versus-cadence classification assertion and complete 21-lane evidence disposition; these remain open in CR-112."
+          ],
+          "false_positive_or_scope_findings": [
+            "The documentation-only review packet cannot contain every referenced source, gate, and hosted artifact; those are independently reviewed by the source/evidence gate and are explicitly named with paths and commands in CR-112.",
+            "The second review's request to treat the known incomplete macos-14 lane as complete contradicts the CR's explicit acceptance gap and is not accepted."
+          ]
+        }
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -7592,7 +7674,8 @@
     "CR-088: Intel Mac YFinance.NET.Server startup fails, leaving quote and market lanes degraded."
     ,"CR-106: upstream footer wording and measured narrow ticker lanes are not yet implemented or physically validated.",
     "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
-    "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh."
+    "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
+    "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
