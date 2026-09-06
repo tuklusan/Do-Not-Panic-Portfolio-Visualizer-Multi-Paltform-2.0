@@ -1060,6 +1060,7 @@ public sealed class AmbientSceneServicesTests
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized, "")]
     [InlineData(HttpStatusCode.TooManyRequests, "")]
+    [InlineData(HttpStatusCode.NotFound, "")]
     [InlineData(HttpStatusCode.InternalServerError, "")]
     [InlineData(HttpStatusCode.OK, "{}")]
     [InlineData(HttpStatusCode.OK, "{\"choices\":[]}")]

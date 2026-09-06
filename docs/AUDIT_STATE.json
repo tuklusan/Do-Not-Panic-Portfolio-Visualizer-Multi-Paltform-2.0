@@ -8053,6 +8053,72 @@
           "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle."
         ]
       }
+    },
+    {
+      "id": "CR-117",
+      "phase": "Phase 7",
+      "title": "Classify bounded hosted external-condition findings without hiding defects",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-039", "CR-094", "CR-096", "CR-109", "CR-112", "CR-115"],
+      "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only approved bounded NTP/render/quota conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
+      "acceptance_criteria": [
+        "All 21 lanes retain complete soak, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence.",
+        "AI HTTP 429 is recorded as quota-limited evidence without being reported as AI success or a cadence success.",
+        "Approved NTP fallback, bounded render recovery, and quota findings are retained as advisory findings with their raw evidence.",
+        "Unknown findings, YFinance errors, malformed evidence, missing receipts, and canceled reviewer calls remain blocking.",
+        "A fresh serialized 21-lane run reaches authoritative aggregate PASS or records only explicitly approved external advisory conditions."
+      ],
+      "validation_plan": [
+        "Read the hosted workflow, Test-HostedSoakClosure.ps1, CR-039, CR-094, CR-096, CR-109, CR-112, and CR-115 line by line.",
+        "Run focused closure self-tests, source/reverse migration gates, repository gates, and mandatory NVIDIA source review.",
+        "Consume all 21 lane artifacts from one fresh serialized matrix and inspect raw plus normalized reviewer findings."
+      ],
+      "artifacts": [
+        "docs/CR-117-HOSTED-EXTERNAL-CONDITION-DISPOSITIONS.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-HostedSoakClosure.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-117-HOSTED-EXTERNAL-CONDITION-DISPOSITIONS.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "pending",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [],
+        "zero_unmapped_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": [
+          "Fresh closure rescan and serialized matrix evidence are pending."
+        ]
+      },
+      "current_validation": {
+        "status": "implementation-started",
+        "unresolved_gaps": [
+          "Fresh serialized matrix evidence is required after the deterministic disposition layer is validated."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [

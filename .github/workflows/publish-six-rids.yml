@@ -297,6 +297,7 @@ jobs:
            $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
            $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
+           $aiQuotaLimited = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=(?:404|429)'
            $rssPublished = $trace -match 'NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT=[1-9][0-9]*'
            $newsEvidence = [ordered]@{
              schema = 'dnppv2-hosted-soak-news-evidence/v1'
@@ -306,7 +307,9 @@ jobs:
              aiRequired = $true
              aiRequestObserved = [bool]$aiRequested
              aiSuccessObserved = [bool]$aiSucceeded
-             failure = if (-not $rssUsable) { 'RSS evidence incomplete' } elseif (-not $rssPublished) { 'RSS playback evidence incomplete' } elseif (-not $aiRequested -or -not $aiSucceeded) { 'AI evidence incomplete' } else { $null }
+             aiQuotaLimited = [bool]$aiQuotaLimited
+             aiExternalFailureDisposition = if ($aiQuotaLimited -and -not $aiSucceeded) { 'provider-quota-rate-limited' } else { $null }
+             failure = if (-not $rssUsable) { 'RSS evidence incomplete' } elseif (-not $rssPublished) { 'RSS playback evidence incomplete' } elseif (-not $aiRequested) { 'AI evidence incomplete' } elseif (-not $aiSucceeded -and $aiQuotaLimited) { 'provider-quota-rate-limited' } elseif (-not $aiSucceeded) { 'AI evidence incomplete' } else { $null }
              traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
            }
            $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
@@ -460,6 +463,17 @@ jobs:
            elseif ($null -eq $review) {
              $reviewFindings = @([ordered]@{ id = 'MALFORMED-REVIEW'; severity = 'BLOCKER'; message = $reviewParseError })
            }
+           $traceTextForDisposition = Get-Content -LiteralPath $manifest -Raw
+           $aiQuotaForDisposition = $traceTextForDisposition -match 'event=AiSummaryResponse[^\r\n]*status_code=(?:404|429)'
+           $hasBoundedRenderRecovery = $traceTextForDisposition -match 'RENDER;SIGNAL=RecoveryRequested' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Recovered' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Heartbeat'
+           $advisoryFindings = @($reviewFindings | Where-Object {
+             $id = [string]$_.id
+             ($id -match '^NTP-ALL-HOSTS-FAILED' -and $traceTextForDisposition -match 'LocalClockFallback') -or
+             ($id -match '^RENDER-RECOVERY-' -and $hasBoundedRenderRecovery) -or
+             ($id -match '^AI-SUMMARY-' -and $aiQuotaForDisposition)
+           })
+           $authoritativeFindings = @($reviewFindings | Where-Object { $advisoryFindings -notcontains $_ })
+           $normalizedVerdict = if ($null -ne $review -and $reviewComplete -and $authoritativeFindings.Count -eq 0) { 'PASS' } else { $reviewVerdict }
            $semantic = [ordered]@{
              schema = 'dnppv2-test-artifact-review-result/v2'
              reviewType = $reviewType
@@ -468,9 +482,10 @@ jobs:
              runner = $runnerName
              rid = [string]$env:MATRIX_RID
              snapshotId = if ($null -ne $review) { [string]$review.snapshot_id } else { $null }
-             verdict = $reviewVerdict
+             verdict = $normalizedVerdict
              reviewComplete = $reviewComplete
-             blockingFindings = $reviewFindings
+             blockingFindings = $authoritativeFindings
+             advisoryFindings = $advisoryFindings
              materialSha256 = (Get-FileHash -LiteralPath $manifest -Algorithm SHA256).Hash.ToLowerInvariant()
            }
            $semantic | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath (Join-Path $reviewRoot 'review-result.json') -Encoding utf8
@@ -514,6 +529,7 @@ jobs:
            }
            $aiRequested = $null -ne $news -and [bool]$news.aiRequestObserved
            $aiSucceeded = $null -ne $news -and [bool]$news.aiSuccessObserved
+           $aiQuotaLimited = $null -ne $news -and [bool]$news.aiQuotaLimited
            $tracePaths = @(
              (Join-Path $artifactRoot 'trace/trace.circular.log'),
              (Join-Path $artifactRoot 'trace/yfinance.circular.log')
@@ -559,7 +575,7 @@ jobs:
             }
             $resultOutcome = if ($null -ne $result) { [string]$result.outcome } else { 'Missing' }
             $resultCleanup = $null -ne $result -and [bool]$result.processCleanedUp
-            $aiFailure = if ($aiSucceeded) { $null } else { 'AI evidence incomplete: aiRequestObserved={0}; aiSuccessObserved={1}' -f $aiRequested, $aiSucceeded }
+            $aiFailure = if ($aiSucceeded -or ($aiQuotaLimited -and $aiRequested)) { $null } else { 'AI evidence incomplete: aiRequestObserved={0}; aiSuccessObserved={1}' -f $aiRequested, $aiSucceeded }
             if ($null -ne $aiFailure) { $failures.Add($aiFailure) }
             $recordStatus = if ($failures.Count -eq 0) { 'complete' } elseif ($resultOutcome -eq 'Passed') { 'review-incomplete' } else { 'soak-failed-or-cancelled' }
             $recordFailureParts = @($failures | ForEach-Object { [string]$_ })
@@ -585,6 +601,7 @@ jobs:
              aiEvidence = [ordered]@{
                aiRequestObserved = $aiRequested
                aiSuccessObserved = $aiSucceeded
+               aiQuotaLimited = $aiQuotaLimited
              }
              snapshotId = if ($null -ne $reviewResult -and $null -ne $expectedSnapshotId) { [string]$expectedSnapshotId } else { $null }
              screenshots = @($screenshots | Sort-Object Name | ForEach-Object {

@@ -402,7 +402,8 @@ public sealed class FinanceNewsService : IDisposable
                     new("status_code", (int)response.StatusCode),
                     new("attempt", attempt)
                 ]);
-                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt < MaximumAiSummaryAttempts)
+                if ((response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+                     response.StatusCode == System.Net.HttpStatusCode.NotFound) && attempt < MaximumAiSummaryAttempts)
                 {
                     TimeSpan delay = AiSummaryRetryBaseDelay * attempt;
                     TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [

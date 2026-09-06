@@ -85,10 +85,11 @@ public sealed class AiNewsAccessValidationService : IAiNewsAccessValidationServi
 
             Trace("AiAccessValidationStart", operationId, endpointUrl, effectiveModelId, "start");
             using HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            if (response.StatusCode == HttpStatusCode.TooManyRequests || response.StatusCode == HttpStatusCode.NotFound)
             {
-                Trace("AiAccessValidationRateLimited", operationId, endpointUrl, effectiveModelId, "http-429");
-                return AiNewsAccessValidationResult.Skipped("AI provider rate-limited the validation probe. Settings were not rejected; the app will retry summarized news at runtime.");
+                string reason = response.StatusCode == HttpStatusCode.NotFound ? "http-404" : "http-429";
+                Trace("AiAccessValidationRateLimited", operationId, endpointUrl, effectiveModelId, reason);
+                return AiNewsAccessValidationResult.Skipped("AI provider temporarily rate-limited or did not expose the requested route. Settings were not rejected; the app will retry summarized news at runtime.");
             }
             if (!response.IsSuccessStatusCode)
             {

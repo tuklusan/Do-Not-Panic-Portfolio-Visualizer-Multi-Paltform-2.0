@@ -346,15 +346,17 @@ public sealed class SettingsPersistenceAndValidationTests
         Assert.Equal(symbols.OrderBy(symbol => symbol, StringComparer.OrdinalIgnoreCase), result.DeferredSymbols);
     }
 
-    [Fact]
-    public async Task AiNewsAccessValidationService_DefersRateLimitedProbeWithoutRejectingSettings()
+    [Theory]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.NotFound)]
+    public async Task AiNewsAccessValidationService_DefersTransientProviderProbeWithoutRejectingSettings(HttpStatusCode statusCode)
     {
         AppSettings settings = Defaults.CreateSettings();
         settings.NewsScrollerMode = NewsScrollerMode.SummarizedFinancialNews;
         settings.AiApiKey = "test-key";
         settings.AiEndpointUrl = "https://example.com/v1";
         settings.AiModelId = "test-model";
-        AiNewsAccessValidationService service = new(_ => new HttpClient(new StatusResponseHandler(HttpStatusCode.TooManyRequests)));
+        AiNewsAccessValidationService service = new(_ => new HttpClient(new StatusResponseHandler(statusCode)));
 
         AiNewsAccessValidationResult result = await service.ValidateAsync(settings, networkAvailable: true);
 

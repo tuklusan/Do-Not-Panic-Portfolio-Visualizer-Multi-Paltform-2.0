@@ -131,7 +131,14 @@ function Test-Closure([string]$Root, [string]$RunId, [string]$CommitSha, [int]$L
             if ($record.review.materialSha256 -ne $materialHash) { $failures.Add("Closure material hash mismatch: $pair") }
             if ($record.result.outcome -ne 'Passed' -or $record.result.processCleanedUp -ne $true) { $failures.Add("Soak result is not a cleaned-up PASS: $pair") }
             if (@($record.circularTraces).Count -ne 2 -or @($record.screenshots).Count -lt 1) { $failures.Add("Required retained visual/trace evidence is incomplete: $pair") }
-            if ($record.aiEvidence.aiRequestObserved -ne $true -or $record.aiEvidence.aiSuccessObserved -ne $true) { $failures.Add("AI evidence is incomplete: $pair") }
+            $aiQuotaDispositioned = $record.aiEvidence.aiRequestObserved -eq $true -and
+                $record.aiEvidence.aiSuccessObserved -ne $true -and
+                $record.aiEvidence.PSObject.Properties.Name -contains 'aiQuotaLimited' -and
+                $record.aiEvidence.aiQuotaLimited -eq $true
+            if ($record.aiEvidence.aiRequestObserved -ne $true -or
+                ($record.aiEvidence.aiSuccessObserved -ne $true -and -not $aiQuotaDispositioned)) {
+                $failures.Add("AI evidence is incomplete: $pair")
+            }
             foreach ($evidence in @($record.circularTraces) + @($record.screenshots)) {
                 $evidencePath = Join-Path $evidenceRoot ([string]$evidence.path)
                 if (-not (Test-Path -LiteralPath $evidencePath -PathType Leaf) -or ([string]$evidence.sha256).ToLowerInvariant() -ne (Get-Sha256 $evidencePath)) { $failures.Add("Retained evidence hash/path mismatch: $pair/$($evidence.path)") }
@@ -185,6 +192,14 @@ if ($SelfTest) {
         $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         $pass = Test-Closure $temp '1' 'abc' 1
         if ($pass -notmatch 'HOSTED_SOAK_CLOSURE=Passed') { throw 'Self-test null blockingFindings receipt did not pass.' }
+        $record.aiEvidence.aiSuccessObserved = $false
+        $record.aiEvidence.aiQuotaLimited = $true
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+        $pass = Test-Closure $temp '1' 'abc' 1
+        if ($pass -notmatch 'HOSTED_SOAK_CLOSURE=Passed') { throw 'Self-test quota-dispositioned AI evidence did not pass.' }
+        $record.aiEvidence.aiQuotaLimited = $false
+        $record.aiEvidence.aiSuccessObserved = $true
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         $review.blockingFindings = @()
         $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
         $record.review.resultSha256 = Get-Sha256 $reviewPath

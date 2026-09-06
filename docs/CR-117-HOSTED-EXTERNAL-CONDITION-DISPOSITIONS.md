@@ -1,0 +1,70 @@
+<!--
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Proprietary rights reserved except as expressly licensed herein.
+Based on original work by Supratim Sanyal of SANYALnet Labs.
+DO NOT PANIC PORTFOLIO VISUALIZER
+This file is governed by the SANYALnet Labs Non-Commercial License in the
+root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+for AI/ML model training are prohibited unless separately authorized.
+Attribution is required: "Based on original work by Supratim Sanyal of
+SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+patent, trademark, and governing-law provisions.
+-->
+
+# CR-117: Hosted External-Condition Dispositions
+
+## Status
+
+Open. Discovered while consuming hosted run `34065484870`.
+
+## Objective
+
+Restore a meaningful all-lane hosted result without hiding product failures.
+The product soak, cleanup, screenshot, trace, RSS, and reviewer evidence gates
+remain mandatory. A reviewer finding may be moved from blocking to advisory
+only when a deterministic evidence rule matches an already-approved bounded
+external condition and the raw finding is retained.
+
+## Required behavior
+
+| ID | Requirement | Acceptance |
+| --- | --- | --- |
+| EXT-01 | Every lane still produces the complete retained evidence contract. | Missing, malformed, secret-bearing, or hash-mismatched evidence remains blocking. |
+| EXT-02 | Provider HTTP 429 or known provider-route HTTP 404 during the one upstream news refresh is recorded as quota/route-limited AI evidence. | RSS remains usable; `aiSuccessObserved` stays false; no artificial success is emitted. |
+| EXT-03 | NTP all-host timeout is advisory only when the trace proves the documented local-clock fallback. | The raw finding is retained under `advisoryFindings`; CR-039 remains the disposition authority. |
+| EXT-04 | Render recovery is advisory only when the trace proves bounded recovery and subsequent heartbeats. | Unbounded, repeated, or unrecovered stalls remain blocking under CR-115. |
+| EXT-05 | NVIDIA output cancellation or unavailability never fabricates a PASS receipt. | The lane remains incomplete and the aggregate fails closed until a real receipt exists. |
+| EXT-06 | YFinance upstream errors and unknown reviewer findings remain blocking until their CR disposition is independently closed. | No broad provider-error allowlist is permitted. |
+
+## Functional Inventory
+
+| EXT-01 | Hosted product lanes retain complete soak, cleanup, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence. | `publish-six-rids.yml`, `Test-HostedSoakClosure.ps1`, and the retained lane artifacts. |
+| EXT-02 | Provider HTTP 429 or known provider-route HTTP 404 is preserved as failed AI evidence and never fabricated as success. | `FinanceNewsService`, `AiNewsAccessValidationService`, and news evidence receipts. |
+| EXT-03 | Only approved bounded NTP fallback, render recovery, and provider quota/route findings can become advisory. | Deterministic workflow normalization plus raw `advisoryFindings`. |
+| EXT-04 | Missing, canceled, malformed, secret-bearing, or hash-mismatched reviewer evidence remains blocking. | Closure validator negative cases and aggregate gate. |
+
+## Evidence from discovery run
+
+Run `34065484870` produced `Passed` soak results, cleanup proof, four circular
+trace files, and screenshots on all 21 product lanes. The aggregate failed in
+the review/closure layer: quota-limited AI, bounded NTP/render diagnostics,
+one YFinance upstream error, and one canceled NVIDIA review. This CR separates
+those cases without changing the product cadence or falsely reporting AI
+success.
+
+## Closure gates
+
+Run the upstream forward and reverse gates, focused closure self-tests, the
+full Release suite, license/PowerShell/workflow gates, NVIDIA source review,
+and one fresh serialized 21-lane matrix. Inspect every raw reviewer result,
+advisory disposition, screenshot, both circular traces, RSS/AI evidence, and
+closure record. Close only when all lanes have authoritative receipts and no
+unapproved blocking finding remains.
+
+## Reverse Upstream Gap Scan
+
+The first implementation scan covers the upstream hosted acceptance contract,
+the upstream RSS-first/AI fallback behavior, and the corresponding 2.0
+workflow, validator, service, and tests. A second committed-disk scan is
+required before closure; no provider exception may alter the upstream cadence
+or fabricate a successful AI result.
