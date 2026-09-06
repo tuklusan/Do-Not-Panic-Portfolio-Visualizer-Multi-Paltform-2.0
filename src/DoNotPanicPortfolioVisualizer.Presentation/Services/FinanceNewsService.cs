@@ -31,6 +31,8 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
 public sealed class FinanceNewsService : IDisposable
 {
     private const int MaximumAiResponseBytes = 256 * 1024;
+    private const int MaximumAiSummaryAttempts = 2;
+    private static readonly TimeSpan AiSummaryRetryBaseDelay = TimeSpan.FromMilliseconds(750);
     public static readonly TimeSpan MaximumRssHeadlineAge = TimeSpan.FromDays(7);
     public static readonly IReadOnlyList<RssFeedSource> BuiltInFinanceSources =
     [
@@ -348,8 +350,7 @@ public sealed class FinanceNewsService : IDisposable
             new("model", modelId),
             new("headline_count", headlines.Count)
         ]);
-        const int maximumAttempts = 3;
-        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= MaximumAiSummaryAttempts; attempt++)
         {
             using HttpRequestMessage request = new(HttpMethod.Post, requestUri)
             {
@@ -361,6 +362,28 @@ public sealed class FinanceNewsService : IDisposable
             try
             {
                 response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && attempt < MaximumAiSummaryAttempts)
+            {
+                TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
+                    new("operation_id", operationId),
+                    new("attempt", attempt),
+                    new("failure", "operation-canceled"),
+                    new("delay_seconds", (AiSummaryRetryBaseDelay * attempt).TotalSeconds)
+                ]);
+                await Task.Delay(AiSummaryRetryBaseDelay * attempt, cancellationToken).ConfigureAwait(false);
+                continue;
+            }
+            catch (HttpRequestException exception) when (attempt < MaximumAiSummaryAttempts)
+            {
+                TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
+                    new("operation_id", operationId),
+                    new("attempt", attempt),
+                    new("failure", exception.GetType().Name),
+                    new("delay_seconds", (AiSummaryRetryBaseDelay * attempt).TotalSeconds)
+                ]);
+                await Task.Delay(AiSummaryRetryBaseDelay * attempt, cancellationToken).ConfigureAwait(false);
+                continue;
             }
             catch (Exception exception)
             {
@@ -379,9 +402,9 @@ public sealed class FinanceNewsService : IDisposable
                     new("status_code", (int)response.StatusCode),
                     new("attempt", attempt)
                 ]);
-                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt < maximumAttempts)
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && attempt < MaximumAiSummaryAttempts)
                 {
-                    TimeSpan delay = attempt == 1 ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(5);
+                    TimeSpan delay = AiSummaryRetryBaseDelay * attempt;
                     TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
                         new("operation_id", operationId),
                         new("attempt", attempt),
@@ -403,9 +426,9 @@ public sealed class FinanceNewsService : IDisposable
                 if (string.IsNullOrWhiteSpace(summary))
                 {
                     TraceLog.WarnState("FinanceNewsService", "AiSummaryEmpty", [new("operation_id", operationId)]);
-                    if (attempt < maximumAttempts)
+                    if (attempt < MaximumAiSummaryAttempts)
                     {
-                        TimeSpan delay = attempt == 1 ? TimeSpan.FromSeconds(2) : TimeSpan.FromSeconds(5);
+                        TimeSpan delay = AiSummaryRetryBaseDelay * attempt;
                         TraceLog.WarnState("FinanceNewsService", "AiSummaryRetryScheduled", [
                             new("operation_id", operationId),
                             new("attempt", attempt),

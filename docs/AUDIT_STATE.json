@@ -5667,6 +5667,7 @@
         "OpenRouter requests include provider sort latency and attribution headers.",
         "OpenRouter auto-model requests use the resolved model.",
         "RSS retrieval and optional AI summarization use the upstream effective refresh cadence: 30 minutes minimum/default, with no extra external calls from a faster scheduler poll.",
+        "Each refresh performs at most one AI generation operation with the upstream two-attempt, 750 ms retry-backoff base, including transient transport retry; retries do not create an extra RSS refresh or cadence.",
         "Focused and full validation passes, including NVIDIA NIM review and cleanup, succeed."
       ],
       "validation_plan": [
@@ -5676,7 +5677,8 @@
         "Fresh real-product AI-path evidence"
       ],
       "artifacts": [
-        "docs/CR-074-UPSTREAM-AI-REQUEST-PARITY.md"
+        "docs/CR-074-UPSTREAM-AI-REQUEST-PARITY.md",
+        "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs"
       ],
       "upstream_behavior_inventory": {
         "status": "complete",
@@ -5715,11 +5717,28 @@
           "The local five-minute cycle proved Linux execution but exposed Windows foreground-capture and Linux AI-summary timeout defects routed to CR-077 and CR-073."
         ],
         "evidence": [
-          "Full Release test suite passed: 294 passed, 0 failed.",
+          "Full Release test suite passed: 312 passed, 0 failed.",
           "Release build passed with 0 warnings and 0 errors.",
           "NVIDIA NIM code review completed; advisory findings were evaluated and no unverified blocker was accepted.",
-          "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11."
+          "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11.",
+          "Current-main hosted run 34022415904 retained trace evidence that RSS refreshed once and the AI operation was attempted once with bounded retries; its Windows 2025 lane received three 429 responses, which is now aligned to the upstream two-attempt budget in source.",
+          "NVIDIA review 20260906-053725 was advisory-failing; its transport-retry finding was addressed, while its TaskCanceledException and attribution-header findings were marked false positives because TaskCanceledException is covered by OperationCanceledException and OpenRouterModelResolver gates attribution headers by endpoint."
         ]
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Data/Services/AiNewsAccessValidationService.cs",
+          "src/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Core/Services/OpenRouterModelResolver.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {

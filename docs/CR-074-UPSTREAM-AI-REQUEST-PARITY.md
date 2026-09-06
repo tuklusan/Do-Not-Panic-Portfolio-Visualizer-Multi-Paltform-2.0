@@ -42,6 +42,10 @@ scans at closure; any unmapped behavior reopens this CR or creates a successor.
 - RSS retrieval and optional AI summarization use the upstream effective refresh
   cadence: 30 minutes minimum/default, with no extra external calls from a
   faster scheduler poll.
+- Each refresh performs at most one AI generation operation, with the same
+  bounded two-attempt retry budget and 750 ms retry backoff base as the
+  upstream implementation; retrying inside that operation does not start a
+  second RSS refresh or a second cadence.
 - A provider HTTP `429` during an optional AI request is not itself a cadence
   or parity defect when the bounded upstream retry/fallback path is exercised;
   acceptance requires eventual AI success evidence or an attributable
