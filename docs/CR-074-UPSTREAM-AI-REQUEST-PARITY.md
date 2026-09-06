@@ -24,6 +24,7 @@ patent, trademark, and governing-law provisions.
 | AI-05 | OpenRouter summary requests ask the provider to sort by latency. | OpenRouter-only `provider.sort` payload member. | Implemented |
 | AI-06 | OpenRouter requests include attribution headers. | `OpenRouterModelResolver.AddAttributionHeaders`. | Implemented |
 | AI-07 | The request uses the resolved model when OpenRouter `auto` is configured. | `ResolveAiModelForRequestAsync` in the summary path. | Implemented |
+| AI-08 | RSS retrieval and optional summarized-news generation respect the upstream effective refresh cadence: 30 minutes minimum/default, with no extra external calls from a faster scheduler poll. | `ProductSceneViewModel.RunNewsRefreshLoopAsync`; `Defaults` and `AppSettingsNormalizer` enforce the 30-minute floor. | Implemented; cadence evidence remains part of closure |
 
 ## Required Gates
 
@@ -38,5 +39,8 @@ scans at closure; any unmapped behavior reopens this CR or creates a successor.
   routing member.
 - OpenRouter requests carry bounded generation, latency routing, attribution,
   and the resolved model without exposing credentials.
+- RSS retrieval and optional AI summarization use the upstream effective refresh
+  cadence: 30 minutes minimum/default, with no extra external calls from a
+  faster scheduler poll.
 - Focused tests, full build/test, license and syntax gates, NVIDIA NIM source and
   evidence review, and artifact/process cleanup all pass.

@@ -327,6 +327,23 @@ A candidate relying on this baseline cites the exact baseline clause just like a
 
 NVIDIA NIM is a third-party service. Before enabling the gate for a fresh project, explicitly decide what project material is authorized to leave the local environment for this reviewer. Do not assume every repository can send every source file, secret, customer datum, credential, private key, production dump, or regulated record to an external model.
 
+### Project-specific artifact-review policy
+
+For this migration, the current acceptance ladder deliberately uses ten-minute
+real-product soaks while the CR queue remains open. A TEST_ARTIFACT reviewer
+must not turn duration alone into a BLOCKER/HIGH finding or require a longer
+run that is outside the current acceptance contract. RSS retrieval and optional
+AI summarization must follow the upstream effective refresh cadence: the
+current default/minimum is 30 minutes, and a more frequent scheduler poll is
+acceptable only when cache freshness prevents extra external calls. Reviewers
+must verify cadence parity from traces rather than demanding periodic AI calls
+faster than upstream. Existing queued CRs, including reviewed upstream-baseline
+refresh work, are context and must not be promoted into blockers unless the
+current snapshot newly causes or fails to address them. The reviewer still
+must report concrete failures, contradictory evidence, missing required proof,
+secret exposure, and any issue that violates the supplied authoritative
+requirements.
+
 The project should define:
 
 - allowed repository/path classes;

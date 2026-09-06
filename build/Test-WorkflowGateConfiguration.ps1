@@ -183,6 +183,11 @@ $quarantineHelperText = [IO.File]::ReadAllText($quarantineHelperPath)
 foreach ($quarantineHelperToken in @('Move-Item -LiteralPath $reviewFull', 'Is-UnderPath', 'RunnerTemp', 'review-evidence-failure/v1', 'review-evidence-contaminated')) {
     if (-not $quarantineHelperText.Contains($quarantineHelperToken)) { throw "Shared reviewer quarantine helper is missing contract token: $quarantineHelperToken" }
 }
+$reviewHarnessPath = Join-Path $repoRoot 'build/Invoke-NvidiaReviewHarness.ps1'
+$reviewHarnessText = [IO.File]::ReadAllText($reviewHarnessPath)
+foreach ($reviewPolicyToken in @('PROJECT ACCEPTANCE POLICY', 'mandated hosted/local soak duration is exactly 10 minutes', 'upstream effective refresh cadence', 'cache freshness prevents extra external calls', 'Existing, separately queued migration CRs')) {
+    if (-not $reviewHarnessText.Contains($reviewPolicyToken)) { throw "NVIDIA artifact-review policy is missing contract token: $reviewPolicyToken" }
+}
 foreach ($snapshotToken in @('$expectedSnapshotId', 'reconstructed commit/material identity', "('{0}:{1}' -f ([string]`$env:GITHUB_SHA).ToLowerInvariant(), `$materialHash)")) {
     if (-not $workflow.Contains($snapshotToken)) { throw "Hosted lane finalization is missing snapshot reconstruction token: $snapshotToken" }
 }

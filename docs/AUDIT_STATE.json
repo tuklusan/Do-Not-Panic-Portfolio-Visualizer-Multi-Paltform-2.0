@@ -5666,6 +5666,7 @@
         "Summary requests include temperature 0.2 and max_tokens 2000.",
         "OpenRouter requests include provider sort latency and attribution headers.",
         "OpenRouter auto-model requests use the resolved model.",
+        "RSS retrieval and optional AI summarization use the upstream effective refresh cadence: 30 minutes minimum/default, with no extra external calls from a faster scheduler poll.",
         "Focused and full validation passes, including NVIDIA NIM review and cleanup, succeed."
       ],
       "validation_plan": [
