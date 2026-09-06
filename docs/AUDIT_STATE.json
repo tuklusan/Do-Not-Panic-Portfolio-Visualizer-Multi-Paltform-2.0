@@ -7353,7 +7353,9 @@
       },
       "current_validation": {
         "status": "queued",
-        "evidence": [],
+        "evidence": [
+          "Hosted run 34058732179 produced Passed product soak results with processCleanedUp=true for all 21 lanes, but aggregate closure remained non-authoritative because lane reviewer receipts were unavailable or blocking and AI-evidence findings were retained; downloaded evidence was inspected and cleaned up."
+        ],
         "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
       }
     },
@@ -7644,7 +7646,8 @@
         "evidence": [
           "Current source clamps NewsRefreshMinutes to a 30-minute minimum and performs RSS plus optional AI work in one refresh operation.",
           "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh.",
-          "Hosted run 34051000159 recorded AI HTTP 429 outcomes on affected lanes while RSS/news evidence remained present; its aggregate failure routes quota/evidence work to CR-112 and does not establish a cadence violation."
+          "Hosted run 34051000159 recorded AI HTTP 429 outcomes on affected lanes while RSS/news evidence remained present; its aggregate failure routes quota/evidence work to CR-112 and does not establish a cadence violation.",
+          "Hosted run 34058732179 observed RSS publication and an AI request on all 21 lanes; seven lanes had no successful AI response after provider quota/availability responses, while all product soak results passed. This confirms quota/evidence pressure, not a cadence violation, but does not close CR-112 because aggregate proof was not all-green."
         ],
         "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
         "nvidia_review": {
@@ -7740,6 +7743,7 @@
           "The harness now classifies absent and empty content as retryable with a centralized bounded policy, and its self-test covers exact/contextual output, missing properties, retry boundaries, and secret redaction.",
           "NVIDIA reviews 20260906-094037 and 20260906-095634 identified and drove retry-policy and self-test corrections; the final 20260906-100720 review was advisory-fail with the 404 contract and unchanged common-module scope recorded as false positives."
           ,"The 20260906-102830 review drove the final single-source retry boundary, production sanitization, 404/429 self-test, and retry telemetry corrections; its remaining live-HTTP-mock and external-policy configurability requests are recorded as non-blocking advice."
+          ,"Hosted run 34058732179 confirms bounded fail-closed reviewer handling: repeated NVIDIA 429/503 responses produced retry telemetry and no semantic PASS receipt on affected lanes; all 21 product soak results passed, but authoritative review proof remains outstanding."
         ],
         "unresolved_gaps": ["Fresh mandatory gates and authoritative serialized 21-lane proof remain outstanding."],
         "nvidia_review": {

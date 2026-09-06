@@ -85,6 +85,12 @@ truth. Installer-only, WPF-only, and historical artifacts remain out of scope.
 - The closure record names the exact implementation commit and authoritative
   run ID. Earlier diagnostic runs are never presented as final proof.
 
+Latest proof attempt `34058732179` produced `Passed` product soak results and
+`processCleanedUp=true` for all 21 lanes, but the aggregate remained a
+non-closure result because several lane reviewer receipts were unavailable or
+blocking and the AI-evidence findings were retained. The complete lane
+evidence was inspected and downloaded artifacts were removed after inspection.
+
 ## Validation Plan
 
 Perform the pre-development upstream forward inventory before editing. After

@@ -135,6 +135,14 @@ therefore routes to CR-112 as quota/evidence work; it does not establish a
 cadence violation. The run remains non-closure evidence because the aggregate
 validator did not pass for all 21 lanes.
 
+Run `34058732179` adds a complete 21-lane inspection. RSS was published and an
+AI request was observed on every lane; seven lanes recorded no successful AI
+response after provider quota/availability responses, while the remaining lanes
+retained successful AI evidence. All product soaks passed and both circular
+traces were retained per lane. This confirms quota/evidence pressure, not a
+cadence violation, but does not close the CR because the aggregate proof was
+not all-green.
+
 ## Closure Gates
 
 Run the focused tests named above and the full Release suite. Run

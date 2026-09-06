@@ -77,3 +77,10 @@ decision helper, single-source boundary, sanitization, 404/429 contract, retry
 telemetry, and fail-closed behavior are covered locally. The reviewer request
 to make the policy externally configurable is also non-blocking: the project
 requires one deterministic bounded policy for all reviewer environments.
+
+Latest proof attempt `34058732179` confirms the fail-closed behavior: lanes
+whose NVIDIA requests received repeated 429/503 responses recorded bounded
+retry telemetry and no semantic PASS receipt, so the aggregate retained them
+as failures. The product soak results themselves passed on all 21 lanes. This
+is evidence that the reviewer-availability path remains open for authoritative
+proof; it is not permission to convert unavailable review output into PASS.
