@@ -7660,6 +7660,102 @@
           ]
         }
       }
+    },
+    {
+      "id": "CR-113",
+      "phase": "Phase 7",
+      "title": "Retry transient empty NVIDIA reviewer output before fail-closed quarantine",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-109", "CR-111"],
+      "objective": "Make the NVIDIA review harness retry absent, empty, and incomplete model content within its existing bounded exponential retry policy while preserving fail-closed hosted evidence behavior and leaving product RSS/AI cadence unchanged.",
+      "acceptance_criteria": [
+        "Absent, empty, and truncated reviewer content is classified as retryable within the existing bounded retry budget.",
+        "Retry delays remain bounded and exponential; no unbounded polling or duplicate product news/AI calls are introduced.",
+        "Exhausted reviewer retries still quarantine unsafe reviewer output and cannot create a semantic PASS receipt.",
+        "Valid reviewer PASS and FAIL normalization remains unchanged.",
+        "Forward/reverse upstream scans, NVIDIA review, full gates, and a fresh serialized 21-lane proof pass."
+      ],
+      "validation_plan": [
+        "Read the current NVIDIA harness, hosted workflow, receipt validator, and pinned upstream review workflow line by line.",
+        "Run the harness self-test plus negative and positive receipt validation.",
+        "Run migration, license, syntax, workflow, build/test, and mandatory NVIDIA review gates.",
+        "Run one fresh serialized 21-lane matrix and inspect every reviewer output, receipt, screenshot, trace, RSS/AI manifest, and closure record.",
+        "Repeat the committed-disk forward/reverse audit twice with zero gaps."
+      ],
+      "artifacts": [
+        "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md",
+        "build/Invoke-NvidiaReviewHarness.ps1",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-HostedSoakClosure.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
+          "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "build/Invoke-NvidiaReviewHarness.ps1",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
+          "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "implementation-reviewed-advisory-fail",
+        "evidence": [
+          "Hosted run 34032694317 completed with multiple lanes missing semantic reviewer PASS receipts after empty or unavailable NVIDIA output.",
+          "The harness now classifies absent and empty content as retryable with a centralized bounded policy, and its self-test covers exact/contextual output, missing properties, retry boundaries, and secret redaction.",
+          "NVIDIA reviews 20260906-094037 and 20260906-095634 identified and drove retry-policy and self-test corrections; the final 20260906-100720 review was advisory-fail with the 404 contract and unchanged common-module scope recorded as false positives."
+          ,"The 20260906-102830 review drove the final single-source retry boundary, production sanitization, 404/429 self-test, and retry telemetry corrections; its remaining live-HTTP-mock and external-policy configurability requests are recorded as non-blocking advice."
+        ],
+        "unresolved_gaps": ["Fresh mandatory gates and authoritative serialized 21-lane proof remain outstanding."],
+        "nvidia_review": {
+          "status": "complete_advisory_fail",
+          "reviewed_snapshots": [
+            "58a9679abd3d1e47e049907f69adeb3a3731053b:b707aeef5faa210c2be5616738ff4a376a797d6f6564933f6e9af07d9745a7ac",
+            "58a9679abd3d1e47e049907f69adeb3a3731053b:5df866726ae9e8d28c70e6ca9b0009b318b6240753f45d9425901e2ea344de25",
+            "58a9679abd3d1e47e049907f69adeb3a3731053b:c49d933b7a033e85aba22f83d989e2fb6669ca9baa1a6025addc1fe668957a8d"
+          ],
+          "false_positive_or_scope_findings": [
+            "The request to remove HTTP 404 from transient statuses contradicts the explicit project contract requiring 404 to be handled like 429 for NIM availability.",
+            "The request to include unchanged common-module helper definitions in the changed-file packet is a review-scope limitation; the common module is separately gated and its redaction is now self-tested."
+          ],
+          "non_blocking_advice": [
+            "A full live HTTP mock of five attempts remains useful future harness coverage but is not required to establish the corrected bounded decision helper and fail-closed contract."
+          ]
+        }
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -7675,7 +7771,8 @@
     ,"CR-106: upstream footer wording and measured narrow ticker lanes are not yet implemented or physically validated.",
     "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
-    "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof."
+    "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
+    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

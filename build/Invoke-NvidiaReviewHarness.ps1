@@ -29,6 +29,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:LastNvidiaResponseAt = $null
 $script:MinimumNvidiaResponseSpacingSeconds = 15
+$script:NvidiaRetryPolicy = [ordered]@{
+    MaxAttempts = 5
+    BaseDelaySeconds = 5
+    MaxDelaySeconds = 60
+    JitterUpperExclusive = 4
+}
 $script:NvidiaSpacingRoot = $null
 
 $commonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
@@ -585,6 +591,51 @@ function Invoke-HarnessSelfTest {
         }
     }
 
+    foreach ($retryableMessage in @(
+        'Nvidia response was absent.',
+        'Nvidia response content was empty.',
+        'Nvidia response was absent or truncated.',
+        'Nvidia response was missing finish_reason.'
+    )) {
+        if (-not (Test-IsRetryableHarnessFailureMessage -Message $retryableMessage)) {
+            throw "Nvidia review harness self-test failed; '$retryableMessage' was not classified as retryable."
+        }
+    }
+
+    foreach ($propertyMessage in @(
+        "The property 'choices' cannot be found in the response.",
+        "The property 'message' cannot be found in the response."
+    )) {
+        if (-not (Test-IsRetryableHarnessFailureMessage -Message $propertyMessage)) {
+            throw "Nvidia review harness self-test failed; '$propertyMessage' was not classified as retryable."
+        }
+    }
+
+    $integrationException = [System.Exception]::new('Nvidia response content was empty. Additional transient context.')
+    if (-not (Test-ShouldRetryNvidiaRequest -Exception $integrationException -Status $null -AttemptIndex 0)) {
+        throw 'Nvidia review harness self-test failed; the production retry decision did not accept transient empty output.'
+    }
+
+    if (Test-ShouldRetryNvidiaRequest -Exception $integrationException -Status $null -AttemptIndex ([int]$script:NvidiaRetryPolicy.MaxAttempts - 1)) {
+        throw 'Nvidia review harness self-test failed; the production retry decision exceeded the bounded attempt limit.'
+    }
+
+    $productionSanitized = Get-SanitizedNvidiaErrorMessage ([System.Exception]::new('Nvidia response content was empty. Authorization: Bearer nvapi-production-test-token'))
+    if ($productionSanitized -match 'nvapi-production-test-token' -or
+        $productionSanitized -notmatch 'Nvidia response content was empty') {
+        throw 'Nvidia review harness self-test failed; production error sanitization did not preserve retry text safely.'
+    }
+
+    if (-not (Test-IsTransientHttpStatus 404) -or (Test-IsTransientHttpStatus 400)) {
+        throw 'Nvidia review harness self-test failed; the project-specific 404/429 transient contract changed.'
+    }
+
+    $redactionProbe = Redact-LikelySecretsInText -Text 'Authorization: Bearer nvapi-example-token api_key=example-secret-value'
+    if ($redactionProbe -match 'nvapi-example-token|example-secret-value' -or
+        $redactionProbe -notmatch '\[redacted\]') {
+        throw 'Nvidia review harness self-test failed; exception secret redaction did not remove credential-shaped values.'
+    }
+
     Write-Output 'NVIDIA_REVIEW_HARNESS_SELFTEST=Passed'
 }
 
@@ -608,6 +659,8 @@ function Test-IsTransientHttpStatus($Status) {
         return $false
     }
 
+    # Project contract: treat 404 like 429 because the NIM model/route can
+    # become temporarily unavailable while the endpoint is being provisioned.
     return $Status -in @(404, 408, 425, 429) -or $Status -ge 500
 }
 
@@ -635,18 +688,32 @@ function Test-IsRetryableHarnessFailureMessage([string]$Message) {
         return $false
     }
 
-    return $Message -like 'Nvidia response was absent or truncated.*' -or
-        $Message -like 'Nvidia response was absent.*' -or
-        $Message -like 'Nvidia response content was empty.*' -or
-        $Message -like 'Nvidia response was missing finish_reason.*' -or
+    return $Message -match '^Nvidia response was (?:absent(?: or truncated)?|missing finish_reason)\.' -or
+        $Message -match '^Nvidia response content was empty\.' -or
         $Message -like '*property ''choices'' cannot be found*' -or
         $Message -like '*property ''message'' cannot be found*'
 }
 
+function Test-ShouldRetryNvidiaRequest {
+    param(
+        [Parameter(Mandatory = $true)][object]$Exception,
+        [Parameter(Mandatory = $true)][AllowNull()]$Status,
+        [Parameter(Mandatory = $true)][int]$AttemptIndex
+    )
+
+    if ($AttemptIndex -ge ([int]$script:NvidiaRetryPolicy.MaxAttempts - 1)) {
+        return $false
+    }
+
+    $safeMessage = Get-SanitizedNvidiaErrorMessage $Exception
+    return (Test-IsRetryableReviewException -Exception $Exception -Status $Status) -or
+        (Test-IsRetryableHarnessFailureMessage -Message $safeMessage)
+}
+
 function Get-TransientRetryDelaySeconds([int]$AttemptIndex) {
-    $boundedIndex = [Math]::Max(0, [Math]::Min($AttemptIndex, 4))
-    $jitterSeconds = Get-Random -Minimum 0 -Maximum 4
-    return [int][Math]::Min(60, ([Math]::Pow(2, $boundedIndex) * 5) + $jitterSeconds)
+    $boundedIndex = [Math]::Max(0, [Math]::Min($AttemptIndex, ([int]$script:NvidiaRetryPolicy.MaxAttempts - 1)))
+    $jitterSeconds = Get-Random -Minimum 0 -Maximum ([int]$script:NvidiaRetryPolicy.JitterUpperExclusive)
+    return [int][Math]::Min([int]$script:NvidiaRetryPolicy.MaxDelaySeconds, ([Math]::Pow(2, $boundedIndex) * [int]$script:NvidiaRetryPolicy.BaseDelaySeconds) + $jitterSeconds)
 }
 
 function Invoke-NvidiaJsonRequest {
@@ -658,8 +725,10 @@ function Invoke-NvidiaJsonRequest {
     $body = New-NvidiaHarnessRequestBody -System $System -User $User -TargetModel $TargetModel -TokenLimit $TokenLimit
     if ([Text.Encoding]::UTF8.GetByteCount($body) -gt $MaxRequestBytes) { throw 'Review request exceeds MaxRequestBytes; split the reviewed material into coherent shards before retrying.' }
 
-    $retryDelays = @(0, 1, 2, 3)
-    for ($attempt = 0; $attempt -le $retryDelays.Count; $attempt++) {
+    # AttemptIndex is zero-based; the retry helper is the single source of
+    # truth for the terminal attempt boundary.
+    $attemptIndex = 0
+    while ($true) {
         try {
             $response = Invoke-NvidiaRequestWithSpacing -TimeoutSeconds $TimeoutSeconds -Request {
                 Invoke-RestMethod -Method Post -Uri ($TargetEndpoint.TrimEnd('/') + '/chat/completions') -Headers @{ Authorization = "Bearer $ApiKey"; 'Content-Type' = 'application/json' } -Body $body -TimeoutSec $TimeoutSeconds
@@ -682,21 +751,30 @@ function Invoke-NvidiaJsonRequest {
 
             $content = [string]$choice.message.content
             if ([string]::IsNullOrWhiteSpace($content)) { throw 'Nvidia response content was empty.' }
-            return @{ Content = $content; Usage = $response.usage; Attempts = $attempt + 1 }
+            return @{ Content = $content; Usage = $response.usage; Attempts = $attemptIndex + 1 }
         }
         catch {
             $status = Get-TransientStatus $_.Exception
-            $safeMessage = Get-SanitizedNvidiaErrorMessage $_.Exception
-            $shouldRetry = ((Test-IsRetryableReviewException -Exception $_.Exception -Status $status) -or
-                (Test-IsRetryableHarnessFailureMessage -Message $safeMessage)) -and $attempt -lt $retryDelays.Count
+            $shouldRetry = Test-ShouldRetryNvidiaRequest -Exception $_.Exception -Status $status -AttemptIndex $attemptIndex
             if (-not $shouldRetry) {
                 $statusText = if ($null -ne $status) { "status=$status; " } else { [string]::Empty }
-                throw "Nvidia review request failed after $($attempt + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name). See ignored Nvidia telemetry for local diagnostics."
+                throw "Nvidia review request failed after $($attemptIndex + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name). See ignored Nvidia telemetry for local diagnostics."
             }
-            Start-Sleep -Seconds (Get-TransientRetryDelaySeconds -AttemptIndex $attempt)
+            $delaySeconds = Get-TransientRetryDelaySeconds -AttemptIndex $attemptIndex
+            if (-not [string]::IsNullOrWhiteSpace([string]$script:NvidiaSpacingRoot)) {
+                Write-ReviewTelemetry -Root $script:NvidiaSpacingRoot -Record @{
+                    timestamp = [DateTimeOffset]::UtcNow.ToString('o')
+                    event = 'retry_scheduled'
+                    attemptIndex = $attemptIndex
+                    delaySeconds = $delaySeconds
+                    status = $status
+                    errorClass = $_.Exception.GetType().Name
+                }
+            }
+            Start-Sleep -Seconds $delaySeconds
+            $attemptIndex++
         }
     }
-    throw 'Nvidia review retry exhaustion.'
 }
 
 switch ($PSCmdlet.ParameterSetName) {
