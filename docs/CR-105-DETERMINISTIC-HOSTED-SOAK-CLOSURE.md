@@ -16,9 +16,8 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. This is the urgent correction to the redundant aggregate review loop.
-It is independent of CR-097, CR-102, and CR-103. The first authoritative
-post-fix hosted run remains required after this change is pushed.
+Closed. This is the urgent correction to the redundant aggregate review loop.
+It is independent of CR-097, CR-102, and CR-103.
 
 ## Problem
 
@@ -81,9 +80,14 @@ path; the lane review and all product evidence requirements remain mandatory.
 - Perform two fresh line-by-line audits of this CR, the validator, the changed
   workflow, and tests. Both audits must find zero gaps before the candidate is
   pushed.
-- The first post-fix push-triggered 21-lane run is the authoritative hosted
-  proof: each lane reviews once, each successful lane emits genuine v2 PASS
-  evidence, and aggregate validation makes zero remote reviewer calls.
+- Hosted run `34006931923` is the retained closure evidence: all 21 product
+  soak lanes emitted `PRODUCT_SOAK=Passed`; its only failures were the
+  evidence-packet enumeration bug fixed in commit `3743c0b`, where circular
+  trace index files were incorrectly treated as text traces. The corrected
+  workflow now enumerates only the two required circular logs, and the local
+  workflow configuration, syntax, hosted-closure self-test, license, JSON, and
+  pre-push gates all pass. Per operator direction, the corrective push-triggered
+  matrix was cancelled rather than duplicating the already-proven product soak.
 
 ## Evidence Boundary
 
