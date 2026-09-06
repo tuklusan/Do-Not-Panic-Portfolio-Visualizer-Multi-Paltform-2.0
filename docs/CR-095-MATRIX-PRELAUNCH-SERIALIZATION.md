@@ -59,3 +59,16 @@ Static workflow, license, PowerShell syntax, migration, upstream-lock, and
 full Release tests remain required before closure. Hosted verification must
 wait for the current 21-lane run `33976712014` to finish before another matrix
 is launched.
+
+## One-Time Slow-Lane Exception
+
+On 2026-09-06, the operator authorized a one-time exception to the normal
+90-minute observation threshold for the active serialized run `34040146263`.
+The exception applies only to `real-product-soak (macos-14, osx-arm64)`,
+job `101505317624`, which was still executing its reviewer-evidence step after
+the threshold. It authorizes continued waiting beyond 90 minutes because the
+review service may be slow; it does not authorize cancellation, a duplicate
+matrix, acceptance of a non-terminal lane, or relaxation of any build, test,
+manifest, screenshot, trace, cleanup, or reviewer-evidence requirement. The
+exception expires when that job reaches a terminal state and must not be
+reused for a later run.
