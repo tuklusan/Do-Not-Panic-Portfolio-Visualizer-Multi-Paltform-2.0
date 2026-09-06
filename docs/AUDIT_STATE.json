@@ -4,6 +4,59 @@
   "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "title": "DNPPV 2.0 Migration Audit State",
   "date": "2026-09-03",
+  "queue_reprioritization": {
+    "as_of": "2026-09-06",
+    "basis": "After each terminal validation cycle, workflow and evidence-integrity CRs are placed first, followed by dependency-ready provider/evidence work, then product-parity work, cleanup, and explicitly deferred low-priority detours. A CR is not started until this order is audited against the current dependency graph.",
+    "workflow_first": true,
+    "next_cr": "CR-094",
+    "order": [
+      "CR-094",
+      "CR-096",
+      "CR-095",
+      "CR-109",
+      "CR-111",
+      "CR-113",
+      "CR-083",
+      "CR-110",
+      "CR-104",
+      "CR-074",
+      "CR-075",
+      "CR-098",
+      "CR-099",
+      "CR-100",
+      "CR-112",
+      "CR-076",
+      "CR-091",
+      "CR-071",
+      "CR-082",
+      "CR-081",
+      "CR-084",
+      "CR-085",
+      "CR-086",
+      "CR-087",
+      "CR-088",
+      "CR-089",
+      "CR-090",
+      "CR-106",
+      "CR-107",
+      "CR-108",
+      "CR-101",
+      "CR-116",
+      "CR-097",
+      "CR-102",
+      "CR-103"
+    ],
+    "audit": {
+      "successive_zero_gap_scans": 2,
+      "checks": [
+        "Every non-closed CR appears exactly once.",
+        "Every dependency appears before its dependent CR.",
+        "Workflow, evidence, review, serialization, and trace-routing controls precede product-parity work.",
+        "CR-116, CR-097, CR-102, and CR-103 remain after the active workflow/product queue because they are explicitly low-priority or deferred."
+      ],
+      "result": "passed"
+    }
+  },
   "detour_checkpoint": {
     "purpose": "Resume CR-066 autonomous soak execution after reviewer migration.",
     "checkpoint_commit": "c6c6c43",
@@ -4975,11 +5028,15 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending",
+        "status": "failed",
+        "run_id": "34061105976",
         "unresolved_gaps": [
-          "A fresh 21-lane hosted run and inspection of every lane's retained evidence remain pending."
+          "The aggregate found 20 soak evidence manifests instead of 21 because macos-26/osx-arm64 produced no soak manifest.",
+          "The complete per-lane closure evidence and authoritative aggregate result remain outstanding."
         ],
-        "closure_evidence": []
+        "closure_evidence": [
+          "Run 34061105976 reached terminal failure; all 20 retrieved soak-result.json manifests reported Passed, processCleanedUp=true, four circular trace files, and screenshot evidence; aggregate-validation.txt failed closed with Expected 21 soak evidence manifests, found 20."
+        ]
       },
       "upstream_closure_audit": {
         "status": "pending",

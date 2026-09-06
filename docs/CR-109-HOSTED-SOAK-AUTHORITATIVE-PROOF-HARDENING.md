@@ -91,6 +91,13 @@ non-closure result because several lane reviewer receipts were unavailable or
 blocking and the AI-evidence findings were retained. The complete lane
 evidence was inspected and downloaded artifacts were removed after inspection.
 
+Hosted run `34061105976` likewise reached terminal failure. Twenty soak
+manifests were inspected and each reported successful product execution,
+cleanup, four circular trace files, and screenshot evidence; the `macos-26`
+lane did not produce a soak manifest. The post-soak aggregate consequently
+failed closed with `Expected 21 soak evidence manifests, found 20`, so no
+authoritative closure receipt is claimed.
+
 ## Validation Plan
 
 Perform the pre-development upstream forward inventory before editing. After

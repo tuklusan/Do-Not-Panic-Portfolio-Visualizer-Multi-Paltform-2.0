@@ -100,7 +100,10 @@ output, and redacted closure record. The results must be correlated to this CR.
 
 ## Current Validation
 
-The static workflow gates pass with 21 identical publish and soak entries. The
-fresh 21-lane hosted execution and per-lane evidence inspection remain pending;
-this CR stays open until that run reaches terminal state and the complete
-evidence is reviewed.
+The static workflow gates pass with 21 identical publish and soak entries. In
+hosted run `34061105976`, 20 soak manifests were retrieved and inspected; every
+retrieved product result passed, cleaned up its process, retained four circular
+trace files, and recorded settled screenshot evidence. The `macos-26`
+`osx-arm64` lane produced no soak manifest, and the aggregate therefore failed
+closed with `Expected 21 soak evidence manifests, found 20`. This CR remains
+open until every lane has a complete, reviewed evidence record.

@@ -54,4 +54,8 @@ the aggregate review consumes all 21 lane records.
 Closure requires the local gate outputs, the 312-test Release result, the
 mandatory NVIDIA review result, and the fresh hosted run ID plus its 21
 manifest/closure-record inspection summary. Evidence is pending fresh hosted
-validation after the corrected checkpoint is pushed.
+validation after the corrected checkpoint is pushed. Hosted run `34061105976`
+reached terminal failure and the aggregate reported `Expected 21 soak evidence
+manifests, found 20`; the missing lane was `macos-26` (`osx-arm64`). The
+interpolation path therefore failed closed as designed, but the hosted
+verification criterion remains open.
