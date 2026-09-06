@@ -164,9 +164,6 @@ jobs:
       DNPPV_SOAK_REQUIRE_AI_NEWS: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
       - name: Validate and mask soak credentials
         shell: pwsh
         env:
@@ -177,8 +174,12 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:OPENROUTER_API_KEY)) { throw 'OPENROUTER_API_KEY is required for hosted product soak.' }
           if ([string]::IsNullOrWhiteSpace($env:NVIDIA_API_KEY_CODING)) { throw 'NVIDIA_API_KEY_CODING is required for hosted artifact review.' }
           Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
-          Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
-          Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
+           Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
+           Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
+           Write-Host 'MASKING_VERIFIED'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
       - name: Build and test the real product
         run: |
           dotnet build DoNotPanicPortfolioVisualizer.sln --configuration Release
@@ -211,7 +212,7 @@ jobs:
              inspectedEvidenceRetained = $false
              result = [ordered]@{ path = 'soak-result.json'; sha256 = $null; outcome = 'Missing'; processCleanedUp = $false }
              rssAiEvidence = [ordered]@{ path = 'news-evidence.json'; sha256 = $null; inspected = $false }
-             aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }
+             aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false; failure = $null }
              screenshots = @()
              circularTraces = @()
              review = [ordered]@{ path = 'build/nvidia-review/harness-output.txt'; sha256 = $null; nonEmpty = $false; complete = $false }
@@ -221,9 +222,9 @@ jobs:
         shell: pwsh
         env:
           DNPPV_SOAK_DURATION_MINUTES: ${{ inputs.soak_minutes || '10' }}
-          DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          MATRIX_RID: ${{ matrix.rid }}
+           DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+           MATRIX_RID: ${{ matrix.rid }}
         run: |
            Write-Host "::add-mask::$env:OPENROUTER_API_KEY"
            Write-Host "::add-mask::$env:DNPPV_OPENROUTER_API_KEY"
@@ -234,7 +235,13 @@ jobs:
            $exe = Join-Path $PWD ('artifacts/{0}/{1}' -f $env:MATRIX_RID, $exeName)
            ./build/Invoke-ProductSoak.ps1 -ExecutablePath $exe -DurationMinutes ([int]$env:DNPPV_SOAK_DURATION_MINUTES) -ArtifactRoot $artifactRoot -ScreenshotPath $screenshotPath -ScreenshotIntervalMinutes 30
            $screenshots = @(Get-ChildItem -LiteralPath $screenshotPath -Filter '*.png' -File -ErrorAction SilentlyContinue)
-           $expectedScreenshotCount = [Math]::Floor((([int]$env:DNPPV_SOAK_DURATION_MINUTES * 60) - 30) / 1800) + 1
+             # ProductShellWindow.axaml.cs:153-181 captures after a 30-second
+             # settling delay, then every requested interval. Invoke-ProductSoak.ps1
+             # passes the requested interval through at lines 86-89.
+            $settlingSeconds = 30
+            $captureIntervalSeconds = 30 * 60
+            $durationSeconds = [int]$env:DNPPV_SOAK_DURATION_MINUTES * 60
+            $expectedScreenshotCount = if ($durationSeconds -lt $settlingSeconds) { 0 } else { [Math]::Floor(($durationSeconds - $settlingSeconds) / $captureIntervalSeconds) + 1 }
            if ($screenshots.Count -lt $expectedScreenshotCount) { throw "Expected at least $expectedScreenshotCount settled screenshots, found $($screenshots.Count)." }
            $tracePaths = @(
              (Join-Path $artifactRoot 'trace/trace.circular.log'),
@@ -243,7 +250,38 @@ jobs:
            foreach ($tracePath in $tracePaths) {
              if (-not (Test-Path -LiteralPath $tracePath -PathType Leaf)) { throw "Required circular trace is missing: $tracePath" }
            }
-           $trace = ($tracePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+            function Read-CircularTraceText([string]$Path) {
+              $bytes = [IO.File]::ReadAllBytes($Path)
+              $filtered = [Collections.Generic.List[byte]]::new()
+              foreach ($byte in $bytes) { if ($byte -ne 0) { [void]$filtered.Add($byte) } }
+              return [Text.Encoding]::UTF8.GetString($filtered.ToArray())
+            }
+            function Test-ByteSequence([byte[]]$Haystack, [byte[]]$Needle) {
+              if ($Needle.Length -eq 0 -or $Needle.Length -gt $Haystack.Length) { return $false }
+              for ($offset = 0; $offset -le $Haystack.Length - $Needle.Length; $offset++) {
+                $matched = $true
+                for ($index = 0; $index -lt $Needle.Length; $index++) {
+                  if ($Haystack[$offset + $index] -ne $Needle[$index]) { $matched = $false; break }
+                }
+                if ($matched) { return $true }
+              }
+              return $false
+            }
+            function Test-ByteSequenceIgnoringNul([byte[]]$Haystack, [byte[]]$Needle) {
+              $compact = [Collections.Generic.List[byte]]::new()
+              foreach ($byte in $Haystack) { if ($byte -ne 0) { [void]$compact.Add($byte) } }
+              return Test-ByteSequence $compact.ToArray() $Needle
+            }
+            $nulSecretProbe = [byte[]](65, 0, 80, 0, 73, 0, 75, 0, 69, 0, 89)
+            if (-not (Test-ByteSequenceIgnoringNul $nulSecretProbe ([byte[]](65, 80, 73, 75, 69, 89)))) { throw 'Binary secret scanner self-test failed.' }
+            Write-Host 'NUL_SECRET_SCAN_SELF_TEST=Passed'
+            # Normalize reviewer material from the complete byte stream while
+            # retaining each clean original circular file byte-for-byte. The
+            # byte scan below is authoritative; normalized text is never used
+            # to decide whether a retained original is safe.
+            $normalizedTraceByPath = @{}
+            foreach ($tracePath in $tracePaths) { $normalizedTraceByPath[$tracePath] = Read-CircularTraceText $tracePath }
+            $trace = ($tracePaths | ForEach-Object { $normalizedTraceByPath[$_] }) -join "`n"
            $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
            $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
@@ -263,15 +301,26 @@ jobs:
            if (-not $rssUsable -or -not $rssPublished) { Write-Warning "Hosted soak RSS evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
            if (-not $aiRequested -or -not $aiSucceeded) { Write-Warning "Hosted soak AI evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
            foreach ($tracePath in $tracePaths) {
-             $traceText = Get-Content -LiteralPath $tracePath -Raw
-             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
-               $traceText = $traceText.Replace($secret, '[REDACTED]')
-             }
-              $traceText = $traceText -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
+              # Preserve clean circular files byte-for-byte. If a credential is
+              # detected, quarantine the contaminated file outside the upload
+              # root before failing closed; never retain a secret in evidence.
+              $originalTraceBytes = [IO.File]::ReadAllBytes($tracePath)
               foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
-                if ($traceText.Contains($secret)) { throw "Secret redaction verification failed for $tracePath." }
+                $secretBytes = [Text.Encoding]::UTF8.GetBytes($secret)
+                if (Test-ByteSequence $originalTraceBytes $secretBytes -or
+                    Test-ByteSequenceIgnoringNul $originalTraceBytes $secretBytes -or
+                    $normalizedTraceByPath[$tracePath].Contains($secret)) {
+                  $quarantine = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetRandomFileName())
+                  Move-Item -LiteralPath $tracePath -Destination $quarantine -Force
+                  throw "Unredacted secret found in original trace; contaminated evidence was quarantined: $tracePath."
+                }
               }
-              Set-Content -LiteralPath $tracePath -Value $traceText -Encoding utf8
+              $originalTraceText = $normalizedTraceByPath[$tracePath]
+              if ($originalTraceText -match '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=])[^\s,;&]+') {
+                $quarantine = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetRandomFileName())
+                Move-Item -LiteralPath $tracePath -Destination $quarantine -Force
+                throw "Credential-shaped value found in original trace; contaminated evidence was quarantined: $tracePath."
+              }
            }
            $manifest = Join-Path $artifactRoot 'evidence-review-input.txt'
            $manifestText = @(
@@ -291,8 +340,12 @@ jobs:
              'trace_files:'
              (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object {
                  $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
-                 $content = [IO.File]::ReadAllText($_.FullName)
-                 $excerpt = if ($content.Length -le 40000) { $content } else { $content.Substring(0, 20000) + "`n[TRACE_EXCERPT_OMITTED]`n" + $content.Substring($content.Length - 20000) }
+                   $content = $normalizedTraceByPath[$_.FullName]
+                 foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
+                   $content = $content.Replace($secret, '[REDACTED]')
+                 }
+                 $content = $content -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
+                 $excerpt = if ($content.Length -le 120000) { $content } else { $content.Substring(0, 60000) + "`n[TRACE_EXCERPT_OMITTED]`n" + $content.Substring($content.Length - 60000) }
                  "trace_file=$($_.Name);bytes=$($_.Length);sha256=$hash`n$excerpt"
              })
            ) -join "`n"
@@ -315,6 +368,14 @@ jobs:
            New-Item -ItemType Directory -Force -Path $reviewRoot | Out-Null
            $hasResult = Test-Path -LiteralPath (Join-Path $artifactRoot 'soak-result.json') -PathType Leaf
            $result = if ($hasResult) { Get-Content -LiteralPath (Join-Path $artifactRoot 'soak-result.json') -Raw | ConvertFrom-Json } else { $null }
+            $newsPath = Join-Path $artifactRoot 'news-evidence.json'
+            $newsEvidence = $null
+            $newsEvidenceFailure = $null
+            if (Test-Path -LiteralPath $newsPath -PathType Leaf) {
+              try { $newsEvidence = Get-Content -LiteralPath $newsPath -Raw | ConvertFrom-Json } catch { $newsEvidenceFailure = 'news-evidence.json malformed' }
+            } else {
+              $newsEvidenceFailure = 'news-evidence.json missing'
+            }
            $soakPassed = $hasResult -and $result.outcome -eq 'Passed'
            $receipt = [ordered]@{
              schema = 'dnppv2-lane-closure-record/v2'
@@ -326,7 +387,11 @@ jobs:
              failure = if ($soakPassed) { $null } elseif ($hasResult) { [string]$result.failure } else { 'soak-result-missing-after-cancellation' }
              inspectedEvidenceRetained = $false
              result = [ordered]@{ path = 'soak-result.json'; outcome = if ($hasResult) { [string]$result.outcome } else { 'Missing' }; processCleanedUp = if ($hasResult) { [bool]$result.processCleanedUp } else { $false } }
-             aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }
+              aiEvidence = [ordered]@{
+                 aiRequestObserved = $null -ne $newsEvidence -and [bool]$newsEvidence.aiRequestObserved
+                 aiSuccessObserved = $null -ne $newsEvidence -and [bool]$newsEvidence.aiSuccessObserved
+                failure = $newsEvidenceFailure
+              }
              review = [ordered]@{ nonEmpty = $false; complete = $false }
            }
            $receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.pending.json') -Encoding utf8

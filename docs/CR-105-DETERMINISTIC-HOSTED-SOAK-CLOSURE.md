@@ -36,6 +36,7 @@ duplicated review semantics.
 | HOST-05 | Aggregate validation is deterministic, offline-capable, bounded, and never invokes a remote reviewer. |
 | HOST-06 | Historical artifacts remain diagnostic fixtures and cannot be promoted to authoritative v2 closure. |
 | HOST-07 | The lane reviewer output directory satisfies the reviewer harness repository-root contract and remains inside the ignored per-lane evidence tree. |
+| HOST-08 | Reviewer material normalizes NUL-padded circular traces and includes a sufficiently large bounded excerpt while retaining the original circular files separately. |
 
 The upstream workflow and existing gate behavior were read line by line for
 each inventory item. The migration changes only the duplicate aggregate review
@@ -59,6 +60,10 @@ path; the lane review and all product evidence requirements remain mandatory.
 5. Missing, v1, malformed, stale, mismatched, non-PASS, or hash-inconsistent
    evidence fails closed. Historical v1 artifacts are regression fixtures only;
    they must not be rewritten or promoted to v2 PASS evidence.
+6. Fixed-size circular traces are normalized to remove NUL padding in the
+   reviewer packet. The packet includes up to 120,000 non-NUL characters per
+   trace, while the complete bounded trace files remain retained for closure
+   evidence and forensic review.
 
 ## Validation and Closure
 

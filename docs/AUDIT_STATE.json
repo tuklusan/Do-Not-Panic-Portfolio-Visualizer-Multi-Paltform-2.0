@@ -7211,10 +7211,153 @@
             "Run 33988763870 cancelled only at the redundant aggregate wait; 43 artifacts downloaded to the protected Downloads corpus.",
           "Test-HostedSoakClosure.ps1 self-test passed.",
           "Offline validation of run 33988763870 failed closed because v2 semantic review-result.json receipts are absent, as required.",
-          "Run 33997909763 exposed a real harness contract gap: $RUNNER_TEMP was rejected by Invoke-NvidiaReviewHarness.ps1; the workflow fix now uses the ignored per-lane review directory."
+          "Run 33997909763 exposed a real harness contract gap: $RUNNER_TEMP was rejected by Invoke-NvidiaReviewHarness.ps1; the workflow fix now uses the ignored per-lane review directory.",
+          "Run 33999741342 reached terminal failure after all 44 jobs completed; the 21 lane reviewers produced v2 FAIL receipts and the aggregate validator correctly failed closed.",
+          "The sampled run 33999741342 trace contains AiSummaryRequestStarted, AiSummaryResponse, AiSummarySucceeded, RssPlaybackReady, and NEWS_PLAYBACK_PUBLISHED events; the review finding claiming no AI request/response was a reviewer false positive caused by NUL-padded trace material and an excerpt that omitted the middle events.",
+          "The workflow now strips NUL padding from reviewer material and expands each bounded trace excerpt to 120000 characters while retaining the complete circular trace separately."
         ],
         "unresolved_gaps": ["A fresh post-fix hosted matrix proof remains required before closure."],
-        "review_disposition": "Latest NVIDIA advisory FAIL was manually reconciled against the exact staged files; its masking/path/pending-file findings are contradicted by current workflow and validator text, while the deterministic local gates pass."
+        "review_disposition": "Run 33999741342 NVIDIA TEST_ARTIFACT findings were reconciled against retained evidence: the AI absence finding is a false positive because the trace contains the complete request/response/success path, while the yfinance reviewed-baseline warning is routed to CR-108. The deterministic validator correctly rejected the non-PASS receipts; CR-105 remains open pending the normalized evidence packet and a fresh hosted proof."
+      }
+    },
+    {
+      "id": "CR-106",
+      "phase": "Phase 7",
+      "title": "Restore upstream footer wording and measured narrow ticker lanes",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": [],
+      "objective": "Make the footer disclaimer exactly match upstream and size each live ticker lane to its label plus measured content with no more than a 0-4 pixel trailing allowance, while preserving upstream motion, centering, clipping, fixed-field, and flash behavior.",
+      "acceptance_criteria": [
+        "The footer contains exactly `Delayed by minimum 15 minutes.` including casing, spacing, and punctuation.",
+        "All four live lanes are measured and visually narrow rather than stretched across the scene; no lane exceeds the label plus measured content and the documented 0-4 pixel allowance.",
+        "Vertical centering, fixed-width field behavior required for seamless motion, duplicated tracks, waiting glyphs, trend colors, quote-only flashes, resize handling, and empty-data stopping remain intact.",
+        "The 21 supplied historical product screenshots are retained as uniquely named CR attachments and are treated as diagnostic visual baselines, not v2 closure evidence.",
+        "Focused tests, upstream forward/reverse gates, mandatory review, Release build/test, serialized hosted acceptance, screenshot/trace inspection, and closure evidence all pass."
+      ],
+      "validation_plan": [
+        "Read the upstream footer and ticker source line-by-line from commit 65a53bbbf0cf9af1058363f8939d464ca03858f8 before implementation and record any newly found behavior.",
+        "Run focused width, centering, clipping, resize, empty-data, and motion-continuity tests, then validate compact, normal, wide, and high-DPI working areas.",
+        "Retain and inspect every screenshot and both circular traces from the serialized real-product acceptance workflow."
+      ],
+      "artifacts": [
+        "docs/CR-106-FOOTER-PARITY-AND-TICKER-WIDTH.md",
+        "docs/attachments/CR-106",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerLaneViewModel.cs",
+        "tests/"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete_pending_implementation",
+        "document": "docs/CR-106-FOOTER-PARITY-AND-TICKER-WIDTH.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation and closure scans are pending."]
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [
+          "21 supplied historical product screenshots were copied to docs/attachments/CR-106 with unique lane-prefixed names.",
+          "The upstream source says `Delayed by minimum 15 minutes.` while the current v2 footer says `Delayed market data may apply.`."
+        ],
+        "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
+      }
+    },
+    {
+      "id": "CR-107",
+      "phase": "Phase 7",
+      "title": "Add a stable runtime architecture identifier beside version 2.0",
+      "status": "open",
+      "priority": "low",
+      "depends_on": ["CR-106"],
+      "objective": "Extend the bottom-right version indicator with a short deterministic runtime platform/architecture token so screenshots and physical evidence identify their target without depending on CI runner labels.",
+      "acceptance_criteria": [
+        "The footer displays a stable format such as `2.0 | win-arm64`, `2.0 | linux-x64`, or `2.0 | osx-arm64` without clipping at supported window sizes or DPI scales.",
+        "Windows x64 and arm64, Linux x64 and arm64, and macOS x64 and arm64 map to deterministic tokens, with a tested unknown-runtime fallback.",
+        "Screenshot manifests retain the same architecture token as the visible footer while runner names remain separate metadata.",
+        "Upstream forward/reverse gates, mandatory review, full build/test, serialized hosted acceptance, and evidence inspection pass."
+      ],
+      "validation_plan": [
+        "Inventory the current upstream and v2 footer/version behavior before implementation.",
+        "Add mapping and rendering tests for all supported runtime combinations and fallback behavior.",
+        "Validate the visible footer and manifest token on every supported hosted and available local platform."
+      ],
+      "artifacts": [
+        "docs/CR-107-VERSION-ARCHITECTURE-IDENTIFIER.md",
+        "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+        "src/DoNotPanicPortfolioVisualizer.Shared/",
+        "tests/"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "queued",
+        "document": "docs/CR-107-VERSION-ARCHITECTURE-IDENTIFIER.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation and closure scans are pending."]
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [],
+        "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
+      }
+    },
+    {
+      "id": "CR-108",
+      "phase": "Phase 7",
+      "title": "Refresh the reviewed YFinance upstream baseline",
+      "status": "open",
+      "priority": "normal",
+      "depends_on": ["CR-105"],
+      "objective": "Investigate and close the hosted yfinance upstream-sync warning by verifying the current upstream commit, reviewing relevant behavior, and updating or explicitly retaining the source-cited reviewed baseline.",
+      "acceptance_criteria": [
+        "The live upstream commit and date are verified from the source repository.",
+        "Relevant upstream changes for quote fetching, sessions, retries, parsing, and the YFinance.NET adapter are read and mapped.",
+        "The reviewed baseline is updated or its intentional retention is documented with no unexplained warning.",
+        "Focused YFinance tests, full Release build/test, upstream/reverse gates, NVIDIA review, and a fresh hosted evidence cycle pass."
+      ],
+      "validation_plan": [
+        "Use run 33999741342 circular trace as the initial evidence and verify the upstream reference independently.",
+        "Run the source-cited upstream behavior inventory and focused protocol/parser tests.",
+        "Rerun the serialized hosted matrix after the baseline decision and inspect every lane's yfinance trace."
+      ],
+      "artifacts": [
+        "docs/CR-108-YFINANCE-REVIEW-BASELINE-REFRESH.md",
+        "src/YFinance/YFinance.NET/Config/YFinanceUpstreamSyncMetadata.cs",
+        "src/YFinance/YFinance.NET/Diagnostics/YFinanceUpstreamSyncMonitor.cs",
+        "tests/"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "queued",
+        "document": "docs/CR-108-YFINANCE-REVIEW-BASELINE-REFRESH.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "pending",
+        "zero_missing_behaviors": false,
+        "successive_zero_gap_scans": 0,
+        "unresolved_gaps": ["Implementation and closure scans are pending."]
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": ["Hosted run 33999741342 reports UpstreamYFinanceNewerThanReviewed; quote requests nevertheless returned HTTP 200 in the sampled lane."],
+        "unresolved_gaps": ["Upstream commit verification and reviewed-baseline decision remain outstanding."]
       }
     }
   ],
@@ -7228,6 +7371,9 @@
     "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
     "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization.",
     "CR-088: Intel Mac YFinance.NET.Server startup fails, leaving quote and market lanes degraded."
+    ,"CR-106: upstream footer wording and measured narrow ticker lanes are not yet implemented or physically validated.",
+    "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
+    "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",

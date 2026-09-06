@@ -116,6 +116,25 @@ if ($workflow -notmatch 'Inspect and retain lane closure evidence' -or
 foreach ($contractToken in @('$review = $safeOutput | ConvertFrom-Json', 'review_complete', 'snapshot_id', 'blocking_findings', 'dnppv2-test-artifact-review-result/v2')) {
     if (-not $workflow.Contains($contractToken)) { throw "Workflow is missing defensive reviewer contract token: $contractToken" }
 }
+foreach ($packetToken in @('Read-CircularTraceText', 'ReadAllBytes($tracePath)', '120000', '[TRACE_EXCERPT_OMITTED]')) {
+    if (-not $workflow.Contains($packetToken)) { throw "Hosted reviewer packet is missing binary-safe trace handling or the bounded trace excerpt contract: $packetToken" }
+}
+if ($workflow.Contains('Set-Content -LiteralPath $tracePath')) {
+    throw 'Hosted workflow must never overwrite original circular trace files.'
+}
+if ($workflow -notmatch '\$trace\s*=.*normalizedTraceByPath' -or
+    $workflow -notmatch '\$rssUsable\s*=\s*\$trace' -or
+    $workflow -notmatch '\$content\s*=\s*\$normalizedTraceByPath\[\$_.FullName\]') {
+    throw 'Hosted workflow must read complete binary circular traces before evidence extraction and manifest excerpting.'
+}
+$traceReadIndex = $workflow.IndexOf('$trace =', [StringComparison]::Ordinal)
+$rssEvidenceIndex = $workflow.IndexOf('$rssUsable = $trace', [StringComparison]::Ordinal)
+$manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByPath[$_.FullName]', [StringComparison]::Ordinal)
+$excerptIndex = $workflow.IndexOf('$excerpt = if ($content.Length -le 120000)', [StringComparison]::Ordinal)
+if ($traceReadIndex -lt 0 -or $rssEvidenceIndex -le $traceReadIndex -or
+    $manifestContentIndex -lt 0 -or $excerptIndex -le $manifestContentIndex) {
+    throw 'Hosted workflow trace normalization must precede RSS/AI evidence matching and bounded manifest excerpting.'
+}
 if (-not $workflow.Contains('if: always()') -or
     -not $workflow.Contains('Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"') -or
     -not $workflow.Contains('Write-Host "::add-mask::$env:OPENROUTER_API_KEY"') -or
@@ -126,7 +145,10 @@ if ($workflow -notmatch 'Initialize lane closure receipt after soak' -or
     $workflow -notmatch 'if: always\(\)' -or
     $workflow -notmatch 'soak-failed-or-cancelled' -or
     $workflow -notmatch 'soak-result-missing-after-cancellation' -or
-    -not $workflow.Contains('aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false }')) {
+    -not $workflow.Contains('aiRequestObserved = $null -ne $newsEvidence -and [bool]$newsEvidence.aiRequestObserved') -or
+    -not $workflow.Contains('aiSuccessObserved = $null -ne $newsEvidence -and [bool]$newsEvidence.aiSuccessObserved') -or
+    -not $workflow.Contains('news-evidence.json malformed') -or
+    -not $workflow.Contains('news-evidence.json missing')) {
     throw 'Hosted soak workflow is missing the post-soak attributable lane receipt.'
 }
 if ($workflow -notmatch 'Secret redaction verification failed' -or
@@ -134,6 +156,18 @@ if ($workflow -notmatch 'Secret redaction verification failed' -or
     $workflow -notmatch 'DNPPV_OPENROUTER_API_KEY' -or
     $workflow -notmatch 'Write-Host "::add-mask::\$env:OPENROUTER_API_KEY"') {
     throw 'Hosted soak workflow is missing verified secret redaction for retained evidence.'
+}
+foreach ($binaryToken in @('ReadAllBytes($tracePath)', 'Test-ByteSequence', 'Test-ByteSequenceIgnoringNul', 'normalizedTraceByPath', 'quarantine', 'Move-Item -LiteralPath $tracePath')) {
+    if (-not $workflow.Contains($binaryToken)) { throw "Hosted workflow is missing binary-safe trace secret handling: $binaryToken" }
+}
+if (-not $workflow.Contains('NUL_SECRET_SCAN_SELF_TEST=Passed')) { throw 'Hosted workflow is missing the binary secret scanner NUL-boundary self-test.' }
+if ($workflow -notmatch 'ProductShellWindow\.axaml\.cs:153-181' -or $workflow -notmatch 'Invoke-ProductSoak\.ps1') { throw 'Hosted screenshot timing gate is missing source references.' }
+$soakJob = [regex]::Match($workflow, '(?ms)^  real-product-soak:.*?(?=^  [A-Za-z0-9_-]+:|\z)').Value
+$checkoutIndex = $soakJob.IndexOf('- uses: actions/checkout@v4', [StringComparison]::Ordinal)
+$maskIndex = $soakJob.IndexOf('- name: Validate and mask soak credentials', [StringComparison]::Ordinal)
+$setupIndex = $soakJob.IndexOf('- uses: actions/setup-dotnet@v4', [StringComparison]::Ordinal)
+if ($checkoutIndex -lt 0 -or $maskIndex -le $checkoutIndex -or $setupIndex -le $maskIndex) {
+    throw 'Hosted soak credentials must be masked immediately after checkout and before setup-dotnet.'
 }
 if ($workflow -notmatch 'Test-HostedSoakClosure\.ps1' -or
     $workflow -notmatch 'ExpectedCommitSha \$env:GITHUB_SHA' -or
@@ -147,6 +181,10 @@ $reviewDirectoryProbe = Join-Path $repoRoot 'artifacts/soak/gate-probe/review'
 $null = & git check-ignore -q --no-index $reviewDirectoryProbe
 $ignoredProbe = $LASTEXITCODE -eq 0
 if (-not $ignoredProbe) { throw 'The per-lane reviewer output directory is not covered by the repository artifact ignore rule.' }
+$probeRunId = [DateTime]::UtcNow.Ticks.ToString([Globalization.CultureInfo]::InvariantCulture)
+$dynamicReviewProbe = Join-Path $repoRoot ('artifacts/soak/{0}-{1}-{2}/review' -f $probeRunId, 'windows-2025', 'win-x64')
+$null = & git check-ignore -q --no-index $dynamicReviewProbe
+if ($LASTEXITCODE -ne 0) { throw 'Dynamic hosted lane reviewer output is not covered by the repository artifact ignore rule.' }
 $harnessPath = Join-Path $repoRoot 'build/Invoke-NvidiaReviewHarness.ps1'
 if (-not (Test-Path -LiteralPath $harnessPath -PathType Leaf)) { throw "Missing NVIDIA review harness: $harnessPath" }
 $harnessText = [IO.File]::ReadAllText($harnessPath)

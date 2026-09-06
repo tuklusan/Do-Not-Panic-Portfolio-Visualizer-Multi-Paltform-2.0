@@ -18,6 +18,7 @@ build/local-probe/
 build/local-cycle-*/
 build/vm-artifacts/
 artifacts/
+artifacts/soak/**/review/
 build/vm/test-secrets.json
 build/vm/remote-test-machines.local.txt
 .vs/
