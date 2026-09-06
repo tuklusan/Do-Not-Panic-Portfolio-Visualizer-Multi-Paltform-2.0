@@ -106,7 +106,11 @@ function Test-Closure([string]$Root, [string]$RunId, [string]$CommitSha, [int]$L
             if ($record.runner -ne $runner -or $record.rid -ne $rid) { $failures.Add("Lane closure runner/RID mismatch: $pair") }
             if ($result.runId -ne $RunId -or $result.commitSha -ne $CommitSha -or $result.runner -ne $runner -or $result.rid -ne $rid) { $failures.Add("Review result identity mismatch: $pair") }
             if ($result.reviewType -ne 'TEST_ARTIFACT' -or $result.verdict -ne 'PASS' -or $result.reviewComplete -ne $true) { $failures.Add("Review result is not an authoritative PASS: $pair") }
-            if (@($result.blockingFindings).Count -ne 0) { $failures.Add("Review result contains blocking findings: $pair") }
+            $blockingFindings = @()
+            if ($null -ne $result.blockingFindings) {
+                $blockingFindings = @($result.blockingFindings | Where-Object { $null -ne $_ })
+            }
+            if ($blockingFindings.Count -ne 0) { $failures.Add("Review result contains blocking findings: $pair") }
             $materialHash = Get-Sha256 $manifest.FullName
             if ($result.materialSha256 -ne $materialHash) { $failures.Add("Review material hash mismatch: $pair") }
             $expectedSnapshotId = ('{0}:{1}' -f $CommitSha.ToLowerInvariant(), $materialHash).ToLowerInvariant()
@@ -172,6 +176,19 @@ if ($SelfTest) {
         $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         $pass = Test-Closure $temp '1' 'abc' 1
         if ($pass -notmatch 'HOSTED_SOAK_CLOSURE=Passed') { throw 'Self-test positive v2 closure did not pass.' }
+        $review.blockingFindings = $null
+        $nullReviewJson = $review | ConvertTo-Json -Depth 8
+        $nullReviewJson = $nullReviewJson -replace '("reviewComplete"\s*:\s*true,)', ('$1' + [Environment]::NewLine + '  "blockingFindings": null,')
+        if ($nullReviewJson -notmatch '"blockingFindings"\s*:\s*null') { throw 'Self-test did not serialize explicit null blockingFindings JSON.' }
+        Set-Content -LiteralPath $reviewPath -Value $nullReviewJson -Encoding utf8
+        $record.review.resultSha256 = Get-Sha256 $reviewPath
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
+        $pass = Test-Closure $temp '1' 'abc' 1
+        if ($pass -notmatch 'HOSTED_SOAK_CLOSURE=Passed') { throw 'Self-test null blockingFindings receipt did not pass.' }
+        $review.blockingFindings = @()
+        $review | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reviewPath -Encoding utf8
+        $record.review.resultSha256 = Get-Sha256 $reviewPath
+        $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         $record.schema = 'dnppv2-lane-closure-record/v1'
         $record | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.json') -Encoding utf8
         try { Test-Closure $temp '1' 'abc' 1; throw 'Self-test v1 lane closure was accepted.' } catch { if ($_.Exception.Message -notmatch 'Lane closure is not v2') { throw } }

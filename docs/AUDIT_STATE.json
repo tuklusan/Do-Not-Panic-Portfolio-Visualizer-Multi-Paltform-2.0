@@ -7493,6 +7493,69 @@
         "evidence": [],
         "unresolved_gaps": ["UDP syslog transport is not implemented or validated."]
       }
+    },
+    {
+      "id": "CR-111",
+      "phase": "Phase 7",
+      "title": "Preserve clean PASS receipts when blockingFindings is null",
+      "status": "open",
+      "priority": "high",
+      "depends_on": ["CR-109"],
+      "objective": "Make the hosted lane evidence inspector treat a v2 semantic PASS receipt with JSON blockingFindings=null as an empty finding set, while continuing to reject non-empty, malformed, incomplete, or non-PASS receipts.",
+      "acceptance_criteria": [
+        "A v2 PASS receipt with blockingFindings=null is accepted by the lane inspector.",
+        "A v2 PASS receipt with one or more blocking findings is rejected.",
+        "Missing, malformed, incomplete, and non-PASS receipts remain rejected.",
+        "The hosted workflow and aggregate retain the existing fail-closed evidence contract.",
+        "Forward and reverse upstream scans, focused tests, full gates, NVIDIA review, and a fresh serialized 21-lane proof pass."
+      ],
+      "validation_plan": [
+        "Read the current hosted workflow, lane inspector, receipt schema, self-tests, and upstream equivalent line by line before editing.",
+        "Add focused positive and negative receipt tests, run all repository gates, and run the mandatory NVIDIA review.",
+        "Run and inspect one fresh serialized 21-lane matrix, including screenshots, both circular traces, RSS/AI evidence, review receipts, closure records, and aggregate output.",
+        "Repeat the committed-disk reverse audit twice with zero gaps."
+      ],
+      "artifacts": [
+        "docs/CR-111-NULL-BLOCKING-FINDINGS-RECEIPT-PARITY.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-HostedSoakClosure.ps1",
+        "tests/",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-111-NULL-BLOCKING-FINDINGS-RECEIPT-PARITY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
+          "docs/CR-111-NULL-BLOCKING-FINDINGS-RECEIPT-PARITY.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "queued",
+        "evidence": [
+          "Authoritative run 34014436744 produced v2 PASS receipts with blockingFindings=null, but lane inspection rejected them because PowerShell counted null as one array item."
+        ],
+        "unresolved_gaps": ["Receipt normalization and fresh authoritative proof remain outstanding."]
+      }
     }
   ],
   "remaining_validation_gaps": [

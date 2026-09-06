@@ -444,7 +444,13 @@ jobs:
            $reviewVerdict = if ($null -ne $review -and -not [string]::IsNullOrWhiteSpace([string]$review.verdict)) { [string]$review.verdict } else { 'MALFORMED' }
            $reviewComplete = $null -ne $review -and [bool]$review.review_complete
            $reviewType = if ($null -ne $review) { [string]$review.review_type } else { 'TEST_ARTIFACT' }
-           $reviewFindings = if ($null -ne $review) { @($review.blocking_findings) } else { @([ordered]@{ id = 'MALFORMED-REVIEW'; severity = 'BLOCKER'; message = $reviewParseError }) }
+           $reviewFindings = @()
+           if ($null -ne $review -and $null -ne $review.blocking_findings) {
+             $reviewFindings = @($review.blocking_findings | Where-Object { $null -ne $_ })
+           }
+           elseif ($null -eq $review) {
+             $reviewFindings = @([ordered]@{ id = 'MALFORMED-REVIEW'; severity = 'BLOCKER'; message = $reviewParseError })
+           }
            $semantic = [ordered]@{
              schema = 'dnppv2-test-artifact-review-result/v2'
              reviewType = $reviewType
@@ -514,7 +520,16 @@ jobs:
             }
             $materialHash = if (Test-Path -LiteralPath $manifestPath -PathType Leaf) { (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant() } else { $null }
             $expectedSnapshotId = if ($null -ne $materialHash) { ('{0}:{1}' -f ([string]$env:GITHUB_SHA).ToLowerInvariant(), $materialHash).ToLowerInvariant() } else { $null }
-            if ($null -eq $reviewResult -or $reviewResult.schema -ne 'dnppv2-test-artifact-review-result/v2' -or $reviewResult.verdict -ne 'PASS' -or $reviewResult.reviewComplete -ne $true -or @($reviewResult.blockingFindings).Count -ne 0) { $failures.Add('Semantic TEST_ARTIFACT PASS receipt is missing, incomplete, or not clean.') }
+            $blockingFindings = @()
+            if ($null -ne $reviewResult) {
+              $blockingFindings = @($reviewResult.blockingFindings | Where-Object { $null -ne $_ })
+            }
+            if ($null -eq $reviewResult) {
+              $failures.Add('Semantic TEST_ARTIFACT PASS receipt is missing, incomplete, or not clean.')
+            }
+            elseif ($reviewResult.schema -ne 'dnppv2-test-artifact-review-result/v2' -or $reviewResult.verdict -ne 'PASS' -or $reviewResult.reviewComplete -ne $true -or $blockingFindings.Count -ne 0) {
+              $failures.Add('Semantic TEST_ARTIFACT PASS receipt is missing, incomplete, or not clean.')
+            }
             if ($null -ne $reviewResult -and $reviewResult.materialSha256 -ne $materialHash) { $failures.Add('Semantic review material hash does not match the retained manifest.') }
             if ($null -ne $reviewResult -and ([string]$reviewResult.snapshotId).ToLowerInvariant() -ne $expectedSnapshotId) { $failures.Add('Semantic review snapshot does not match the reconstructed commit/material identity.') }
             foreach ($retainedTextPath in @($manifestPath, $newsPath, $reviewLog, $reviewResultPath, $resultPath) + $tracePaths) {
