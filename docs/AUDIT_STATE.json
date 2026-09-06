@@ -7950,6 +7950,42 @@
           ]
         }
       }
+    },
+    {
+      "id": "CR-116",
+      "phase": "Phase 7",
+      "title": "Enforce hosted-matrix and local-companion dispatch",
+      "status": "queued",
+      "priority": "low",
+      "depends_on": ["CR-092", "CR-095", "CR-109"],
+      "execution_policy": "one-off-out-of-sequence-at-convenient-time",
+      "objective": "Enforce the combined hosted GitHub matrix plus same-duration four-machine local companion acceptance contract without requiring hosted runners to reach the private lab or weakening serialization and availability gates.",
+      "acceptance_criteria": [
+        "Every hosted matrix cycle records a uniquely identified same-duration local-companion dispatch or explicit operator handoff.",
+        "All four local machines are probed at cycle start; available machines run the real product and unavailable machines are explicitly recorded.",
+        "Local lanes produce the same RSS, AI, screenshot, dual-circular-trace, cleanup, and reviewed-evidence contract as hosted lanes.",
+        "No overlapping hosted or local cycle can be launched, and local credentials never enter hosted artifacts.",
+        "Two independent combined cycles pass with no new actionable defects."
+      ],
+      "validation_plan": [
+        "Read CR-092, CR-094, CR-095, CR-109, the hosted workflow, and the local coordinator line by line.",
+        "Add the smallest dispatch/receipt bridge and focused serialization, availability, and secret-free negative tests.",
+        "Run the upstream forward/reverse gates, NVIDIA review, repository gates, and two independent hosted-plus-available-local cycles.",
+        "Inspect every hosted and local manifest, screenshot, circular trace, RSS/AI record, cleanup record, and combined closure receipt."
+      ],
+      "artifacts": [
+        "docs/CR-116-ENFORCE-HOSTED-LOCAL-COMPANION-DISPATCH.md",
+        ".github/workflows/publish-six-rids.yml",
+        "build/Invoke-LocalLabSoakCycle.ps1",
+        "build/Test-LocalLabAvailability.ps1",
+        "docs/AUDIT_STATE.json"
+      ],
+      "current_validation": {
+        "status": "queued",
+        "unresolved_gaps": [
+          "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [
@@ -7966,7 +8002,8 @@
     "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
     "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
-    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof."
+    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof.",
+    "CR-116: hosted push workflow lacks an enforced same-duration local companion dispatch and combined receipt."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
