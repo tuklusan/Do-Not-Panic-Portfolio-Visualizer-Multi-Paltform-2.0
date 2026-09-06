@@ -7880,10 +7880,36 @@
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending",
+        "status": "complete",
         "document": "docs/CR-115-HOSTED-RENDER-RECOVERY-INVESTIGATION.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryDataRootResolver.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryPolicyTests.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryDataRootResolverTests.cs",
+          "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryPolicy.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/DesktopRenderRecoveryDataRootResolver.cs",
+          "src/PortfolioSaver.Desktop/App.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryPolicyTests.cs",
+          "tests/PortfolioSaver.Tests/Services/DesktopRenderRecoveryDataRootResolverTests.cs",
+          "tests/PortfolioSaver.Tests/Services/VisualizerRenderBehaviorTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     }
   ],
