@@ -124,12 +124,13 @@ if ($workflow.Contains('Set-Content -LiteralPath $tracePath')) {
 }
 if ($workflow -notmatch '\$trace\s*=.*normalizedTraceByPath' -or
     $workflow -notmatch '\$rssUsable\s*=\s*\$trace' -or
-    $workflow -notmatch '\$content\s*=\s*\$normalizedTraceByName\[\$_.Name\]') {
+    $workflow -notmatch '\$content\s*=\s*\$normalizedTraceByName\[\$traceFile.Name\]' -or
+    $workflow -notmatch '\$tracePaths\s*\|\s*ForEach-Object') {
     throw 'Hosted workflow must read complete binary circular traces before evidence extraction and manifest excerpting.'
 }
 $traceReadIndex = $workflow.IndexOf('$trace =', [StringComparison]::Ordinal)
 $rssEvidenceIndex = $workflow.IndexOf('$rssUsable = $trace', [StringComparison]::Ordinal)
-$manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByName[$_.Name]', [StringComparison]::Ordinal)
+$manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByName[$traceFile.Name]', [StringComparison]::Ordinal)
 $excerptIndex = $workflow.IndexOf('$excerpt = if ($content.Length -le 120000)', [StringComparison]::Ordinal)
 if ($traceReadIndex -lt 0 -or $rssEvidenceIndex -le $traceReadIndex -or
     $manifestContentIndex -lt 0 -or $excerptIndex -le $manifestContentIndex) {

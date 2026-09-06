@@ -343,16 +343,17 @@ jobs:
                  "screenshot_file=$($_.Name);bytes=$($_.Length);sha256=$hash"
              })
              'trace_files:'
-             (Get-ChildItem -LiteralPath (Join-Path $artifactRoot 'trace') -File -ErrorAction SilentlyContinue | ForEach-Object {
-                 $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
-                   $content = $normalizedTraceByName[$_.Name]
-                   if ($null -eq $content) { throw "Normalized circular trace content is missing: $($_.FullName)" }
+             ($tracePaths | ForEach-Object {
+                 $traceFile = Get-Item -LiteralPath $_
+                 $hash = (Get-FileHash -LiteralPath $traceFile.FullName -Algorithm SHA256).Hash
+                   $content = $normalizedTraceByName[$traceFile.Name]
+                   if ($null -eq $content) { throw "Normalized circular trace content is missing: $($traceFile.FullName)" }
                  foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
                    $content = $content.Replace($secret, '[REDACTED]')
                  }
                  $content = $content -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
                  $excerpt = if ($content.Length -le 120000) { $content } else { $content.Substring(0, 60000) + "`n[TRACE_EXCERPT_OMITTED]`n" + $content.Substring($content.Length - 60000) }
-                 "trace_file=$($_.Name);bytes=$($_.Length);sha256=$hash`n$excerpt"
+                 "trace_file=$($traceFile.Name);bytes=$($traceFile.Length);sha256=$hash`n$excerpt"
              })
            ) -join "`n"
             foreach ($secret in @($env:OPENROUTER_API_KEY, $env:DNPPV_OPENROUTER_API_KEY, $env:NVIDIA_API_KEY_CODING) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) {
