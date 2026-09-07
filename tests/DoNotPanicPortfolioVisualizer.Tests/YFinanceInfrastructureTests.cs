@@ -205,7 +205,7 @@ public sealed class YFinanceInfrastructureTests
             async () =>
             {
                 Task ensureTask = manager.EnsureOwnedServerAsync("DNPPV.Tests / unsafe", cts.Token);
-                await probe.Entered.WaitAsync(TimeSpan.FromSeconds(5));
+                await probe.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 cts.Cancel();
                 await ensureTask;
             });
