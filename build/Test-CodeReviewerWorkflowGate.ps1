@@ -46,6 +46,26 @@ if ($adapter -notmatch 'DNPPV_REVIEW_ENGINE' -or
 }
 
 if ($SelfTest) {
+    $probeRoot = Join-Path ([IO.Path]::GetTempPath()) ('dnppv2-generic-review-probe-' + [guid]::NewGuid().ToString('N'))
+    $probeEngine = Join-Path $probeRoot 'engine.ps1'
+    New-Item -ItemType Directory -Path $probeRoot -Force | Out-Null
+    try {
+        @'
+param([string]$ReviewType, [string]$ReviewMaterialPath, [string]$OutputDirectory, [int]$RequestTimeoutSeconds)
+if ($env:CODE_REVIEWER_ENDPOINT -ne 'https://review.example.test' -or
+    $env:CODE_REVIEWER_MODEL -ne 'model/test' -or
+    $env:CODE_REVIEWER_API_KEY -ne 'probe-secret' -or
+    $env:CODE_REVIEWER_REQUEST_OVERRIDES_JSON -ne '{"stream":false}') { exit 31 }
+Write-Output '{"verdict":"PASS","review_complete":true,"blocking_findings":[]}'
+'@ | Set-Content -LiteralPath $probeEngine -Encoding utf8
+        $env:DNPPV_REVIEW_ENGINE = $probeEngine
+        $probeOutput = @(& (Join-Path $PSScriptRoot 'Invoke-CodeReviewHarness.ps1') -ReviewType CODE -ReviewMaterialPath $probeEngine -Endpoint 'https://review.example.test' -Model 'model/test' -ApiKey 'probe-secret' -RequestOverridesJson '{"stream":false}')
+        if (($probeOutput | Out-String) -notmatch '"verdict":"PASS"') { throw 'Generic adapter configuration/result self-test failed.' }
+    }
+    finally {
+        Remove-Item -LiteralPath $probeRoot -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item Env:DNPPV_REVIEW_ENGINE -ErrorAction SilentlyContinue
+    }
     Write-Output 'CODE_REVIEWER_WORKFLOW_GATE_SELFTEST=Passed'
     exit 0
 }

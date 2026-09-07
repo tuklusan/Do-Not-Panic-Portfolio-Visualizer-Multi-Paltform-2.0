@@ -77,7 +77,8 @@ try {
     if ($null -ne $RequestOverridesJson) { $env:CODE_REVIEWER_REQUEST_OVERRIDES_JSON = $RequestOverridesJson }
 
     $engineOutput = @(& $enginePath -ReviewType $ReviewType -ReviewMaterialPath $ReviewMaterialPath -OutputDirectory $OutputDirectory -RequestTimeoutSeconds $RequestTimeoutSeconds 2>&1)
-    if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $engineExitCode = if (Get-Variable -Name LASTEXITCODE -ErrorAction SilentlyContinue) { [int]$LASTEXITCODE } else { 0 }
+    if ($engineExitCode -ne 0) { exit $engineExitCode }
     $result = $null
     foreach ($line in (($engineOutput | Out-String) -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -Last 30)) {
         try {
