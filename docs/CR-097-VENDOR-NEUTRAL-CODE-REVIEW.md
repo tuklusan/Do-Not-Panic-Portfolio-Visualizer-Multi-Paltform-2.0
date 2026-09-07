@@ -56,11 +56,9 @@ provider name in the caller. `build/Run-CodeReview.ps1` is the matching generic
 runner and `build/Test-CodeReviewerWorkflowGate.ps1` verifies the entry-point
 contract without contacting the configured reviewer.
 
-The configured model pair may now be supplied as
-`CODE_REVIEWER_PRIMARY_MODEL` and `CODE_REVIEWER_FALLBACK_MODEL`, and the
-secret may be supplied as `CODE_REVIEWER_API_KEY`; the existing NVIDIA
-deployment variables remain compatible fallback configuration for the current
-engine. The adapter never writes or echoes the secret.
+Backend model and secret aliasing remains a separate frozen-harness change and
+requires explicit operator approval. The adapter never writes or echoes a
+secret.
 
 ## Upstream and Reverse Gates
 
