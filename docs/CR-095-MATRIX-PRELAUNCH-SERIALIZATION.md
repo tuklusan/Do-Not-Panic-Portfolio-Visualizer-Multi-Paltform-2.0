@@ -34,9 +34,9 @@ runner lanes are queued, running, or still publishing and reviewing evidence.
 
 The workflow gate passes with the global non-canceling concurrency group. A
 second trigger is observed as pending until the first complete matrix reaches
-terminal state; no overlapping matrix is admitted. The existing 21-lane
-publish/soak and per-lane plus aggregate evidence requirements remain intact for
-the current 20-lane matrix. The retired Ubuntu Slim lane is historical context
+terminal state; no overlapping matrix is admitted. The existing 20-lane
+publish/soak and per-lane plus aggregate evidence requirements remain intact
+for the current matrix. The retired Ubuntu Slim lane is historical context
 only and is not part of the current serialization count.
 CR-095 cannot be closed, and its own matrix verification cannot be accepted,
 until predecessor CR-094 is closed with its fresh 20-lane evidence and the

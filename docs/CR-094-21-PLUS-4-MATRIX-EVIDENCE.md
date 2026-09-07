@@ -100,12 +100,13 @@ output, and redacted closure record. The results must be correlated to this CR.
 
 ## Current Validation
 
-The static workflow gates pass with 21 identical publish and soak entries. In
+The static workflow gates pass with 20 identical publish and soak entries. In
 hosted run `34061105976`, 20 soak manifests were retrieved and inspected; every
 retrieved product result passed, cleaned up its process, retained four circular
 trace files, and recorded settled screenshot evidence. The `macos-26`
 `osx-arm64` lane produced no soak manifest, and the aggregate therefore failed
-closed with `Expected 21 soak evidence manifests, found 20`. This CR remains
+closed with `Expected 21 soak evidence manifests, found 20`. This historical
+run remains diagnostic evidence; this CR remains
 open until every lane has a complete, reviewed evidence record.
 
 Hosted run `34063195136` supplied all 21 soak manifests. Every product soak
@@ -114,3 +115,10 @@ settled screenshot evidence. The aggregate still failed closed: only 20
 semantic review results were present because `ubuntu-slim` had none, and 12
 lane reviews contained blocking findings. The run is diagnostic evidence, not
 closure proof.
+
+Hosted run `34090389513` exercised the corrected 20-lane workflow: all 20
+publish lanes and all 20 product-soak lanes completed successfully. Its
+retained aggregate validator output was `HOSTED_SOAK_CLOSURE=Passed`, but the
+post-soak wrapper failed on stale `$LASTEXITCODE` handling. The wrapper has
+since been corrected and this run is retained as diagnostic evidence rather
+than being misrepresented as final hosted closure proof.

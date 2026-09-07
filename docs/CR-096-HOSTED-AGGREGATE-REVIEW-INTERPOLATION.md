@@ -46,8 +46,9 @@ recorded as new 2.0 infrastructure; no upstream product behavior is removed.
    `docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md`.
 
 Acceptance status: criteria 1-3 are locally verified; criterion 4 remains
-pending until the corrected checkpoint's hosted run reaches terminal state and
-the aggregate review consumes all 20 lane records.
+pending because run `34090389513` exposed a separate post-soak wrapper exit-code
+bug. The corrected wrapper must consume all 20 lane records in a terminal
+hosted proof.
 
 ## Closure Evidence
 

@@ -61,7 +61,7 @@ truth. Installer-only, WPF-only, and historical artifacts remain out of scope.
    from aggregate configuration.
 6. Keep exactly one lane-level `TEST_ARTIFACT` invocation and no aggregate
    remote reviewer invocation. Bound the deterministic aggregate timeout to a
-  documented defensive limit (60 minutes for 21-lane artifact download and
+  documented defensive limit (120 minutes for 20-lane artifact download and
   hashing) and remove the
    blind artifact-publication sleep unless a bounded race workaround is proven.
 7. Expand `Test-HostedSoakClosure.ps1 -SelfTest` for v1 rejection, malformed and
