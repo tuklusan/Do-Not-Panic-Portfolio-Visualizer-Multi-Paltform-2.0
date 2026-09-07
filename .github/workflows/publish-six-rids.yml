@@ -153,6 +153,9 @@ jobs:
       - name: Validate local companion request
         shell: pwsh
         run: ./build/Test-LocalCompanionDispatch.ps1 -SelfTest
+      - name: Validate local companion receipt contract
+        shell: pwsh
+        run: ./build/Test-LocalCompanionReceipt.ps1 -SelfTest
       - uses: actions/upload-artifact@v4
         with:
           name: dnppv2-local-companion-dispatch-${{ github.run_id }}

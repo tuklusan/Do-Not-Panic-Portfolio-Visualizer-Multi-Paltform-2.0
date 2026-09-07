@@ -21,6 +21,7 @@
     "build/Test-HostedSoakQuarantine.ps1",
     "build/Test-LocalLabAvailability.ps1",
     "build/Test-LocalCompanionDispatch.ps1",
+    "build/Test-LocalCompanionReceipt.ps1",
     "build/Test-MigrationBehaviorGate.ps1",
     "build/Test-NvidiaWorkflowGate.ps1",
     "build/Test-PowerShellSyntax.ps1",

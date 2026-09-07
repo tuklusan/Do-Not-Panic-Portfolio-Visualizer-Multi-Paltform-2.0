@@ -28,6 +28,7 @@ $manifest = [ordered]@{
     schema = 'dnppv2-local-companion-dispatch/v1'
     runId = $RunId
     commitSha = $CommitSha
+    companionCycleId = "dnppv2-local-cycle-$RunId"
     durationMinutes = $DurationMinutes
     hostedLaneCount = $HostedLaneCount
     requiredMachines = @('linux-x64-lxqt', 'windows-10-reference', 'windows-11-laptop', 'macos-x64-intel-big-sur')

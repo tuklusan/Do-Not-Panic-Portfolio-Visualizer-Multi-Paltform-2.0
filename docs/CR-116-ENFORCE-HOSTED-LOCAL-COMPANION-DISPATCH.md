@@ -18,8 +18,11 @@ SANYALnet Labs." See LICENSE for full terms.
 ## Status
 
 In progress. The workflow now emits a credential-free, same-duration local
-companion request for every hosted cycle. Physical companion execution and
-combined closure evidence remain pending the next available local-lab cycle.
+companion request for every hosted cycle, and the checked-in receipt validator
+binds a completed local cycle to that request by run-derived cycle identity,
+duration, machine coverage, and terminal lane status. Physical execution of
+two combined cycles remains an acceptance requirement; no new soak is launched
+solely to validate the validator or post-run instrumentation.
 
 Two attempts against the same self-contained hosted candidate are recorded as
 diagnostic only. Linux, Windows 10, and Intel macOS produced successful
@@ -47,8 +50,10 @@ traces, missing requests, cleanup defects, or unknown runtime failures.
 CR-092 defines the combined hosted-plus-local acceptance contract and
 `build/Invoke-LocalLabSoakCycle.ps1` implements the physical-machine runner.
 The hosted workflow now emits `dnppv2-local-companion-dispatch-<run>.json` as a
-credential-free handoff. A private-lab operator must consume that request with
-the frozen local coordinator; hosted runners never reach the private LAN.
+credential-free handoff. Its `companionCycleId` is the deterministic cycle
+identity expected by `build/Test-LocalCompanionReceipt.ps1`. A private-lab
+operator consumes that request with the frozen local coordinator and validates
+the resulting cycle manifest; hosted runners never reach the private LAN.
 
 ## Functional Inventory
 
@@ -60,15 +65,18 @@ the frozen local coordinator; hosted runners never reach the private LAN.
 | COMP-04 | The bridge cannot launch a second local or hosted cycle while one is queued or active. | Serialization and concurrency gate tests. |
 | COMP-05 | Local-network unavailability remains an explicit non-product skip; an available-machine failure remains a failure. | Aggregated disposition and negative tests. |
 | COMP-06 | The bridge never exposes local credentials or requires hosted runners to reach the private LAN. | Secret-scan and workflow topology review. |
+| COMP-07 | A local result cannot be accepted for the wrong hosted request, duration, machine set, or non-terminal lane state. | `build/Test-LocalCompanionReceipt.ps1 -SelfTest` and receipt validation. |
 
 ## Required Work
 
-Design and implement the smallest reliable bridge between the hosted workflow
-and an operator-controlled local coordinator. Prefer a checked-in dispatch and
-receipt protocol over pretending that a hosted GitHub runner can SSH into the
-private lab. Keep `Invoke-LocalLabSoakCycle.ps1` locked unless a concrete
-continuation defect requires a change. Reconcile the resulting combined
-evidence with CR-092, CR-094, and CR-109 without weakening any existing gate.
+The dispatch and receipt bridge is implemented by
+`build/New-LocalCompanionDispatch.ps1` and
+`build/Test-LocalCompanionReceipt.ps1`. The operator-controlled local
+coordinator must consume the request using the prescribed cycle identity and
+retain the validated receipt with the combined evidence. Keep
+`Invoke-LocalLabSoakCycle.ps1` locked unless a concrete continuation defect
+requires a change. Reconcile combined evidence with CR-092, CR-094, and CR-109
+without weakening any existing gate.
 
 ## Closure Gates
 

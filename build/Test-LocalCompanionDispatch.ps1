@@ -21,7 +21,7 @@ try {
     $path = Join-Path $root 'dispatch.json'
     & (Join-Path $PSScriptRoot 'New-LocalCompanionDispatch.ps1') -RunId 'test-run' -CommitSha ('a' * 40) -OutputPath $path | Out-Null
     $m = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
-    if ($m.schema -ne 'dnppv2-local-companion-dispatch/v1' -or $m.durationMinutes -ne 10 -or
+    if ($m.schema -ne 'dnppv2-local-companion-dispatch/v1' -or $m.companionCycleId -ne 'dnppv2-local-cycle-test-run' -or $m.durationMinutes -ne 10 -or
         $m.hostedLaneCount -ne 20 -or $m.credentialsIncluded -ne $false -or
         @($m.requiredMachines).Count -ne 4 -or $m.availabilityRequiredAtCycleStart -ne $true) {
         throw 'Local companion dispatch manifest contract failed.'

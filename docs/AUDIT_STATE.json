@@ -8158,19 +8158,67 @@
         ".github/workflows/publish-six-rids.yml",
         "build/Invoke-LocalLabSoakCycle.ps1",
         "build/Test-LocalLabAvailability.ps1",
+        "build/New-LocalCompanionDispatch.ps1",
+        "build/Test-LocalCompanionDispatch.ps1",
+        "build/Test-LocalCompanionReceipt.ps1",
         "docs/AUDIT_STATE.json"
       ],
-      "current_validation": {
-        "status": "queued",
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-116-ENFORCE-HOSTED-LOCAL-COMPANION-DISPATCH.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "build/Test-LocalLabAvailability.ps1",
+          "docs/CR-092-LOCAL-COMPANION-SOAK-GATE.md"
+        ],
+        "zero_known_gaps": true,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "build/Test-LocalLabAvailability.ps1",
+          "build/New-LocalCompanionDispatch.ps1",
+          "build/Test-LocalCompanionDispatch.ps1",
+          "build/Test-LocalCompanionReceipt.ps1",
+          "docs/CR-092-LOCAL-COMPANION-SOAK-GATE.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "pending-combined-cycle-evidence",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-LocalLabSoakCycle.ps1",
+          "build/New-LocalCompanionDispatch.ps1",
+          "build/Test-LocalCompanionReceipt.ps1",
+          "docs/CR-116-ENFORCE-HOSTED-LOCAL-COMPANION-DISPATCH.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
         "unresolved_gaps": [
-          "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle.",
-          "Fresh four-machine 10-minute cycle reached all four machines but Linux and both Windows lanes lacked AiSummarySucceeded after OpenRouter HTTP 429, while macOS failed its strict RSS/AI trace-pair evidence gate.",
-        "Two local attempts proved Linux, Windows 10, and Intel macOS but Windows 11 failed strict AI evidence after the configured external OpenRouter endpoint returned HTTP 429; one second-attempt Linux child exceeded its bounded completion window. No local-machine quota was involved."
+          "Two independent combined hosted-plus-local cycles still require retained dispatch-bound receipt evidence before closure."
+        ]
+      },
+      "current_validation": {
+        "status": "implementation-validated-awaiting-combined-evidence",
+        "unresolved_gaps": [
+          "Two independent combined hosted-plus-local cycles still require retained dispatch-bound receipt evidence before closure.",
+          "Existing local product evidence includes external OpenRouter HTTP 429 conditions; under CR-117 these are advisory only, while missing traces, requests, cleanup, or unknown runtime defects remain blocking."
         ],
         "diagnostic_evidence": [
           "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
           "The frozen harness was unchanged; no local harness optimization or modification was made.",
-          "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection."
+          "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection.",
+          "Dispatch and receipt contract self-tests passed; the receipt validator rejects mismatched cycle identity and validates duration, four-machine coverage, terminal statuses, and credential-free dispatch."
         ]
       }
     },
