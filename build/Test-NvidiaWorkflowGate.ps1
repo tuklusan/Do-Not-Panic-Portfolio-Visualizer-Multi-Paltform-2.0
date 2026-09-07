@@ -13,7 +13,7 @@
 # ============================================================================
 param(
     [string]$Endpoint = "https://integrate.api.nvidia.com/v1",
-    [string]$Model = "nvidia/nemotron-3-ultra-550b-a55b",
+    [string]$Model = "nvidia/nemotron-3-super-120b-a12b",
     [ValidateRange(30, 7200)][int]$TimeoutSeconds = 3600,
     [switch]$AcknowledgeEndpointOverride
 )
@@ -60,7 +60,7 @@ $body = @{
     max_tokens = 128
     temperature = 0
     stream = $false
-    # nvidia/nvidia/nemotron-3-ultra-550b-a55b may exhaust its output allowance in reasoning_content and
+    # Nemotron may exhaust its output allowance in reasoning_content and
     # return empty final content unless thinking is disabled explicitly.
     chat_template_kwargs = @{ enable_thinking = $false }
 } | ConvertTo-Json -Depth 8

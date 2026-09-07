@@ -16,7 +16,7 @@ param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
     [Parameter(ParameterSetName = 'Review')][string]$Endpoint = 'https://integrate.api.nvidia.com/v1',
-    [Parameter(ParameterSetName = 'Review')][string]$Model = 'nvidia/nemotron-3-ultra-550b-a55b',
+    [Parameter(ParameterSetName = 'Review')][string]$Model = 'nvidia/nemotron-3-super-120b-a12b',
     [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/nvidia-review',
     [Parameter(ParameterSetName = 'Review')][int]$MaxRequestBytes = 1048576,
     [Parameter(ParameterSetName = 'Review')][ValidateRange(1, 32768)][int]$MaxTokens = 8192,
@@ -526,7 +526,7 @@ function New-NvidiaHarnessRequestBody {
 
 function Invoke-HarnessSelfTest {
     try {
-        $deepSeekBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3-ultra-550b-a55b' -TokenLimit 16 |
+        $deepSeekBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3-super-120b-a12b' -TokenLimit 16 |
             ConvertFrom-Json -ErrorAction Stop
         $genericBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'generic-model' -TokenLimit 16 |
             ConvertFrom-Json -ErrorAction Stop

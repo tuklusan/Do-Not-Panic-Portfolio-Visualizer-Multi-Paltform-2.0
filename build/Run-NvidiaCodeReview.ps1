@@ -15,7 +15,7 @@
 param(
     [string]$Endpoint = "https://integrate.api.nvidia.com/v1",
     # Project default verified against the configured Nvidia endpoint on 2026-06-04.
-    [string]$Model = "nvidia/nemotron-3-ultra-550b-a55b",
+    [string]$Model = "nvidia/nemotron-3-super-120b-a12b",
     [string]$OutputDirectory = "build/nvidia-review",
     [int]$MaxFileCharacters = 100000,
     [int]$MaxPacketCharacters = 600000,
@@ -309,7 +309,7 @@ if ($SelfTest) {
     }
 
     try {
-        $deepSeekBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3-ultra-550b-a55b' -Packet 'self-test packet' -MaxTokensValue 16 -DisableThinking |
+        $deepSeekBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3-super-120b-a12b' -Packet 'self-test packet' -MaxTokensValue 16 -DisableThinking |
             ConvertFrom-Json
         $genericBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'generic-model' -Packet 'self-test packet' -MaxTokensValue 16 |
             ConvertFrom-Json
@@ -322,7 +322,7 @@ if ($SelfTest) {
         throw "Nvidia review gate self-test failed; Nvidia request body does not disable thinking mode."
     }
 
-    if ($deepSeekBodyProbe.model -ne 'nvidia/nemotron-3-ultra-550b-a55b' -or
+    if ($deepSeekBodyProbe.model -ne 'nvidia/nemotron-3-super-120b-a12b' -or
         $deepSeekBodyProbe.messages.Count -ne 2 -or
         $deepSeekBodyProbe.messages[0].role -ne 'system' -or
         $deepSeekBodyProbe.messages[1].role -ne 'user' -or
