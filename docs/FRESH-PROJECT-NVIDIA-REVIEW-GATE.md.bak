@@ -53,7 +53,9 @@ operator-authorized slow-review dispatch may use 14400 seconds. These limits
 apply to the reviewer request itself and are separate from the enclosing job
 timeout. A shared reviewer host must wait at least 30 seconds between observed
 NVIDIA responses, including transient failures, using the cross-process spacing
-mutex; this cadence is mandatory and is not a polling loop.
+mutex. The project workflow declares this contract as
+`DNPPV_REVIEW_CADENCE_SECONDS=30`; the harness rejects any other configured
+value. This cadence is mandatory and is not a polling loop.
 
 ## 2. Verified reference baseline
 

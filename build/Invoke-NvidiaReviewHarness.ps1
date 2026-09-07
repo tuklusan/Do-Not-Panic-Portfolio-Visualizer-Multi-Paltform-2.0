@@ -37,6 +37,10 @@ $script:NvidiaRetryPolicy = [ordered]@{
 }
 $script:NvidiaSpacingRoot = $null
 $script:ReviewerIdentity = 'dnppv2-nvidia-review-gate-v1'
+$configuredCadence = [Environment]::GetEnvironmentVariable('DNPPV_REVIEW_CADENCE_SECONDS')
+if (-not [string]::IsNullOrWhiteSpace($configuredCadence) -and $configuredCadence -ne '30') {
+    throw "Reviewer cadence mismatch: expected 30 seconds, received '$configuredCadence'."
+}
 
 $commonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
 if (-not (Test-Path -LiteralPath $commonPath)) { throw "Missing Nvidia workflow common module: $commonPath" }

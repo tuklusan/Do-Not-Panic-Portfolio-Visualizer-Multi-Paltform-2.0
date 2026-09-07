@@ -37,6 +37,7 @@ permissions:
 env:
   EXPECTED_LANE_COUNT: '20'
   DNPPV_REVIEWER_ID: dnppv2-nvidia-review-gate-v1
+  DNPPV_REVIEW_CADENCE_SECONDS: '30'
   REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-30m' }}
 
 jobs:
