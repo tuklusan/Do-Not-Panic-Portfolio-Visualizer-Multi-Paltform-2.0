@@ -8140,7 +8140,12 @@
       "current_validation": {
         "status": "queued",
         "unresolved_gaps": [
-          "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle."
+          "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle.",
+          "Two local attempts proved Linux, Windows 10, and Intel macOS but Windows 11 failed strict AI evidence on provider HTTP 429; one second-attempt Linux child exceeded its bounded completion window."
+        ],
+        "diagnostic_evidence": [
+          "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
+          "The frozen harness was unchanged; no local harness optimization or modification was made."
         ]
       }
     },
