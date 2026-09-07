@@ -7181,7 +7181,7 @@
       "id": "CR-104",
       "phase": "Phase 7",
       "title": "Retire the Ubuntu Slim hosted lane",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "low",
       "depends_on": ["CR-094", "CR-096"],
       "objective": "Remove ubuntu-slim consistently from the required hosted matrix, gates, harnesses, evidence aggregation, and documentation after the current run is consumed, without weakening remaining lane requirements or product coverage.",
@@ -7231,13 +7231,27 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "implementation-complete-pending-hosted-validation",
-        "run_id": "34070178397",
-        "unresolved_gaps": ["Run 34070178397 was the consumed 21-lane run and cannot prove the new 20-lane matrix; fresh serialized validation remains required."],
+        "status": "hosted-validation-passed",
+        "run_id": "34129921207",
+        "unresolved_gaps": [],
         "closure_evidence": [
-          "Run 34070178397 reached terminal cancellation with all publish lanes complete; ubuntu-slim was not accepted as a required closure lane because its soak was cancelled and its evidence was missing.",
-          "Operational workflow and deterministic exact-matrix gate now define 20 lanes and contain no ubuntu-slim entry."
+          "Two successive scans found no operational ubuntu-slim reference; remaining mentions are historical or diagnostic.",
+          "Run 34129921207 reached terminal success with all 20 remaining lanes and aggregate evidence consumed.",
+          "Operational workflow and deterministic exact-matrix gate define 20 lanes and contain no ubuntu-slim entry."
         ]
       }
     },

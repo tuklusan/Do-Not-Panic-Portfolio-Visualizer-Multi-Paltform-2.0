@@ -51,3 +51,12 @@ Closure requires two successive repository scans with no stale `ubuntu-slim` ope
 ## Upstream gate
 
 This is validation infrastructure, not an upstream product behavior change. Before implementation, inventory the upstream and current validation contracts; after implementation, perform the required reverse scan and record that no upstream product behavior was removed.
+
+## Closure Evidence
+
+Two successive disk scans found no operational `ubuntu-slim` reference; the
+remaining mentions are explicitly historical or diagnostic. The deterministic
+workflow gate reports `WORKFLOW_GATE_CONFIGURATION=Passed;RUNNERS=20`, and
+serialized hosted run `34129921207` reached terminal success with all 20
+remaining lanes and their retained evidence consumed by the aggregate. The
+checkpoint is committed and pushed.
