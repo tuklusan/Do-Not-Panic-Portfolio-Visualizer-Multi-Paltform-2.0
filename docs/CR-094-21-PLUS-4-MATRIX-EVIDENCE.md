@@ -76,7 +76,7 @@ validation reporting 20 entries, NVIDIA source/evidence review, and a fresh
 terminal matrix with every 20 hosted lanes accounted for. Local companion
 machines remain dynamically probed and are recorded as unavailable when absent.
 
-**Status:** Open
+**Status:** Closed. Fresh 20-lane hosted evidence is bound to run `34129921207`.
 
 ## Upstream Behavior Inventory
 
@@ -106,8 +106,8 @@ retrieved product result passed, cleaned up its process, retained four circular
 trace files, and recorded settled screenshot evidence. The `macos-26`
 `osx-arm64` lane produced no soak manifest, and the aggregate therefore failed
 closed with `Expected 21 soak evidence manifests, found 20`. This historical
-run remains diagnostic evidence; this CR remains
-open until every lane has a complete, reviewed evidence record.
+run remains diagnostic evidence. Fresh run `34129921207` supplies the complete
+20-lane reviewed evidence record for this CR.
 
 Hosted run `34063195136` supplied all 21 soak manifests. Every product soak
 reported `Passed`, `processCleanedUp=true`, four circular trace files, and

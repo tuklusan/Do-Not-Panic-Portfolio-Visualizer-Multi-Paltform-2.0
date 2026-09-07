@@ -15,7 +15,7 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered while inspecting hosted run `34032694317`.
+Closed. The bounded retry and fail-closed behavior is proven by hosted run `34129921207`.
 
 ## Objective
 
