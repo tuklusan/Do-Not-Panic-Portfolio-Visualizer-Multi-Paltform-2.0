@@ -14,7 +14,9 @@
 [CmdletBinding()]
 param(
     [string]$RemoteName,
-    [string]$RemoteUrl
+    [string]$RemoteUrl,
+    [Parameter(ValueFromPipeline = $true)]
+    [string]$PipelineInput
 )
 
 Set-StrictMode -Version Latest
@@ -49,7 +51,7 @@ if ($configuredHooksPath -notin @('.githooks', '.githooks/')) {
     throw "Repository-local core.hooksPath is not active: $configuredHooksPath"
 }
 
-$updates = @($input | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$updates = @([Console]::In.ReadToEnd() -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 foreach ($update in $updates) {
     $parts = $update -split '\s+', 3
     if ($parts.Count -ne 3) { throw "Malformed pre-push update tuple: $update" }
