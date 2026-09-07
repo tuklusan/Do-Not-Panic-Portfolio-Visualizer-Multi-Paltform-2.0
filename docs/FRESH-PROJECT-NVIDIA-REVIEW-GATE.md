@@ -56,6 +56,9 @@ NVIDIA responses, including transient failures, using the cross-process spacing
 mutex. The project workflow declares this contract as
 `DNPPV_REVIEW_CADENCE_SECONDS=30`; the harness rejects any other configured
 value. This cadence is mandatory and is not a polling loop.
+The controlling workflow must additionally sleep for 30 seconds between
+reviewer status checks; it must not busy-poll or issue a second check sooner.
+This applies to local orchestration and hosted result-consumption loops alike.
 
 ## 2. Verified reference baseline
 
