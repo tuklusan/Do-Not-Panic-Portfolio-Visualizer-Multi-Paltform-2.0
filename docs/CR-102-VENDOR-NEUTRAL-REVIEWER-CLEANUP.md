@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 **Priority:** Low
 
-**Status:** Deferred
+**Status:** Closed
 
 **Phase:** Phase 7 / workflow maintenance
 
@@ -26,8 +26,8 @@ patent, trademark, and governing-law provisions.
 
 Refactor the external code-review gate so that its mechanism is vendor-neutral
 while retaining the currently configured reviewer as deployment configuration.
-The active migration queue remains authoritative; this detour is scheduled only
-between higher-priority product and validation CRs.
+The generic adapter migration is complete and is now the authoritative review
+entry point for both local and hosted artifact review.
 
 ## Scope
 
@@ -87,9 +87,24 @@ serious-finding validation, snapshot binding, and receipt enforcement.
 - Commit and push only after all gates pass; update `docs/AUDIT_STATE.json` with
   the exact evidence and close this CR only after the independent closure scan.
 
+## Closure evidence
+
+CR-097's approved direct-caller migration replaced the hosted artifact-review
+invocation with `Run-CodeReview.ps1`; the generic adapter owns endpoint, model,
+secret, override validation, semantic-result normalization, retry, and
+fail-closed behavior. CR-103 then added immutable receipt and protected-push
+enforcement without reintroducing provider coupling.
+
+Focused generic reviewer, syntax, license, workflow, upstream-lock, receipt,
+and full Release validation passed. The exact closure candidate received a
+clean NVIDIA CODE PASS and was pushed through the protected pre-push gate with
+an immutable receipt. Two successive reverse scans of generic reviewer callers,
+scripts, tests, workflow, and documentation found no actionable provider-
+coupling gap.
+
 ## Dependencies and scheduling
 
-This CR supersedes the broad deferred intent in CR-097 only when execution is
-started. It must not interrupt an active product-port, soak, or evidence-repair
-CR. It may be started after the current queue reaches a quiet checkpoint and
-the reviewer service is available for the required final gate.
+The former deferred intent in CR-097 is superseded by the completed generic
+adapter and immutable receipt work. No hosted matrix was required for this
+documentation and reviewer-entry-point closure; the repository currently has
+no push-triggered matrix workflow registered.
