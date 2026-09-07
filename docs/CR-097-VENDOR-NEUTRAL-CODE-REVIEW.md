@@ -18,6 +18,10 @@ patent, trademark, and governing-law provisions.
 
 ## Priority and Scheduling
 
+Implementation is now active after the required upstream inventory and
+pre-development gate passed. The existing configured reviewer remains the
+deployment backend while the caller contract is made provider-neutral.
+
 This is a low-priority architecture detour. It must remain deferred while the
 active migration queue or a required hosted validation run is in progress and
 may be selected only at a convenient queue boundary.
@@ -41,6 +45,12 @@ review, immutable snapshots, fail-closed behavior, or retained evidence.
 | VR-06 | Serious findings require concrete requirement, location, problem, and evidence. | Generic harness finding validation. | Planned |
 | VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Planned |
 | VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Planned |
+
+The provider-neutral entry point is `build/Invoke-CodeReviewHarness.ps1`. It
+accepts only the review protocol's typed request, resolves the configured
+engine through `DNPPV_REVIEW_ENGINE` (defaulting to the current gate), and
+preserves the engine's semantic result and exit status without embedding a
+provider name in the caller.
 | VR-09 | Current provider configuration remains operational after renaming. | NVIDIA NIM values remain repository configuration only, never generic implementation vocabulary. | Planned |
 
 ## Upstream and Reverse Gates

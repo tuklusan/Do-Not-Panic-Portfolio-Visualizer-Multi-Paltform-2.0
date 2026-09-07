@@ -5346,7 +5346,7 @@
       "id": "CR-097",
       "phase": "Phase 7",
       "title": "Vendor-neutral independent code review gate",
-      "status": "deferred",
+      "status": "in_progress",
       "priority": "low",
       "depends_on": [
         "CR-096"
@@ -5375,38 +5375,51 @@
         "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending_deferred",
+        "status": "complete",
         "document": "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files": [],
-        "zero_known_gaps": false,
+        "source_files": [
+          "build/DeepSeekWorkflowCommon.ps1",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Test-DeepSeekWorkflowGate.ps1",
+          "build/validation/Invoke-DeepSeekArtifactReview.ps1",
+          ".github/workflows/itch-publish.yml",
+          "tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewTests.cs"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending_deferred",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_scanned": [],
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": [
-          "Deferred until this low-priority CR reaches a queue boundary."
-        ]
+        "source_files_scanned": [
+          "build/DeepSeekWorkflowCommon.ps1",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Test-DeepSeekWorkflowGate.ps1",
+          "build/validation/Invoke-DeepSeekArtifactReview.ps1",
+          ".github/workflows/itch-publish.yml",
+          "tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewTests.cs",
+          "docs/CR-097-VENDOR-NEUTRAL-CODE-REVIEW.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "deferred",
+        "status": "inventory-complete-implementation-pending",
         "unresolved_gaps": [
-          "Implementation and validation are intentionally deferred."
+          "Vendor-neutral implementation, focused tests, reviewer gate, and closure proof remain outstanding."
         ],
         "closure_evidence": []
       },
       "upstream_closure_audit": {
-        "status": "deferred",
+        "status": "pending",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files_rescanned": [],
         "zero_unmapped_behaviors": false,
         "successive_zero_gap_scans": 0,
         "unresolved_gaps": [
-          "Deferred until implementation begins."
+          "Implementation and independent closure validation remain outstanding."
         ]
       }
     },
@@ -7121,7 +7134,7 @@
       "id": "CR-103",
       "phase": "Phase 7",
       "title": "Immutable committed-candidate review receipt and pre-push enforcement",
-      "status": "deferred",
+      "status": "in_progress",
       "priority": "low",
       "depends_on": ["CR-097"],
       "objective": "Replace mutable working-tree CODE authorization with a deterministic committed-candidate model and an ignored, atomic PASS receipt bound to one exact Git base/head range, immutable snapshot, review material, reviewer result, and CR/task scope.",
@@ -7613,8 +7626,15 @@
         "status": "queued",
         "document": "docs/CR-110-UDP-SYSLOG-TRACE-FORWARDING.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files": [],
-        "zero_known_gaps": false,
+        "source_files": [
+          "build/DeepSeekWorkflowCommon.ps1",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Test-DeepSeekWorkflowGate.ps1",
+          "build/validation/Invoke-DeepSeekArtifactReview.ps1",
+          ".github/workflows/itch-publish.yml",
+          "tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewTests.cs"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
