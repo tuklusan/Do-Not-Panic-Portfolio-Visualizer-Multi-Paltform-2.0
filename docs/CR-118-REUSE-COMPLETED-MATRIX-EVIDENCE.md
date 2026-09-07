@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # CR-118: Reuse Completed Matrix Evidence for Instrumentation Corrections
 
-**Status:** Implemented; closure evidence pending
+**Status:** Closed
 
 **Priority:** Low infrastructure detour
 
@@ -62,3 +62,8 @@ The policy self-test, workflow gate, PowerShell syntax gate, and license gate
 must pass. Closure additionally requires one controlled reuse-mode workflow
 execution against a completed run with all lane manifests and evidence
 validated, without any publish or soak job admitted.
+
+Completed by workflow run `34146405029`: the policy and repository gates
+passed; post-soak review downloaded and validated nominated run
+`34129921207`; publish, real-product-soak, and local-companion-dispatch were
+skipped. No new matrix was launched.

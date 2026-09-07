@@ -5343,10 +5343,10 @@
       }
     },
     {
-      "id": "CR-097",
+    "id": "CR-097",
       "phase": "Phase 7",
       "title": "Vendor-neutral independent code review gate",
-      "status": "in_progress",
+    "status": "in_progress",
       "priority": "low",
       "depends_on": [
         "CR-096"
@@ -8223,7 +8223,7 @@
       "id": "CR-118",
       "phase": "Phase 7",
       "title": "Reuse completed matrix evidence for instrumentation corrections",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "low",
       "depends_on": [
         "CR-095",
@@ -8250,16 +8250,15 @@
         "docs/AUDIT_STATE.json"
       ],
       "current_validation": {
-        "status": "implementation-complete-closure-evidence-pending",
+        "status": "closed",
         "evidence": [
           "Policy self-test passed for valid reuse and malformed identity cases.",
           "Workflow gate passed with the explicit reuse path and 20-lane matrix contract.",
           "PowerShell syntax validation passed for the changed policy and workflow gate.",
-          "Operator explicitly authorized this one controlled hosted-workflow and workflow-gate correction; no soak-harness optimization was authorized."
+          "Operator explicitly authorized this one controlled hosted-workflow and workflow-gate correction; no soak-harness optimization was authorized.",
+          "Workflow run 34146405029 passed the reuse policy and post-soak validation against completed run 34129921207; publish, real-product-soak, and local-companion-dispatch were skipped."
         ],
-        "unresolved_gaps": [
-          "A controlled hosted reuse-mode execution remains required for closure."
-        ]
+        "unresolved_gaps": []
       }
     }
   ],
