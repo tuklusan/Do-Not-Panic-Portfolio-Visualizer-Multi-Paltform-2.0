@@ -15,7 +15,14 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered during authoritative run `34014436744` while processing CR-109.
+Closed. The null-normalization fix is included in authoritative hosted proof
+`34129921207`.
+
+## Closure Evidence
+
+The focused hosted-closure self-test accepts `blockingFindings: null` while
+rejecting non-empty, malformed, and non-PASS receipts. Run `34129921207`
+completed the current 20-lane aggregate with the fail-closed contract intact.
 
 ## Objective
 
