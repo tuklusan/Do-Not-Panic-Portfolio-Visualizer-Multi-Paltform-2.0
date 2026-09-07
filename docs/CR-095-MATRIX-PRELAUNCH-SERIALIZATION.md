@@ -35,7 +35,9 @@ runner lanes are queued, running, or still publishing and reviewing evidence.
 The workflow gate passes with the global non-canceling concurrency group. A
 second trigger is observed as pending until the first complete matrix reaches
 terminal state; no overlapping matrix is admitted. The existing 21-lane
-publish/soak and per-lane plus aggregate evidence requirements remain intact.
+publish/soak and per-lane plus aggregate evidence requirements remain intact for
+the current 20-lane matrix. The retired Ubuntu Slim lane is historical context
+only and is not part of the current serialization count.
 CR-095 cannot be closed, and its own matrix verification cannot be accepted,
 until predecessor CR-094 is closed with its fresh 21-lane evidence and the
 current run has reached terminal state.
@@ -57,7 +59,7 @@ removed by this workflow-only change.
 
 Static workflow, license, PowerShell syntax, migration, upstream-lock, and
 full Release tests remain required before closure. Hosted verification must
-wait for the current 21-lane run `33976712014` to finish before another matrix
+wait for any active matrix to finish before another matrix
 is launched.
 
 ## One-Time Slow-Lane Exception

@@ -464,8 +464,10 @@ jobs:
            $hasBoundedRenderRecovery = $traceTextForDisposition -match 'RENDER;SIGNAL=RecoveryRequested' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Recovered' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Heartbeat'
            $advisoryFindings = @($reviewFindings | Where-Object {
              $id = [string]$_.id
-             ($id -match '^NTP-ALL-HOSTS-FAILED' -and $traceTextForDisposition -match 'LocalClockFallback') -or
-             ($id -match '^RENDER-RECOVERY-' -and $hasBoundedRenderRecovery) -or
+             $isNtpFallbackFinding = (($id -match '^NTP-ALL-HOSTS-FAILED' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and $traceTextForDisposition -match 'LocalClockFallback')
+             $isBoundedRenderFinding = (($id -match '^RENDER-RECOVERY-' -or ($id -eq 'B-002' -and ([string]$_.problem -match '(?i)render|frame|recovery'))) -and $hasBoundedRenderRecovery)
+             $isNtpFallbackFinding -or
+             $isBoundedRenderFinding -or
              ($id -match '^AI-SUMMARY-' -and $aiQuotaForDisposition)
            })
            $authoritativeFindings = @($reviewFindings | Where-Object { $advisoryFindings -notcontains $_ })

@@ -12,33 +12,34 @@ SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 patent, trademark, and governing-law provisions.
 -->
 
-# CR-094 21-Plus-4 Matrix And Per-Lane Evidence
+# CR-094 Hosted Matrix And Per-Lane Evidence
 
 ## Functional Inventory
 
 | ID | Required behavior | Acceptance evidence |
 | --- | --- | --- |
-| MATRIX-01 | Publish the real Avalonia product on every configured hosted runner label, including `ubuntu-slim`, `macos-latest`, and `xcode-27`, with the correct self-contained RID. | A 21-entry publish matrix and one successful publish job per runner/RID pair. |
-| MATRIX-02 | Run the real product soak on the same 21 runner/RID pairs; queued or slow lanes are waited on rather than duplicated or treated as failures. | A terminal workflow run with all 21 soak jobs accounted for. |
+| MATRIX-01 | Publish the real Avalonia product on every configured hosted runner label, including `macos-latest` and `xcode-27`, with the correct self-contained RID. | A 20-entry publish matrix and one successful publish job per runner/RID pair. |
+| MATRIX-02 | Run the real product soak on the same 20 runner/RID pairs; queued or slow lanes are waited on rather than duplicated or treated as failures. | A terminal workflow run with all 20 soak jobs accounted for. |
 | MATRIX-03 | Require each lane to complete build and test before publication and soak execution. | Per-lane workflow step results and terminal job manifest. |
 | MATRIX-04 | Require each lane to emit and validate `soak-result.json`, `news-evidence.json`, both bounded circular traces, and settled PNG evidence where the runner supports capture. | Per-lane validation output and file/hash inventory. |
 | MATRIX-05 | Require NVIDIA review output to be non-empty and retain a redacted lane closure record containing hashes and inspection status before the lane can succeed. | `build/nvidia-review/.../lane-closure-record.json` uploaded with the lane artifact. |
-| MATRIX-06 | Keep the post-soak aggregate review count synchronized with the 21 hosted lanes and inspect every retained lane record. | Push and dispatch aggregate review rejects anything other than 21 complete evidence manifests and 21 complete closure records. |
+| MATRIX-06 | Keep the post-soak aggregate review count synchronized with the 20 hosted lanes and inspect every retained lane record. | Push and dispatch aggregate review rejects anything other than 20 complete evidence manifests and 20 complete closure records. |
 | MATRIX-07 | Keep the four local companion machines under the existing availability, storage, cleanup, and dual-trace contract. | Existing local-cycle evidence and current availability manifest. |
 
 ## Implementation
 
-The publish and `real-product-soak` jobs share one 21-entry matrix. The three
-additional labels are `ubuntu-slim` (`linux-x64`), `macos-latest`, and `xcode-27`
-(`osx-arm64` for the latter two). `xcode-27` is retained as a required hosted
-label by project direction and must not be silently substituted or removed.
+The publish and `real-product-soak` jobs share one 20-entry matrix. The two
+additional macOS labels are `macos-latest` and `xcode-27` (`osx-arm64` for both).
+`xcode-27` is retained as a required hosted label by project direction and must
+not be silently substituted or removed. The former `ubuntu-slim` lane is retired
+by CR-104 and is retained below only as historical diagnostic context.
 After the per-lane NVIDIA review, the workflow runs an unconditional
 success-path inspection step. That step validates the product result, cleanup,
 screenshots, RSS/AI evidence, both circular traces, and non-empty reviewer
 output, then writes the redacted `lane-closure-record.json` with SHA-256 hashes.
 The lane cannot be successful if this record is not produced.
 
-The aggregate `post-soak-review` job likewise requires 21 manifests and runs
+The aggregate `post-soak-review` job likewise requires 20 manifests and runs
 for both push-triggered and explicit 10-minute dispatch soaks. Push-triggered
 and dispatch lanes therefore receive both per-lane and aggregate inspection.
 
@@ -53,7 +54,6 @@ The complete matrix, authoritative in both jobs' `matrix.include` blocks, is:
 | `windows-11-arm` | `win-arm64` |
 | `windows-11-vs2026-arm` | `win-arm64` |
 | `ubuntu-latest` | `linux-x64` |
-| `ubuntu-slim` | `linux-x64` |
 | `ubuntu-24.04` | `linux-x64` |
 | `ubuntu-22.04` | `linux-x64` |
 | `ubuntu-26.04` | `linux-x64` |
@@ -72,8 +72,8 @@ The complete matrix, authoritative in both jobs' `matrix.include` blocks, is:
 
 Closure requires the pre-development and closure upstream gates, focused and
 full Release tests, license and PowerShell syntax gates, workflow configuration
-validation reporting 21 entries, NVIDIA source/evidence review, and a fresh
-terminal matrix with every 21 hosted lanes accounted for. Local companion
+validation reporting 20 entries, NVIDIA source/evidence review, and a fresh
+terminal matrix with every 20 hosted lanes accounted for. Local companion
 machines remain dynamically probed and are recorded as unavailable when absent.
 
 **Status:** Open
@@ -94,7 +94,7 @@ identified; the new runner lanes and closure record are validation coverage.
 ## Closure Audit
 
 Closure requires a fresh pinned-upstream scan, two successive zero-gap results,
-all 21 hosted lanes reaching terminal state, and inspection of every lane's
+all 20 hosted lanes reaching terminal state, and inspection of every lane's
 result manifest, screenshots, both circular traces, RSS/AI evidence, reviewer
 output, and redacted closure record. The results must be correlated to this CR.
 

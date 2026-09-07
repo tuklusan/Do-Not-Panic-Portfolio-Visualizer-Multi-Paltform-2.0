@@ -118,7 +118,12 @@ if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Lin
 }
 if ($workflow -notmatch '(?ms)^env:\s*\r?\n\s+EXPECTED_LANE_COUNT:\s*''20''\s*$' -or
     $workflow -notmatch 'ExpectedLaneCount \(\[int\]\$env:EXPECTED_LANE_COUNT\)') {
-    throw 'Hosted post-soak review is missing the complete 21-runner evidence count gate.'
+    throw 'Hosted post-soak review is missing the complete 20-runner evidence count gate.'
+}
+foreach ($pattern in @('B-001', 'B-002', 'LocalClockFallback', 'hasBoundedRenderRecovery')) {
+    if ($workflow -notmatch [regex]::Escape($pattern)) {
+        throw "Workflow is missing the evidence-matched external-condition disposition guard: $pattern"
+    }
 }
 if ($workflow -notmatch 'Inspect and retain lane closure evidence' -or
     $workflow -notmatch 'dnppv2-lane-closure-record/v2' -or

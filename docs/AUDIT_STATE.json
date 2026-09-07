@@ -4976,7 +4976,7 @@
     {
       "id": "CR-094",
       "phase": "Phase 7",
-      "title": "Expand hosted matrix to 21 lanes and require explicit per-lane closure evidence",
+      "title": "Maintain the hosted matrix and require explicit per-lane closure evidence",
       "status": "open",
       "depends_on": [
         "CR-068",
@@ -4984,16 +4984,16 @@
       ],
       "objective": "Add macos-latest and xcode-27 as osx-arm64 lanes and make every hosted lane validate, inspect, hash, and retain its complete real-product evidence before success.",
       "acceptance_criteria": [
-        "Publish and real-product-soak matrices contain the identical 21 runner/RID entries.",
+        "Publish and real-product-soak matrices contain the identical 20 runner/RID entries.",
         "Both macos-latest and xcode-27 complete self-contained osx-arm64 publication and real-product soak jobs.",
         "Every lane completes build/test, emits soak-result.json and news-evidence.json, captures settled visual evidence where supported, retrieves both circular traces, and passes NVIDIA review.",
         "Every successful lane produces a redacted lane-closure-record.json with inspected evidence hashes and cleanup proof.",
-        "Aggregate post-soak review rejects any run that does not contain exactly 21 complete evidence manifests."
+        "Aggregate post-soak review rejects any run that does not contain exactly 20 complete evidence manifests."
       ],
       "validation_plan": [
         "Run the workflow configuration, license, syntax, upstream-mutation, and migration gates.",
         "Run focused and full Release tests.",
-        "Run a fresh 21-lane hosted matrix and wait for every lane to reach terminal state.",
+        "Run a fresh 20-lane hosted matrix and wait for every lane to reach terminal state.",
         "Inspect every lane's screenshots, both circular traces, result/news manifests, and redacted closure record."
       ],
       "artifacts": [
@@ -8083,16 +8083,16 @@
       "depends_on": ["CR-039", "CR-094", "CR-096", "CR-109", "CR-112", "CR-115"],
       "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only approved bounded NTP/render/quota conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
       "acceptance_criteria": [
-        "All 21 lanes retain complete soak, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence.",
+        "All 20 lanes retain complete soak, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence.",
         "AI HTTP 429 or known provider-route HTTP 404 is recorded as provider-limited evidence without being reported as AI success or a cadence success.",
         "Approved NTP fallback, bounded render recovery, and quota findings are retained as advisory findings with their raw evidence.",
         "Unknown findings, YFinance errors, malformed evidence, missing receipts, and canceled reviewer calls remain blocking.",
-        "A fresh serialized 21-lane run reaches authoritative aggregate PASS or records only explicitly approved external advisory conditions."
+        "A fresh serialized 20-lane run reaches authoritative aggregate PASS or records only explicitly approved external advisory conditions."
       ],
       "validation_plan": [
         "Read the hosted workflow, Test-HostedSoakClosure.ps1, CR-039, CR-094, CR-096, CR-109, CR-112, and CR-115 line by line.",
         "Run focused closure self-tests, source/reverse migration gates, repository gates, and mandatory NVIDIA source review.",
-        "Consume all 21 lane artifacts from one fresh serialized matrix and inspect raw plus normalized reviewer findings."
+        "Consume all 20 lane artifacts from one fresh serialized matrix and inspect raw plus normalized reviewer findings."
       ],
       "artifacts": [
         "docs/CR-117-HOSTED-EXTERNAL-CONDITION-DISPOSITIONS.md",
