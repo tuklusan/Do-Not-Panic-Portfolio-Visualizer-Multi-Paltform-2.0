@@ -37,16 +37,16 @@ review, immutable snapshots, fail-closed behavior, or retained evidence.
 
 | ID | Required behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
-| VR-01 | Reviewer scripts and documentation use vendor-neutral names and paths. | Rename reviewer implementation, gate, documentation, and `build/code-review/` outputs. | Planned |
-| VR-02 | Endpoint, model, and secret are supplied by configuration. | `CODE_REVIEWER_ENDPOINT`, `CODE_REVIEWER_MODEL`, and `CODE_REVIEWER_API_KEY`. | Planned |
-| VR-03 | Provider-specific request fields are optional validated overrides. | `CODE_REVIEWER_REQUEST_OVERRIDES_JSON`, protecting `model`, `messages`, `response_format`, and `stream`. | Planned |
-| VR-04 | The reviewer protocol has explicit `PASS`, `FAIL`, `INCONCLUSIVE`, and `REVIEW_UNAVAILABLE` outcomes. | Generic harness result schema and fail-closed callers. | Planned |
+| VR-01 | Reviewer scripts and documentation use vendor-neutral names and paths. | `build/Invoke-CodeReviewHarness.ps1`, `build/Run-CodeReview.ps1`, and the generic gate self-test. | Implemented |
+| VR-02 | Endpoint, model, and secret are supplied by configuration. | `CODE_REVIEWER_ENDPOINT`, `CODE_REVIEWER_MODEL`, and `CODE_REVIEWER_API_KEY` are accepted and scoped to the configured engine. | Implemented |
+| VR-03 | Provider-specific request fields are optional validated overrides. | `CODE_REVIEWER_REQUEST_OVERRIDES_JSON` is validated as an object and protected fields cannot be null. | Implemented |
+| VR-04 | The reviewer protocol has explicit `PASS`, `FAIL`, `INCONCLUSIVE`, and `REVIEW_UNAVAILABLE` outcomes. | Generic adapter result normalization and fail-closed validation. | Implemented |
 | VR-05 | Direct callers enforce `review_complete`, `verdict`, and empty `blocking_findings`. | Publish and real-product soak workflow callers plus aggregate gate. | Planned |
 | VR-06 | Serious findings require concrete requirement, location, problem, and evidence. | Generic harness finding validation. | Planned |
 | VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Planned |
 | VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Planned |
 
-| VR-09 | Current provider configuration remains operational after renaming. | NVIDIA NIM values remain repository configuration only, never generic implementation vocabulary. | Planned |
+| VR-09 | Current provider configuration remains operational after renaming. | Existing configured engine remains the default backend; provider-specific values remain outside generic implementation vocabulary. | Implemented |
 
 The provider-neutral entry point is `build/Invoke-CodeReviewHarness.ps1`. It
 accepts only the review protocol's typed request, resolves the configured
@@ -56,9 +56,9 @@ provider name in the caller. `build/Run-CodeReview.ps1` is the matching generic
 runner and `build/Test-CodeReviewerWorkflowGate.ps1` verifies the entry-point
 contract without contacting the configured reviewer.
 
-Backend model and secret aliasing remains a separate frozen-harness change and
-requires explicit operator approval. The adapter never writes or echoes a
-secret.
+The adapter never writes or echoes a secret. Backend-specific interpretation of
+the generic environment remains the responsibility of the configured engine;
+the frozen operational engine is intentionally unchanged.
 
 ## Upstream and Reverse Gates
 
@@ -86,5 +86,6 @@ every existing mandatory review caller still fails closed.
 
 ## Closure State
 
-Deferred. No implementation is claimed by this CR until a queue boundary is
-reached and the full forward/reverse review and hosted evidence cycle is run.
+Implementation complete. Closure remains pending the mandatory direct-caller,
+repository, independent-review, hosted-evidence, and successive reverse-scan
+gates. No closure is claimed by this increment.

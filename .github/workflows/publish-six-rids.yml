@@ -30,6 +30,20 @@ on:
         default: 'bounded-30m'
         type: choice
         options: ['bounded-30m', 'one-time-slow-review']
+      evidence_mode:
+        description: 'Use a fresh matrix, or reprocess one completed matrix for instrumentation-only corrections'
+        required: true
+        default: 'fresh-matrix'
+        type: choice
+        options: ['fresh-matrix', 'reuse-completed-run']
+      prior_run_id:
+        description: 'Required completed matrix run ID when evidence_mode is reuse-completed-run'
+        required: false
+        type: string
+      prior_commit_sha:
+        description: 'Required commit SHA of the completed matrix when evidence_mode is reuse-completed-run'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -39,6 +53,9 @@ env:
   DNPPV_REVIEWER_ID: dnppv2-nvidia-review-gate-v1
   DNPPV_REVIEW_CADENCE_SECONDS: '30'
   REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-30m' }}
+  EVIDENCE_MODE: ${{ inputs.evidence_mode || 'fresh-matrix' }}
+  PRIOR_RUN_ID: ${{ inputs.prior_run_id || '' }}
+  PRIOR_COMMIT_SHA: ${{ inputs.prior_commit_sha || '' }}
 
 jobs:
   gate:
@@ -49,9 +66,13 @@ jobs:
       - name: Validate repository gate configuration
         shell: pwsh
         run: ./build/Test-WorkflowGateConfiguration.ps1
+      - name: Enforce matrix evidence reuse policy
+        shell: pwsh
+        run: ./build/Test-MatrixEvidenceReusePolicy.ps1 -Mode $env:EVIDENCE_MODE -PriorRunId $env:PRIOR_RUN_ID -PriorCommitSha $env:PRIOR_COMMIT_SHA
 
   publish:
     needs: gate
+    if: needs.gate.result == 'success' && (github.event_name != 'workflow_dispatch' || inputs.evidence_mode != 'reuse-completed-run')
     timeout-minutes: 30
     concurrency:
       group: dnppv2-publish-${{ github.event_name }}-${{ github.ref }}-${{ matrix.runner }}-${{ matrix.rid }}
@@ -116,7 +137,7 @@ jobs:
   local-companion-dispatch:
     # LOCAL_COMPANION_DISPATCH is a credential-free handoff to the private lab.
     needs: gate
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')
+    if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')) && (github.event_name != 'workflow_dispatch' || inputs.evidence_mode != 'reuse-completed-run')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -139,7 +160,7 @@ jobs:
 
   real-product-soak:
     needs: gate
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')
+    if: (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')) && (github.event_name != 'workflow_dispatch' || inputs.evidence_mode != 'reuse-completed-run')
     timeout-minutes: 360
     concurrency:
       group: dnppv2-real-product-soak-${{ matrix.runner }}-${{ matrix.rid }}
@@ -685,11 +706,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Retrieve this run's soak evidence
+        if: env.EVIDENCE_MODE != 'reuse-completed-run'
         uses: actions/download-artifact@v4
         with:
           pattern: dnppv2-soak-${{ github.run_id }}-*
           path: post-soak-evidence
           merge-multiple: false
+      - name: Retrieve nominated completed run's soak evidence
+        if: env.EVIDENCE_MODE == 'reuse-completed-run'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$PRIOR_RUN_ID" --repo "$GITHUB_REPOSITORY" --pattern "dnppv2-soak-${PRIOR_RUN_ID}-*" --dir post-soak-evidence
       - name: Deterministically validate every runner's retained evidence
         shell: pwsh
         env:
@@ -700,7 +728,9 @@ jobs:
           $validationOutput = @()
           $validationPassed = $false
           try {
-            $validationOutput = @(& ./build/Test-HostedSoakClosure.ps1 -ArtifactRoot (Join-Path $env:GITHUB_WORKSPACE 'post-soak-evidence') -ExpectedRunId $env:GITHUB_RUN_ID -ExpectedCommitSha $env:GITHUB_SHA -ExpectedLaneCount ([int]$env:EXPECTED_LANE_COUNT) 2>&1)
+            $expectedRunId = if ($env:EVIDENCE_MODE -eq 'reuse-completed-run') { $env:PRIOR_RUN_ID } else { $env:GITHUB_RUN_ID }
+            $expectedCommitSha = if ($env:EVIDENCE_MODE -eq 'reuse-completed-run') { $env:PRIOR_COMMIT_SHA } else { $env:GITHUB_SHA }
+            $validationOutput = @(& ./build/Test-HostedSoakClosure.ps1 -ArtifactRoot (Join-Path $env:GITHUB_WORKSPACE 'post-soak-evidence') -ExpectedRunId $expectedRunId -ExpectedCommitSha $expectedCommitSha -ExpectedLaneCount ([int]$env:EXPECTED_LANE_COUNT) 2>&1)
             $validationPassed = [bool](($validationOutput | Out-String) -match 'HOSTED_SOAK_CLOSURE=Passed')
           } catch {
             $validationOutput += $_

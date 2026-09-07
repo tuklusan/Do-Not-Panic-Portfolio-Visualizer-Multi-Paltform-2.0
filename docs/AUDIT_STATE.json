@@ -5406,14 +5406,14 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "inventory-complete-implementation-pending",
+      "status": "implementation-complete-closure-evidence-pending",
         "unresolved_gaps": [
-          "Vendor-neutral implementation, focused tests, reviewer gate, and closure proof remain outstanding."
+        "Direct-caller integration, independent review, hosted evidence, and closure proof remain outstanding."
         ],
         "completed_increment": [
-          "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters.",
-          "Added Test-CodeReviewerWorkflowGate.ps1 self-test; syntax and license gates pass.",
-          "Configuration aliasing was identified but deferred because it would modify the frozen reviewer harness; explicit operator approval is required."
+        "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters with configurable endpoint, model, secret, and validated override environment.",
+        "Added generic semantic-result normalization requiring a supported verdict, boolean review_complete, and structured blocking_findings.",
+        "Test-CodeReviewerWorkflowGate self-test and PowerShell syntax validation pass; the frozen operational reviewer harness was not modified."
         ],
         "closure_evidence": []
       },
@@ -8217,6 +8217,49 @@
         "normalized_review_result": "The post-fix serialized run produced complete lane evidence and an authoritative aggregate PASS. Evidence-matched provider-quota findings remain bounded and do not fabricate AI success; unknown findings remain blocking.",
         "aggregate_receipt": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34129921207;LANES=20;REMOTE_REVIEW_CALLS=0",
         "unresolved_gaps": []
+      }
+    },
+    {
+      "id": "CR-118",
+      "phase": "Phase 7",
+      "title": "Reuse completed matrix evidence for instrumentation corrections",
+      "status": "in_progress",
+      "priority": "low",
+      "depends_on": [
+        "CR-095",
+        "CR-109"
+      ],
+      "objective": "Prevent unnecessary hosted matrix relaunches when only post-matrix instrumentation or evidence processing changes, by requiring explicit reuse of one completed run.",
+      "acceptance_criteria": [
+        "Fresh and reuse-completed-run modes are explicit workflow choices.",
+        "Reuse mode requires a valid prior run ID and commit SHA and skips publish, soak, and local dispatch jobs.",
+        "Reused artifacts are validated against the nominated run identity and lane count.",
+        "Fresh mode rejects prior evidence identities and remains the required mode for product or execution changes.",
+        "Policy self-test, workflow, syntax, license, independent review, and one controlled reuse execution pass."
+      ],
+      "validation_plan": [
+        "Run Test-MatrixEvidenceReusePolicy.ps1 self-test and negative cases.",
+        "Run workflow, syntax, license, harness-freeze, and independent review gates.",
+        "Dispatch one reuse-completed-run execution against the authoritative completed matrix and inspect its evidence without admitting a new matrix."
+      ],
+      "artifacts": [
+        ".github/workflows/publish-six-rids.yml",
+        "build/Test-MatrixEvidenceReusePolicy.ps1",
+        "build/Test-WorkflowGateConfiguration.ps1",
+        "docs/CR-118-REUSE-COMPLETED-MATRIX-EVIDENCE.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "current_validation": {
+        "status": "implementation-complete-closure-evidence-pending",
+        "evidence": [
+          "Policy self-test passed for valid reuse and malformed identity cases.",
+          "Workflow gate passed with the explicit reuse path and 20-lane matrix contract.",
+          "PowerShell syntax validation passed for the changed policy and workflow gate.",
+          "Operator explicitly authorized this one controlled hosted-workflow and workflow-gate correction; no soak-harness optimization was authorized."
+        ],
+        "unresolved_gaps": [
+          "A controlled hosted reuse-mode execution remains required for closure."
+        ]
       }
     }
   ],

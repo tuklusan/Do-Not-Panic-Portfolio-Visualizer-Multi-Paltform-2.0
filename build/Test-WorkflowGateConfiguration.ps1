@@ -63,6 +63,8 @@ $validatorPath = Join-Path $repoRoot 'build/Test-HostedSoakClosure.ps1'
 if (-not (Test-Path -LiteralPath $validatorPath -PathType Leaf)) { throw "Missing deterministic hosted soak validator: $validatorPath" }
 $quarantineTestPath = Join-Path $repoRoot 'build/Test-HostedSoakQuarantine.ps1'
 if (-not (Test-Path -LiteralPath $quarantineTestPath -PathType Leaf)) { throw "Missing hosted soak quarantine regression test: $quarantineTestPath" }
+$reusePolicyPath = Join-Path $repoRoot 'build/Test-MatrixEvidenceReusePolicy.ps1'
+if (-not (Test-Path -LiteralPath $reusePolicyPath -PathType Leaf)) { throw "Missing matrix evidence reuse policy: $reusePolicyPath" }
 $validatorText = [IO.File]::ReadAllText($validatorPath)
 foreach ($requiredParameter in @('ArtifactRoot', 'ExpectedRunId', 'ExpectedCommitSha', 'ExpectedLaneCount')) {
     if ($validatorText -notmatch ("\$" + [regex]::Escape($requiredParameter))) { throw "Hosted soak validator is missing required parameter '$requiredParameter'." }
@@ -70,6 +72,14 @@ foreach ($requiredParameter in @('ArtifactRoot', 'ExpectedRunId', 'ExpectedCommi
 
 if ($workflow -notmatch '(?ms)^concurrency:\s*\r?\n\s+group:\s+dnppv2-complete-matrix\s*\r?\n\s+cancel-in-progress:\s+false') {
     throw 'Hosted matrix workflow must serialize complete runs and wait for queued lanes and evidence review.'
+}
+foreach ($reuseToken in @('evidence_mode', 'reuse-completed-run', 'prior_run_id', 'prior_commit_sha', 'Test-MatrixEvidenceReusePolicy.ps1', 'EVIDENCE_MODE')) {
+    if (-not $workflow.Contains($reuseToken)) { throw "Workflow is missing matrix evidence reuse policy token: $reuseToken" }
+}
+if ($workflow -notmatch 'Retrieve nominated completed run''s soak evidence' -or
+    $workflow -notmatch 'ExpectedRunId \$expectedRunId' -or
+    $workflow -notmatch 'ExpectedCommitSha \$expectedCommitSha') {
+    throw 'Workflow does not validate nominated prior-run evidence without launching a new matrix.'
 }
 $concurrencyIndex = $workflow.IndexOf("`nconcurrency:", [StringComparison]::Ordinal)
 $jobsIndex = $workflow.IndexOf("`njobs:", [StringComparison]::Ordinal)
@@ -226,7 +236,7 @@ if ($checkoutIndex -lt 0 -or $maskIndex -le $checkoutIndex -or $setupIndex -le $
     throw 'Hosted soak credentials must be masked immediately after checkout and before setup-dotnet.'
 }
 if ($workflow -notmatch 'Test-HostedSoakClosure\.ps1' -or
-    $workflow -notmatch 'ExpectedCommitSha \$env:GITHUB_SHA' -or
+    ($workflow -notmatch 'ExpectedCommitSha \$env:GITHUB_SHA' -and $workflow -notmatch 'ExpectedCommitSha \$expectedCommitSha') -or
     $workflow -match '(?s)post-soak-review.*Invoke-NvidiaReviewHarness\.ps1') {
     throw 'Hosted aggregate must use the deterministic validator and contain no remote reviewer invocation.'
 }

@@ -30,13 +30,18 @@ foreach ($path in $required) {
 
 $adapter = Get-Content -LiteralPath $required[0] -Raw
 $runner = Get-Content -LiteralPath $required[1] -Raw
-if ($adapter -match '(?i)deepseek|nvidia|openrouter|api[_-]?key' -or
-    $runner -match '(?i)deepseek|nvidia|openrouter|api[_-]?key') {
+if ($adapter -match '(?i)deepseek|nvidia|openrouter' -or
+    $runner -match '(?i)deepseek|nvidia|openrouter') {
     throw 'Provider-specific coupling leaked into the generic review entry points.'
 }
 if ($adapter -notmatch 'DNPPV_REVIEW_ENGINE' -or
     $adapter -notmatch 'ReviewType' -or
-    $adapter -notmatch 'LASTEXITCODE') {
+    $adapter -notmatch 'LASTEXITCODE' -or
+    $adapter -notmatch 'CODE_REVIEWER_ENDPOINT' -or
+    $adapter -notmatch 'CODE_REVIEWER_MODEL' -or
+    $adapter -notmatch 'CODE_REVIEWER_API_KEY' -or
+    $adapter -notmatch 'CODE_REVIEWER_REQUEST_OVERRIDES_JSON' -or
+    $adapter -notmatch 'blocking_findings') {
     throw 'Generic review adapter does not preserve configuration and semantic exit behavior.'
 }
 
