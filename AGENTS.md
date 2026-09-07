@@ -74,8 +74,10 @@ PowerShell invocations so validation and execution happen in one step.
 
 The preserved review-gate entry points are:
 
+- `build/Invoke-ReviewGate.ps1`
+- `build/Invoke-BootstrapReviewer.ps1`
 - `build/Run-NvidiaCodeReview.ps1`
-- `build/Invoke-NvidiaReviewHarness.ps1`
+- `build/Invoke-NvidiaReviewHarness.ps1` (bootstrap engine only)
 - `build/Test-NvidiaWorkflowGate.ps1`
 - `build/Test-WorkflowGateConfiguration.ps1`
 - `build/NvidiaWorkflowCommon.ps1`

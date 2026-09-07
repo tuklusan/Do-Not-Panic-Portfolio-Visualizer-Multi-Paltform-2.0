@@ -116,8 +116,14 @@ if (@($publishEntries | Select-Object -Unique).Count -ne 20) { throw 'Hosted run
 foreach ($requiredEntry in @('macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
     if ($publishEntries -cnotcontains $requiredEntry) { throw "Hosted runner matrix is missing required entry '$requiredEntry'." }
 }
-if ([regex]::Matches($workflow, 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
-    throw 'Hosted soak workflow is missing mandatory NVIDIA test-artifact review.'
+if ([regex]::Matches($workflow, 'Invoke-ReviewGate\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
+    throw 'Hosted soak workflow is missing mandatory two-model test-artifact review gate.'
+}
+$reviewGatePath = Join-Path $repoRoot 'build/Invoke-ReviewGate.ps1'
+if (-not (Test-Path -LiteralPath $reviewGatePath -PathType Leaf)) { throw 'Authoritative review gate is missing.' }
+$reviewGateText = [IO.File]::ReadAllText($reviewGatePath)
+foreach ($reviewGateToken in @('nvidia/nemotron-3-super-120b-a12b', 'nvidia/nemotron-3.5-lightning-30b-a3b', 'Invoke-BootstrapReviewer.ps1', 'primary and fallback attempts')) {
+    if (-not $reviewGateText.Contains($reviewGateToken)) { throw "Authoritative review gate is missing policy token: $reviewGateToken" }
 }
 if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Linux''') {
     throw 'Hosted soak workflow is missing unconditional Linux Xvfb cleanup.'

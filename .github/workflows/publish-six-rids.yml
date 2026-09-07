@@ -431,7 +431,7 @@ jobs:
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
            $reviewTimeoutSeconds = if ($env:REVIEW_WAIT_POLICY -eq 'one-time-slow-review') { 7200 } else { 900 }
            Write-Host "REVIEW_WAIT_POLICY=$env:REVIEW_WAIT_POLICY;REQUEST_TIMEOUT_SECONDS=$reviewTimeoutSeconds"
-           $reviewOutput = @(& ./build/Invoke-NvidiaReviewHarness.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
+           $reviewOutput = @(& ./build/Invoke-ReviewGate.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
            $reviewExitCode = $LASTEXITCODE
            $safeOutput = ($reviewOutput | Out-String)
            if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {
