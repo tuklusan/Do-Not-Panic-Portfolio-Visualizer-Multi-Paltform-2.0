@@ -969,6 +969,7 @@ public sealed class AmbientSceneServicesTests
 
         using JsonDocument request = JsonDocument.Parse(handler.RequestBody);
         Assert.Equal("latency", request.RootElement.GetProperty("provider").GetProperty("sort").GetString());
+        Assert.True(request.RootElement.GetProperty("reasoning").GetProperty("exclude").GetBoolean());
         Assert.Equal(OpenRouterModelResolver.AttributionReferer, handler.OpenRouterReferer);
         Assert.Equal(OpenRouterModelResolver.AttributionTitle, handler.OpenRouterTitle);
     }

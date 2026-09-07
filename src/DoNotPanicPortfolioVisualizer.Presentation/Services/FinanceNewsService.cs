@@ -341,7 +341,13 @@ public sealed class FinanceNewsService : IDisposable
             }
         };
         if (IsOpenRouterEndpoint(endpoint.AbsoluteUri))
+        {
             payload["provider"] = new { sort = "latency" };
+            // OpenRouter free routes may spend the completion budget on
+            // reasoning and return a null message.content unless reasoning
+            // is explicitly excluded from the public completion.
+            payload["reasoning"] = new { exclude = true };
+        }
 
         string operationId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         TraceLog.InfoState("FinanceNewsService", "AiSummaryRequestStarted", [
