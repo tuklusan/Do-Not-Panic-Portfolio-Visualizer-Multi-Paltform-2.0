@@ -15,8 +15,14 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. High-priority follow-up to closed CR-105; implementation is deliberately
-deferred until the queue reaches this dependency.
+Closed against hosted run `34129921207`. High-priority follow-up to CR-105.
+
+## Closure Evidence
+
+The fresh serialized 20-lane run completed with the v2 closure contract,
+secret-free aggregate, snapshot/hash binding, quarantine handling, and
+deterministic aggregate receipt intact. The closure and quarantine self-tests
+pass, and all retained lane evidence was consumed before the aggregate PASS.
 
 ## Dependency and Scope
 
