@@ -492,7 +492,16 @@ jobs:
              $id = [string]$_.id
              $isNtpFallbackFinding = (($id -match '^NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and ([string]$_.problem -match '(?i)timeout|host|sync|fallback|local.?clock') -and $traceTextForDisposition -match 'LocalClockFallback')
              $isBoundedRenderFinding = (($id -match '^RENDER-RECOVERY-' -or ($id -eq 'B-002' -and ([string]$_.problem -match '(?i)render|frame|recovery'))) -and $hasBoundedRenderRecovery)
-             $isProviderQuotaFinding = (($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)' -and ([string]$_.problem -match '(?i)quota|rate.?limit|HTTP\s*(?:404|429)|provider')) -and $aiQuotaForDisposition)
+             # Reviewer providers may emit either the project-specific AI
+             # finding IDs or generated IDs.  Treat a generated finding as
+             # advisory only when its wording identifies AI summarization and
+             # quota/rate limiting, and the circular trace independently
+             # proves an HTTP 404/429 response for the same run.
+             $problemText = [string]$_.problem
+             $isProviderQuotaFinding = (((($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)') -or
+               ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)')) -and
+               ($problemText -match '(?i)quota|rate.?limit|HTTP\s*(?:404|429)|provider')) -and
+               $aiQuotaForDisposition)
              $isNtpFallbackFinding -or
              $isBoundedRenderFinding -or
              $isProviderQuotaFinding

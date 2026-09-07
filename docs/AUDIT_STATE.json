@@ -8142,13 +8142,12 @@
       },
       "current_validation": {
         "status": "hosted-validation-failed-closed",
-        "run_id": "34068136420",
-        "product_soak_results": "All 21 lane soak-result.json files reported Passed where retained; no product-soak failure was identified.",
-        "normalized_review_result": "Approved bounded NTP/render/provider-quota findings were retained as advisoryFindings.",
+        "run_id": "34104842767",
+        "product_soak_results": "All 20 lane soak-result.json files reported Passed; no product-soak failure was identified.",
+        "normalized_review_result": "The run exposed one remaining normalization gap: a generated reviewer finding for an evidence-matched provider HTTP 429 was not yet recognized as advisory. The workflow rule is now corrected; the run remains failed evidence for the pre-fix candidate.",
         "unresolved_gaps": [
-          "macos-14, windows-2025, and xcode-27 retain unapproved YFinance findings routed to CR-108.",
-          "macos-latest retains an AI request with no terminal completion event routed to CR-112.",
-          "ubuntu-slim reviewer cancellation produced no semantic receipt and remains fail-closed evidence incompleteness."
+          "The pre-fix run failed only on Windows-2022 because NVIDIA returned a generated high-severity AI-quota finding for HTTP 429; fresh serialized proof is required after the evidence-matched alias fix.",
+          "The aggregate post-soak gate therefore correctly failed closed for the pre-fix candidate."
         ]
       }
     }
