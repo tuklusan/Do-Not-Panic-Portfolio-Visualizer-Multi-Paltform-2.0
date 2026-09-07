@@ -113,21 +113,26 @@
   },
   "previous_recorded_validation_state": null,
   "latest_recorded_validation_state": {
-    "date": "2026-09-01",
-    "git_head": "ced5c21",
-    "git_sync_state": "clean; validation baseline matches beta-1.0.0 at origin/main",
+    "date": "2026-09-07",
+    "git_head": "ea0b338",
+    "git_sync_state": "clean; pushed to origin/main",
     "baseline_checks": [
       "PowerShell syntax gate available",
       "checked PowerShell wrapper available",
       "license header gate available",
       "upstream push lock available",
-      "validation checkpoint script available"
+      "validation checkpoint script available",
+      "tracked harness manifest and approval freeze gate available"
     ],
     "validation_results": [
       "DeepSeek CODE reviews passed for the CR-003 desktop and YFinance portable single-instance implementation and final acceptance-harness corrections.",
       "dotnet test DoNotPanicPortfolioVisualizer.sln -c Release passed with 93 tests and no failures or skips.",
       "Self-contained publishes passed for win-x64, linux-x64, osx-x64, osx-arm64, linux-arm64, and win-arm64 with a matching YFinance server bundle in every output.",
-      "Live production-scene and duplicate-instance evidence passed on Lubuntu and Windows 10; all four physical machines had zero residual product processes; Windows 11 fresh unsigned-build execution is explicitly excepted by enforced Smart App Control pending trusted-provider signing; and the DeepSeek TEST_ARTIFACT second-opinion review passed."
+      "Live production-scene and duplicate-instance evidence passed on Lubuntu and Windows 10; all four physical machines had zero residual product processes; Windows 11 fresh unsigned-build execution is explicitly excepted by enforced Smart App Control pending trusted-provider signing; and the DeepSeek TEST_ARTIFACT second-opinion review passed.",
+      "Hosted matrix 34082601052 ran against ea0b338. Real-product builds/tests passed on sampled lanes whose closure failed, including 321 passing tests and zero test failures.",
+      "Hosted matrix 34082601052 failed closed because eleven lanes did not produce clean NVIDIA TEST_ARTIFACT receipts after bounded HTTP 429/503 retry exhaustion; missing receipts were correctly rejected and retained as evidence.",
+      "All four local lab availability probes passed on 2026-09-07; no local soak was claimed because CR-116's hosted-to-local dispatch bridge is not implemented.",
+      "Operational harnesses are tracked in docs/TEST_HARNESS_MANIFEST.json and frozen; harness changes require explicit DNPPV_HARNESS_CHANGE_APPROVED=Y or 1."
     ]
   },
   "post_remote_recovery_replay": [],
