@@ -529,9 +529,9 @@ if (-not $AcknowledgeSecretScan) {
 
 # The shared harness owns the normal review request.  It performs all internal
 # specialist and consolidation calls and returns only its compact conclusion.
-$harnessPath = Join-Path $PSScriptRoot 'Invoke-NvidiaReviewHarness.ps1'
-if (-not (Test-Path -LiteralPath $harnessPath)) { throw "Nvidia review harness is missing: $harnessPath" }
-$reviewResult = & $harnessPath -ReviewType CODE -ReviewMaterialPath $packetPath -Endpoint $Endpoint -Model $Model -OutputDirectory $OutputDirectory -MaxTokens $MaxTokens -AcknowledgeEndpointOverride:$AcknowledgeEndpointOverride
+$reviewGatePath = Join-Path $PSScriptRoot 'Invoke-ReviewGate.ps1'
+if (-not (Test-Path -LiteralPath $reviewGatePath)) { throw "Authoritative review gate is missing: $reviewGatePath" }
+$reviewResult = & $reviewGatePath -ReviewType CODE -ReviewMaterialPath $packetPath -OutputDirectory $OutputDirectory -RequestTimeoutSeconds 900
 if ([string]::IsNullOrWhiteSpace([string]$reviewResult)) { throw 'Nvidia review harness did not return a compact result.' }
 $reviewJson = ($reviewResult | Out-String).Trim()
 try { $reviewObject = $reviewJson | ConvertFrom-Json -ErrorAction Stop }
