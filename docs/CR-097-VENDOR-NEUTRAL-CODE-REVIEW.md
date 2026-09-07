@@ -46,12 +46,15 @@ review, immutable snapshots, fail-closed behavior, or retained evidence.
 | VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Planned |
 | VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Planned |
 
+| VR-09 | Current provider configuration remains operational after renaming. | NVIDIA NIM values remain repository configuration only, never generic implementation vocabulary. | Planned |
+
 The provider-neutral entry point is `build/Invoke-CodeReviewHarness.ps1`. It
 accepts only the review protocol's typed request, resolves the configured
 engine through `DNPPV_REVIEW_ENGINE` (defaulting to the current gate), and
 preserves the engine's semantic result and exit status without embedding a
-provider name in the caller.
-| VR-09 | Current provider configuration remains operational after renaming. | NVIDIA NIM values remain repository configuration only, never generic implementation vocabulary. | Planned |
+provider name in the caller. `build/Run-CodeReview.ps1` is the matching generic
+runner and `build/Test-CodeReviewerWorkflowGate.ps1` verifies the entry-point
+contract without contacting the configured reviewer.
 
 ## Upstream and Reverse Gates
 

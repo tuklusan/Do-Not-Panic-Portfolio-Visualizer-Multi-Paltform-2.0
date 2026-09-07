@@ -5410,6 +5410,10 @@
         "unresolved_gaps": [
           "Vendor-neutral implementation, focused tests, reviewer gate, and closure proof remain outstanding."
         ],
+        "completed_increment": [
+          "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters.",
+          "Added Test-CodeReviewerWorkflowGate.ps1 self-test; syntax and license gates pass."
+        ],
         "closure_evidence": []
       },
       "upstream_closure_audit": {
