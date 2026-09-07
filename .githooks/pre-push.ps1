@@ -52,13 +52,13 @@ $updates = @($input | ForEach-Object { [string]$_ } | Where-Object { -not [strin
 foreach ($update in $updates) {
     $parts = $update -split '\s+', 4
     if ($parts.Count -ne 4) { throw "Malformed pre-push update tuple: $update" }
-    $newSha = $parts[1]
+    $localSha = $parts[1]
     $remoteRef = $parts[2]
-    $remoteOld = $parts[3]
+    $remoteSha = $parts[3]
     if ($remoteRef -ne 'refs/heads/main') { continue }
-    if ($newSha -match '^0{40}$') { throw 'Protected main deletion is not permitted.' }
-    $receipt = Join-Path $repoRoot ("build/code-review/receipts/{0}.json" -f $newSha)
-    & $receiptValidator -ReceiptPath $receipt -RemoteOldSha $remoteOld -NewSha $newSha -RemoteRef $remoteRef
+    if ($remoteSha -match '^0{40}$') { throw 'Protected main deletion is not permitted.' }
+    $receipt = Join-Path $repoRoot ("build/code-review/receipts/{0}.json" -f $localSha)
+    & $receiptValidator -ReceiptPath $receipt -RemoteOldSha $remoteSha -NewSha $localSha -RemoteRef $remoteRef
     if ($LASTEXITCODE -ne 0) { throw "Committed-candidate receipt rejected protected update: $remoteRef" }
 }
 
