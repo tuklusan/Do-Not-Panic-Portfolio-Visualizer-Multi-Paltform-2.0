@@ -23,6 +23,12 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (& git rev-parse --show-toplevel 2>$null).Trim()
 if ([string]::IsNullOrWhiteSpace($repoRoot)) { throw 'Could not resolve repository root.' }
 
+foreach ($freezePath in @('docs\TEST_HARNESS_MANIFEST.json', 'docs\TEST_HARNESS_FREEZE.md', 'build\Test-HarnessFreeze.ps1')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $freezePath) -PathType Leaf)) {
+        throw "Harness freeze control is missing: $freezePath"
+    }
+}
+
 function Read-Workflow([string]$RelativePath) {
     $path = Join-Path $repoRoot (Join-Path '.github/workflows' $RelativePath)
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing workflow: $path" }

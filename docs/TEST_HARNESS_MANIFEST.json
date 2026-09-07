@@ -1,0 +1,30 @@
+{
+  "license_notice": "Based on original work by Supratim Sanyal of SANYALnet Labs.",
+  "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
+  "document_type": "test_harness_manifest",
+  "baseline_policy": "Harnesses are frozen; changes require DNPPV_HARNESS_CHANGE_APPROVED=Y or 1.",
+  "tracked_harnesses": [
+    ".github/workflows/publish-six-rids.yml",
+    ".github/workflows/cleanup-generated-artifacts.yml",
+    "build/Cleanup-LocalProjectArtifacts.ps1",
+    "build/Invoke-CheckedPowerShell.ps1",
+    "build/Invoke-LocalLabSoakCycle.ps1",
+    "build/Invoke-NvidiaReviewHarness.ps1",
+    "build/Invoke-ProductSoak.ps1",
+    "build/Invoke-ReviewerEvidenceQuarantine.ps1",
+    "build/NvidiaWorkflowCommon.ps1",
+    "build/Run-NvidiaCodeReview.ps1",
+    "build/Test-HostedSoakClosure.ps1",
+    "build/Test-HostedSoakQuarantine.ps1",
+    "build/Test-LocalLabAvailability.ps1",
+    "build/Test-MigrationBehaviorGate.ps1",
+    "build/Test-NvidiaWorkflowGate.ps1",
+    "build/Test-PowerShellSyntax.ps1",
+    "build/Test-WorkflowGateConfiguration.ps1",
+    "build/vm/Install-DotNetDesktopRuntime.ps1",
+    "build/vm/Invoke-ConfigWindowValidation.ps1",
+    "build/vm/Invoke-MacConfigWindowValidation.sh",
+    "build/vm/Invoke-ProductSceneValidation.ps1",
+    "build/vm/Test-MacStorageContract.sh"
+  ]
+}

@@ -29,8 +29,9 @@ $upstreamGuard = Join-Path $repoRoot 'build\Assert-NoUpstreamMutation.ps1'
 $licenseGate = Join-Path $repoRoot 'build\Test-LicenseHeaders.ps1'
 $syntaxGate = Join-Path $repoRoot 'build\Test-PowerShellSyntax.ps1'
 $workflowGate = Join-Path $repoRoot 'build\Test-WorkflowGateConfiguration.ps1'
+$harnessFreeze = Join-Path $repoRoot 'build\Test-HarnessFreeze.ps1'
 
-foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflowGate)) {
+foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflowGate, $harnessFreeze)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
         throw "Missing required pre-push gate: $requiredPath"
     }
@@ -40,5 +41,6 @@ foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflow
 & $licenseGate
 & $syntaxGate
 & $workflowGate
+& $harnessFreeze -BaseRef $(if ($RemoteName) { "$RemoteName/main" } else { 'HEAD^' })
 
 Write-Output 'PRE_PUSH_GATES=Passed'

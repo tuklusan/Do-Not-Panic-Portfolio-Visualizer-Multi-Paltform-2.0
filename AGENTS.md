@@ -103,6 +103,14 @@ license notice in a form appropriate to the file type. Run
 `build/Test-LicenseHeaders.ps1` before committing or pushing changes that add
 or modify project files.
 
+## Test Harness Freeze
+
+All operational test harnesses are tracked in `docs/TEST_HARNESS_MANIFEST.json`
+and frozen at the validated baseline. Do not optimize or modify a harness
+without explicit operator approval. The pre-push `build/Test-HarnessFreeze.ps1`
+gate requires `DNPPV_HARNESS_CHANGE_APPROVED=Y` or `1` for an approved harness
+change, with the approval and reason recorded in its CR and commit message.
+
 ## Upstream Push Lock
 
 No pushes to the upstream 1.0 repository are permitted from this workspace.
