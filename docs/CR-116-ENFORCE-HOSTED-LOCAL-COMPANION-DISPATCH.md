@@ -24,8 +24,9 @@ combined closure evidence remain pending the next available local-lab cycle.
 Two attempts against the same self-contained hosted candidate are recorded as
 diagnostic only. Linux, Windows 10, and Intel macOS produced successful
 real-product evidence in the first attempt; Windows 11 launched and completed
-its soak but failed strict AI evidence on provider HTTP 429. The second
-attempt reproduced the Windows 11 quota result, while its Linux child exceeded
+its soak but failed strict AI evidence after the configured external OpenRouter
+endpoint returned HTTP 429. The second attempt reproduced the Windows 11
+external-endpoint response, while its Linux child exceeded
 the bounded completion window without a terminal result. A fresh availability
 probe recorded all four machines reachable. These results do not satisfy the
 combined closure requirement.

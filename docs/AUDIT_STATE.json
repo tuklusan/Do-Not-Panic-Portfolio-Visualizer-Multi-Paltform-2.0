@@ -8141,7 +8141,7 @@
         "status": "queued",
         "unresolved_gaps": [
           "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle.",
-          "Two local attempts proved Linux, Windows 10, and Intel macOS but Windows 11 failed strict AI evidence on provider HTTP 429; one second-attempt Linux child exceeded its bounded completion window."
+        "Two local attempts proved Linux, Windows 10, and Intel macOS but Windows 11 failed strict AI evidence after the configured external OpenRouter endpoint returned HTTP 429; one second-attempt Linux child exceeded its bounded completion window. No local-machine quota was involved."
         ],
         "diagnostic_evidence": [
           "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
