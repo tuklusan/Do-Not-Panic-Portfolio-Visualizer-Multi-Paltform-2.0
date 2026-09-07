@@ -31,6 +31,14 @@ the bounded completion window without a terminal result. A fresh availability
 probe recorded all four machines reachable. These results do not satisfy the
 combined closure requirement.
 
+A fresh four-machine 10-minute cycle on 2026-09-07 reached all four boxes and
+completed collection. Linux and both Windows lanes recorded fresh RSS playback
+but the required AI success event was absent after OpenRouter returned HTTP
+429; macOS recorded RSS playback but its strict news evidence gate reported a
+missing RSS/AI trace pair. The coordinator failed closed and disposable
+artifacts were cleaned after inspection. These findings remain routed to the
+existing AI/news CRs and are not local-machine unavailability.
+
 ## Gap
 
 CR-092 defines the combined hosted-plus-local acceptance contract and

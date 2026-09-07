@@ -8135,7 +8135,7 @@
       "id": "CR-116",
       "phase": "Phase 7",
       "title": "Enforce hosted-matrix and local-companion dispatch",
-      "status": "queued",
+      "status": "in_progress",
       "priority": "low",
       "depends_on": ["CR-092", "CR-095", "CR-109"],
       "execution_policy": "one-off-out-of-sequence-at-convenient-time",
@@ -8164,11 +8164,13 @@
         "status": "queued",
         "unresolved_gaps": [
           "The hosted workflow does not currently invoke or receipt-bind the four-machine local companion cycle.",
+          "Fresh four-machine 10-minute cycle reached all four machines but Linux and both Windows lanes lacked AiSummarySucceeded after OpenRouter HTTP 429, while macOS failed its strict RSS/AI trace-pair evidence gate.",
         "Two local attempts proved Linux, Windows 10, and Intel macOS but Windows 11 failed strict AI evidence after the configured external OpenRouter endpoint returned HTTP 429; one second-attempt Linux child exceeded its bounded completion window. No local-machine quota was involved."
         ],
         "diagnostic_evidence": [
           "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
-          "The frozen harness was unchanged; no local harness optimization or modification was made."
+          "The frozen harness was unchanged; no local harness optimization or modification was made.",
+          "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection."
         ]
       }
     },
