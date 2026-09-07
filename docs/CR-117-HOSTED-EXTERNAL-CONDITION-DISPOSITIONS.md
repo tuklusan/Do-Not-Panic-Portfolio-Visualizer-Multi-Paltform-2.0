@@ -15,7 +15,11 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Closed against the fresh serialized 20-lane hosted proof `34129921207`.
+Implementation correction in progress after hosted run `34168619303`
+identified an embedded PowerShell syntax defect in the provider-quota
+normalizer. The prior proof `34129921207` remains valid for the earlier
+revision, but cannot close the corrected revision until one fresh serialized
+proof completes.
 
 ## Objective
 
@@ -86,6 +90,13 @@ where supported, both circular traces, RSS/AI evidence, reviewer result, and
 closure record consumed by the aggregate. This is the post-fix proof for the
 evidence-matched provider-quota normalization; no artificial AI success was
 emitted, and unknown or incomplete reviewer evidence remains blocking.
+
+Run `34168619303` failed closed before evidence review on affected lanes
+because the generated PowerShell containing `$isProviderQuotaFinding` had an
+unmatched parenthesis. This was a workflow defect, not a product or provider
+failure. The expression has been corrected and passed the repository
+PowerShell syntax gate; the run remains regression evidence and is not a clean
+closure proof.
 
 ## Closure gates
 

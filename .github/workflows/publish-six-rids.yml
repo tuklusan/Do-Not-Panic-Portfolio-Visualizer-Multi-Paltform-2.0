@@ -528,9 +528,11 @@ jobs:
              # the circular trace independently proves a model HTTP 4xx for
              # the same run.
              $problemText = [string]$_.problem
-             $isProviderQuotaFinding = (((($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)') -or
+           $isProviderQuotaFinding = (
+             (($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)') -or
                ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)|model|completion|OpenRouter')) -and
-               $aiQuotaForDisposition)
+             $aiQuotaForDisposition
+           )
              $isNtpFallbackFinding -or
              $isBoundedRenderFinding -or
              $isProviderQuotaFinding
