@@ -30,8 +30,9 @@ $bootstrap = Join-Path $PSScriptRoot 'Invoke-BootstrapReviewer.ps1'
 if (-not (Test-Path -LiteralPath $bootstrap -PathType Leaf)) { throw "Bootstrap reviewer is missing: $bootstrap" }
 
 function Get-ValidatedResultText([object[]]$Output) {
-    $lines = (($Output | Out-String) -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ }
-    foreach ($line in @($lines)[($lines.Count - 1)..0]) {
+    $lines = @(($Output | Out-String) -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($lines.Count -eq 0) { throw 'Reviewer returned no output.' }
+    foreach ($line in $lines[($lines.Count - 1)..0]) {
         try {
             $candidate = $line | ConvertFrom-Json
             if ($candidate.verdict -in @('PASS', 'FAIL', 'INCONCLUSIVE', 'REVIEW_UNAVAILABLE', 'HUMAN_DECISION_REQUIRED')) {
@@ -47,6 +48,8 @@ function Get-ValidatedResultText([object[]]$Output) {
 
 if ($SelfTest) {
     if ($primary -eq $fallback -or $primary -notmatch '^nvidia/' -or $fallback -notmatch '^nvidia/') { throw 'Authorized model policy is invalid.' }
+    $parserProbe = Get-ValidatedResultText @('diagnostic output', '{"verdict":"PASS"}')
+    if ($parserProbe -ne '{"verdict":"PASS"}') { throw 'Reviewer result parser self-test failed.' }
     Write-Output 'REVIEW_GATE_SELFTEST=Passed'
     exit 0
 }
