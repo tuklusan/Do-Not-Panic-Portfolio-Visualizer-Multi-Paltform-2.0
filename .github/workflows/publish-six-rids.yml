@@ -111,6 +111,30 @@ jobs:
           name: dnppv2-${{ matrix.runner }}-${{ matrix.rid }}
           path: artifacts/${{ matrix.rid }}
 
+  local-companion-dispatch:
+    # LOCAL_COMPANION_DISPATCH is a credential-free handoff to the private lab.
+    needs: gate
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create credential-free local companion request
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/local-companion | Out-Null
+          ./build/New-LocalCompanionDispatch.ps1 -RunId $env:GITHUB_RUN_ID -CommitSha $env:GITHUB_SHA -OutputPath artifacts/local-companion/local-companion-dispatch.json
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+      - name: Validate local companion request
+        shell: pwsh
+        run: ./build/Test-LocalCompanionDispatch.ps1 -SelfTest
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dnppv2-local-companion-dispatch-${{ github.run_id }}
+          path: artifacts/local-companion/local-companion-dispatch.json
+
   real-product-soak:
     needs: gate
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')

@@ -17,18 +17,17 @@ SANYALnet Labs." See LICENSE for full terms.
 
 ## Status
 
-Queued. Low priority. This is an approved one-off out-of-sequence CR to be
-addressed at a convenient point; it must not interrupt or duplicate an active
-serialized hosted matrix.
+In progress. The workflow now emits a credential-free, same-duration local
+companion request for every hosted cycle. Physical companion execution and
+combined closure evidence remain pending the next available local-lab cycle.
 
 ## Gap
 
 CR-092 defines the combined hosted-plus-local acceptance contract and
-`build/Invoke-LocalLabSoakCycle.ps1` implements the physical-machine runner,
-but the current checked-in GitHub workflow set contains no dispatch bridge that
-starts the four-machine companion cycle when a hosted matrix is launched.
-Consequently, a hosted push currently proves only the GitHub lanes unless the
-operator separately invokes the local coordinator.
+`build/Invoke-LocalLabSoakCycle.ps1` implements the physical-machine runner.
+The hosted workflow now emits `dnppv2-local-companion-dispatch-<run>.json` as a
+credential-free handoff. A private-lab operator must consume that request with
+the frozen local coordinator; hosted runners never reach the private LAN.
 
 ## Functional Inventory
 

@@ -121,6 +121,10 @@ if ([regex]::Matches($workflow, 'Invoke-ReviewGate\.ps1\s+-ReviewType\s+TEST_ART
 }
 $reviewGatePath = Join-Path $repoRoot 'build/Invoke-ReviewGate.ps1'
 if (-not (Test-Path -LiteralPath $reviewGatePath -PathType Leaf)) { throw 'Authoritative review gate is missing.' }
+$companionDispatchPath = Join-Path $repoRoot 'build/New-LocalCompanionDispatch.ps1'
+if (-not (Test-Path -LiteralPath $companionDispatchPath -PathType Leaf)) { throw 'Local companion dispatch producer is missing.' }
+$companionWorkflowTokens = @('local-companion-dispatch', 'New-LocalCompanionDispatch.ps1', 'LOCAL_COMPANION_DISPATCH')
+foreach ($token in $companionWorkflowTokens) { if (-not $workflow.Contains($token)) { throw "Hosted workflow is missing local companion dispatch token: $token" } }
 $reviewGateText = [IO.File]::ReadAllText($reviewGatePath)
 foreach ($reviewGateToken in @('nvidia/nemotron-3-super-120b-a12b', 'nvidia/nemotron-3.5-lightning-30b-a3b', 'Invoke-BootstrapReviewer.ps1', 'primary and fallback attempts')) {
     if (-not $reviewGateText.Contains($reviewGateToken)) { throw "Authoritative review gate is missing policy token: $reviewGateToken" }
