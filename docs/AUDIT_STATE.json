@@ -5488,7 +5488,7 @@
       "id": "CR-095",
       "phase": "Phase 7",
       "title": "Serialize hosted matrix launches behind queued-run completion",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-094"
       ],
@@ -5535,14 +5535,15 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending",
-        "unresolved_gaps": [
-          "The current 21-lane hosted run has not reached terminal state."
-        ],
-        "closure_evidence": []
+        "status": "hosted-validation-passed",
+        "run_id": "34129921207",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Serialized hosted run 34129921207 completed successfully before any subsequent matrix launch."
+        ]
       },
       "upstream_closure_audit": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files_rescanned": [
           ".github/workflows/publish-six-rids.yml",
