@@ -52,6 +52,14 @@ one YFinance upstream error, and one canceled NVIDIA review. This CR separates
 those cases without changing the product cadence or falsely reporting AI
 success.
 
+The follow-up run `34068136420` produced `Passed` soak results on every lane
+that reached closure and normalized the approved bounded NTP/render/provider
+findings into retained `advisoryFindings`. Four blockers remained correctly
+blocking: YFinance baseline/sync findings on macOS 14, Windows 2025, and
+Xcode 27, plus an AI request with no terminal completion event on macOS latest.
+The Ubuntu Slim reviewer call was canceled and therefore produced no semantic
+receipt; this remains a fail-closed evidence gap under EXT-05.
+
 ## Closure gates
 
 Run the upstream forward and reverse gates, focused closure self-tests, the

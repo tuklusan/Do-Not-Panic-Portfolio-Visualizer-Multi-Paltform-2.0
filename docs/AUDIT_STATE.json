@@ -25,6 +25,7 @@
       "CR-099",
       "CR-100",
       "CR-112",
+      "CR-117",
       "CR-076",
       "CR-091",
       "CR-071",
@@ -8064,7 +8065,7 @@
       "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only approved bounded NTP/render/quota conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
       "acceptance_criteria": [
         "All 21 lanes retain complete soak, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence.",
-        "AI HTTP 429 is recorded as quota-limited evidence without being reported as AI success or a cadence success.",
+        "AI HTTP 429 or known provider-route HTTP 404 is recorded as provider-limited evidence without being reported as AI success or a cadence success.",
         "Approved NTP fallback, bounded render recovery, and quota findings are retained as advisory findings with their raw evidence.",
         "Unknown findings, YFinance errors, malformed evidence, missing receipts, and canceled reviewer calls remain blocking.",
         "A fresh serialized 21-lane run reaches authoritative aggregate PASS or records only explicitly approved external advisory conditions."
@@ -8114,9 +8115,14 @@
         ]
       },
       "current_validation": {
-        "status": "implementation-started",
+        "status": "hosted-validation-failed-closed",
+        "run_id": "34068136420",
+        "product_soak_results": "All 21 lane soak-result.json files reported Passed where retained; no product-soak failure was identified.",
+        "normalized_review_result": "Approved bounded NTP/render/provider-quota findings were retained as advisoryFindings.",
         "unresolved_gaps": [
-          "Fresh serialized matrix evidence is required after the deterministic disposition layer is validated."
+          "macos-14, windows-2025, and xcode-27 retain unapproved YFinance findings routed to CR-108.",
+          "macos-latest retains an AI request with no terminal completion event routed to CR-112.",
+          "ubuntu-slim reviewer cancellation produced no semantic receipt and remains fail-closed evidence incompleteness."
         ]
       }
     }
