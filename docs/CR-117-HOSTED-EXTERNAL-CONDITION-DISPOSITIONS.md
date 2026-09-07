@@ -15,7 +15,7 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered while consuming hosted run `34065484870`.
+Closed against the fresh serialized 20-lane hosted proof `34129921207`.
 
 ## Objective
 
@@ -75,6 +75,16 @@ HTTP 404/429. The same bounded rule covers the observed NTP aliases
 blocking.
 The fresh matrix for this bundle uses the current 20-lane set after CR-104
 retirement.
+
+## Closure Evidence
+
+Hosted run `34129921207` completed all 20 current lanes successfully. The
+aggregate receipt is `HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34129921207;LANES=20;REMOTE_REVIEW_CALLS=0`.
+Every lane reached terminal state with its product soak result, screenshots
+where supported, both circular traces, RSS/AI evidence, reviewer result, and
+closure record consumed by the aggregate. This is the post-fix proof for the
+evidence-matched provider-quota normalization; no artificial AI success was
+emitted, and unknown or incomplete reviewer evidence remains blocking.
 
 ## Closure gates
 
