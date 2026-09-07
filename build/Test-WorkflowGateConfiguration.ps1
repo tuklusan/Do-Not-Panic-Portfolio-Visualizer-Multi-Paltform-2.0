@@ -35,7 +35,7 @@ function Get-MatrixEntries([string]$Workflow, [string]$JobName) {
     if ([string]::IsNullOrWhiteSpace($job)) { throw "Workflow job '$JobName' is missing." }
     $entries = [regex]::Matches($job, '(?ms)^\s+- runner:\s*(?<runner>[^\r\n]+)\s*\r?\n\s+rid:\s*(?<rid>[^\r\n]+)') |
         ForEach-Object { '{0}|{1}' -f $_.Groups['runner'].Value.Trim(), $_.Groups['rid'].Value.Trim() }
-    if (@($entries).Count -ne 21) { throw "Workflow job '$JobName' must define exactly 21 runner/RID entries; found $(@($entries).Count)." }
+    if (@($entries).Count -ne 20) { throw "Workflow job '$JobName' must define exactly 20 runner/RID entries; found $(@($entries).Count)." }
     return @($entries)
 }
 
@@ -106,8 +106,8 @@ if (@($publishEntries).Count -ne $expectedLaneCount -or @($soakEntries).Count -n
 if ((@($publishEntries | Sort-Object) -join "`n") -cne (@($soakEntries | Sort-Object) -join "`n")) {
     throw 'Publish and real-product-soak runner/RID matrices diverge.'
 }
-if (@($publishEntries | Select-Object -Unique).Count -ne 21) { throw 'Hosted runner matrix contains duplicate runner/RID entries.' }
-foreach ($requiredEntry in @('ubuntu-slim|linux-x64', 'macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
+if (@($publishEntries | Select-Object -Unique).Count -ne 20) { throw 'Hosted runner matrix contains duplicate runner/RID entries.' }
+foreach ($requiredEntry in @('macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
     if ($publishEntries -cnotcontains $requiredEntry) { throw "Hosted runner matrix is missing required entry '$requiredEntry'." }
 }
 if ([regex]::Matches($workflow, 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
@@ -116,7 +116,7 @@ if ([regex]::Matches($workflow, 'Invoke-NvidiaReviewHarness\.ps1\s+-ReviewType\s
 if ($workflow -notmatch '(?m)^\s+if:\s+always\(\)\s+&&\s+runner\.os\s+==\s+''Linux''') {
     throw 'Hosted soak workflow is missing unconditional Linux Xvfb cleanup.'
 }
-if ($workflow -notmatch '(?ms)^env:\s*\r?\n\s+EXPECTED_LANE_COUNT:\s*''21''\s*$' -or
+if ($workflow -notmatch '(?ms)^env:\s*\r?\n\s+EXPECTED_LANE_COUNT:\s*''20''\s*$' -or
     $workflow -notmatch 'ExpectedLaneCount \(\[int\]\$env:EXPECTED_LANE_COUNT\)') {
     throw 'Hosted post-soak review is missing the complete 21-runner evidence count gate.'
 }

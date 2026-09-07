@@ -35,7 +35,7 @@ permissions:
   contents: read
 
 env:
-  EXPECTED_LANE_COUNT: '21'
+  EXPECTED_LANE_COUNT: '20'
   REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-15m' }}
 
 jobs:
@@ -71,8 +71,6 @@ jobs:
           - runner: windows-11-vs2026-arm
             rid: win-arm64
           - runner: ubuntu-latest
-            rid: linux-x64
-          - runner: ubuntu-slim
             rid: linux-x64
           - runner: ubuntu-24.04
             rid: linux-x64
@@ -137,8 +135,6 @@ jobs:
           - runner: windows-11-vs2026-arm
             rid: win-arm64
           - runner: ubuntu-latest
-            rid: linux-x64
-          - runner: ubuntu-slim
             rid: linux-x64
           - runner: ubuntu-24.04
             rid: linux-x64
@@ -659,7 +655,7 @@ jobs:
       - name: Deterministically validate every runner's retained evidence
         shell: pwsh
         env:
-          EXPECTED_LANE_COUNT: '21'
+          EXPECTED_LANE_COUNT: '20'
         run: |
           Set-Location -LiteralPath $env:GITHUB_WORKSPACE
           New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'build/nvidia-review') | Out-Null

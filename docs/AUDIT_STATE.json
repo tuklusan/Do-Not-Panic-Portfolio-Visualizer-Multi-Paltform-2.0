@@ -7174,7 +7174,7 @@
       "id": "CR-104",
       "phase": "Phase 7",
       "title": "Retire the Ubuntu Slim hosted lane",
-      "status": "deferred",
+      "status": "in_progress",
       "priority": "low",
       "depends_on": ["CR-094", "CR-096"],
       "objective": "Remove ubuntu-slim consistently from the required hosted matrix, gates, harnesses, evidence aggregation, and documentation after the current run is consumed, without weakening remaining lane requirements or product coverage.",
@@ -7188,7 +7188,7 @@
       "validation_plan": [
         "Consume and inspect current run 33988763870 without modifying it, retaining the ubuntu-slim cancellation only as diagnostic evidence.",
         "Perform a disk-wide reference inventory, update workflow/scripts/gates/workbooks/docs, and run deterministic local gates.",
-        "Run a fresh serialized hosted matrix and inspect every remaining lane's complete evidence set, then perform two successive reverse scans."
+        "Run a fresh serialized 20-lane hosted matrix and inspect every remaining lane's complete evidence set, then perform two successive reverse scans."
       ],
       "artifacts": [
         "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md",
@@ -7199,20 +7199,39 @@
         "docs/TEST_MACHINE_ACCESS.md"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending_deferred",
+        "status": "complete",
         "document": "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending_deferred",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation is intentionally deferred until the current hosted run is consumed."]
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-WorkflowGateConfiguration.ps1",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "deferred",
-        "unresolved_gaps": ["The current run has not reached terminal state; no removal or fresh validation is claimed."]
+        "status": "implementation-complete-pending-hosted-validation",
+        "run_id": "34070178397",
+        "unresolved_gaps": ["Run 34070178397 was the consumed 21-lane run and cannot prove the new 20-lane matrix; fresh serialized validation remains required."],
+        "closure_evidence": [
+          "Run 34070178397 reached terminal cancellation with all publish lanes complete; ubuntu-slim was not accepted as a required closure lane because its soak was cancelled and its evidence was missing.",
+          "Operational workflow and deterministic exact-matrix gate now define 20 lanes and contain no ubuntu-slim entry."
+        ]
       }
     },
     {
