@@ -13,7 +13,7 @@
 # patent, trademark, and governing-law provisions.
 # ============================================================================
 build/dnppv2-nvidia-review/
-build/code-review/receipts/
+build/code-review/
 build/publish/
 build/local-probe/
 build/local-cycle-*/
