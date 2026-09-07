@@ -23,8 +23,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$primary = 'nvidia/nemotron-3-super-120b-a12b'
-$fallback = 'nvidia/nemotron-3.5-lightning-30b-a3b'
+$primary = if ($env:CODE_REVIEWER_PRIMARY_MODEL) { $env:CODE_REVIEWER_PRIMARY_MODEL } else { 'nvidia/nemotron-3-super-120b-a12b' }
+$fallback = if ($env:CODE_REVIEWER_FALLBACK_MODEL) { $env:CODE_REVIEWER_FALLBACK_MODEL } else { 'nvidia/nemotron-3.5-lightning-30b-a3b' }
 $reviewerIdentity = 'dnppv2-nvidia-review-gate-v1'
 $configuredReviewerIdentity = [Environment]::GetEnvironmentVariable('DNPPV_REVIEWER_ID')
 if (-not [string]::IsNullOrWhiteSpace($configuredReviewerIdentity) -and $configuredReviewerIdentity -ne $reviewerIdentity) {
@@ -68,7 +68,8 @@ if ($HealthCheck) {
     exit 0
 }
 
-if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING'))) {
+if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('CODE_REVIEWER_API_KEY')) -and
+    [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING'))) {
     throw 'NVIDIA_API_KEY_CODING is required for the reviewer gate.'
 }
 

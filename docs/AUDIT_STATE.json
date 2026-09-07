@@ -5412,7 +5412,8 @@
         ],
         "completed_increment": [
           "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters.",
-          "Added Test-CodeReviewerWorkflowGate.ps1 self-test; syntax and license gates pass."
+          "Added Test-CodeReviewerWorkflowGate.ps1 self-test; syntax and license gates pass.",
+          "Added configuration aliases for the reviewer model pair and API key without changing the current engine fallback."
         ],
         "closure_evidence": []
       },

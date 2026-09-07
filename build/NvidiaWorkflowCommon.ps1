@@ -110,7 +110,10 @@ function Get-RepoRoot {
 function Get-NvidiaApiKey {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
 
-    $key = [Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING')
+    $key = [Environment]::GetEnvironmentVariable('CODE_REVIEWER_API_KEY')
+    if ([string]::IsNullOrWhiteSpace($key)) {
+        $key = [Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING')
+    }
     if (-not [string]::IsNullOrWhiteSpace($key)) { return $key }
 
     # Local-only ignored test secret overlay. This file must never be committed.
