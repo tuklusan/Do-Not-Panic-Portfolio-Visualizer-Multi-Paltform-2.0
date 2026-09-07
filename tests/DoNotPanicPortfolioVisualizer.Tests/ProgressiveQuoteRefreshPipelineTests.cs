@@ -164,7 +164,9 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         public async Task WaitForCompletionsAsync()
         {
             await _allInitialRequestsCompleted.Task;
-            await Task.Yield();
+            // Await the actual request tasks after the completion signal. This
+            // removes the scheduler-order race exposed by slow arm64 hosts.
+            await Task.WhenAll(_requests.Values.Select(static request => request.Task));
         }
     }
 

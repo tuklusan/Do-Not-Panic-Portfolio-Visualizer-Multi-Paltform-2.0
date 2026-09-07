@@ -8221,6 +8221,66 @@
       }
     },
     {
+      "id": "CR-119",
+      "phase": "Phase 7",
+      "title": "Make arm64 quote-pipeline completion test deterministic",
+      "status": "in_progress",
+      "priority": "high",
+      "depends_on": [
+        "CR-097"
+      ],
+      "objective": "Remove the cross-platform scheduler race that caused the xcode-27 hosted lane to fail before product evidence collection.",
+      "acceptance_criteria": [
+        "The controlled quote provider publishes its completion signal only alongside an explicit barrier that awaits every completed request task.",
+        "The focused progressive-pipeline test passes repeatedly and the full Release test suite passes locally.",
+        "A fresh serialized hosted matrix proves the corrected arm64 lane and complete evidence contract without weakening production behavior.",
+        "Upstream behavior remains fully mapped and the closure record identifies the failed run and corrected test boundary."
+      ],
+      "validation_plan": [
+        "Read the pipeline and test source line by line and compare the synchronization contract with the upstream progressive-refresh behavior.",
+        "Run the focused test repeatedly and the full Release suite through the checked PowerShell wrapper.",
+        "Run local license, syntax, workflow, upstream-lock, and harness-freeze gates.",
+        "After commit, run one serialized hosted matrix and inspect every lane's evidence before closure."
+      ],
+      "artifacts": [
+        "tests/DoNotPanicPortfolioVisualizer.Tests/ProgressiveQuoteRefreshPipelineTests.cs",
+        "docs/CR-119-ARM64-QUOTE-PIPELINE-TEST-BARRIER.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "current_validation": {
+        "status": "implementation-complete-hosted-proof-pending",
+        "evidence": [
+          "Hosted run 34151277506 built xcode-27 successfully but exposed the request-task scheduling race with 320 passing tests and one failure.",
+          "The test now awaits Task.WhenAll over both completed request tasks after its completion signal.",
+          "Focused progressive-pipeline tests and the full Release test command passed locally."
+        ],
+        "unresolved_gaps": [
+          "Fresh serialized hosted proof is required after the test synchronization correction."
+        ]
+      },
+      "upstream_behavior_inventory": {
+        "status": "complete",
+        "document": "docs/CR-038-RUNTIME-ORCHESTRATION-BUDGET-INVENTORY.md",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+          "tests/PortfolioSaver.Tests/Services/ProgressiveQuoteRefreshPipelineTests.cs"
+        ],
+        "zero_known_gaps": true
+      },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+          "tests/PortfolioSaver.Tests/Services/ProgressiveQuoteRefreshPipelineTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      }
+    },
+    {
       "id": "CR-118",
       "phase": "Phase 7",
       "title": "Reuse completed matrix evidence for instrumentation corrections",
