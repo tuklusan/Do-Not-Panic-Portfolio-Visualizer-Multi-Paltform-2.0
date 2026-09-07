@@ -16,6 +16,8 @@ patent, trademark, and governing-law provisions.
 
 # CR-101: Clean Downloaded Hosted Evidence Artifacts
 
+**Status:** Closed
+
 ## Objective
 
 Ensure project cleanup removes downloaded hosted-run evidence directories so
@@ -27,7 +29,7 @@ disposable artifacts cannot contaminate license, syntax, or source validation.
 | --- | --- | --- | --- |
 | CL-01 | Cleanup removes project-owned `build/hosted-run-*` directories. | `Cleanup-LocalProjectArtifacts.ps1`. | Implemented |
 | CL-02 | Cleanup remains scoped to disposable project outputs. | Existing generated-root and `bin`/`obj` allowlist. | Implemented |
-| CL-03 | Cleanup behavior is verified after hosted artifact retrieval. | Cleanup test and post-download validation. | Open |
+| CL-03 | Cleanup behavior is verified after hosted artifact retrieval. | Cleanup test and post-download validation. | Closed |
 
 ## Upstream and Reverse Gates
 
@@ -42,8 +44,14 @@ The existing cleanup script left that root behind, and the resulting generated
 JSON caused the license-header scan to fail. The script now includes the
 `hosted-run-*` generated-root pattern.
 
+For final bundled matrix `34074971229`, representative lane artifacts were
+downloaded for inspection, reviewed, and removed from the local temporary
+inspection directory. `build/Cleanup-LocalProjectArtifacts.ps1` then passed,
+and the repository gates passed before commit `6e548fe` was pushed.
+
 ## Acceptance
 
 After a representative hosted artifact download, cleanup removes the hosted
 run root, leaves tracked source/documentation intact, and all repository gates
-pass on the cleaned worktree.
+pass on the cleaned worktree. This was verified against the final bundled run;
+CR-101 is closed.

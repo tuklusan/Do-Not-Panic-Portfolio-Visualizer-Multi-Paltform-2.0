@@ -5142,7 +5142,7 @@
       "id": "CR-099",
       "phase": "Phase 7",
       "title": "Preserve Ubuntu Slim soak closure evidence",
-      "status": "open",
+      "status": "closed",
       "priority": "normal",
       "depends_on": [
         "CR-096"
@@ -5156,7 +5156,7 @@
       "validation_plan": [
         "Inspect the complete soak/evidence dependency graph and runner cancellation behavior.",
         "Run workflow, syntax, license, migration, and upstream-lock gates.",
-        "Run mandatory independent review and a serialized hosted matrix with all 21 lane records."
+        "Record the superseding CR-104 decision and verify the final bundled 20-lane matrix no longer contains Ubuntu Slim."
       ],
       "artifacts": [
         "docs/CR-099-UBUNTU-SLIM-CLOSURE-EVIDENCE.md",
@@ -5188,18 +5188,21 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending",
-        "unresolved_gaps": [
-          "Implementation and fresh hosted validation are pending."
-        ],
+        "status": "closed-superseded",
+        "unresolved_gaps": [],
         "closure_evidence": [
-          "NVIDIA review 20260905-154958 and 20260905-152916/152248/152916 were inspected; actionable workflow lifecycle, masking, schema, dynamic-count, and gate-test findings were addressed on disk. Advisory requests to allow AI-incomplete lanes to pass conflict with the project acceptance requirement for real AI evidence on every required hosted lane."
+          "Final bundled matrix 34074971229 exercised the exact 20-lane contract after CR-104 retired Ubuntu Slim; Ubuntu Slim was absent from both operational matrices and the exact-count gate passed.",
+          "CR-099 is closed as superseded by CR-104; no claim is made that the historical Ubuntu Slim cancellation path was repaired."
         ]
       },
       "upstream_closure_audit": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [],
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "build/Test-WorkflowGateConfiguration.ps1"
+        ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
@@ -5279,7 +5282,7 @@
       "id": "CR-101",
       "phase": "Phase 7",
       "title": "Clean downloaded hosted evidence artifacts",
-      "status": "open",
+      "status": "closed",
       "priority": "low",
       "depends_on": [
         "CR-099"
@@ -5309,33 +5312,32 @@
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_scanned": [],
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": [
-          "Closure validation is pending."
-        ]
+        "source_files_scanned": [
+          "build/Cleanup-LocalProjectArtifacts.ps1"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending",
-        "unresolved_gaps": [
-          "Fresh cleanup execution is pending after the script change."
-        ],
+        "status": "closed",
+        "unresolved_gaps": [],
         "closure_evidence": [
-          "The prior cleanup run left build/hosted-run-33982819747 until the cleanup allowlist was extended; the stale artifact reader was then terminated and cleanup completed."
+          "Final bundled matrix 34074971229 artifacts were downloaded for representative inspection and removed from the local temporary inspection directory.",
+          "build/Cleanup-LocalProjectArtifacts.ps1 returned LOCAL_PROJECT_ARTIFACT_CLEANUP=Passed; tracked source and documentation remained intact, and commit 6e548fe passed the pre-push gates."
         ]
       },
       "upstream_closure_audit": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [],
-        "zero_unmapped_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": [
-          "Closure audit is pending validation."
-        ]
+        "source_files_rescanned": [
+          "build/Cleanup-LocalProjectArtifacts.ps1"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
