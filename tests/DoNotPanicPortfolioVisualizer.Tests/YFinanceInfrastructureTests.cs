@@ -188,7 +188,7 @@ public sealed class YFinanceInfrastructureTests
 
         RecordingProcessHandle handle = new();
         RecordingProcessLauncher launcher = new(handle);
-        SequencedEndpointProbe probe = new(false, false, false, false);
+        CancellationAwareEndpointProbe probe = new();
         YFinanceServerProcessManager manager = new(
             new YFinanceServerProcessManagerOptions
             {
@@ -200,9 +200,15 @@ public sealed class YFinanceInfrastructureTests
             launcher,
             probe);
 
-        using CancellationTokenSource cts = new(TimeSpan.FromMilliseconds(60));
+        using CancellationTokenSource cts = new();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            () => manager.EnsureOwnedServerAsync("DNPPV.Tests / unsafe", cts.Token));
+            async () =>
+            {
+                Task ensureTask = manager.EnsureOwnedServerAsync("DNPPV.Tests / unsafe", cts.Token);
+                await probe.Entered.WaitAsync(TimeSpan.FromSeconds(5));
+                cts.Cancel();
+                await ensureTask;
+            });
 
         Assert.True(handle.KillCalled);
         Assert.True(handle.DisposeCalled);
@@ -286,6 +292,24 @@ public sealed class YFinanceInfrastructureTests
         {
             CallCount++;
             return Task.FromResult(_results.Count == 0 ? true : _results.Dequeue());
+        }
+    }
+
+    private sealed class CancellationAwareEndpointProbe : IYFinanceLoopbackEndpointProbe
+    {
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<bool> CanConnectAsync(
+            string host,
+            int port,
+            TimeSpan timeout,
+            CancellationToken cancellationToken = default)
+        {
+            if (Entered.Task.IsCompleted)
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+
+            Entered.TrySetResult();
+            return false;
         }
     }
 

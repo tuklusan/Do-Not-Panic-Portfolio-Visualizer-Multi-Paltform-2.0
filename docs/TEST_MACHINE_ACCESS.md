@@ -16,7 +16,7 @@ patent, trademark, and governing-law provisions.
 
 # Test Machine Access Details
 
-Current working record: 2026-09-03
+Current working record: 2026-09-07
 
 This repository is in migration-baseline mode.
 
@@ -24,8 +24,8 @@ Exact live credentials are intentionally not committed. Operators may keep a
 local ignored endpoint inventory such as `build/vm/remote-test-machines.local.txt`,
 and passwords remain in the operator password manager.
 
-The four physical endpoints were last refreshed on 2026-08-24. Availability is
-dynamic: as of 2026-09-03, all four machines are reported available at the
+The four physical endpoints were last refreshed on 2026-09-07. Availability is
+dynamic; the last recorded probe reported all four machines available at the
 current subnet addresses: Linux `192.168.4.76`, Windows 10 `192.168.4.75`,
 Intel Big Sur `192.168.4.77`, and Windows 11 `192.168.4.103`.
 Update the ignored local endpoint inventory whenever DHCP or network topology
@@ -129,7 +129,7 @@ record the operator-supplied current address needed to explain lab state.
   driver; window enumeration without pixel-capture permission is insufficient
   and does not satisfy visual acceptance. The driver restores the executable
   bit after ZIP extraction because macOS artifact extraction may drop it.
-  the actual Avalonia window through CoreGraphics. The lower-level
+  The lower-level
   `build/vm/Test-MacStorageContract.sh` remains available for setup probes.
   The Mac acceptance driver launches the real product at `1920x1080` by
   default so this cinematic display can use the available screen area; this
