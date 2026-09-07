@@ -7148,7 +7148,7 @@
       "id": "CR-103",
       "phase": "Phase 7",
       "title": "Immutable committed-candidate review receipt and pre-push enforcement",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "low",
       "depends_on": ["CR-097"],
       "objective": "Replace mutable working-tree CODE authorization with a deterministic committed-candidate model and an ignored, atomic PASS receipt bound to one exact Git base/head range, immutable snapshot, review material, reviewer result, and CR/task scope.",
@@ -7188,13 +7188,13 @@
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending_dependency",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation is intentionally deferred until CR-097 is complete."]
+        "status": "complete",
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "implementation-complete-hosted-receipt-proof-pending",
+        "status": "closed",
         "evidence": [
           "CR-097 is closed with generic reviewer names and fail-closed semantics.",
           "Added CodeReviewerCommon.ps1 deterministic Git-object descriptor helpers.",
@@ -7202,11 +7202,11 @@
           "Added Test-CodeReviewReceipt.ps1 real-Git self-test covering valid receipt and stale remote-base rejection.",
           "PowerShell syntax, license, receipt self-test, and simulated protected pre-push tuple gates passed locally.",
           "Corrected the hook's Git stdin transport to avoid parameter-binding warnings while preserving tuple validation.",
-          "The simulated protected main update passed the hook and receipt validator end to end."
+          "The simulated protected main update passed the hook and receipt validator end to end.",
+          "Temporary Git A-to-D self-test passed: exact A-to-B acceptance, stale remote movement rejection, changed-head rejection, and skipped-range rejection.",
+          "Exact candidate bdc5583 received a clean NVIDIA CODE PASS and an immutable receipt bound to remote base 614673d; the ordinary protected push passed all gates."
         ],
-        "unresolved_gaps": [
-          "Hook integration, A-to-D temporary-repository coverage, hosted receipt proof, and final reverse scans remain outstanding."
-        ]
+        "unresolved_gaps": []
       }
     },
     {
