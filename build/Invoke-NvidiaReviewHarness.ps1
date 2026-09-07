@@ -28,7 +28,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $script:LastNvidiaResponseAt = $null
-$script:MinimumNvidiaResponseSpacingSeconds = 15
+$script:MinimumNvidiaResponseSpacingSeconds = 30
 $script:NvidiaRetryPolicy = [ordered]@{
     MaxAttempts = 5
     BaseDelaySeconds = 5

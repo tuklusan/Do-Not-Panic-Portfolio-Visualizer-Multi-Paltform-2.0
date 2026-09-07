@@ -268,5 +268,8 @@ if ($workflow -notmatch '\$reviewTimeoutSeconds\s*=\s*if \(\$env:REVIEW_WAIT_POL
 if ($workflow -notmatch 'DNPPV_REVIEWER_ID:\s*dnppv2-nvidia-review-gate-v1') {
     throw 'Hosted workflow must identify this project reviewer namespace explicitly.'
 }
+if ($harnessText -notmatch '\$script:MinimumNvidiaResponseSpacingSeconds\s*=\s*30') {
+    throw 'NVIDIA reviewer checks must enforce a 30-second inter-request cadence.'
+}
 
 Write-Output "WORKFLOW_GATE_CONFIGURATION=Passed;RUNNERS=$(@($publishEntries).Count)"

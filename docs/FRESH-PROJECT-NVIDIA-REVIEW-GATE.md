@@ -51,7 +51,9 @@ same reviewer identity so concurrent projects cannot be mistaken for this
 project's evidence. The normal hosted request budget is 1800 seconds. An
 operator-authorized slow-review dispatch may use 14400 seconds. These limits
 apply to the reviewer request itself and are separate from the enclosing job
-timeout.
+timeout. A shared reviewer host must wait at least 30 seconds between observed
+NVIDIA responses, including transient failures, using the cross-process spacing
+mutex; this cadence is mandatory and is not a polling loop.
 
 ## 2. Verified reference baseline
 
