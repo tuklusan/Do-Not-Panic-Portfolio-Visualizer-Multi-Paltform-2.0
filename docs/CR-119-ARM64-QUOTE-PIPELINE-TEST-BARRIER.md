@@ -49,8 +49,9 @@ synchronization and preserves the production pipeline contract.
 - A closure scan confirms the barrier is deterministic and does not weaken any
   upstream behavior or production assertion.
 
-**Status:** In progress. The failed hosted lane is retained as diagnostic
-evidence; a fresh matrix is required after this test-only correction.
+**Status:** Closed. Failed run `34151277506` supplied the diagnostic basis;
+fresh run `34154312330` completed all 20 lanes successfully, including
+`xcode-27` and `macos-26`, with complete lane evidence and aggregate PASS.
 
 ## Reverse Upstream Gap Scan
 

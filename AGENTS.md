@@ -83,6 +83,9 @@ The preserved review-gate entry points are:
 - `build/NvidiaWorkflowCommon.ps1`
 - `docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md`
 - `build/Invoke-CheckedPowerShell.ps1`
+- `build/CodeReviewerCommon.ps1`
+- `build/Assert-CodeReviewReceipt.ps1`
+- `build/Test-CodeReviewReceipt.ps1`
 
 ## Generated Artifact Cleanup
 

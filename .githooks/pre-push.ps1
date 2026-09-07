@@ -30,8 +30,9 @@ $licenseGate = Join-Path $repoRoot 'build\Test-LicenseHeaders.ps1'
 $syntaxGate = Join-Path $repoRoot 'build\Test-PowerShellSyntax.ps1'
 $workflowGate = Join-Path $repoRoot 'build\Test-WorkflowGateConfiguration.ps1'
 $harnessFreeze = Join-Path $repoRoot 'build\Test-HarnessFreeze.ps1'
+$receiptValidator = Join-Path $repoRoot 'build\Assert-CodeReviewReceipt.ps1'
 
-foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflowGate, $harnessFreeze)) {
+foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflowGate, $harnessFreeze, $receiptValidator)) {
     if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) {
         throw "Missing required pre-push gate: $requiredPath"
     }
@@ -42,5 +43,24 @@ foreach ($requiredPath in @($upstreamGuard, $licenseGate, $syntaxGate, $workflow
 & $syntaxGate
 & $workflowGate
 & $harnessFreeze -BaseRef $(if ($RemoteName) { "$RemoteName/main" } else { 'HEAD^' })
+
+$configuredHooksPath = (& git config --local core.hooksPath).Trim()
+if ($configuredHooksPath -notin @('.githooks', '.githooks/')) {
+    throw "Repository-local core.hooksPath is not active: $configuredHooksPath"
+}
+
+$updates = @($input | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+foreach ($update in $updates) {
+    $parts = $update -split '\s+', 3
+    if ($parts.Count -ne 3) { throw "Malformed pre-push update tuple: $update" }
+    $remoteRef = $parts[0]
+    $remoteOld = $parts[1]
+    $newSha = $parts[2]
+    if ($remoteRef -ne 'refs/heads/main') { continue }
+    if ($newSha -match '^0{40}$') { throw 'Protected main deletion is not permitted.' }
+    $receipt = Join-Path $repoRoot ("build/code-review/receipts/{0}.json" -f $newSha)
+    & $receiptValidator -ReceiptPath $receipt -RemoteOldSha $remoteOld -NewSha $newSha -RemoteRef $remoteRef
+    if ($LASTEXITCODE -ne 0) { throw "Committed-candidate receipt rejected protected update: $remoteRef" }
+}
 
 Write-Output 'PRE_PUSH_GATES=Passed'

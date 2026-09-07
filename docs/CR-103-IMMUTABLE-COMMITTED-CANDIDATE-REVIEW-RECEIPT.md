@@ -18,7 +18,7 @@ patent, trademark, and governing-law provisions.
 
 **Priority:** Low
 
-**Status:** Deferred / blocked
+**Status:** Implementation complete; hosted receipt proof pending
 
 **Phase:** Phase 7 / workflow maintenance
 
@@ -52,9 +52,13 @@ Add focused validator and hook tests for exact valid receipts, missing/malformed
 
 Add a real temporary-Git integration test with commits `A -> B -> C -> D` proving exact base/head acceptance, remote movement rejection, new-head rejection, and rejection of a skipped reviewed range even when ancestry holds. Do not rely only on mocked strings.
 
+The current deterministic self-test uses real repository Git objects and covers
+receipt creation, exact tree/snapshot binding, clean PASS enforcement, and
+stale remote-base rejection. The remaining A-to-D temporary-repository cases
+are explicitly required before final closure.
+
 Before closure, run the reviewer/hook tests, real-Git tests, PowerShell syntax, license, workflow, upstream-mutation, applicable migration gates, focused/full Release tests, independent review of the exact committed candidate, receipt generation, normal protected push, hosted validation, evidence inspection, and two successive fresh reverse zero-gap scans. Closure requires CR-097 complete, all deterministic and temporary-Git tests passing, a fresh reviewer PASS receipt, ordinary protected push acceptance, stale/mismatch rejection, hosted success, and two zero-gap scans.
 
 ## Explicit non-goals
 
 No server-side hostile-user enforcement, external signing authority, general branch-deletion authorization, implicit bootstrap base, replacement of GitHub branch protection, weakened matrix/evidence requirements, application behavior changes, provider-specific vocabulary, or historical traceback archive.
-

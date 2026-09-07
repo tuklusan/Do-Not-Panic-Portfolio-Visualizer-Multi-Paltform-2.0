@@ -42,9 +42,9 @@ review, immutable snapshots, fail-closed behavior, or retained evidence.
 | VR-03 | Provider-specific request fields are optional validated overrides. | `CODE_REVIEWER_REQUEST_OVERRIDES_JSON` is validated as an object and protected fields cannot be null. | Implemented |
 | VR-04 | The reviewer protocol has explicit `PASS`, `FAIL`, `INCONCLUSIVE`, and `REVIEW_UNAVAILABLE` outcomes. | Generic adapter result normalization and fail-closed validation. | Implemented |
 | VR-05 | Direct callers enforce `review_complete`, `verdict`, and empty `blocking_findings`. | Publish and real-product soak workflow now call the generic runner; aggregate gate remains authoritative. | Implemented |
-| VR-06 | Serious findings require concrete requirement, location, problem, and evidence. | Generic harness finding validation. | Planned |
-| VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Planned |
-| VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Planned |
+| VR-06 | Serious findings require concrete requirement, location, problem, and evidence. | Generic harness finding validation. | Implemented |
+| VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Implemented |
+| VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Implemented |
 
 | VR-09 | Current provider configuration remains operational after renaming. | Existing configured engine remains the default backend; provider-specific values remain outside generic implementation vocabulary. | Implemented |
 
@@ -86,6 +86,8 @@ every existing mandatory review caller still fails closed.
 
 ## Closure State
 
-Implementation complete. Closure remains pending the mandatory direct-caller,
-repository, independent-review, hosted-evidence, and successive reverse-scan
-gates. No closure is claimed by this increment.
+Closed. The local generic reviewer and repository gates passed, the approved
+direct-caller change was pushed as `41f8342`, and corrected hosted matrix
+`34154312330` completed all 20 lanes with complete semantic review receipts
+and aggregate PASS evidence. Two fresh reverse scans found no missing generic
+protocol behavior.

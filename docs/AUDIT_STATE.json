@@ -5343,10 +5343,10 @@
       }
     },
     {
-    "id": "CR-097",
+      "id": "CR-097",
       "phase": "Phase 7",
       "title": "Vendor-neutral independent code review gate",
-    "status": "in_progress",
+      "status": "closed",
       "priority": "low",
       "depends_on": [
         "CR-096"
@@ -5406,27 +5406,35 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-      "status": "implementation-complete-closure-evidence-pending",
-        "unresolved_gaps": [
-        "Direct-caller integration, independent review, hosted evidence, and closure proof remain outstanding."
-        ],
+        "status": "closed",
+        "unresolved_gaps": [],
         "completed_increment": [
         "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters with configurable endpoint, model, secret, and validated override environment.",
         "Added generic semantic-result normalization requiring a supported verdict, boolean review_complete, and structured blocking_findings.",
         "Hosted artifact review now invokes the provider-neutral Run-CodeReview.ps1 caller with neutral configuration variables; the frozen operational reviewer backend was not modified.",
         "Test-CodeReviewerWorkflowGate self-test and PowerShell syntax validation pass."
         ],
-        "closure_evidence": []
+        "closure_evidence": [
+          "Local generic reviewer self-test, license, syntax, workflow, and upstream-lock gates passed.",
+          "Approved hosted direct-caller integration was pushed in commit 41f8342.",
+          "Fresh hosted matrix 34154312330 completed all 20 lanes with complete semantic review receipts and aggregate HOSTED_SOAK_CLOSURE=Passed.",
+          "Two successive reverse scans of the generic reviewer artifacts found zero missing behaviors."
+        ]
       },
       "upstream_closure_audit": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [],
-        "zero_unmapped_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": [
-          "Implementation and independent closure validation remain outstanding."
-        ]
+        "source_files_rescanned": [
+          "build/DeepSeekWorkflowCommon.ps1",
+          "build/Run-DeepSeekCodeReview.ps1",
+          "build/Test-DeepSeekWorkflowGate.ps1",
+          "build/validation/Invoke-DeepSeekArtifactReview.ps1",
+          ".github/workflows/itch-publish.yml",
+          "tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       }
     },
     {
@@ -7186,8 +7194,17 @@
         "unresolved_gaps": ["Implementation is intentionally deferred until CR-097 is complete."]
       },
       "current_validation": {
-        "status": "deferred_blocked_on_CR-097",
-        "unresolved_gaps": ["No implementation or closure evidence is claimed."]
+        "status": "implementation-complete-hosted-receipt-proof-pending",
+        "evidence": [
+          "CR-097 is closed with generic reviewer names and fail-closed semantics.",
+          "Added CodeReviewerCommon.ps1 deterministic Git-object descriptor helpers.",
+          "Added Assert-CodeReviewReceipt.ps1 with exact PASS, tree, snapshot, ancestry, and remote-base/head binding checks.",
+          "Added Test-CodeReviewReceipt.ps1 real-Git self-test covering valid receipt and stale remote-base rejection.",
+          "PowerShell syntax, license, and receipt self-test gates passed locally."
+        ],
+        "unresolved_gaps": [
+          "Hook integration, A-to-D temporary-repository coverage, hosted receipt proof, and final reverse scans remain outstanding."
+        ]
       }
     },
     {
@@ -8224,7 +8241,7 @@
       "id": "CR-119",
       "phase": "Phase 7",
       "title": "Make arm64 quote-pipeline completion test deterministic",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "high",
       "depends_on": [
         "CR-097"
@@ -8248,14 +8265,17 @@
         "docs/AUDIT_STATE.json"
       ],
       "current_validation": {
-        "status": "implementation-complete-hosted-proof-pending",
+        "status": "closed",
         "evidence": [
           "Hosted run 34151277506 built xcode-27 successfully but exposed the request-task scheduling race with 320 passing tests and one failure.",
           "The test now awaits Task.WhenAll over both completed request tasks after its completion signal.",
           "Focused progressive-pipeline tests and the full Release test command passed locally."
         ],
-        "unresolved_gaps": [
-          "Fresh serialized hosted proof is required after the test synchronization correction."
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Focused progressive-pipeline tests and the full Release test command passed locally.",
+          "Fresh hosted matrix 34154312330 completed all 20 lanes successfully, including xcode-27 and macos-26.",
+          "All 20 lane records, soak results, semantic reviews, screenshots, and circular traces were present and complete; aggregate HOSTED_SOAK_CLOSURE=Passed."
         ]
       },
       "upstream_behavior_inventory": {
