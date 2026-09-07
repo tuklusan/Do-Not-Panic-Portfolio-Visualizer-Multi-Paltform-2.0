@@ -5413,7 +5413,8 @@
         "completed_increment": [
         "Added provider-neutral Invoke-CodeReviewHarness.ps1 and Run-CodeReview.ps1 adapters with configurable endpoint, model, secret, and validated override environment.",
         "Added generic semantic-result normalization requiring a supported verdict, boolean review_complete, and structured blocking_findings.",
-        "Test-CodeReviewerWorkflowGate self-test and PowerShell syntax validation pass; the frozen operational reviewer harness was not modified."
+        "Hosted artifact review now invokes the provider-neutral Run-CodeReview.ps1 caller with neutral configuration variables; the frozen operational reviewer backend was not modified.",
+        "Test-CodeReviewerWorkflowGate self-test and PowerShell syntax validation pass."
         ],
         "closure_evidence": []
       },

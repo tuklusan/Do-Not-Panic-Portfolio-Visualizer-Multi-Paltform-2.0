@@ -461,6 +461,10 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           DNPPV_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           NVIDIA_API_KEY_CODING: ${{ secrets.NVIDIA_API_KEY_CODING }}
+          CODE_REVIEWER_ENDPOINT: ${{ vars.CODE_REVIEWER_ENDPOINT }}
+          CODE_REVIEWER_MODEL: ${{ vars.CODE_REVIEWER_MODEL }}
+          CODE_REVIEWER_API_KEY: ${{ secrets.NVIDIA_API_KEY_CODING }}
+          CODE_REVIEWER_REQUEST_OVERRIDES_JSON: ${{ vars.CODE_REVIEWER_REQUEST_OVERRIDES_JSON }}
           MATRIX_RID: ${{ matrix.rid }}
         run: |
            Write-Host "::add-mask::$env:NVIDIA_API_KEY_CODING"
@@ -478,7 +482,7 @@ jobs:
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
            $reviewTimeoutSeconds = if ($env:REVIEW_WAIT_POLICY -eq 'one-time-slow-review') { 14400 } else { 1800 }
            Write-Host "REVIEW_WAIT_POLICY=$env:REVIEW_WAIT_POLICY;REQUEST_TIMEOUT_SECONDS=$reviewTimeoutSeconds"
-           $reviewOutput = @(& ./build/Invoke-ReviewGate.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
+           $reviewOutput = @(& ./build/Run-CodeReview.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
            $reviewExitCode = $LASTEXITCODE
            $safeOutput = ($reviewOutput | Out-String)
            if (-not [string]::IsNullOrWhiteSpace($safeOutput)) {

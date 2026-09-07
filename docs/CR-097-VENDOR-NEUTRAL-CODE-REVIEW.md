@@ -41,7 +41,7 @@ review, immutable snapshots, fail-closed behavior, or retained evidence.
 | VR-02 | Endpoint, model, and secret are supplied by configuration. | `CODE_REVIEWER_ENDPOINT`, `CODE_REVIEWER_MODEL`, and `CODE_REVIEWER_API_KEY` are accepted and scoped to the configured engine. | Implemented |
 | VR-03 | Provider-specific request fields are optional validated overrides. | `CODE_REVIEWER_REQUEST_OVERRIDES_JSON` is validated as an object and protected fields cannot be null. | Implemented |
 | VR-04 | The reviewer protocol has explicit `PASS`, `FAIL`, `INCONCLUSIVE`, and `REVIEW_UNAVAILABLE` outcomes. | Generic adapter result normalization and fail-closed validation. | Implemented |
-| VR-05 | Direct callers enforce `review_complete`, `verdict`, and empty `blocking_findings`. | Publish and real-product soak workflow callers plus aggregate gate. | Planned |
+| VR-05 | Direct callers enforce `review_complete`, `verdict`, and empty `blocking_findings`. | Publish and real-product soak workflow now call the generic runner; aggregate gate remains authoritative. | Implemented |
 | VR-06 | Serious findings require concrete requirement, location, problem, and evidence. | Generic harness finding validation. | Planned |
 | VR-07 | New source files cannot be omitted from mandatory review. | Untracked-file inclusion and secret-like-path hard stop. | Planned |
 | VR-08 | Lane closure records retain cryptographically identified review receipts. | `reviewComplete`, `verdict`, `blockingFindingCount`, and review hash in closure records. | Planned |

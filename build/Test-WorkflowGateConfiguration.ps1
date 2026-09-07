@@ -126,9 +126,11 @@ if (@($publishEntries | Select-Object -Unique).Count -ne 20) { throw 'Hosted run
 foreach ($requiredEntry in @('macos-latest|osx-arm64', 'xcode-27|osx-arm64')) {
     if ($publishEntries -cnotcontains $requiredEntry) { throw "Hosted runner matrix is missing required entry '$requiredEntry'." }
 }
-if ([regex]::Matches($workflow, 'Invoke-ReviewGate\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
-    throw 'Hosted soak workflow is missing mandatory two-model test-artifact review gate.'
+if ([regex]::Matches($workflow, 'Run-CodeReview\.ps1\s+-ReviewType\s+TEST_ARTIFACT').Count -ne 1) {
+    throw 'Hosted soak workflow is missing the provider-neutral test-artifact review caller.'
 }
+$genericReviewPath = Join-Path $repoRoot 'build/Run-CodeReview.ps1'
+if (-not (Test-Path -LiteralPath $genericReviewPath -PathType Leaf)) { throw 'Generic review caller is missing.' }
 $reviewGatePath = Join-Path $repoRoot 'build/Invoke-ReviewGate.ps1'
 if (-not (Test-Path -LiteralPath $reviewGatePath -PathType Leaf)) { throw 'Authoritative review gate is missing.' }
 $companionDispatchPath = Join-Path $repoRoot 'build/New-LocalCompanionDispatch.ps1'
