@@ -32,6 +32,7 @@ external condition and the raw finding is retained.
 | EXT-01 | Every lane still produces the complete retained evidence contract. | Missing, malformed, secret-bearing, or hash-mismatched evidence remains blocking. |
 | EXT-02 | Provider HTTP 429 or known provider-route HTTP 404 during the one upstream news refresh is recorded as quota/route-limited AI evidence. | RSS remains usable; `aiSuccessObserved` stays false; no artificial success is emitted. |
 | EXT-03 | NTP all-host timeout is advisory only when the trace proves the documented local-clock fallback. | The raw finding is retained under `advisoryFindings`; both the project-specific `NTP-ALL-HOSTS-FAILED` identifier and NVIDIA's evidence-matched generic `B-001` alias are accepted. CR-039 remains the disposition authority. |
+| EXT-03A | RSS outage and any model HTTP 4xx are external conditions, not product failures, when the trace proves the unavailable state or request/response. | Local and hosted evidence retain explicit advisory disposition fields; missing traces, missing requests, malformed evidence, cleanup defects, and unknown runtime failures remain blocking. |
 | EXT-04 | Render recovery is advisory only when the trace proves bounded recovery and subsequent heartbeats. | Unbounded, repeated, or unrecovered stalls remain blocking under CR-115; both the project-specific `RENDER-RECOVERY-*` identifiers and NVIDIA's evidence-matched generic `B-002` alias are accepted. |
 | EXT-05 | NVIDIA output cancellation or unavailability never fabricates a PASS receipt. | The lane remains incomplete and the aggregate fails closed until a real receipt exists. |
 | EXT-06 | YFinance upstream errors and unknown reviewer findings remain blocking until their CR disposition is independently closed. | No broad provider-error allowlist is permitted. |
@@ -40,7 +41,7 @@ external condition and the raw finding is retained.
 
 | EXT-01 | Hosted product lanes retain complete soak, cleanup, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence. | `publish-six-rids.yml`, `Test-HostedSoakClosure.ps1`, and the retained lane artifacts. |
 | EXT-02 | Provider HTTP 429 or known provider-route HTTP 404 is preserved as failed AI evidence and never fabricated as success. | `FinanceNewsService`, `AiNewsAccessValidationService`, and news evidence receipts. |
-| EXT-03 | Only approved bounded NTP fallback, render recovery, and provider quota/route findings can become advisory. | Deterministic workflow normalization plus raw `advisoryFindings`; generic aliases require matching finding text and trace evidence. |
+| EXT-03 | Only evidence-matched bounded NTP fallback, render recovery, RSS outage, and model HTTP 4xx findings can become advisory. | Deterministic workflow normalization plus raw `advisoryFindings`; generic aliases require matching finding text and trace evidence. |
 | EXT-04 | Missing, canceled, malformed, secret-bearing, or hash-mismatched reviewer evidence remains blocking. | Closure validator negative cases and aggregate gate. |
 
 ## Evidence from discovery run

@@ -38,6 +38,9 @@ but the required AI success event was absent after OpenRouter returned HTTP
 missing RSS/AI trace pair. The coordinator failed closed and disposable
 artifacts were cleaned after inspection. These findings remain routed to the
 existing AI/news CRs and are not local-machine unavailability.
+Under the updated CR-117 disposition contract, evidence-matched external RSS
+outage and model HTTP 4xx conditions are advisory; they do not mask missing
+traces, missing requests, cleanup defects, or unknown runtime failures.
 
 ## Gap
 

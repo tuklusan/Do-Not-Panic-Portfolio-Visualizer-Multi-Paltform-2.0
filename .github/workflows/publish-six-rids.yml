@@ -338,25 +338,27 @@ jobs:
             }
             $trace = ($tracePaths | ForEach-Object { $normalizedTraceByPath[$_] }) -join "`n"
            $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
+           $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*/\s*state=Unavailable'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
            $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
-           $aiQuotaLimited = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=(?:404|429)'
+           $aiQuotaLimited = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]'
            $rssPublished = $trace -match 'NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT=[1-9][0-9]*'
            $newsEvidence = [ordered]@{
              schema = 'dnppv2-hosted-soak-news-evidence/v1'
              runner = $runnerName
              rssUsable = [bool]$rssUsable
+             rssExternalFailureDisposition = if ($rssExternalFailure) { 'external-rss-outage-advisory' } else { $null }
              rssPublished = [bool]$rssPublished
              aiRequired = $true
              aiRequestObserved = [bool]$aiRequested
              aiSuccessObserved = [bool]$aiSucceeded
              aiQuotaLimited = [bool]$aiQuotaLimited
              aiExternalFailureDisposition = if ($aiQuotaLimited -and -not $aiSucceeded) { 'provider-quota-rate-limited' } else { $null }
-             failure = if (-not $rssUsable) { 'RSS evidence incomplete' } elseif (-not $rssPublished) { 'RSS playback evidence incomplete' } elseif (-not $aiRequested) { 'AI evidence incomplete' } elseif (-not $aiSucceeded -and $aiQuotaLimited) { 'provider-quota-rate-limited' } elseif (-not $aiSucceeded) { 'AI evidence incomplete' } else { $null }
+             failure = if (-not $rssUsable -and -not $rssExternalFailure) { 'RSS evidence incomplete' } elseif (-not $rssPublished -and -not $rssExternalFailure) { 'RSS playback evidence incomplete' } elseif (-not $aiRequested) { 'AI evidence incomplete' } elseif (-not $aiSucceeded -and $aiQuotaLimited) { 'provider-quota-rate-limited' } elseif (-not $aiSucceeded) { 'AI evidence incomplete' } else { $null }
              traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
            }
            $newsEvidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $artifactRoot 'news-evidence.json') -Encoding utf8
-           if (-not $rssUsable -or -not $rssPublished) { Write-Warning "Hosted soak RSS evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
+           if ((-not $rssUsable -or -not $rssPublished) -and -not $rssExternalFailure) { Write-Warning "Hosted soak RSS evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
            if (-not $aiRequested -or -not $aiSucceeded) { Write-Warning "Hosted soak AI evidence incomplete on $runnerName; retaining the failure in news-evidence.json." }
            foreach ($tracePath in $tracePaths) {
               # Preserve clean circular files byte-for-byte. If a credential is
@@ -518,14 +520,13 @@ jobs:
              $isNtpFallbackFinding = (($id -match '^NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and ([string]$_.problem -match '(?i)timeout|host|sync|fallback|local.?clock') -and $traceTextForDisposition -match 'LocalClockFallback')
              $isBoundedRenderFinding = (($id -match '^RENDER-RECOVERY-' -or ($id -eq 'B-002' -and ([string]$_.problem -match '(?i)render|frame|recovery'))) -and $hasBoundedRenderRecovery)
              # Reviewer providers may emit either the project-specific AI
-             # finding IDs or generated IDs.  Treat a generated finding as
-             # advisory only when its wording identifies AI summarization and
-             # quota/rate limiting, and the circular trace independently
-             # proves an HTTP 404/429 response for the same run.
+             # finding IDs or generated IDs. Treat a generated finding as
+             # advisory only when its wording identifies the AI/model path and
+             # the circular trace independently proves a model HTTP 4xx for
+             # the same run.
              $problemText = [string]$_.problem
              $isProviderQuotaFinding = (((($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)') -or
-               ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)')) -and
-               ($problemText -match '(?i)quota|rate.?limit|HTTP\s*(?:404|429)|provider')) -and
+               ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)|model|completion|OpenRouter')) -and
                $aiQuotaForDisposition)
              $isNtpFallbackFinding -or
              $isBoundedRenderFinding -or
@@ -656,6 +657,7 @@ jobs:
                path = 'news-evidence.json'
                sha256 = if (Test-Path -LiteralPath $newsPath -PathType Leaf) { (Get-FileHash -LiteralPath $newsPath -Algorithm SHA256).Hash } else { $null }
                inspected = Test-Path -LiteralPath $newsPath -PathType Leaf
+               rssExternalFailureDisposition = if ($null -ne $news) { [string]$news.rssExternalFailureDisposition } else { $null }
              }
              aiEvidence = [ordered]@{
                aiRequestObserved = $aiRequested

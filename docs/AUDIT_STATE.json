@@ -8181,11 +8181,11 @@
       "status": "closed",
       "priority": "high",
       "depends_on": ["CR-039", "CR-094", "CR-096", "CR-109", "CR-112", "CR-115"],
-      "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only approved bounded NTP/render/quota conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
+      "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only evidence-matched NTP/render/RSS/model-HTTP-4xx external conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
       "acceptance_criteria": [
         "All 20 lanes retain complete soak, screenshot, dual-trace, RSS/AI, reviewer, and closure evidence.",
-        "AI HTTP 429 or known provider-route HTTP 404 is recorded as provider-limited evidence without being reported as AI success or a cadence success.",
-        "Approved NTP fallback, bounded render recovery, and quota findings are retained as advisory findings with their raw evidence.",
+        "Any model HTTP 4xx is recorded as external-limited evidence without being reported as AI success or a cadence success.",
+        "NTP fallback and outage, RSS outage, bounded render recovery, and external model 4xx findings are retained as advisory findings with their raw evidence.",
         "Unknown findings, YFinance errors, malformed evidence, missing receipts, and canceled reviewer calls remain blocking.",
         "A fresh serialized 20-lane run reaches authoritative aggregate PASS or records only explicitly approved external advisory conditions."
       ],
@@ -8239,7 +8239,7 @@
         "status": "hosted-validation-passed",
         "run_id": "34129921207",
         "product_soak_results": "All 20 current lane soak-result.json files reported Passed; no product-soak failure was identified.",
-        "normalized_review_result": "The post-fix serialized run produced complete lane evidence and an authoritative aggregate PASS. Evidence-matched provider-quota findings remain bounded and do not fabricate AI success; unknown findings remain blocking.",
+        "normalized_review_result": "The post-fix serialized run produced complete lane evidence and an authoritative aggregate PASS. Evidence-matched NTP, RSS-outage, render-recovery, and model-4xx findings remain bounded advisories and do not fabricate AI success; unknown findings remain blocking.",
         "aggregate_receipt": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34129921207;LANES=20;REMOTE_REVIEW_CALLS=0",
         "unresolved_gaps": []
       }

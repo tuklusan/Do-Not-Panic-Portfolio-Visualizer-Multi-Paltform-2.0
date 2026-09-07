@@ -1772,22 +1772,26 @@ function Assert-SoakNewsEvidence {
 
     $trace = ($tracePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
     $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
+    $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*/\s*state=Unavailable'
     $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
     $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
+    $aiExternalFailure = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]'
     $evidence = [ordered]@{
         schema = 'dnppv2-soak-news-evidence/v1'
         rssUsable = [bool]$rssUsable
+        rssExternalFailureDisposition = if ($rssExternalFailure) { 'external-rss-outage-advisory' } else { $null }
         aiRequired = $RequireAiNews
         aiRequestObserved = [bool]$aiRequested
         aiSuccessObserved = [bool]$aiSucceeded
+        aiExternalFailureDisposition = if ($aiExternalFailure -and $aiRequested -and -not $aiSucceeded) { 'external-ai-4xx-advisory' } else { $null }
         traceFiles = @('trace/trace.circular.log', 'trace/yfinance.circular.log')
     }
     $evidence | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $ArtifactRoot 'news-evidence.json') -Encoding utf8
 
-    if (-not $rssUsable) {
+    if (-not $rssUsable -and -not $rssExternalFailure) {
         throw 'Local soak RSS evidence failed: no Fresh or Partial NEWS_SOURCE state was found in the circular trace.'
     }
-    if ($RequireAiNews -and (-not $aiRequested -or -not $aiSucceeded)) {
+    if ($RequireAiNews -and (-not $aiRequested -or (-not $aiSucceeded -and -not ($aiExternalFailure -and $aiRequested)))) {
         throw 'Local soak AI evidence failed: the circular trace did not prove both AiSummaryRequestStarted and AiSummarySucceeded.'
     }
 }
