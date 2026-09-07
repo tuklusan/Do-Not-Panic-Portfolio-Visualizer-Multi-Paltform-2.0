@@ -20,7 +20,8 @@ $ErrorActionPreference = 'Stop'
 $required = @(
     (Join-Path $PSScriptRoot 'Invoke-CodeReviewHarness.ps1'),
     (Join-Path $PSScriptRoot 'Run-CodeReview.ps1'),
-    (Join-Path $PSScriptRoot 'Invoke-ReviewGate.ps1')
+    (Join-Path $PSScriptRoot 'Invoke-ReviewGate.ps1'),
+    (Join-Path (Split-Path $PSScriptRoot -Parent) 'docs/FRESH-PROJECT-CODE-REVIEW-GATE.md')
 )
 foreach ($path in $required) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -30,6 +31,7 @@ foreach ($path in $required) {
 
 $adapter = Get-Content -LiteralPath $required[0] -Raw
 $runner = Get-Content -LiteralPath $required[1] -Raw
+$standard = Get-Content -LiteralPath $required[3] -Raw
 if ($adapter -match '(?i)deepseek|nvidia|openrouter' -or
     $runner -match '(?i)deepseek|nvidia|openrouter') {
     throw 'Provider-specific coupling leaked into the generic review entry points.'
@@ -43,6 +45,9 @@ if ($adapter -notmatch 'DNPPV_REVIEW_ENGINE' -or
     $adapter -notmatch 'CODE_REVIEWER_REQUEST_OVERRIDES_JSON' -or
     $adapter -notmatch 'blocking_findings') {
     throw 'Generic review adapter does not preserve configuration and semantic exit behavior.'
+}
+foreach ($standardToken in @('CODE_REVIEWER_ENDPOINT', 'CODE_REVIEWER_MODEL', 'CODE_REVIEWER_API_KEY', 'REVIEW_UNAVAILABLE', 'blocking_findings', 'fail closed')) {
+    if ($standard -notmatch [regex]::Escape($standardToken)) { throw "Generic review standard is missing contract token: $standardToken" }
 }
 
 if ($SelfTest) {
