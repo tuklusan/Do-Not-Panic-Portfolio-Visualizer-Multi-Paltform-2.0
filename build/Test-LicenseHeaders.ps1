@@ -51,7 +51,7 @@ function Test-IsCandidateArtifact {
     }
 
     if ($normalized.StartsWith('.git/', [StringComparison]::OrdinalIgnoreCase) -or
-        $normalized.StartsWith('build/nvidia-review/', [StringComparison]::OrdinalIgnoreCase)) {
+        $normalized.StartsWith('build/dnppv2-nvidia-review/', [StringComparison]::OrdinalIgnoreCase)) {
         return $false
     }
 

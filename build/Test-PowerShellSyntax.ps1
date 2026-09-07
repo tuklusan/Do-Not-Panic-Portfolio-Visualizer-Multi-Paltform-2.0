@@ -127,7 +127,7 @@ function Test-IsArchivedSnapshotScriptExcluded {
     $excludedPrefixes = @(
         '.git/',
         '.vs/',
-        'build/nvidia-review/',
+        'build/dnppv2-nvidia-review/',
         'build/validation/artifacts/',
         'build/vm/artifacts/'
     )

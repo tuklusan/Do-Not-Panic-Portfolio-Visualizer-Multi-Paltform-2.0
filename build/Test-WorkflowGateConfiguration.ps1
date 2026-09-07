@@ -87,7 +87,7 @@ if ([string]::IsNullOrWhiteSpace($postSoakJob)) { throw 'Hosted post-soak review
 if ($postSoakJob -match 'OPENROUTER_API_KEY|DNPPV_OPENROUTER_API_KEY|NVIDIA_API_KEY_CODING|Write-Host\s+"::add-mask::') {
     throw 'Deterministic post-soak review must not receive provider credentials or aggregate-only secret masks.'
 }
-if ($postSoakJob -notmatch '(?m)^\s+timeout-minutes:\s*60\s*$') { throw 'Deterministic post-soak review must use the bounded 60-minute timeout.' }
+if ($postSoakJob -notmatch '(?m)^\s+timeout-minutes:\s*120\s*$') { throw 'Deterministic post-soak review must use the bounded 120-minute timeout.' }
 if ($postSoakJob -match 'sleep\s+60|Wait one minute for artifact publication') { throw 'Blind artifact-publication sleep is prohibited in deterministic post-soak review.' }
 
 if ($workflow -match '(?m)^\s+schedule:') { throw 'Scheduled workflow execution is prohibited.' }
@@ -256,14 +256,17 @@ if ($workflow -notmatch "github\.event_name == 'push'" -or
     throw 'Hosted post-soak review must cover both push and manual soak runs.'
 }
 if ($workflow -notmatch "dotnet-version: '10\.0\.x'") { throw 'Hosted workflow must pin the .NET 10 SDK line.' }
-if ($workflow -notmatch '(?ms)review_wait_policy:.*?default:\s*''bounded-15m''') {
-    throw 'Hosted workflow must default reviewer waits to the bounded 15-minute policy.'
+if ($workflow -notmatch '(?ms)review_wait_policy:.*?default:\s*''bounded-30m''') {
+    throw 'Hosted workflow must default reviewer waits to the bounded 30-minute policy.'
 }
-if ($workflow -notmatch "options:\s*\['bounded-15m',\s*'one-time-slow-review'\]") {
+if ($workflow -notmatch "options:\s*\['bounded-30m',\s*'one-time-slow-review'\]") {
     throw 'Hosted workflow must expose only the bounded default and explicit one-time slow-review policies.'
 }
-if ($workflow -notmatch '\$reviewTimeoutSeconds\s*=\s*if \(\$env:REVIEW_WAIT_POLICY -eq ''one-time-slow-review''\) \{ 7200 \} else \{ 900 \}') {
-    throw 'Hosted reviewer timeout must be 15 minutes by default with a separately selectable two-hour exception.'
+if ($workflow -notmatch '\$reviewTimeoutSeconds\s*=\s*if \(\$env:REVIEW_WAIT_POLICY -eq ''one-time-slow-review''\) \{ 14400 \} else \{ 1800 \}') {
+    throw 'Hosted reviewer timeout must be 30 minutes by default with a separately selectable four-hour exception.'
+}
+if ($workflow -notmatch 'DNPPV_REVIEWER_ID:\s*dnppv2-nvidia-review-gate-v1') {
+    throw 'Hosted workflow must identify this project reviewer namespace explicitly.'
 }
 
 Write-Output "WORKFLOW_GATE_CONFIGURATION=Passed;RUNNERS=$(@($publishEntries).Count)"

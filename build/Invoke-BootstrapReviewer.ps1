@@ -15,8 +15,8 @@
 param(
     [Parameter(Mandatory = $true)][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true)][string]$ReviewMaterialPath,
-    [string]$OutputDirectory = 'build/nvidia-review',
-    [int]$RequestTimeoutSeconds = 900,
+    [string]$OutputDirectory = 'build/dnppv2-nvidia-review',
+    [ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 1800,
     [string]$Model = 'nvidia/nemotron-3-super-120b-a12b'
 )
 

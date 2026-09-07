@@ -17,10 +17,10 @@ param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
     [Parameter(ParameterSetName = 'Review')][string]$Endpoint = 'https://integrate.api.nvidia.com/v1',
     [Parameter(ParameterSetName = 'Review')][string]$Model = 'nvidia/nemotron-3-super-120b-a12b',
-    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/nvidia-review',
+    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/dnppv2-nvidia-review',
     [Parameter(ParameterSetName = 'Review')][int]$MaxRequestBytes = 1048576,
     [Parameter(ParameterSetName = 'Review')][ValidateRange(1, 32768)][int]$MaxTokens = 8192,
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 7200)][int]$RequestTimeoutSeconds = 3600,
+    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 7200,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest,
     [switch]$AcknowledgeEndpointOverride
 )
@@ -36,6 +36,7 @@ $script:NvidiaRetryPolicy = [ordered]@{
     JitterUpperExclusive = 4
 }
 $script:NvidiaSpacingRoot = $null
+$script:ReviewerIdentity = 'dnppv2-nvidia-review-gate-v1'
 
 $commonPath = Join-Path $PSScriptRoot 'NvidiaWorkflowCommon.ps1'
 if (-not (Test-Path -LiteralPath $commonPath)) { throw "Missing Nvidia workflow common module: $commonPath" }
@@ -848,15 +849,15 @@ try {
         if ($null -ne $finding) { [void]$findings.Add($finding) }
     }
     $verdict = if ($findings.Count -eq 0) { 'PASS' } else { 'FAIL' }
-    $result = [ordered]@{ schema_version = 1; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = $verdict; review_complete = $true; blocking_findings = $findings; root_cause_groups = @($final.root_cause_groups); prior_findings = @() }
+    $result = [ordered]@{ schema_version = 1; reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = $verdict; review_complete = $true; blocking_findings = $findings; root_cause_groups = @($final.root_cause_groups); prior_findings = @() }
 }
 catch {
-    $result = [ordered]@{ schema_version = 1; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = 'REVIEW_UNAVAILABLE'; review_complete = $false; reason = 'Nvidia review could not be completed reliably. See local invocation error.' }
+    $result = [ordered]@{ schema_version = 1; reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = 'REVIEW_UNAVAILABLE'; review_complete = $false; reason = 'Nvidia review could not be completed reliably. See local invocation error.' }
     $errorSummary = Get-SanitizedNvidiaExceptionSummary $_.Exception
-    Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; verdict = 'REVIEW_UNAVAILABLE'; error_class = $_.Exception.GetType().Name; error_status = (Get-TransientStatus $_.Exception); error_summary = $errorSummary }
+    Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; verdict = 'REVIEW_UNAVAILABLE'; error_class = $_.Exception.GetType().Name; error_status = (Get-TransientStatus $_.Exception); error_summary = $errorSummary }
     throw ([System.Exception]::new(("Nvidia review failed. See ignored telemetry for local diagnostics. " + $errorSummary), $_.Exception))
 }
 
-Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; specialist_passes = @((Get-ReviewPasses $ReviewType | ForEach-Object Id)); final_serious_finding_count = $findings.Count; final_verdict = $result.verdict; elapsed_ms = ([DateTimeOffset]::UtcNow - $started).TotalMilliseconds }
+Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; specialist_passes = @((Get-ReviewPasses $ReviewType | ForEach-Object Id)); final_serious_finding_count = $findings.Count; final_verdict = $result.verdict; elapsed_ms = ([DateTimeOffset]::UtcNow - $started).TotalMilliseconds }
 $result | ConvertTo-Json -Depth 20 -Compress
 

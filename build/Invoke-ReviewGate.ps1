@@ -15,8 +15,8 @@
 param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
-    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/nvidia-review',
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 7200)][int]$RequestTimeoutSeconds = 900,
+    [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/dnppv2-nvidia-review',
+    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 1800,
     [Parameter(Mandatory = $true, ParameterSetName = 'HealthCheck')][switch]$HealthCheck,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest
 )
@@ -25,6 +25,11 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $primary = 'nvidia/nemotron-3-super-120b-a12b'
 $fallback = 'nvidia/nemotron-3.5-lightning-30b-a3b'
+$reviewerIdentity = 'dnppv2-nvidia-review-gate-v1'
+$configuredReviewerIdentity = [Environment]::GetEnvironmentVariable('DNPPV_REVIEWER_ID')
+if (-not [string]::IsNullOrWhiteSpace($configuredReviewerIdentity) -and $configuredReviewerIdentity -ne $reviewerIdentity) {
+    throw "Reviewer identity mismatch: expected '$reviewerIdentity', received '$configuredReviewerIdentity'."
+}
 $bootstrap = Join-Path $PSScriptRoot 'Invoke-BootstrapReviewer.ps1'
 
 if (-not (Test-Path -LiteralPath $bootstrap -PathType Leaf)) { throw "Bootstrap reviewer is missing: $bootstrap" }
@@ -47,7 +52,7 @@ function Get-ValidatedResultText([object[]]$Output) {
 }
 
 if ($SelfTest) {
-    if ($primary -eq $fallback -or $primary -notmatch '^nvidia/' -or $fallback -notmatch '^nvidia/') { throw 'Authorized model policy is invalid.' }
+    if ($primary -eq $fallback -or $primary -notmatch '^nvidia/' -or $fallback -notmatch '^nvidia/' -or $reviewerIdentity -ne 'dnppv2-nvidia-review-gate-v1') { throw 'Authorized reviewer policy is invalid.' }
     $parserProbe = Get-ValidatedResultText @('diagnostic output', '{"verdict":"PASS"}')
     if ($parserProbe -ne '{"verdict":"PASS"}') { throw 'Reviewer result parser self-test failed.' }
     Write-Output 'REVIEW_GATE_SELFTEST=Passed'

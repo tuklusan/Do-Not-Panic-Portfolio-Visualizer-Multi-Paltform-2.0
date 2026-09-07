@@ -22,7 +22,7 @@ patent, trademark, and governing-law provisions.
 | MATRIX-02 | Run the real product soak on the same 20 runner/RID pairs; queued or slow lanes are waited on rather than duplicated or treated as failures. | A terminal workflow run with all 20 soak jobs accounted for. |
 | MATRIX-03 | Require each lane to complete build and test before publication and soak execution. | Per-lane workflow step results and terminal job manifest. |
 | MATRIX-04 | Require each lane to emit and validate `soak-result.json`, `news-evidence.json`, both bounded circular traces, and settled PNG evidence where the runner supports capture. | Per-lane validation output and file/hash inventory. |
-| MATRIX-05 | Require NVIDIA review output to be non-empty and retain a redacted lane closure record containing hashes and inspection status before the lane can succeed. | `build/nvidia-review/.../lane-closure-record.json` uploaded with the lane artifact. |
+| MATRIX-05 | Require NVIDIA review output to be non-empty and retain a redacted lane closure record containing hashes and inspection status before the lane can succeed. | `build/dnppv2-nvidia-review/.../lane-closure-record.json` uploaded with the lane artifact. |
 | MATRIX-06 | Keep the post-soak aggregate review count synchronized with the 20 hosted lanes and inspect every retained lane record. | Push and dispatch aggregate review rejects anything other than 20 complete evidence manifests and 20 complete closure records. |
 | MATRIX-07 | Keep the four local companion machines under the existing availability, storage, cleanup, and dual-trace contract. | Existing local-cycle evidence and current availability manifest. |
 

@@ -27,16 +27,17 @@ on:
       review_wait_policy:
         description: 'Reviewer wait policy; use one-time-slow-review only with explicit operator authorization'
         required: true
-        default: 'bounded-15m'
+        default: 'bounded-30m'
         type: choice
-        options: ['bounded-15m', 'one-time-slow-review']
+        options: ['bounded-30m', 'one-time-slow-review']
 
 permissions:
   contents: read
 
 env:
   EXPECTED_LANE_COUNT: '20'
-  REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-15m' }}
+  DNPPV_REVIEWER_ID: dnppv2-nvidia-review-gate-v1
+  REVIEW_WAIT_POLICY: ${{ inputs.review_wait_policy || 'bounded-30m' }}
 
 jobs:
   gate:
@@ -138,7 +139,7 @@ jobs:
   real-product-soak:
     needs: gate
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10')
-    timeout-minutes: 180
+    timeout-minutes: 360
     concurrency:
       group: dnppv2-real-product-soak-${{ matrix.runner }}-${{ matrix.rid }}
       cancel-in-progress: false
@@ -242,7 +243,7 @@ jobs:
              aiEvidence = [ordered]@{ aiRequestObserved = $false; aiSuccessObserved = $false; failure = $null }
              screenshots = @()
              circularTraces = @()
-             review = [ordered]@{ path = 'build/nvidia-review/harness-output.txt'; sha256 = $null; nonEmpty = $false; complete = $false }
+             review = [ordered]@{ path = 'build/dnppv2-nvidia-review/harness-output.txt'; sha256 = $null; nonEmpty = $false; complete = $false }
            }
            $receipt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRoot 'lane-closure-record.pending.json') -Encoding utf8
       - name: Run real-product soak and collect circular trace
@@ -453,7 +454,7 @@ jobs:
              & ./build/Invoke-ReviewerEvidenceQuarantine.ps1 -ReviewRoot $reviewRoot -ArtifactRoot $artifactRoot -RunnerTemp $env:RUNNER_TEMP -RunId $env:GITHUB_RUN_ID -CommitSha $env:GITHUB_SHA -Runner $runnerName -Rid $env:MATRIX_RID -Reason $Reason
            }
            $reviewLog = Join-Path $reviewRoot 'harness-output.txt'
-           $reviewTimeoutSeconds = if ($env:REVIEW_WAIT_POLICY -eq 'one-time-slow-review') { 7200 } else { 900 }
+           $reviewTimeoutSeconds = if ($env:REVIEW_WAIT_POLICY -eq 'one-time-slow-review') { 14400 } else { 1800 }
            Write-Host "REVIEW_WAIT_POLICY=$env:REVIEW_WAIT_POLICY;REQUEST_TIMEOUT_SECONDS=$reviewTimeoutSeconds"
            $reviewOutput = @(& ./build/Invoke-ReviewGate.ps1 -ReviewType TEST_ARTIFACT -ReviewMaterialPath $manifest -OutputDirectory $reviewRoot -RequestTimeoutSeconds $reviewTimeoutSeconds 2>&1)
            $reviewExitCode = $LASTEXITCODE
@@ -664,12 +665,12 @@ jobs:
           name: dnppv2-soak-${{ github.run_id }}-${{ matrix.runner }}-${{ matrix.rid }}
           path: |
             artifacts/soak
-            build/nvidia-review
+            build/dnppv2-nvidia-review
 
   post-soak-review:
     if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.soak_minutes == '10'))
     needs: real-product-soak
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -685,20 +686,19 @@ jobs:
           EXPECTED_LANE_COUNT: '20'
         run: |
           Set-Location -LiteralPath $env:GITHUB_WORKSPACE
-          New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'build/nvidia-review') | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $env:GITHUB_WORKSPACE 'build/dnppv2-nvidia-review') | Out-Null
           $validationOutput = @()
-          $validationExitCode = 0
+          $validationPassed = $false
           try {
             $validationOutput = @(& ./build/Test-HostedSoakClosure.ps1 -ArtifactRoot (Join-Path $env:GITHUB_WORKSPACE 'post-soak-evidence') -ExpectedRunId $env:GITHUB_RUN_ID -ExpectedCommitSha $env:GITHUB_SHA -ExpectedLaneCount ([int]$env:EXPECTED_LANE_COUNT) 2>&1)
-            $validationExitCode = $LASTEXITCODE
+            $validationPassed = [bool](($validationOutput | Out-String) -match 'HOSTED_SOAK_CLOSURE=Passed')
           } catch {
             $validationOutput += $_
-            $validationExitCode = 1
           }
           $validationText = ($validationOutput | Out-String)
           $validationText = $validationText -replace '(?i)(authorization\s*:\s*bearer\s+|bearer\s+|(?:api[-_]?key|authorization|password|token)\s*[:=]\s*)[^\s,;&]+', '$1[REDACTED]'
-          Set-Content -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'build/nvidia-review/aggregate-validation.txt') -Value $validationText -Encoding utf8
-          if ($validationExitCode -ne 0) { throw 'Deterministic hosted soak closure validation failed; inspect aggregate-validation.txt.' }
+          Set-Content -LiteralPath (Join-Path $env:GITHUB_WORKSPACE 'build/dnppv2-nvidia-review/aggregate-validation.txt') -Value $validationText -Encoding utf8
+          if (-not $validationPassed) { throw 'Deterministic hosted soak closure validation failed; inspect aggregate-validation.txt.' }
       - name: Run hosted quarantine regression test
         shell: pwsh
         run: ./build/Test-HostedSoakQuarantine.ps1 -SelfTest
@@ -707,4 +707,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dnppv2-post-soak-review-${{ github.run_id }}
-          path: build/nvidia-review
+          path: build/dnppv2-nvidia-review

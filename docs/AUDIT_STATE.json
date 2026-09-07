@@ -7930,7 +7930,7 @@
         "status": "closed-with-disposition",
         "evidence": [
           "Run 34040146263 was cancelled under the explicit one-time operator exception after the prior 7200-second reviewer wait became excessive; it supplied no PASS evidence.",
-          "Run 34048608640 used REVIEW_WAIT_POLICY=bounded-15m across the matrix; all 21 publish lanes completed and no lane entered the old two-hour reviewer wait.",
+          "Run 34048608640 used the former bounded-15m policy; the current workflow uses bounded-30m with an explicitly authorized 14400-second slow-review allowance.",
           "The terminal run completed with lane-specific product/evidence failures and aggregate review findings; those were routed to CR-108, CR-112, and CR-115, while expected NTP fallback findings were reconciled against closed CR-039.",
           "The workflow gate, license gate, PowerShell syntax gate, pre-development migration gate, NVIDIA workflow self-test, and pre-push gates passed for d0e001f."
         ],

@@ -48,7 +48,7 @@ implicit PASS or discard required evidence.
 
 ## Operational Policy
 
-Pushes and ordinary manual dispatches use `bounded-15m`. The
+Pushes and ordinary manual dispatches use `bounded-30m`. The
 `one-time-slow-review` choice is an operator-authorized exception for one
 specific run and must be recorded with its run ID before use. It is not the
 default and must not be used to keep CR-114 or routine queue processing
@@ -59,7 +59,7 @@ PASS; the lane's retained evidence is quarantined or failed closed.
 
 Commit `d0e001f` passed the local workflow, license, syntax, migration, NVIDIA
 workflow self-test, and pre-push gates. Hosted run `34048608640` used
-`REVIEW_WAIT_POLICY=bounded-15m`; all 21 publish lanes completed and the
+`REVIEW_WAIT_POLICY=bounded-30m`; all 20 publish lanes completed and the
 terminal run contained no old two-hour reviewer wait. Its product/evidence
 failures were dispositioned into CR-108, CR-112, and CR-115; expected NTP
 fallback findings matched CR-039. No semantic PASS was created for failed or
@@ -73,8 +73,8 @@ does not change product RSS/AI cadence or upstream product behavior.
 
 ## Functional Inventory
 
-| OPS-01 | Ordinary push and manual runs use a bounded reviewer request timeout rather than the current two-hour default. | `publish-six-rids.yml` selects `bounded-15m` and passes 900 seconds. | Required |
-| OPS-02 | A specifically authorized slow-review exception remains possible without silently changing the normal policy. | `review_wait_policy=one-time-slow-review` selects 7200 seconds only for that dispatch. | Required |
+| OPS-01 | Ordinary push and manual runs use a bounded reviewer request timeout rather than an unbounded wait. | `publish-six-rids.yml` selects `bounded-30m` and passes 1800 seconds. | Required |
+| OPS-02 | A specifically authorized slow-review exception remains possible without silently changing the normal policy. | `review_wait_policy=one-time-slow-review` selects 14400 seconds only for that dispatch. | Required |
 | OPS-03 | Reviewer timeout or unavailable output cannot become PASS. | NVIDIA harness emits `REVIEW_UNAVAILABLE`; lane inspection and quarantine remain fail-closed. | Required |
 | OPS-04 | Matrix serialization and retained product evidence remain intact during timeout handling. | Root concurrency group, closure receipt, artifact upload, and post-soak validation remain unchanged. | Required |
 

@@ -42,6 +42,17 @@ has a complete CODE `PASS` receipt.
 
 The objective is correctness and evidentiary integrity, not API-call economy.
 
+### 1.1 Project identity and slow-response policy
+
+This repository's authoritative reviewer namespace is
+`dnppv2-nvidia-review-gate-v1`, exposed as `DNPPV_REVIEWER_ID`. Review output
+defaults to `build/dnppv2-nvidia-review`; receipts and telemetry include the
+same reviewer identity so concurrent projects cannot be mistaken for this
+project's evidence. The normal hosted request budget is 1800 seconds. An
+operator-authorized slow-review dispatch may use 14400 seconds. These limits
+apply to the reviewer request itself and are separate from the enclosing job
+timeout.
+
 ## 2. Verified reference baseline
 
 The behavioral reference for this workflow is the live Warajevo repository at

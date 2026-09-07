@@ -16,7 +16,7 @@ param(
     [string]$Endpoint = "https://integrate.api.nvidia.com/v1",
     # Project default verified against the configured Nvidia endpoint on 2026-06-04.
     [string]$Model = "nvidia/nemotron-3-super-120b-a12b",
-    [string]$OutputDirectory = "build/nvidia-review",
+    [string]$OutputDirectory = "build/dnppv2-nvidia-review",
     [int]$MaxFileCharacters = 100000,
     [int]$MaxPacketCharacters = 600000,
     [int]$MaxRequestBytes = 1048576,
@@ -426,7 +426,7 @@ foreach ($entry in $statusEntries) {
 
     $normalizedPath = $pathText.Replace('\', '/')
     if ([string]::IsNullOrWhiteSpace($normalizedPath) -or
-        $normalizedPath.StartsWith('build/nvidia-review/')) {
+        $normalizedPath.StartsWith('build/dnppv2-nvidia-review/')) {
         continue
     }
 
@@ -467,8 +467,8 @@ New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 $script:OutputRootForAudit = $resolvedOutputRoot
 $relativeOutputRootDirectory = ($relativeOutputRoot.TrimEnd('/') + '/').Replace('\', '/')
 $ignoreProbePath = ($relativeOutputRoot.TrimEnd('/') + '/.nvidia-review-ignore-probe').Replace('\', '/')
-Assert-GitIgnored $relativeOutputRootDirectory "Nvidia review output directory is not ignored by git. Add build/nvidia-review/ to .gitignore before continuing."
-Assert-GitIgnored $ignoreProbePath "Nvidia review output directory probe is not ignored by git. Add build/nvidia-review/ to .gitignore before continuing."
+Assert-GitIgnored $relativeOutputRootDirectory "Nvidia review output directory is not ignored by git. Add build/dnppv2-nvidia-review/ to .gitignore before continuing."
+Assert-GitIgnored $ignoreProbePath "Nvidia review output directory probe is not ignored by git. Add build/dnppv2-nvidia-review/ to .gitignore before continuing."
 Get-ChildItem -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue |
     Where-Object { -not $_.PSIsContainer -and $_.LastWriteTime -lt (Get-Date).AddDays(-1 * [Math]::Max(1, $CleanupOlderThanDays)) } |
     Remove-Item -Force -ErrorAction SilentlyContinue
