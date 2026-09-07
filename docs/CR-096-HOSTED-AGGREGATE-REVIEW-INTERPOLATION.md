@@ -19,7 +19,7 @@ patent, trademark, and governing-law provisions.
 ## Objective
 
 Make the hosted post-soak aggregate reviewer parse and execute on every
-supported runner shell, while preserving the 21-lane evidence requirements.
+supported runner shell, while preserving the 20-lane evidence requirements.
 
 ## Functional Inventory
 
@@ -27,7 +27,7 @@ supported runner shell, while preserving the 21-lane evidence requirements.
 | --- | --- | --- | --- |
 | AR-01 | Aggregate review reports the failing artifact directory and safe reviewer message without PowerShell variable/drive-scope parsing errors. | Braced `${artifactDirectory}` interpolation in `.github/workflows/publish-six-rids.yml`. | Implemented |
 | AR-02 | The workflow gate rejects a regression to unsafe interpolation. | Static assertion in `build/Test-WorkflowGateConfiguration.ps1`. | Implemented |
-| AR-03 | Aggregate review consumes one manifest and inspected closure record for every hosted lane. | The 21-entry publish/soak matrix and evidence schema defined normatively by `docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md`. | Pending hosted verification |
+| AR-03 | Aggregate review consumes one manifest and inspected closure record for every hosted lane. | The 20-entry publish/soak matrix and evidence schema defined normatively by `docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md`. | Pending hosted verification |
 
 ## Upstream Check
 
@@ -40,19 +40,19 @@ recorded as new 2.0 infrastructure; no upstream product behavior is removed.
 1. [AR-01] The aggregate review PowerShell parses on Linux PowerShell.
 2. [AR-02] The workflow configuration gate checks the braced interpolation.
 3. The full local validation suite passes.
-4. [AR-03] A fresh serialized 21-lane hosted run reaches terminal completion
+4. [AR-03] A fresh serialized 20-lane hosted run reaches terminal completion
    and its aggregate evidence review consumes all lane manifests and closure
    records, according to the lane and record contract in
    `docs/CR-094-21-PLUS-4-MATRIX-EVIDENCE.md`.
 
 Acceptance status: criteria 1-3 are locally verified; criterion 4 remains
 pending until the corrected checkpoint's hosted run reaches terminal state and
-the aggregate review consumes all 21 lane records.
+the aggregate review consumes all 20 lane records.
 
 ## Closure Evidence
 
 Closure requires the local gate outputs, the 312-test Release result, the
-mandatory NVIDIA review result, and the fresh hosted run ID plus its 21
+mandatory NVIDIA review result, and the fresh hosted run ID plus its 20
 manifest/closure-record inspection summary. Evidence is pending fresh hosted
 validation after the corrected checkpoint is pushed. Hosted run `34061105976`
 reached terminal failure and the aggregate reported `Expected 21 soak evidence

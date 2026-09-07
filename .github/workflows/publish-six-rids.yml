@@ -464,11 +464,12 @@ jobs:
            $hasBoundedRenderRecovery = $traceTextForDisposition -match 'RENDER;SIGNAL=RecoveryRequested' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Recovered' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Heartbeat'
            $advisoryFindings = @($reviewFindings | Where-Object {
              $id = [string]$_.id
-             $isNtpFallbackFinding = (($id -match '^NTP-ALL-HOSTS-FAILED' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and $traceTextForDisposition -match 'LocalClockFallback')
+             $isNtpFallbackFinding = (($id -match '^NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and ([string]$_.problem -match '(?i)timeout|host|sync|fallback|local.?clock') -and $traceTextForDisposition -match 'LocalClockFallback')
              $isBoundedRenderFinding = (($id -match '^RENDER-RECOVERY-' -or ($id -eq 'B-002' -and ([string]$_.problem -match '(?i)render|frame|recovery'))) -and $hasBoundedRenderRecovery)
+             $isProviderQuotaFinding = (($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)' -and ([string]$_.problem -match '(?i)quota|rate.?limit|HTTP\s*(?:404|429)|provider')) -and $aiQuotaForDisposition)
              $isNtpFallbackFinding -or
              $isBoundedRenderFinding -or
-             ($id -match '^AI-SUMMARY-' -and $aiQuotaForDisposition)
+             $isProviderQuotaFinding
            })
            $authoritativeFindings = @($reviewFindings | Where-Object { $advisoryFindings -notcontains $_ })
            $normalizedVerdict = if ($null -ne $review -and $reviewComplete -and $authoritativeFindings.Count -eq 0) { 'PASS' } else { $reviewVerdict }

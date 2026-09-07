@@ -39,7 +39,7 @@ publish/soak and per-lane plus aggregate evidence requirements remain intact for
 the current 20-lane matrix. The retired Ubuntu Slim lane is historical context
 only and is not part of the current serialization count.
 CR-095 cannot be closed, and its own matrix verification cannot be accepted,
-until predecessor CR-094 is closed with its fresh 21-lane evidence and the
+until predecessor CR-094 is closed with its fresh 20-lane evidence and the
 current run has reached terminal state.
 
 ## Upstream Behavior Inventory

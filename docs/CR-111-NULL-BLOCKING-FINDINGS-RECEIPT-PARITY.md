@@ -57,6 +57,6 @@ The remaining proof obligation is the post-change hosted matrix.
 Read the current hosted workflow, lane inspector, receipt schema, self-tests,
 and upstream equivalent line by line before editing. Add the smallest shared
 normalization/helper needed, focused positive and negative tests, all repository
-gates, NVIDIA review, and a fresh serialized 21-lane matrix. Inspect every
+gates, NVIDIA review, and a fresh serialized 20-lane matrix. Inspect every
 lane's screenshots, both circular traces, RSS/AI evidence, review receipt,
 closure record, and aggregate output before closure.

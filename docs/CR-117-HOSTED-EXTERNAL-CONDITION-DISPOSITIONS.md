@@ -65,7 +65,10 @@ and render diagnostics as generic `B-001` and `B-002` findings. The raw review
 was otherwise complete, with successful RSS/AI evidence and a passed soak; the
 lane failed only because those evidence-matched aliases were not normalized.
 The normalization now accepts those two aliases only with the required trace
-evidence and matching finding text; unknown generic findings remain blocking.
+evidence and matching finding text; the same bounded rule covers the observed
+NTP and provider-quota aliases `NTP-TIME-SYNC-FAILURE`,
+`NTP-RECURRING-AT-SHUTDOWN`, and `AI-NEWS-SUMMARIZATION-QUOTA-FAILURE`.
+Unknown generic findings remain blocking.
 The fresh matrix for this bundle uses the current 20-lane set after CR-104
 retirement.
 
