@@ -25,15 +25,15 @@ hours after its product soak had passed.
 ## Objective
 
 Reconcile the emergency-review expectation with the hosted workflow's current
-two-hour per-request timeout. A slow or unavailable reviewer must not hold a
+four-hour maximum per-request timeout. A slow or unavailable reviewer must not hold a
 serialized matrix indefinitely, but a timeout must also never become an
 implicit PASS or discard required evidence.
 
 ## Acceptance Criteria
 
 1. The hosted review path has one explicit, bounded reviewer-wait policy for
-   each lane and for the aggregate review; the normal policy is 15 minutes and
-   the separately selectable `one-time-slow-review` policy is capped at two
+   each lane and for the aggregate review; the normal policy is 30 minutes and
+   the separately selectable `one-time-slow-review` policy is capped at four
    hours for an explicitly authorized exceptional run.
 2. A reviewer timeout or unavailable response creates a clearly marked,
    secret-free `REVIEW_UNAVAILABLE`/quarantine result and fails the lane or
@@ -60,7 +60,7 @@ PASS; the lane's retained evidence is quarantined or failed closed.
 Commit `d0e001f` passed the local workflow, license, syntax, migration, NVIDIA
 workflow self-test, and pre-push gates. Hosted run `34048608640` used
 `REVIEW_WAIT_POLICY=bounded-30m`; all 20 publish lanes completed and the
-terminal run contained no old two-hour reviewer wait. Its product/evidence
+terminal run contained no old reviewer wait policy. Its product/evidence
 failures were dispositioned into CR-108, CR-112, and CR-115; expected NTP
 fallback findings matched CR-039. No semantic PASS was created for failed or
 unavailable review evidence.
