@@ -50,11 +50,11 @@ if ($configuredHooksPath -notin @('.githooks', '.githooks/')) {
 
 $updates = @($input | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 foreach ($update in $updates) {
-    $parts = $update -split '\s+', 3
-    if ($parts.Count -ne 3) { throw "Malformed pre-push update tuple: $update" }
-    $remoteRef = $parts[0]
-    $remoteOld = $parts[1]
-    $newSha = $parts[2]
+    $parts = $update -split '\s+', 4
+    if ($parts.Count -ne 4) { throw "Malformed pre-push update tuple: $update" }
+    $newSha = $parts[1]
+    $remoteRef = $parts[2]
+    $remoteOld = $parts[3]
     if ($remoteRef -ne 'refs/heads/main') { continue }
     if ($newSha -match '^0{40}$') { throw 'Protected main deletion is not permitted.' }
     $receipt = Join-Path $repoRoot ("build/code-review/receipts/{0}.json" -f $newSha)

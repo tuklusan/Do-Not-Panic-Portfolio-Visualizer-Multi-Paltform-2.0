@@ -59,7 +59,8 @@ are explicitly required before final closure.
 
 The pre-push transport regression was corrected by removing advanced-script
 pipeline binding and consuming Git update tuples through the script input
-enumerator. A simulated protected `main` update now passes the hook and
+enumerator in Git's `local-ref local-sha remote-ref remote-sha` order. A
+simulated protected `main` update now passes the hook and
 receipt validator end to end without parameter-binding warnings.
 
 Before closure, run the reviewer/hook tests, real-Git tests, PowerShell syntax, license, workflow, upstream-mutation, applicable migration gates, focused/full Release tests, independent review of the exact committed candidate, receipt generation, normal protected push, hosted validation, evidence inspection, and two successive fresh reverse zero-gap scans. Closure requires CR-097 complete, all deterministic and temporary-Git tests passing, a fresh reviewer PASS receipt, ordinary protected push acceptance, stale/mismatch rejection, hosted success, and two zero-gap scans.
