@@ -11,12 +11,9 @@
 # SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
 # patent, trademark, and governing-law provisions.
 # ============================================================================
-[CmdletBinding()]
 param(
     [string]$RemoteName,
-    [string]$RemoteUrl,
-    [Parameter(ValueFromPipeline = $true)]
-    [string]$PipelineInput
+    [string]$RemoteUrl
 )
 
 Set-StrictMode -Version Latest
@@ -51,7 +48,7 @@ if ($configuredHooksPath -notin @('.githooks', '.githooks/')) {
     throw "Repository-local core.hooksPath is not active: $configuredHooksPath"
 }
 
-$updates = @([Console]::In.ReadToEnd() -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$updates = @($input | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 foreach ($update in $updates) {
     $parts = $update -split '\s+', 3
     if ($parts.Count -ne 3) { throw "Malformed pre-push update tuple: $update" }

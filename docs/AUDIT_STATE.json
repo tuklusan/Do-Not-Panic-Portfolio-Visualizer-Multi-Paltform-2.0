@@ -7201,7 +7201,8 @@
           "Added Assert-CodeReviewReceipt.ps1 with exact PASS, tree, snapshot, ancestry, and remote-base/head binding checks.",
           "Added Test-CodeReviewReceipt.ps1 real-Git self-test covering valid receipt and stale remote-base rejection.",
           "PowerShell syntax, license, receipt self-test, and simulated protected pre-push tuple gates passed locally.",
-          "Corrected the hook's Git stdin transport to avoid parameter-binding warnings while preserving tuple validation."
+          "Corrected the hook's Git stdin transport to avoid parameter-binding warnings while preserving tuple validation.",
+          "The simulated protected main update passed the hook and receipt validator end to end."
         ],
         "unresolved_gaps": [
           "Hook integration, A-to-D temporary-repository coverage, hosted receipt proof, and final reverse scans remain outstanding."
