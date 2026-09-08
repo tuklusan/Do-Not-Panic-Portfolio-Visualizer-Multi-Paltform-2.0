@@ -81,7 +81,7 @@ development server started by the workflow before declaring a CR closed.
 Continue creating, implementing, testing, debugging, reviewing, committing,
 and pushing CRs autonomously until all currently applicable migration work is
 closed, all required upstream behaviors have an implemented or explicitly
- approved disposition, the 21-runner and available-local-machine evidence is
+ approved disposition, the 20-runner and available-local-machine evidence is
 complete, and the project is ready for the next phase boundary. Escalate only
 when a hard safety/security issue, unavailable required authority, or
 operator-only environment intervention makes further progress impossible.
@@ -95,7 +95,7 @@ operator-only environment intervention makes further progress impossible.
   two successive zero-gap scans.
 - The active NVIDIA review harness passes required code and test-artifact
   reviews, with no stale review result authorizing a changed snapshot.
- - CI demonstrates the complete 21-runner matrix without treating queue delay as
+ - CI demonstrates the complete 20-runner matrix without treating queue delay as
   failure.
 - Each validation cycle checks available local lab machines dynamically and
   preserves the documented storage, display, secret, trace, and cleanup rules.
