@@ -16,7 +16,7 @@
 
 # CR-106: Footer Parity And Ticker Width Fidelity
 
-**Status:** Open
+**Status:** Closed by hosted acceptance run `34267946915`
 **Phase:** Phase 7
 **Priority:** Normal
 **Evidence:** [21 historical product screenshots](attachments/CR-106/)
@@ -97,9 +97,9 @@ duplicated internal track retains its fixed motion geometry.
 
 ## Latest Evidence Review
 
-Run `34051000159` supplied one real-product screenshot for each of the 21
-hosted lanes. The inspected screenshots show the exact footer wording and the
-outer lane geometry is label-plus-measured-content rather than full-scene
-stretching. The run is not closure evidence because its aggregate validator
-failed on unrelated AI, NTP, and hosted-render findings; CR-106 therefore
-remains open pending a successful aggregate acceptance.
+Run `34267946915` supplied complete closure evidence for all 20 current hosted
+lanes. Every lane passed its real-product soak and retained a settled
+screenshot, both circular traces, RSS/AI evidence, and a semantic reviewer
+PASS. The screenshots show the exact upstream disclaimer and the measured
+label-plus-content ticker geometry. The aggregate validator returned
+`HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34267946915;LANES=20;REMOTE_REVIEW_CALLS=0`.

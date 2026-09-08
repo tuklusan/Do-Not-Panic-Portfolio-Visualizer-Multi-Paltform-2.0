@@ -7413,7 +7413,7 @@
       "id": "CR-106",
       "phase": "Phase 7",
       "title": "Restore upstream footer wording and measured narrow ticker lanes",
-      "status": "open",
+      "status": "closed",
       "priority": "normal",
       "depends_on": [],
       "objective": "Make the footer disclaimer exactly match upstream and size each live ticker lane to its label plus measured content with no more than a 0-4 pixel trailing allowance, while preserving upstream motion, centering, clipping, fixed-field, and flash behavior.",
@@ -7452,19 +7452,34 @@
         "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files_scanned": [
-          ".github/workflows/publish-six-rids.yml",
-          "build/Test-HostedSoakClosure.ps1",
-          "build/Test-WorkflowGateConfiguration.ps1",
-          "build/Invoke-NvidiaReviewHarness.ps1",
-          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
-          "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md"
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerLaneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/"
         ],
         "zero_missing_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/TickerLaneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "implementation-ready-hosted-acceptance-pending",
+        "status": "closed",
         "evidence": [
           "21 supplied historical product screenshots were copied to docs/attachments/CR-106 with unique lane-prefixed names.",
           "The upstream source says `Delayed by minimum 15 minutes.` and the v2 footer now uses that exact text.",
@@ -7473,7 +7488,11 @@
           "NVIDIA review 20260906-065843 identified the final view-binding and input-validation issues, which were corrected; its remaining hardcoded-metric, evidence-ID, and fixed-window objections are advisory because the Avalonia view now binds the lane width, the four-pixel allowance is within the documented range, and retained run identity is required closure evidence.",
           "Hosted run 34051000159 supplied one real-product screenshot for each of the 21 lanes; inspected screenshots show the exact upstream footer and measured narrow-lane composition, but the run's aggregate validator failed on unrelated AI, NTP, and render findings, so this is not closure evidence."
         ],
-        "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Hosted run 34267946915 passed all 43 jobs and all 20 lanes with complete screenshot, trace, RSS/AI, reviewer, and closure evidence.",
+          "The aggregate validator returned HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34267946915;LANES=20;REMOTE_REVIEW_CALLS=0."
+        ]
       }
     },
     {
