@@ -537,7 +537,7 @@ function Publish-RemoteOpenRouterSecret {
             $previous = $env:SSHPASS
             $env:SSHPASS = $Secret
             try {
-                Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @('-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60', "$User@$HostName", "chmod 600 -- $literal")
+                Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList @('-e', 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'ConnectTimeout=60', "$User@$HostName", "chmod 600 -- $literal") -TimeoutSeconds ([Math]::Min(90, $script:NativeCommandTimeoutSeconds))
             }
             finally {
                 if ($null -eq $previous) { Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue } else { $env:SSHPASS = $previous }
