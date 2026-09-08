@@ -126,7 +126,9 @@ if [[ "$soak_minutes" -gt 0 ]]; then
       grep -aEq 'event=RssPlaybackReady / state=Unavailable' "$trace" && rss_external_failure=true
       grep -aEq 'event=AiSummaryRequestStarted([[:space:]]|/|$)' "$trace" && ai_requested=true
       grep -aEq 'event=AiSummarySucceeded([[:space:]]|/|$)' "$trace" && ai_succeeded=true
-      if grep -aEq 'event=AiSummaryResponse' "$trace" && grep -aEq 'status_code=4[0-9][0-9]' "$trace"; then ai_external_failure=true; fi
+      # Trace wrapping may split one response record across lines; do not cross
+      # a subsequent event boundary while correlating its 4xx status.
+      if perl -0ne 'if (/event=AiSummaryResponse(?:(?!event=).){0,256}status_code=4[0-9][0-9]/s) { $found = 1 } END { exit($found ? 0 : 1) }' "$trace"; then ai_external_failure=true; fi
     fi
     if [[ ( "$rss_usable" == true || "$rss_external_failure" == true ) && ( "$ai_required" != true || ( "$ai_requested" == true && ( "$ai_succeeded" == true || "$ai_external_failure" == true ) ) ) ]]; then break; fi
     sleep 1
