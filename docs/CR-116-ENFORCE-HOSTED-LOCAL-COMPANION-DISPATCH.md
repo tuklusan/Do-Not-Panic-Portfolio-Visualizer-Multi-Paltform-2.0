@@ -87,6 +87,25 @@ loop uses a wall-clock deadline rather than a probe-count budget. A hung X11
 probe therefore cannot defeat the 180-second scene deadline; the normal
 trap/finally cleanup path remains authoritative for the owned product, helper,
 and cycle root.
+The subsequent direct retry reached the Linux host, but the lane failed closed
+because the executable was absent after deployment. This is a deployment-path
+diagnostic, not a passed companion result; the remaining machine lanes were
+aborted and their exact remote roots and processes were cleaned.
+The next retry confirmed the Linux host was reachable, but deployment failed
+closed with `Disk quota exceeded`: the project-owned `/tmp/dnppv2-local-cycle`
+root contained 1.1 GB of stale material and left only 679 MB available. The
+root was purged after stopping the cycle, restoring 1.8 GB available; this
+diagnostic also does not count as companion evidence.
+
+The coordinator now watches all started machine children as a group. If one
+child fails or the overall completion deadline expires, it terminates only the
+remaining children from that cycle, waits for their cleanup paths, and records
+the sibling-abort reason in each generated manifest. This prevents a fast
+180-second scene failure on one box from leaving other product processes or
+cycle roots running while the coordinator waits on them serially.
+Windows cleanup payloads use explicit statement separators when transported
+through OpenSSH encoded commands, preventing newline normalization from
+turning the cleanup script into invalid PowerShell.
 
 ## Closure Gates
 

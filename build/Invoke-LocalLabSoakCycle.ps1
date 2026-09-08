@@ -347,23 +347,72 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
         $childProcesses.Add([pscustomobject]@{ record = $record; process = $child; artifactRoot = $machineArtifactRoot; output = $childOutput })
     }
 
-    foreach ($childInfo in $childProcesses) {
-        $timeoutMilliseconds = [int64]($TimeoutSeconds + ($DurationMinutes * 60) + 1800) * 1000
-        if (-not $childInfo.process.WaitForExit([int]([Math]::Min([int32]::MaxValue, $timeoutMilliseconds)))) {
-            try { $childInfo.process.Kill($true) } catch { }
-            $childInfo.process.WaitForExit()
-            Set-Content -LiteralPath (Join-Path $childInfo.artifactRoot 'machine-result.json') -Value (@{
-                name = $childInfo.record.name
-                address = $childInfo.record.address
-                user = $childInfo.record.user
-                status = 'Failed'
-                failure = "Machine child process timed out after $($timeoutMilliseconds / 1000)s."
-                artifactRoot = $childInfo.artifactRoot
-            } | ConvertTo-Json -Depth 8) -Encoding utf8
+    $timeoutMilliseconds = [int64]($TimeoutSeconds + ($DurationMinutes * 60) + 1800) * 1000
+    $childDeadline = [DateTime]::UtcNow.AddMilliseconds($timeoutMilliseconds)
+    $completedChildren = [Collections.Generic.HashSet[int]]::new()
+    $cycleFailureObserved = $false
+    while ($completedChildren.Count -lt $childProcesses.Count) {
+        foreach ($childInfo in $childProcesses) {
+            $childId = [int]$childInfo.process.Id
+            if ($completedChildren.Contains($childId)) { continue }
+            $childInfo.process.Refresh()
+            if (-not $childInfo.process.HasExited) { continue }
+            $completedChildren.Add($childId) | Out-Null
+            if ($childInfo.process.ExitCode -ne 0) { $cycleFailureObserved = $true }
         }
 
+        if ($cycleFailureObserved) {
+            foreach ($childInfo in $childProcesses) {
+                $childId = [int]$childInfo.process.Id
+                $childInfo.process.Refresh()
+                $wasRunning = -not $childInfo.process.HasExited
+                if ($wasRunning) {
+                    try { $childInfo.process.Kill($true) } catch { }
+                }
+                if ($wasRunning) {
+                    try { $childInfo.process.WaitForExit(30000) | Out-Null } catch { }
+                }
+                $completedChildren.Add($childId) | Out-Null
+                $fallbackManifest = Join-Path $childInfo.artifactRoot 'machine-result.json'
+                $namedManifest = Join-Path $childInfo.artifactRoot "$($childInfo.record.name)-machine-result.json"
+                if (-not (Test-Path -LiteralPath $namedManifest -PathType Leaf) -and -not (Test-Path -LiteralPath $fallbackManifest -PathType Leaf)) {
+                    Set-Content -LiteralPath $fallbackManifest -Value (@{
+                        name = $childInfo.record.name
+                        address = $childInfo.record.address
+                        user = $childInfo.record.user
+                        status = 'Failed'
+                        failure = if ($wasRunning) { 'Sibling machine child failed; this cycle was aborted so every started lane could clean up.' } else { 'Machine child exited during a sibling-aborted cycle; no detailed child manifest was produced.' }
+                        artifactRoot = $childInfo.artifactRoot
+                    } | ConvertTo-Json -Depth 8) -Encoding utf8
+                }
+            }
+            break
+        }
+
+        if ([DateTime]::UtcNow -ge $childDeadline) {
+            foreach ($childInfo in $childProcesses) {
+                $childId = [int]$childInfo.process.Id
+                if ($completedChildren.Contains($childId)) { continue }
+                try { $childInfo.process.Kill($true) } catch { }
+                try { $childInfo.process.WaitForExit(30000) | Out-Null } catch { }
+                $completedChildren.Add($childId) | Out-Null
+                Set-Content -LiteralPath (Join-Path $childInfo.artifactRoot 'machine-result.json') -Value (@{
+                    name = $childInfo.record.name
+                    address = $childInfo.record.address
+                    user = $childInfo.record.user
+                    status = 'Failed'
+                    failure = "Machine child process timed out after $($timeoutMilliseconds / 1000)s."
+                    artifactRoot = $childInfo.artifactRoot
+                } | ConvertTo-Json -Depth 8) -Encoding utf8
+            }
+            break
+        }
+        Start-Sleep -Milliseconds 250
+    }
+
+    foreach ($childInfo in $childProcesses) {
         $childInfo.process.Refresh()
-        $childExitCode = $childInfo.process.ExitCode
+        $childExitCode = if ($childInfo.process.HasExited) { $childInfo.process.ExitCode } else { 1 }
         $resultPath = Join-Path $childInfo.artifactRoot "$($childInfo.record.name)-machine-result.json"
         if ($childExitCode -ne 0) {
             $cycle.machines.Add([ordered]@{
@@ -602,7 +651,9 @@ foreach ($record in @($availability.machines)) {
                         'Start-Sleep -Seconds 2',
                         'if (Test-Path -LiteralPath ' + $remoteCleanupRootLiteral + ') { Remove-Item -LiteralPath ' + $remoteCleanupRootLiteral + ' -Force -Recurse -ErrorAction SilentlyContinue }'
                     )
-                    $remoteCleanupPayload = $remoteCleanupLines -join [Environment]::NewLine
+                    # Use explicit separators because OpenSSH/PowerShell can
+                    # normalize transported newlines before decoding them.
+                    $remoteCleanupPayload = (($remoteCleanupLines -join ';') + ';')
                     $remoteCleanupEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCleanupPayload))
                     Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                         'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
