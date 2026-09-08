@@ -116,6 +116,9 @@ function Invoke-RemoteNative {
         [Parameter()][string]$StandardInput,
         [Parameter()][int]$Timeout = 900
     )
+    if ($HostName -eq '192.168.4.77' -or $User -eq 'rumtuk') {
+        throw 'MAC_SSH_ACCESS_FAIL=sshpass_forbidden; use native interactive ssh with a PTY and operator-entered password.'
+    }
     $psi = [Diagnostics.ProcessStartInfo]::new()
     $psi.Environment.Remove('SSHPASS')
     $psi.Environment['SSHPASS'] = $Secret

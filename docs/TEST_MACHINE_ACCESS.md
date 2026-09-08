@@ -107,6 +107,12 @@ record the operator-supplied current address needed to explain lab state.
 
 ### `macos-x64-intel-big-sur`
 
+Mandatory SSH gate: before any harness access, verify the method is native
+interactive `ssh`. Planned use of `sshpass` is an access failure and must stop
+before creating a remote process. Retry with regular `ssh` using a PTY, enter
+the password at the prompt, and continue the terminal session. The local soak
+harness rejects `sshpass` targeting `192.168.4.77` or user `rumtuk`.
+
 - Access: exact current SSH endpoint is kept in the local ignored endpoint
   inventory; current address is `192.168.4.77` using the configured `rumtuk`
   account. The endpoint must still be availability-probed at each cycle start.
