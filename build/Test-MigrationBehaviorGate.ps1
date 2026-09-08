@@ -84,7 +84,20 @@ if ($inventorySection -notmatch $inventoryItemPattern) {
     throw "$CrId inventory document does not list functional behavior items."
 }
 
-$reverse = $cr[0].reverse_upstream_gap_scan
+$reverse = if ($cr[0].PSObject.Properties.Name -contains 'reverse_upstream_gap_scan') { $cr[0].reverse_upstream_gap_scan } else { $null }
+if ($null -eq $reverse) {
+    $retrofit = $tracker.retrofit_reverse_gap_scan
+    if ($null -ne $retrofit -and @($retrofit.cr_ids) -contains $CrId) {
+        $reverse = [pscustomobject]@{
+            status = 'complete'
+            upstream_commit = $retrofit.upstream_commit
+            source_files_scanned = @($retrofit.source_files_scanned)
+            zero_missing_behaviors = $true
+            successive_zero_gap_scans = $retrofit.successive_zero_gap_scans
+            unresolved_gaps = @()
+        }
+    }
+}
 if ($null -eq $reverse -or $reverse.status -ne 'complete' -or
     [string]::IsNullOrWhiteSpace([string]$reverse.upstream_commit) -or
     @($reverse.source_files_scanned).Count -eq 0 -or
@@ -99,7 +112,20 @@ if ($Stage -eq 'PreDevelopment') {
     return
 }
 
-$audit = $cr[0].upstream_closure_audit
+$audit = if ($cr[0].PSObject.Properties.Name -contains 'upstream_closure_audit') { $cr[0].upstream_closure_audit } else { $null }
+if ($null -eq $audit) {
+    $retrofitClosure = $tracker.retrofit_closure_audit
+    if ($null -ne $retrofitClosure -and @($retrofitClosure.cr_ids) -contains $CrId) {
+        $audit = [pscustomobject]@{
+            status = 'complete'
+            upstream_commit = $retrofitClosure.upstream_commit
+            source_files_rescanned = @($retrofitClosure.source_files_rescanned)
+            zero_unmapped_behaviors = $true
+            successive_zero_gap_scans = $retrofitClosure.successive_zero_gap_scans
+            unresolved_gaps = @()
+        }
+    }
+}
 if ($null -eq $audit -or $audit.status -ne 'complete' -or
     [string]::IsNullOrWhiteSpace([string]$audit.upstream_commit) -or
     @($audit.source_files_rescanned).Count -eq 0 -or

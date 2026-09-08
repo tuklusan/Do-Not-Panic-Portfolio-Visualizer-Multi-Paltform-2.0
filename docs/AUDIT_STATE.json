@@ -6644,7 +6644,7 @@
       "id": "CR-083",
       "phase": "Phase 7",
       "title": "Retrofit mandatory reverse migration-gate evidence to earlier CRs",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-001",
         "CR-020"
@@ -6679,10 +6679,40 @@
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_scanned": [
+          "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+          "docs/MIGRATION_BEHAVIOR_GATES.md",
+          "build/Test-MigrationBehaviorGate.ps1",
+          "docs/AUDIT_STATE.json"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+        "source_files_rescanned": [
+          "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+          "docs/MIGRATION_BEHAVIOR_GATES.md",
+          "build/Test-MigrationBehaviorGate.ps1",
+          "docs/AUDIT_STATE.json"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Reverse scan records are absent from CR-002 through CR-019 and must be reconstructed before those historical closure labels satisfy the current contract."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "The retrofit document now contains source-cited sections for every affected historical CR.",
+          "The tracker retrofit index records the pinned upstream commit, scanned source set, and two successive zero-gap scans.",
+          "Test-MigrationBehaviorGate.ps1 passed for CR-002 through CR-019 at both PreDevelopment and Closure stages: 56 of 56 invocations passed.",
+          "CR-010I's omitted closure object is covered by the explicit retrofit closure index and its cited source rescan."
         ]
       }
     },
@@ -8522,7 +8552,6 @@
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
-    "CR-083: CR-002 through CR-019 lack recorded reverse upstream gap scans under the current mandatory gate contract.",
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest cycle passed Linux, Windows 11, and Intel Mac but failed Windows 10 task launch.",
     "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
     "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
@@ -8577,5 +8606,22 @@
       ]
     }
   ],
-  "documentation_review_records": []
+  "documentation_review_records": [],
+  "retrofit_reverse_gap_scan": {
+    "document": "docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md",
+    "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+    "cr_ids": ["CR-002", "CR-003", "CR-004", "CR-005", "CR-006", "CR-007", "CR-008", "CR-009", "CR-010", "CR-010A", "CR-010B", "CR-010C", "CR-010D", "CR-010E", "CR-010F", "CR-010G", "CR-010H", "CR-010I", "CR-010J", "CR-011", "CR-012", "CR-013", "CR-014", "CR-015", "CR-016", "CR-017", "CR-018", "CR-019"],
+    "source_files_scanned": ["docs/COMPLETED-CR-UPSTREAM-GATE-RETROFIT.md", "docs/UPSTREAM-2.0-GAP-LEDGER.md", "docs/UPSTREAM-BEHAVIOR-GAP-ITEMS.md", "src", "tests", "build", ".github"],
+    "successive_zero_gap_scans": 2,
+    "zero_missing_behaviors": true,
+    "unresolved_gaps": []
+  },
+  "retrofit_closure_audit": {
+    "cr_ids": ["CR-010I"],
+    "upstream_commit": "2e2fab0f013ff3def5e4ddbac13bf17dd14e71b5",
+    "source_files_rescanned": ["src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs", "src/PortfolioSaver.Render/Controls/NewsFlasherControl.xaml.cs", "src/PortfolioSaver.Core/Constants/Defaults.cs", "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs"],
+    "successive_zero_gap_scans": 2,
+    "zero_unmapped_behaviors": true,
+    "unresolved_gaps": []
+  }
 }

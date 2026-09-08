@@ -41,5 +41,5 @@ reconciliation for the migration repository.
 
 ## Status
 
-Open. This CR was created after a tracker audit found historical gate coverage
-was incomplete.
+Closed. The historical reverse-scan evidence is now indexed in the tracker and
+the pre-development and closure gates pass for every affected CR.
