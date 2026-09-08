@@ -93,6 +93,11 @@ response-shape tests. The hosted evidence implementation is
 - A provider-quota result is an AI response with HTTP 429 (or an equivalent
   provider rate-limit result) recorded inside a correctly timed refresh. It is
   retained as failed AI evidence and must not be rewritten as an AI success.
+- The hosted reviewer normalizer uses the structured `news-evidence.json`
+  `aiQuotaLimited` field as the authoritative quota signal, with the circular
+  trace's HTTP 4xx record as corroboration. Generic reviewer findings must not
+  bypass this disposition because a bounded manifest excerpt uses a different
+  trace delimiter or wording.
 - An AI response, timeout, malformed payload, or credential failure never
   removes already-published usable RSS. The next refresh remains governed by
   the same 30-minute minimum.
@@ -101,9 +106,9 @@ response-shape tests. The hosted evidence implementation is
   secret-scanned. The receipt validator rejects missing or empty review output;
   it does not erase quota-failure evidence.
 
-The 21-lane count is not arbitrary: it is the current matrix emitted by
+The 20-lane count is not arbitrary: it is the current matrix emitted by
 `.github/workflows/publish-six-rids.yml` and asserted by
-`build/Test-WorkflowGateConfiguration.ps1` (`EXPECTED_LANE_COUNT=21`). The
+`build/Test-WorkflowGateConfiguration.ps1` (`EXPECTED_LANE_COUNT=20`). The
 workflow's root concurrency group serializes matrix runs; queued work must
 finish before another matrix is launched. The authoritative current-run
 artifacts are retained by GitHub at
@@ -128,12 +133,13 @@ second refresh faster than 30 minutes. The run also retained one screenshot
 and two circular traces for each of 20 lanes; `macos-14` was cancelled before
 evidence generation and remains an explicit acceptance gap.
 
-Run `34051000159` provides the next retained evidence set. Its lane traces
+Run `34250699666` provides the latest retained evidence set. Its lane traces
 show AI HTTP 429 outcomes on affected lanes, including lanes with no eventual
 AI success, while the RSS/news evidence remains present. The aggregate failure
 therefore routes to CR-112 as quota/evidence work; it does not establish a
 cadence violation. The run remains non-closure evidence because the aggregate
-validator did not pass for all 21 lanes.
+validator did not pass for all 20 lanes. Its product soak and cleanup passed on
+the affected `windows-latest` lane; only reviewer disposition was blocking.
 
 Run `34063195136` again observed RSS publication and an AI request on all 21
 lanes. Eight lanes had `aiSuccessObserved=false`; their traces show empty

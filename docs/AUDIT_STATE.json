@@ -7784,14 +7784,14 @@
         "The product keeps a 30-minute minimum news refresh and performs RSS and optional AI work in one refresh operation.",
         "HTTP 429 or AI failure preserves usable RSS and does not create an extra refresh outside the upstream cadence.",
         "Hosted evidence records cadence, RSS, AI request, AI result, status, and redacted traces for every lane.",
-        "The serialized 21-lane workflow does not falsely classify provider quota exhaustion as a cadence defect and retains it for follow-up.",
+      "The serialized 20-lane workflow does not falsely classify provider quota exhaustion as a cadence defect and retains it for follow-up.",
         "Forward/reverse upstream scans, tests, reviewer gates, cleanup, and fresh serialized acceptance pass."
       ],
       "validation_plan": [
         "Read the upstream news scheduler, current FinanceNewsService, evidence schema, and hosted workflow line by line.",
         "Add focused cadence and quota-failure tests without shortening or otherwise changing the product cadence.",
         "Run full repository gates and the mandatory NVIDIA source/evidence review.",
-        "Run one fresh serialized 21-lane acceptance and inspect every available screenshot, both circular traces, RSS/AI evidence, receipt, and aggregate output.",
+      "Run one fresh serialized 20-lane acceptance and inspect every available screenshot, both circular traces, RSS/AI evidence, receipt, and aggregate output.",
         "Repeat the committed-disk forward/reverse audit twice with zero gaps."
       ],
       "artifacts": [
@@ -7838,7 +7838,8 @@
           "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh.",
           "Hosted run 34051000159 recorded AI HTTP 429 outcomes on affected lanes while RSS/news evidence remained present; its aggregate failure routes quota/evidence work to CR-112 and does not establish a cadence violation.",
           "Hosted run 34058732179 observed RSS publication and an AI request on all 21 lanes; seven lanes had no successful AI response after provider quota/availability responses, while all product soak results passed. This confirms quota/evidence pressure, not a cadence violation, but does not close CR-112 because aggregate proof was not all-green.",
-          "Hosted run 34063195136 observed RSS publication and an AI request on all 21 lanes; eight lanes had aiSuccessObserved=false after empty or HTTP 429 responses, while all product soak results passed. This confirms AI evidence/quota pressure, not a cadence violation, but aggregate proof was not all-green."
+        "Hosted run 34063195136 observed RSS publication and an AI request on all 21 historical lanes; eight lanes had aiSuccessObserved=false after empty or HTTP 429 responses, while all product soak results passed. This confirms AI evidence/quota pressure, not a cadence violation, but aggregate proof was not all-green.",
+        "Hosted run 34250699666 passed the windows-latest product soak and cleanup; its structured news evidence recorded aiQuotaLimited=true for two HTTP 429 responses, but the generic reviewer finding was not normalized. The workflow correction now reads structured quota evidence before applying reviewer disposition."
         ],
         "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
         "nvidia_review": {

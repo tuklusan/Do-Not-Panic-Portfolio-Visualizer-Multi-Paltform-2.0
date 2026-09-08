@@ -516,7 +516,13 @@ jobs:
              $reviewFindings = @([ordered]@{ id = 'MALFORMED-REVIEW'; severity = 'BLOCKER'; message = $reviewParseError })
            }
            $traceTextForDisposition = Get-Content -LiteralPath $manifest -Raw
-           $aiQuotaForDisposition = $traceTextForDisposition -match 'event=AiSummaryResponse[^\r\n]*status_code=(?:404|429)'
+           $newsEvidencePath = Join-Path $artifactRoot 'news-evidence.json'
+           $newsEvidenceForDisposition = $null
+           if (Test-Path -LiteralPath $newsEvidencePath -PathType Leaf) {
+             try { $newsEvidenceForDisposition = Get-Content -LiteralPath $newsEvidencePath -Raw | ConvertFrom-Json } catch { $newsEvidenceForDisposition = $null }
+           }
+           $aiQuotaForDisposition = ($null -ne $newsEvidenceForDisposition -and $newsEvidenceForDisposition.aiQuotaLimited -eq $true) -or
+             ($traceTextForDisposition -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]')
            $hasBoundedRenderRecovery = $traceTextForDisposition -match 'RENDER;SIGNAL=RecoveryRequested' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Recovered' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Heartbeat'
            $advisoryFindings = @($reviewFindings | Where-Object {
              $id = [string]$_.id

@@ -148,7 +148,7 @@ if ($workflow -notmatch '(?ms)^env:\s*\r?\n\s+EXPECTED_LANE_COUNT:\s*''20''\s*$'
     $workflow -notmatch 'ExpectedLaneCount \(\[int\]\$env:EXPECTED_LANE_COUNT\)') {
     throw 'Hosted post-soak review is missing the complete 20-runner evidence count gate.'
 }
-foreach ($pattern in @('B-001', 'B-002', 'NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)', 'AI-NEWS-SUMMARIZATION-', 'AI\s+summari[sz]', 'LocalClockFallback', 'hasBoundedRenderRecovery')) {
+foreach ($pattern in @('B-001', 'B-002', 'NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)', 'AI-NEWS-SUMMARIZATION-', 'AI\s+summari[sz]', 'LocalClockFallback', 'hasBoundedRenderRecovery', 'newsEvidenceForDisposition', 'aiQuotaForDisposition', 'status_code=4[0-9][0-9]')) {
     if ($workflow -notmatch [regex]::Escape($pattern)) {
         throw "Workflow is missing the evidence-matched external-condition disposition guard: $pattern"
     }
