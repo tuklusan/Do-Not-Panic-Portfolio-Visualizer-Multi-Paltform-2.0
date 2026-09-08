@@ -81,6 +81,21 @@ public sealed class ProductShellTickerPresentationTests
         Assert.DoesNotContain("Text=\"{Binding LastUpdatedText}\"", xaml, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ProductShell_PreservesUpstreamFooterWordingAndMeasuredLaneWidth()
+    {
+        string xaml = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "DoNotPanicPortfolioVisualizer.App",
+            "Views",
+            "ProductShellWindow.axaml"));
+
+        Assert.Contains("Text=\"Delayed by minimum 15 minutes.\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Width=\"{Binding LaneWidth}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("Width=\"{Binding ContentViewportWidth}\"", xaml, StringComparison.Ordinal);
+    }
+
     private static int CountOccurrences(string text, string value)
     {
         int count = 0;
