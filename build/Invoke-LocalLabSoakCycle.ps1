@@ -716,6 +716,12 @@ foreach ($record in @($availability.machines)) {
                     # remove the tree through native PowerShell so read-only
                     # attributes and Windows path semantics are handled.
                     $cycleToken = [IO.Path]::GetFileName($remoteCleanupRoot)
+                    if ($cycleToken -notmatch '^dnppv2-local-cycle-[A-Za-z0-9._-]+$') {
+                        throw "Windows cleanup token is invalid: $cycleToken"
+                    }
+                    if ($remoteCleanupRoot -notmatch '^[A-Za-z]:\\[A-Za-z0-9._-]+(?:\\[A-Za-z0-9._-]+)*$') {
+                        throw "Windows cleanup root is invalid: $remoteCleanupRoot"
+                    }
                     $remoteCleanupRootLiteral = "'" + $remoteCleanupRoot.Replace("'", "''") + "'"
                     # Encode one complete script so OpenSSH cannot collapse
                     # token assignment and task cleanup into one statement.
