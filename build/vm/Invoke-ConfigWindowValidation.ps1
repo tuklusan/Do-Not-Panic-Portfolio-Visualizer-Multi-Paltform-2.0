@@ -610,32 +610,34 @@ function Invoke-LinuxValidation {
     $linuxExecutableLiteral = Convert-ToBashSingleQuotedLiteral -Value "$TargetPublishDir/DoNotPanicPortfolioVisualizer.App"
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
-    $executableFailure = $null
-    for ($attempt = 1; $attempt -le 5; $attempt++) {
-        try {
-            Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max(60, $Timeout)) -ArgumentList @(
-                '-e',
-                'ssh',
-                '-o',
-                'StrictHostKeyChecking=accept-new',
-                '-o',
-                'BatchMode=no',
-                '-o',
-                'ConnectTimeout=60',
-                "$User@$HostName",
-                "test -f $linuxExecutableLiteral"
-            )
-            $executableFailure = $null
-            break
+    try {
+        $executableFailure = $null
+        for ($attempt = 1; $attempt -le 5; $attempt++) {
+            try {
+                Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max(60, $Timeout)) -ArgumentList @(
+                    '-e',
+                    'ssh',
+                    '-o',
+                    'StrictHostKeyChecking=accept-new',
+                    '-o',
+                    'BatchMode=no',
+                    '-o',
+                    'ConnectTimeout=60',
+                    "$User@$HostName",
+                    "test -f $linuxExecutableLiteral"
+                )
+                $executableFailure = $null
+                break
+            }
+            catch {
+                $executableFailure = $_
+                if ($attempt -lt 5) { Start-Sleep -Seconds 2 }
+            }
         }
-        catch {
-            $executableFailure = $_
-            if ($attempt -lt 5) { Start-Sleep -Seconds 2 }
+        if ($null -ne $executableFailure) {
+            $context = if ($SkipRemoteDeployment) { ' after deployment was skipped' } else { ' after deployment' }
+            throw "Remote Linux publish executable is missing${context}: $TargetPublishDir"
         }
-    }
-    if ($null -ne $executableFailure) {
-        $context = if ($SkipRemoteDeployment) { ' after deployment was skipped' } else { ' after deployment' }
-        throw "Remote Linux publish executable is missing${context}: $TargetPublishDir"
     }
     finally {
         if ($null -eq $previous) {
