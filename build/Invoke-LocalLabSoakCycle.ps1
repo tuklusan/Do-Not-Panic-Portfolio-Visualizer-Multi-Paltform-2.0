@@ -277,6 +277,59 @@ if [ -n "$remaining" ]; then exit 17; fi
 
 }
 
+function Remove-InterruptedCycleRoots {
+    param(
+        [Parameter(Mandatory = $true)][object[]]$MachineRecords,
+        [Parameter(Mandatory = $true)][string]$Secret,
+        [Parameter(Mandatory = $true)][int]$Timeout,
+        [Parameter(Mandatory = $true)][string]$CycleId,
+        [Parameter(Mandatory = $true)][hashtable]$InventoryRecords,
+        [Parameter(Mandatory = $true)][hashtable]$PlatformRecords,
+        [Parameter(Mandatory = $true)][hashtable]$RemoteRoots,
+        [Parameter(Mandatory = $true)][Collections.Generic.List[string]]$CleanupFailures
+    )
+
+    foreach ($record in $MachineRecords) {
+        if (-not $record.reachable) { continue }
+        $machineRecord = $InventoryRecords[$record.name]
+        $platform = if ($PlatformRecords.ContainsKey($record.name)) { $PlatformRecords[$record.name] } else { 'macos' }
+        try {
+            Assert-RemoteProductProcessesClean -MachineRecord $machineRecord -Platform $platform -Secret $Secret -Timeout ([Math]::Min(300, $Timeout))
+            if ($platform -eq 'windows') {
+                $root = Join-Path $RemoteRoots[$record.name] $CycleId
+                $rootLiteral = "'" + $root.Replace("'", "''") + "'"
+                $ownerLiteral = "'" + $CycleId.Replace("'", "''") + "'"
+                $ownerPathLiteral = "'" + (Join-Path $root '.dnppv2-cycle-owner').Replace("'", "''") + "'"
+                $payload = "if (Test-Path -LiteralPath $rootLiteral) { if ((Test-Path -LiteralPath $ownerPathLiteral) -and ((Get-Content -LiteralPath $ownerPathLiteral -Raw).Trim() -eq $ownerLiteral)) { Remove-Item -LiteralPath $rootLiteral -Recurse -Force -ErrorAction SilentlyContinue } else { throw 'WINDOWS_STORAGE_HARD_STOP=UnownedCycleRoot' } }"
+                $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($payload))
+                Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $Secret -Arguments @(
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                    "$($machineRecord.user)@$($machineRecord.address)", 'powershell.exe', '-NoProfile', '-NonInteractive', '-EncodedCommand', $encoded
+                ) -Timeout $Timeout | Out-Null
+            }
+            elseif ($platform -eq 'linux') {
+                $root = "$($RemoteRoots[$record.name])/$CycleId"
+                Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $Secret -Arguments @(
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                    "$($machineRecord.user)@$($machineRecord.address)", "if [ -e '$root' ]; then if [ ! -f '$root/.dnppv2-cycle-owner' ] || ! grep -Fqx '$CycleId' '$root/.dnppv2-cycle-owner'; then echo 'LINUX_STORAGE_HARD_STOP=UnownedCycleRoot' >&2; exit 2; fi; rm -rf -- '$root'; fi"
+                ) -Timeout $Timeout | Out-Null
+            }
+            else {
+                $root = "/Users/$($machineRecord.user)/SOFTWARE_DEV/DNPPV_20/dnppv2-local-cycle-$CycleId"
+                Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $Secret -Arguments @(
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
+                    "$($machineRecord.user)@$($machineRecord.address)", "if [ -e '$root' ]; then if [ ! -f '$root/.dnppv2-cycle-owner' ] || ! grep -Fqx '$CycleId' '$root/.dnppv2-cycle-owner'; then echo 'MAC_STORAGE_HARD_STOP=UnownedCycleRoot' >&2; exit 2; fi; rm -rf -- '$root'; fi"
+                ) -Timeout $Timeout | Out-Null
+            }
+        }
+        catch {
+            $message = "Interrupted cycle cleanup failed for $($record.name): $($_.Exception.Message)"
+            $CleanupFailures.Add($message)
+            Write-Warning $message
+        }
+    }
+}
+
 $cycle = [ordered]@{
     schema = 'dnppv2-local-lab-cycle/v1'
     cycleId = [IO.Path]::GetFileName($resolvedArtifactRoot)
@@ -284,9 +337,13 @@ $cycle = [ordered]@{
     durationMinutes = $DurationMinutes
     machines = [Collections.Generic.List[object]]::new()
 }
+if ($cycle.cycleId -notmatch '^dnppv2-local-cycle-[A-Za-z0-9._-]+$') {
+    throw "Artifact root basename is not a safe local cycle identity: $($cycle.cycleId)"
+}
 $cyclePath = if ([string]::IsNullOrWhiteSpace($MachineName)) {
     Join-Path $resolvedArtifactRoot 'local-lab-cycle.json'
 }
+$cleanupFailures = [Collections.Generic.List[string]]::new()
 else {
     Join-Path (Join-Path $resolvedArtifactRoot $MachineName) "$MachineName-machine-result.json"
 }
@@ -386,6 +443,8 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
                     } | ConvertTo-Json -Depth 8) -Encoding utf8
                 }
             }
+            Remove-InterruptedCycleRoots -MachineRecords $reachableRecords -Secret $password -Timeout ([Math]::Max(60, $TimeoutSeconds)) -CycleId $cycle.cycleId -InventoryRecords $inventory -PlatformRecords $platformByMachine -RemoteRoots $remoteRootByMachine -CleanupFailures $cleanupFailures
+            if ($cleanupFailures.Count -gt 0) { $cycle.cleanupFailures = @($cleanupFailures) }
             break
         }
 
@@ -405,6 +464,8 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
                     artifactRoot = $childInfo.artifactRoot
                 } | ConvertTo-Json -Depth 8) -Encoding utf8
             }
+            Remove-InterruptedCycleRoots -MachineRecords $reachableRecords -Secret $password -Timeout ([Math]::Max(60, $TimeoutSeconds)) -CycleId $cycle.cycleId -InventoryRecords $inventory -PlatformRecords $platformByMachine -RemoteRoots $remoteRootByMachine -CleanupFailures $cleanupFailures
+            if ($cleanupFailures.Count -gt 0) { $cycle.cleanupFailures = @($cleanupFailures) }
             break
         }
         Start-Sleep -Milliseconds 250
@@ -550,7 +611,11 @@ foreach ($record in @($availability.machines)) {
             Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                 'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
                 "$($machineRecord.user)@$($machineRecord.address)",
-                "if [ -e '$remoteRoot' ]; then echo 'MAC_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'"
+                # Product/helper processes were stopped immediately before
+                # this command and the serialized gate excludes overlap, so a
+                # root left by an interrupted cycle is reclaimable only when
+                # its ownership marker matches this exact cycle identity.
+                "if [ -e '$remoteRoot' ]; then if [ ! -f '$remoteRoot/.dnppv2-cycle-owner' ] || ! grep -Fqx '$($cycle.cycleId)' '$remoteRoot/.dnppv2-cycle-owner'; then echo 'MAC_STORAGE_HARD_STOP=UnownedCycleRoot' >&2; exit 2; fi; rm -rf -- '$remoteRoot'; fi; mkdir -p -- '$remotePublish' '$remoteArtifact'; printf '%s' '$($cycle.cycleId)' > '$remoteRoot/.dnppv2-cycle-owner'"
             ) -Timeout $macTimeout
             # Copy the publish contents into the already-created canonical
             # directory. Copying the directory itself is scp-layout dependent

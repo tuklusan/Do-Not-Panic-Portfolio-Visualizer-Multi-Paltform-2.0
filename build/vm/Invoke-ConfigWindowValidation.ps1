@@ -571,6 +571,9 @@ function Invoke-LinuxValidation {
     )
 
     $remotePublishDirLiteral = Convert-ToBashSingleQuotedLiteral -Value $TargetPublishDir
+    $cycleId = [IO.Path]::GetFileName($TargetPublishDir.TrimEnd('/', '\'))
+    $cycleOwnerLiteral = Convert-ToBashSingleQuotedLiteral -Value $cycleId
+    $cycleOwnerPathLiteral = Convert-ToBashSingleQuotedLiteral -Value "$TargetPublishDir/.dnppv2-cycle-owner"
     $xAuthorityLiteral = Convert-ToBashSingleQuotedLiteral -Value ("/home/{0}/.Xauthority" -f $User)
     if (-not $SkipRemoteDeployment) {
         $previous = $env:SSHPASS
@@ -586,7 +589,10 @@ function Invoke-LinuxValidation {
                 '-o',
                 'ConnectTimeout=60',
                 "$User@$HostName",
-                "if [ -e $remotePublishDirLiteral ]; then echo 'LINUX_STORAGE_HARD_STOP=CycleRootAlreadyExists' >&2; exit 2; fi; mkdir -p -- $remotePublishDirLiteral"
+                # The coordinator has already stopped owned product/helper
+                # processes and the serialized-cycle gate excludes overlap.
+                # Reclaim only a root carrying this cycle's ownership marker.
+                "if [ -e $remotePublishDirLiteral ]; then if [ ! -f $cycleOwnerPathLiteral ] || ! grep -Fqx $cycleOwnerLiteral $cycleOwnerPathLiteral; then echo 'LINUX_STORAGE_HARD_STOP=UnownedCycleRoot' >&2; exit 2; fi; rm -rf -- $remotePublishDirLiteral; fi; mkdir -p -- $remotePublishDirLiteral; printf '%s' $cycleOwnerLiteral > $cycleOwnerPathLiteral"
             )
         }
         finally {
@@ -1033,6 +1039,9 @@ function Invoke-WindowsValidation {
     )
 
     $targetPublishDirPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TargetPublishDir
+    $cycleId = [IO.Path]::GetFileName($TargetPublishDir.TrimEnd('/', '\'))
+    $cycleOwnerPathPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value (Join-Path $TargetPublishDir '.dnppv2-cycle-owner')
+    $cycleIdPsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $cycleId
     $remoteSecretName = '.dnppv2-openrouter-secret-{0}' -f ([Guid]::NewGuid().ToString('N'))
     $remoteSecretPath = Join-Path $TargetPublishDir $remoteSecretName
     $taskNamePsLiteral = Convert-ToPowerShellSingleQuotedLiteral -Value $TaskName
@@ -1040,7 +1049,8 @@ function Invoke-WindowsValidation {
         Assert-Windows10StorageContract -User $User -HostName $HostName -Secret $Secret
     }
     if (-not $SkipRemoteDeployment) {
-        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText "Remove-Item -LiteralPath $targetPublishDirPsLiteral -Force -Recurse -ErrorAction SilentlyContinue; New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null"
+        $deploymentRootScript = "if (Test-Path -LiteralPath $targetPublishDirPsLiteral) { if (-not (Test-Path -LiteralPath $cycleOwnerPathPsLiteral) -or ((Get-Content -LiteralPath $cycleOwnerPathPsLiteral -Raw).Trim() -ne $cycleIdPsLiteral)) { throw 'WINDOWS_STORAGE_HARD_STOP=UnownedCycleRoot' }; Remove-Item -LiteralPath $targetPublishDirPsLiteral -Force -Recurse -ErrorAction Stop }; New-Item -ItemType Directory -Force -Path $targetPublishDirPsLiteral | Out-Null; Set-Content -LiteralPath $cycleOwnerPathPsLiteral -Value $cycleIdPsLiteral -NoNewline"
+        Invoke-RemotePowerShell -User $User -HostName $HostName -Secret $Secret -ScriptText $deploymentRootScript
         # OpenSSH for Windows accepts the publish contents as a wildcard.  A
         # trailing `\.` source is rejected by some OpenSSH versions even though
         # an individual file or wildcard source is valid.

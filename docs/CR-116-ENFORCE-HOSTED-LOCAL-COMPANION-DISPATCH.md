@@ -78,9 +78,11 @@ retain the validated receipt with the combined evidence. Keep
 requires a change. A startup/scene timeout is a concrete continuation defect:
 the coordinator must bind every platform cycle root before launch and remove
 it in its `finally` cleanup path, so a product that is not visible within the
-180-second validation timeout aborts cleanly and cannot poison the next cycle
-with a stale-root hard stop. Reconcile combined evidence with CR-092, CR-094,
-and CR-109 without weakening any existing gate.
+180-second validation timeout aborts cleanly. After serialized pre-launch
+process cleanup succeeds, an interrupted owned root is reclaimed before the
+next deployment; an active product/helper process still hard-stops the lane.
+Reconcile combined evidence with CR-092, CR-094, and CR-109 without weakening
+any existing gate.
 On Linux, every `xdotool search --pid` window-discovery probe is independently
 bounded to five seconds with a two-second kill grace period, and the discovery
 loop uses a wall-clock deadline rather than a probe-count budget. A hung X11
@@ -106,6 +108,11 @@ cycle roots running while the coordinator waits on them serially.
 Windows cleanup payloads use explicit statement separators when transported
 through OpenSSH encoded commands, preventing newline normalization from
 turning the cleanup script into invalid PowerShell.
+Because a sibling abort can terminate a child before its per-machine `finally`
+block runs, the serialized coordinator now reclaims the exact interrupted
+Linux and macOS cycle roots after the pre-launch process check. This preserves
+the collision hard stop for active product processes while making a retry of
+the same dispatch identity recoverable.
 
 ## Closure Gates
 
