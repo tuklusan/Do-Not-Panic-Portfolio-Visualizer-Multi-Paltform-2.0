@@ -719,13 +719,14 @@ foreach ($record in @($availability.machines)) {
                     $remoteCleanupRootLiteral = "'" + $remoteCleanupRoot.Replace("'", "''") + "'"
                     # Encode one complete script so OpenSSH cannot collapse
                     # token assignment and task cleanup into one statement.
-                    $remoteCleanupPayload = @"
+                    $remoteCleanupPayload = @'
 Get-ScheduledTask -TaskName 'DNPPV_ProductSceneValidation' -ErrorAction SilentlyContinue | Stop-ScheduledTask -ErrorAction SilentlyContinue
-Unregister-ScheduledTask -TaskName 'DNPPV_ProductSceneValidation' -Confirm:`$false -ErrorAction SilentlyContinue
-Get-CimInstance Win32_Process | Where-Object { `$_.CommandLine -like '*$cycleToken*' } | ForEach-Object { Stop-Process -Id `$_.ProcessId -Force -ErrorAction SilentlyContinue }
+Unregister-ScheduledTask -TaskName 'DNPPV_ProductSceneValidation' -Confirm:$false -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*__DNPPV_CYCLE_TOKEN__*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Start-Sleep -Seconds 2
-if (Test-Path -LiteralPath $remoteCleanupRootLiteral) { Remove-Item -LiteralPath $remoteCleanupRootLiteral -Force -Recurse -ErrorAction SilentlyContinue }
-"@
+if (Test-Path -LiteralPath __DNPPV_ROOT_LITERAL__) { Remove-Item -LiteralPath __DNPPV_ROOT_LITERAL__ -Force -Recurse -ErrorAction SilentlyContinue }
+'@
+                    $remoteCleanupPayload = $remoteCleanupPayload.Replace('__DNPPV_CYCLE_TOKEN__', $cycleToken.Replace("'", "''")).Replace('__DNPPV_ROOT_LITERAL__', $remoteCleanupRootLiteral)
                     $remoteCleanupEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCleanupPayload))
                     Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                         'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
