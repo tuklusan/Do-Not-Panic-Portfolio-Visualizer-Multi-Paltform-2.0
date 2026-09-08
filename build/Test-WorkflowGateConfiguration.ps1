@@ -174,6 +174,9 @@ if ($workflow -notmatch '\$trace\s*=.*normalizedTraceByPath' -or
     $workflow -notmatch '\$tracePaths\s*\|\s*ForEach-Object') {
     throw 'Hosted workflow must read complete binary circular traces before evidence extraction and manifest excerpting.'
 }
+if (-not $workflow.Contains('(?:\||/)')) {
+    throw 'Hosted workflow RSS evidence matching must recognize the canonical pipe-delimited circular trace format.'
+}
 $traceReadIndex = $workflow.IndexOf('$trace =', [StringComparison]::Ordinal)
 $rssEvidenceIndex = $workflow.IndexOf('$rssUsable = $trace', [StringComparison]::Ordinal)
 $manifestContentIndex = $workflow.IndexOf('$content = $normalizedTraceByName[$traceFile.Name]', [StringComparison]::Ordinal)

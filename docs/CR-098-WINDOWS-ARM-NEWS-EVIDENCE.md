@@ -42,8 +42,19 @@ Hosted run `33979739957`, Windows ARM artifact, recorded `rssUsable=false`,
 `rssPublished=false`, `aiRequestObserved=false`, and `aiSuccessObserved=false`
 despite `openRouterKeyProvided=true` and successful AI access validation.
 
+The saved hosted job log shows the product soak itself passed, then the
+evidence-extraction step failed closed. The hosted and local evidence parsers
+were matching `/` between structured trace fields, while the canonical
+circular trace writer emits ` | `. This was a harness classification defect,
+not evidence that the Windows ARM product execution or provider access failed.
+Both parsers now accept the canonical pipe delimiter and retain compatibility
+with the older slash form. A focused matcher self-test, workflow gate, harness
+freeze gate, and full .NET test suite pass locally. Fresh hosted proof remains
+required before closure.
+
 ## Acceptance
 
 The Windows ARM lane emits the required RSS and AI markers, passes its news
 evidence gate, produces a complete inspected closure record, and leaves no
-residual product or helper process.
+residual product or helper process. Current status: implementation corrected;
+pending fresh hosted validation.

@@ -1795,8 +1795,8 @@ function Assert-SoakNewsEvidence {
     }
 
     $trace = ($tracePaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
-    $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
-    $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*/\s*state=Unavailable'
+    $rssUsable = $trace -match 'event=RssPlaybackReady\s*(?:\||/)\s*state=(Fresh|Partial)\s*(?:\||/)\s*headline_count=[1-9][0-9]*'
+    $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*(?:\||/)\s*state=Unavailable'
     $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
     $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
     $aiExternalFailure = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]'

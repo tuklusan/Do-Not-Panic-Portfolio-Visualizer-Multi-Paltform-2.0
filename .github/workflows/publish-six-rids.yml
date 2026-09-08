@@ -340,8 +340,8 @@ jobs:
               $normalizedTraceByName[[IO.Path]::GetFileName($tracePath)] = $traceText
             }
             $trace = ($tracePaths | ForEach-Object { $normalizedTraceByPath[$_] }) -join "`n"
-           $rssUsable = $trace -match 'event=RssPlaybackReady\s*/\s*state=(Fresh|Partial)\s*/\s*headline_count=[1-9][0-9]*'
-           $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*/\s*state=Unavailable'
+           $rssUsable = $trace -match 'event=RssPlaybackReady\s*(?:\||/)\s*state=(Fresh|Partial)\s*(?:\||/)\s*headline_count=[1-9][0-9]*'
+           $rssExternalFailure = $trace -match '(?i)event=RssPlaybackReady\s*(?:\||/)\s*state=Unavailable'
            $aiRequested = $trace -match '\bevent=AiSummaryRequestStarted(?:\s|\||$)'
            $aiSucceeded = $trace -match '\bevent=AiSummarySucceeded(?:\s|\||$)'
            $aiQuotaLimited = $trace -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]'
