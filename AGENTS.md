@@ -25,6 +25,11 @@ complete.
 This repository was intentionally reset on 2026-08-13 and then republished as
 the fresh DNPPV-2.0 migration workspace.
 
+The reset describes the starting point of the migration line. The current
+working tree now contains the subsequently migrated DNPPV-2.0 product and its
+validated acceptance artifacts; the preserved gate, architecture, tracker,
+and machine-access documents remain authoritative for ongoing work.
+
 The inherited product implementation, obsolete packaging lanes, and old
 traceback artifacts were removed. The active project documentation, CR
 inventories, architecture contracts, gate scripts, and test-machine record

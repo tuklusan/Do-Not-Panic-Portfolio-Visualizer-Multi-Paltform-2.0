@@ -14,6 +14,10 @@ patent, trademark, and governing-law provisions.
 
 # DNPPV-2.0 Autonomous Migration Goal
 
+> Historical planning reference. The active operator resume directive is
+> local-only `resume-prompt-goal.txt`; this document is not an execution
+> dependency and must not be treated as the current mutable project state.
+
 ## Goal Text For `/goal`
 
 Autonomously take the DNPPV-2.0 migration from its current repository state to

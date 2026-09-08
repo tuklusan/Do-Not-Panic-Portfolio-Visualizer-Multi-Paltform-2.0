@@ -234,6 +234,14 @@ Every change request follows this lifecycle:
 6. pass the mandatory `Closure` migration behavior gate;
 7. commit and push the reviewed result;
 8. update the CR record with evidence and closure status;
+
+Product validation follows a one-candidate/one-required-matrix rule. A
+completed matrix may be reused only for an exact candidate when the later
+change is explicitly matrix-neutral closure bookkeeping and the fail-closed
+admission policy proves the retained evidence is complete and valid. Product,
+test, dependency, workflow, harness, gate, acceptance, interpretation, or
+unknown changes require a fresh matrix. Recording closure evidence must not by
+itself create a second product matrix.
 9. only then begin the next CR.
 
 The executable requirements and tracker fields for both hard gates are defined

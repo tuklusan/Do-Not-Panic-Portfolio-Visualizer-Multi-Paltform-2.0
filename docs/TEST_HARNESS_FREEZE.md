@@ -33,3 +33,13 @@ not frozen; they remain subject to the normal cleanup workflow.
 
 The current product/test correction that established this baseline is retained
 as-is. Future harness edits require the approval gate above.
+
+## Evidence-integrity invariant
+
+The manifest is the mechanical protected-set authority. A frozen harness is an
+evidence instrument: it must not be weakened to manufacture PASS, erase a
+required failure, or turn a harness defect into `UnavailableAtCycleStart`.
+When a frozen harness fails after a target has been admitted, the result is a
+harness failure and the valid raw product evidence remains available for
+reprocessing. The harness must be repaired, deterministically tested, and
+refrozen before the affected validation lane resumes.

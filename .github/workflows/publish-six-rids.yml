@@ -63,12 +63,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Validate repository gate configuration
         shell: pwsh
         run: ./build/Test-WorkflowGateConfiguration.ps1
       - name: Enforce matrix evidence reuse policy
         shell: pwsh
-        run: ./build/Test-MatrixEvidenceReusePolicy.ps1 -Mode $env:EVIDENCE_MODE -PriorRunId $env:PRIOR_RUN_ID -PriorCommitSha $env:PRIOR_COMMIT_SHA
+        run: |
+          ./build/Test-MatrixEvidenceReusePolicy.ps1 -Mode $env:EVIDENCE_MODE -PriorRunId $env:PRIOR_RUN_ID -PriorCommitSha $env:PRIOR_COMMIT_SHA
+          if ($env:EVIDENCE_MODE -eq 'reuse-completed-run') {
+            $changed = @(git diff --name-only "$env:PRIOR_COMMIT_SHA..HEAD")
+            ./build/Test-MatrixEvidenceReusePolicy.ps1 -Mode reuse-completed-run -ChangedPath $changed -CandidateSha $env:PRIOR_COMMIT_SHA -EvidenceCandidateSha $env:PRIOR_COMMIT_SHA -PathOnly
+          }
 
   publish:
     needs: gate
