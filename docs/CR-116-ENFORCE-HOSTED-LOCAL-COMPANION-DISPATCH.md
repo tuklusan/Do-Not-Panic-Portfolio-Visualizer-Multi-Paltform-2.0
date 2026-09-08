@@ -82,10 +82,11 @@ it in its `finally` cleanup path, so a product that is not visible within the
 with a stale-root hard stop. Reconcile combined evidence with CR-092, CR-094,
 and CR-109 without weakening any existing gate.
 On Linux, every `xdotool search --pid` window-discovery probe is independently
-bounded to five seconds with a two-second kill grace period. A hung X11 probe
-therefore cannot defeat the 180-second scene deadline; the normal trap/finally
-cleanup path remains authoritative for the owned product, helper, and cycle
-root.
+bounded to five seconds with a two-second kill grace period, and the discovery
+loop uses a wall-clock deadline rather than a probe-count budget. A hung X11
+probe therefore cannot defeat the 180-second scene deadline; the normal
+trap/finally cleanup path remains authoritative for the owned product, helper,
+and cycle root.
 
 ## Closure Gates
 
