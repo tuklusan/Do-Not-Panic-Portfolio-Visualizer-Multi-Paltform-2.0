@@ -337,13 +337,13 @@ $cycle = [ordered]@{
     durationMinutes = $DurationMinutes
     machines = [Collections.Generic.List[object]]::new()
 }
+$cleanupFailures = [Collections.Generic.List[string]]::new()
 if ($cycle.cycleId -notmatch '^dnppv2-local-cycle-[A-Za-z0-9._-]+$') {
     throw "Artifact root basename is not a safe local cycle identity: $($cycle.cycleId)"
 }
 $cyclePath = if ([string]::IsNullOrWhiteSpace($MachineName)) {
     Join-Path $resolvedArtifactRoot 'local-lab-cycle.json'
 }
-$cleanupFailures = [Collections.Generic.List[string]]::new()
 else {
     Join-Path (Join-Path $resolvedArtifactRoot $MachineName) "$MachineName-machine-result.json"
 }
