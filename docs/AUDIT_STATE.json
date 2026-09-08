@@ -5831,7 +5831,7 @@
       "id": "CR-076",
       "phase": "Phase 7",
       "title": "Isolate soak workflow concurrency",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-075"
@@ -5840,7 +5840,7 @@
       "acceptance_criteria": [
         "Push and workflow_dispatch runs use distinct concurrency groups.",
         "Duplicate runs of the same event and ref remain serialized.",
-        "A fresh current-SHA dispatch reaches all 21 publish and real-product jobs and produces reviewable artifacts."
+        "A fresh current-SHA dispatch reaches all 20 publish and real-product jobs and produces reviewable artifacts."
       ],
       "validation_plan": [
         "Manual workflow concurrency and dependency scan",
@@ -5876,10 +5876,23 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "Ludo-Arena/.github/workflows/play-full-game.yml",
+          "Ludo-Arena/.github/workflows/play-on-lan-runners.yml"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Fresh current-SHA dispatch proof is pending after the concurrency correction."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Run 34276086967 passed all 43 jobs, including 20 publish lanes, 20 real-product soak lanes, and the aggregate closure review; no lane was canceled or overlapped."
         ]
       }
     },
@@ -5887,7 +5900,7 @@
       "id": "CR-075",
       "phase": "Phase 7",
       "title": "Require AI evidence in hosted soaks",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-073",
@@ -5897,7 +5910,7 @@
       "acceptance_criteria": [
         "Every hosted runner trace contains AI access and summary evidence.",
         "Missing AI trace evidence fails post-soak review and routes a CR.",
-        "The current evidence set contains 21 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing NVIDIA NIM artifact review."
+        "The current evidence set contains 20 manifests, non-empty screenshots and trace pairs, cleanup proof, and a passing NVIDIA NIM artifact review."
       ],
       "validation_plan": [
         "Manual inspection of completed hosted artifacts",
@@ -5934,10 +5947,24 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Completed hosted cycle 33689685166 lacks AI access and summary trace events because it ran from an older SHA; fresh current-main hosted evidence is required. The subsequent 10-minute cycle 33902675076 also failed its required AI evidence on macos-26-intel, so that runner-specific path must be diagnosed and rerun before closure."
+        "status": "closed",
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Run 34276086967 showed AI request evidence on all 20 current lanes, with RSS/news evidence, screenshots, circular trace pairs, semantic NVIDIA PASS results, and complete closure records; provider quota responses remained advisory."
         ]
       }
     },

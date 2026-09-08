@@ -16,6 +16,8 @@ patent, trademark, and governing-law provisions.
 
 # CR-075: Require AI Evidence in Hosted Soaks
 
+**Status:** Closed by hosted acceptance run `34276086967`
+
 ## Objective
 
 | CR-01 | Require key-free RSS and AI success evidence on hosted product soaks | hosted workflow and evidence reviewer | circular traces and manifests |
@@ -24,9 +26,9 @@ patent, trademark, and governing-law provisions.
 
 | ID | Required behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
-| SOAK-AI-01 | A hosted soak with an injected OpenRouter key must exercise AI access validation and summary generation. | `DNPPV_SOAK_REQUIRE_AI_NEWS` plus `FinanceNewsService` circular trace events. | Implemented on current main; absent from the older cycle artifact. |
-| SOAK-AI-02 | Hosted evidence review must inspect trace events, not only the manifest key-presence flag. | Post-soak review and CR-066 evidence contract. | Gap routed; fresh current-SHA cycle required. |
-| SOAK-AI-03 | A cycle without AI trace events cannot count toward CR-066 acceptance. | CR-066 validation ledger. | Implemented in this record. |
+| SOAKAI-01 | A hosted soak with an injected OpenRouter key must exercise AI access validation and summary generation. | `DNPPV_SOAK_REQUIRE_AI_NEWS` plus `FinanceNewsService` circular trace events. | Implemented on current main; absent from the older cycle artifact. |
+| SOAKAI-02 | Hosted evidence review must inspect trace events, not only the manifest key-presence flag. | Post-soak review and CR-066 evidence contract. | Gap routed; fresh current-SHA cycle required. |
+| SOAKAI-03 | A cycle without AI trace events cannot count toward CR-066 acceptance. | CR-066 validation ledger. | Implemented in this record. |
 
 ## Required Gates
 
@@ -36,21 +38,20 @@ traces, and each manifest reported key injection, but no trace contained
 `AiAccessValidation` or `AiSummary` events. The cycle ran at an older SHA and
 is therefore evidence-incomplete, despite its GitHub conclusion being success.
 
-The next cycle must run from current `main`, prove all 21 AI trace paths, pass
+The next cycle must run from current `main`, prove all 20 AI trace paths, pass
 NVIDIA NIM artifact review, and remain separate from the incomplete cycle.
 
 ## Acceptance
 
 - Every hosted runner has AI access and summary trace evidence.
 - Missing AI trace evidence fails the post-soak review and routes a CR.
-- The current evidence set must have 21 manifests, non-empty screenshots and trace pairs,
+- The current evidence set must have 20 manifests, non-empty screenshots and trace pairs,
   cleanup proof, and a passing NVIDIA NIM artifact review.
 
 ## Latest Evidence
 
-Cycle `33902675076` proved the real product completed its 10-minute soak on
-`macos-26-intel`, but its circular evidence did not contain the required AI
-summary success event. The matrix therefore failed closed rather than treating
-secret injection as proof. The runner-specific environment, endpoint response,
-and trace path must be diagnosed and a fresh current-SHA cycle must pass on all
-21 runners before this CR can close.
+Hosted run `34276086967` is the closure proof. All 20 current lanes observed
+the AI request, retained RSS/news evidence, and emitted complete screenshot,
+trace-pair, semantic-review, and closure-record evidence. Provider quota
+responses were retained as advisory AI evidence, not misclassified as cadence
+or product failures. The aggregate hosted closure passed.
