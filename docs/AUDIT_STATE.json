@@ -8161,6 +8161,7 @@
         "build/New-LocalCompanionDispatch.ps1",
         "build/Test-LocalCompanionDispatch.ps1",
         "build/Test-LocalCompanionReceipt.ps1",
+        "build/vm/Invoke-ConfigWindowValidation.ps1",
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
@@ -8219,7 +8220,8 @@
           "The frozen harness was unchanged; no local harness optimization or modification was made.",
           "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection.",
           "Dispatch and receipt contract self-tests passed; the receipt validator rejects mismatched cycle identity and validates duration, four-machine coverage, terminal statuses, and credential-free dispatch.",
-          "A controlled 10-minute companion attempt exposed stale Linux/macOS cycle roots after pre-launch aborts; the coordinator now binds Linux/Windows cycle roots to its finally cleanup path so a scene timeout cannot leave residual storage. The attempt was stopped, all local and remote cycle artifacts were removed, and no product processes remained."
+          "A controlled 10-minute companion attempt exposed stale Linux/macOS cycle roots after pre-launch aborts; the coordinator now binds Linux/Windows cycle roots to its finally cleanup path so a scene timeout cannot leave residual storage. The attempt was stopped, all local and remote cycle artifacts were removed, and no product processes remained.",
+          "The Linux scene watchdog now bounds every xdotool window-discovery probe to five seconds with a two-second kill grace period, so a hung X11 probe cannot defeat the 180-second visibility deadline. Focused syntax and companion dispatch/receipt self-tests passed after this one-time harness correction."
         ]
       }
     },
