@@ -43,3 +43,10 @@ reconciliation for the migration repository.
 
 Closed. The historical reverse-scan evidence is now indexed in the tracker and
 the pre-development and closure gates pass for every affected CR.
+
+The operator-authorized infrastructure correction to
+`build/Test-MigrationBehaviorGate.ps1` is approved for this CR because the
+existing gate could not consume the newly reconciled historical evidence
+without a narrowly scoped fallback. The correction is fail-closed, limited to
+the named retrofit index, and covered by the 56 migration-gate executions
+recorded in the tracker.
