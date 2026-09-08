@@ -461,6 +461,13 @@ foreach ($record in @($availability.machines)) {
     else {
         $null
     }
+    # Bind every platform's cycle root before launch.  If the product does not
+    # reach the validation scene within the driver's timeout, the finally block
+    # must still remove this root so the next cycle is not blocked by stale
+    # storage from an aborted launch.
+    if (-not [string]::IsNullOrWhiteSpace([string]$remotePublish)) {
+        $remoteCleanupRoot = $remotePublish
+    }
     $macTimeout = [Math]::Max(900, $TimeoutSeconds + 300)
 
     try {

@@ -75,8 +75,12 @@ The dispatch and receipt bridge is implemented by
 coordinator must consume the request using the prescribed cycle identity and
 retain the validated receipt with the combined evidence. Keep
 `Invoke-LocalLabSoakCycle.ps1` locked unless a concrete continuation defect
-requires a change. Reconcile combined evidence with CR-092, CR-094, and CR-109
-without weakening any existing gate.
+requires a change. A startup/scene timeout is a concrete continuation defect:
+the coordinator must bind every platform cycle root before launch and remove
+it in its `finally` cleanup path, so a product that is not visible within the
+180-second validation timeout aborts cleanly and cannot poison the next cycle
+with a stale-root hard stop. Reconcile combined evidence with CR-092, CR-094,
+and CR-109 without weakening any existing gate.
 
 ## Closure Gates
 

@@ -8218,7 +8218,8 @@
           "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
           "The frozen harness was unchanged; no local harness optimization or modification was made.",
           "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection.",
-          "Dispatch and receipt contract self-tests passed; the receipt validator rejects mismatched cycle identity and validates duration, four-machine coverage, terminal statuses, and credential-free dispatch."
+          "Dispatch and receipt contract self-tests passed; the receipt validator rejects mismatched cycle identity and validates duration, four-machine coverage, terminal statuses, and credential-free dispatch.",
+          "A controlled 10-minute companion attempt exposed stale Linux/macOS cycle roots after pre-launch aborts; the coordinator now binds Linux/Windows cycle roots to its finally cleanup path so a scene timeout cannot leave residual storage. The attempt was stopped, all local and remote cycle artifacts were removed, and no product processes remained."
         ]
       }
     },
