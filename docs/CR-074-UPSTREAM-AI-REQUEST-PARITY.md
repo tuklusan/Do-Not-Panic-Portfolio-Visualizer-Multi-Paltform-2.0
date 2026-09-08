@@ -16,6 +16,8 @@ patent, trademark, and governing-law provisions.
 
 # CR-074: Restore Upstream AI Request Parity
 
+**Status:** Closed by hosted acceptance run `34272520886`
+
 ## Functional Inventory
 
 | ID | Upstream behavior | 2.0 counterpart | Status |
@@ -53,3 +55,13 @@ scans at closure; any unmapped behavior reopens this CR or creates a successor.
   hosted lanes.
 - Focused tests, full build/test, license and syntax gates, NVIDIA NIM source and
   evidence review, and artifact/process cleanup all pass.
+
+## Closure Evidence
+
+The focused AI payload, header, model-resolution, cadence, and fallback tests
+pass, and the Release build/test gates pass. Hosted run `34272520886` passed
+all 43 jobs and all 20 current lanes. Every lane observed the AI request and
+retained RSS evidence, with provider quota responses recorded as advisory
+AI evidence rather than fabricated AI success or a cadence failure. The run
+retained each lane's screenshot, both circular traces, semantic reviewer PASS,
+and closure record; aggregate validation passed with no product defects.

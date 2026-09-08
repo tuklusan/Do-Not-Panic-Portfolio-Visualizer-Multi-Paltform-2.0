@@ -5742,7 +5742,7 @@
       "id": "CR-074",
       "phase": "Phase 7",
       "title": "Restore upstream AI request parity",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-073"
       ],
@@ -5795,20 +5795,21 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
-      "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "The required hosted soak cycles and full progressive soak family are still pending.",
-          "The local five-minute cycle proved Linux execution but exposed Windows foreground-capture and Linux AI-summary timeout defects routed to CR-077 and CR-073."
-        ],
+    "current_validation": {
+      "status": "closed",
+      "unresolved_gaps": [],
         "evidence": [
           "Full Release test suite passed: 312 passed, 0 failed.",
           "Release build passed with 0 warnings and 0 errors.",
           "NVIDIA NIM code review completed; advisory findings were evaluated and no unverified blocker was accepted.",
           "Local five-minute real-product AI summary responses succeeded on Linux, Windows 10, and Windows 11.",
           "Current-main hosted run 34022415904 retained trace evidence that RSS refreshed once and the AI operation was attempted once with bounded retries; its Windows 2025 lane received three 429 responses, which is now aligned to the upstream two-attempt budget in source.",
-          "NVIDIA review 20260906-053725 was advisory-failing; its transport-retry finding was addressed, while its TaskCanceledException and attribution-header findings were marked false positives because TaskCanceledException is covered by OperationCanceledException and OpenRouterModelResolver gates attribution headers by endpoint."
-        ]
+        "NVIDIA review 20260906-053725 was advisory-failing; its transport-retry finding was addressed, while its TaskCanceledException and attribution-header findings were marked false positives because TaskCanceledException is covered by OperationCanceledException and OpenRouterModelResolver gates attribution headers by endpoint.",
+        "Hosted run 34272520886 passed all 43 jobs and all 20 lanes; each lane observed the AI request, retained usable RSS evidence, and recorded provider quota limitation without treating it as a cadence defect."
+    ],
+      "closure_evidence": [
+        "Run 34272520886 retained complete screenshots, both circular traces, semantic reviewer PASS results, and closure records for all 20 lanes; aggregate validation passed."
+      ]
       },
       "upstream_closure_audit": {
         "status": "complete",
