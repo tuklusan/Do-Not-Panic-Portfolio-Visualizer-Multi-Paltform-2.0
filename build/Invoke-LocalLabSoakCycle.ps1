@@ -286,7 +286,7 @@ function Remove-InterruptedCycleRoots {
         [Parameter(Mandatory = $true)][hashtable]$InventoryRecords,
         [Parameter(Mandatory = $true)][hashtable]$PlatformRecords,
         [Parameter(Mandatory = $true)][hashtable]$RemoteRoots,
-        [Parameter(Mandatory = $true)][Collections.Generic.List[string]]$CleanupFailures
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][Collections.Generic.List[string]]$CleanupFailures
     )
 
     foreach ($record in $MachineRecords) {
