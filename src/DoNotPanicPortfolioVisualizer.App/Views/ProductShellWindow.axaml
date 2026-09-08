@@ -699,7 +699,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                    FontSize="10"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="2"
-                                   Text="2.0"
+                                   Text="2.0 | {Binding RuntimeArchitectureToken}"
                                    HorizontalAlignment="Right"
                                    FontSize="10"
                                    Foreground="#88939A" />

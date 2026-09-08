@@ -7472,23 +7472,41 @@
         "tests/"
       ],
       "upstream_behavior_inventory": {
-        "status": "queued",
+        "status": "complete",
         "document": "docs/CR-107-VERSION-ARCHITECTURE-IDENTIFIER.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Shared/PortfolioVersion.cs"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation and closure scans are pending."]
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Shared/PortfolioVersion.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Shared/RuntimeArchitecture.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeArchitectureTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "queued",
+        "status": "implementation-ready-hosted-acceptance-pending",
         "evidence": [
-          "Hosted run 34058732179 produced Passed product soak results with processCleanedUp=true for all 21 lanes, but aggregate closure remained non-authoritative because lane reviewer receipts were unavailable or blocking and AI-evidence findings were retained; downloaded evidence was inspected and cleaned up."
+          "Hosted run 34058732179 produced Passed product soak results with processCleanedUp=true for all 21 historical lanes, but aggregate closure remained non-authoritative because lane reviewer receipts were unavailable or blocking and AI-evidence findings were retained; downloaded evidence was inspected and cleaned up.",
+          "RuntimeArchitecture maps all six supported OS/architecture combinations and unknown runtimes deterministically; the focused suite passed 8/8 and the full suite passed 330/330.",
+          "Release app build passed with 0 warnings and 0 errors.",
+          "NVIDIA code review 20260908-130844 passed with no blocking findings for the immutable candidate."
         ],
-        "unresolved_gaps": ["Implementation and fresh v2 acceptance evidence remain outstanding."]
+        "unresolved_gaps": ["Fresh v2 hosted acceptance evidence remains outstanding."]
       }
     },
     {

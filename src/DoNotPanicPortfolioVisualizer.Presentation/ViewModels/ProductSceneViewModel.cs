@@ -13,6 +13,7 @@
 // ============================================================================
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using DoNotPanicPortfolioVisualizer.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Core.Models;
@@ -140,6 +141,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     [ObservableProperty]
     private string _clockText = DateTimeOffset.UtcNow.ToString("HH:mm:ss 'UTC'");
+
+    public string RuntimeArchitectureToken => RuntimeArchitecture.CurrentToken;
 
     [ObservableProperty]
     private string _backgroundSourceA = "/Assets/ExchangeBackgrounds/new-york-stock-exchange.jpg";
