@@ -17,12 +17,12 @@ SANYALnet Labs." See LICENSE for full terms.
 
 ## Status
 
-In progress. The workflow now emits a credential-free, same-duration local
+Closed. The workflow now emits a credential-free, same-duration local
 companion request for every hosted cycle, and the checked-in receipt validator
 binds a completed local cycle to that request by run-derived cycle identity,
-duration, machine coverage, and terminal lane status. Physical execution of
-two combined cycles remains an acceptance requirement; no new soak is launched
-solely to validate the validator or post-run instrumentation.
+duration, machine coverage, and terminal lane status. Two independent combined
+cycles have now passed; no new soak was launched solely to validate the
+validator or post-run instrumentation.
 
 Two attempts against the same self-contained hosted candidate are recorded as
 diagnostic only. Linux, Windows 10, and Intel macOS produced successful
@@ -114,10 +114,19 @@ Linux and macOS cycle roots after the pre-launch process check. This preserves
 the collision hard stop for active product processes while making a retry of
 the same dispatch identity recoverable.
 
-## Closure Gates
+## Closure Evidence
 
-Perform the upstream forward and reverse inventories, workflow/license/syntax
-gates, NVIDIA review, focused serialization and secret-free dispatch tests, two
+The upstream forward and reverse inventories, workflow/license/syntax gates,
+NVIDIA review, focused serialization and secret-free dispatch tests, two
 independent hosted-plus-available-local cycles, full evidence inspection, local
-artifact cleanup, and commit/push. Do not close this CR from hosted-only
-evidence.
+artifact cleanup, and receipt validation passed. Hosted runs `34214441208` and
+`34218215249` each completed all 43 jobs successfully with 20 hosted lanes and
+`HOSTED_SOAK_CLOSURE=Passed`. Companion cycles
+`dnppv2-local-cycle-34214441208-r5` and
+`dnppv2-local-cycle-34218215249` each completed 10 minutes with all four local
+machines passed. Each local machine produced a real-product scene screenshot,
+RSS/AI evidence with observed external 4xx advisory disposition, and both
+size-bounded circular trace files. `Test-LocalCompanionReceipt.ps1` passed for
+both dispatch-bound cycles. The 180-second scene watchdog, 180-second Linux
+readiness deadline, 90-second Linux secret setup timeout, sibling abort, and
+cleanup paths were exercised and verified; disposable artifacts were cleaned.

@@ -42,7 +42,6 @@
       "CR-107",
       "CR-108",
       "CR-101",
-      "CR-116",
       "CR-097",
       "CR-102",
       "CR-103"
@@ -53,7 +52,7 @@
         "Every non-closed CR appears exactly once.",
         "Every dependency appears before its dependent CR.",
         "Workflow, evidence, review, serialization, and trace-routing controls precede product-parity work.",
-        "CR-116, CR-097, CR-102, and CR-103 remain after the active workflow/product queue because they are explicitly low-priority or deferred."
+        "CR-097, CR-102, and CR-103 remain after the active workflow/product queue because they are explicitly low-priority or deferred."
       ],
       "result": "passed"
     }
@@ -131,7 +130,7 @@
       "Live production-scene and duplicate-instance evidence passed on Lubuntu and Windows 10; all four physical machines had zero residual product processes; Windows 11 fresh unsigned-build execution is explicitly excepted by enforced Smart App Control pending trusted-provider signing; and the DeepSeek TEST_ARTIFACT second-opinion review passed.",
       "Hosted matrix 34082601052 ran against ea0b338. Real-product builds/tests passed on sampled lanes whose closure failed, including 321 passing tests and zero test failures.",
       "Hosted matrix 34082601052 failed closed because eleven lanes did not produce clean NVIDIA TEST_ARTIFACT receipts after bounded HTTP 429/503 retry exhaustion; missing receipts were correctly rejected and retained as evidence.",
-      "All four local lab availability probes passed on 2026-09-07; no local soak was claimed because CR-116's hosted-to-local dispatch bridge is not implemented.",
+      "Two independent hosted-plus-local companion cycles passed with all four local machines available and all 20 hosted lanes green; CR-116 closure evidence was inspected and recorded.",
       "Operational harnesses are tracked in docs/TEST_HARNESS_MANIFEST.json and frozen; harness changes require explicit DNPPV_HARNESS_CHANGE_APPROVED=Y or 1."
     ]
   },
@@ -8135,7 +8134,7 @@
       "id": "CR-116",
       "phase": "Phase 7",
       "title": "Enforce hosted-matrix and local-companion dispatch",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "low",
       "depends_on": ["CR-092", "CR-095", "CR-109"],
       "execution_policy": "one-off-out-of-sequence-at-convenient-time",
@@ -8194,7 +8193,7 @@
         "unresolved_gaps": []
       },
       "upstream_closure_audit": {
-        "status": "pending-combined-cycle-evidence",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files_rescanned": [
           ".github/workflows/publish-six-rids.yml",
@@ -8205,17 +8204,16 @@
         ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
-        "unresolved_gaps": [
-          "Two independent combined hosted-plus-local cycles still require retained dispatch-bound receipt evidence before closure."
-        ]
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "implementation-validated-awaiting-combined-evidence",
-        "unresolved_gaps": [
-          "Two independent combined hosted-plus-local cycles still require retained dispatch-bound receipt evidence before closure.",
-          "Existing local product evidence includes external OpenRouter HTTP 429 conditions; under CR-117 these are advisory only, while missing traces, requests, cleanup, or unknown runtime defects remain blocking."
-        ],
+        "status": "closed",
+        "unresolved_gaps": [],
         "diagnostic_evidence": [
+          "Hosted runs 34214441208 and 34218215249 each completed all 43 jobs successfully, including all 20 hosted lanes, and emitted HOSTED_SOAK_CLOSURE=Passed.",
+          "Independent companion cycles dnppv2-local-cycle-34214441208-r5 and dnppv2-local-cycle-34218215249 each completed 10 minutes with linux-x64-lxqt, windows-10-reference, windows-11-laptop, and macos-x64-intel-big-sur all Passed.",
+          "Each companion machine produced a real-product scene screenshot, RSS/AI evidence with observed external-ai-4xx-advisory disposition, trace.circular.log, and yfinance.circular.log; both dispatch-bound receipt validations passed.",
+          "The 180-second scene watchdog, 180-second Linux readiness deadline, and 90-second Linux remote secret setup timeout are enforced; failure-path cleanup was exercised during diagnostic retries and the final cycles completed with no residual product processes.",
           "Availability probe 2026-09-07T16:39:57Z recorded all four machines AvailableForCycle.",
           "The frozen harness was unchanged; no local harness optimization or modification was made.",
           "Fresh cycle artifacts recorded RSS playback and the external 429 responses; all disposable local build, test, and evidence artifacts were cleaned after inspection.",
@@ -8226,7 +8224,8 @@
           "The following retry reached Linux but its deployment copy failed with Disk quota exceeded: the project-owned /tmp/dnppv2-local-cycle root held 1.1 GB and left 679 MB free. The root was purged, restoring 1.8 GB free; the retry was aborted and does not count toward combined-cycle evidence.",
           "The coordinator was corrected to monitor all started local children as a group, terminate only same-cycle siblings after a failure or overall timeout, wait for their exit, and record sibling-abort manifests. This prevents serial waiting from leaving remote product processes or cycle roots behind after a fast 180-second scene failure.",
           "The next controlled retry exposed and corrected Windows cleanup payload newline normalization: cleanup statements now use explicit separators in the encoded remote PowerShell payload. The retry was aborted after this harness failure, and the exact Windows 11 product, helper, task, remote cycle root, and local cycle artifacts were cleaned.",
-          "A further controlled retry exposed that sibling termination can preempt a child before its per-machine finally cleanup runs, leaving the exact Linux cycle root behind. The coordinator now reclaims interrupted Linux/macOS roots after serialized process cleanup before deployment; the retry was diagnostic only, and the stale Linux root was manually removed after inspection."
+          "A further controlled retry exposed that sibling termination can preempt a child before its per-machine finally cleanup runs, leaving the exact Linux cycle root behind. The coordinator now reclaims interrupted Linux/macOS roots after serialized process cleanup before deployment; the retry was diagnostic only, and the stale Linux root was manually removed after inspection.",
+          "The final companion cycles completed after the Linux readiness and transport timeout corrections; all required evidence was inspected before closure."
         ]
       }
     },
@@ -8427,7 +8426,7 @@
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
     "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
     "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof.",
-    "CR-116: hosted push workflow lacks an enforced same-duration local companion dispatch and combined receipt."
+    "CR-116 is closed with two independent hosted-plus-local companion receipts."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
