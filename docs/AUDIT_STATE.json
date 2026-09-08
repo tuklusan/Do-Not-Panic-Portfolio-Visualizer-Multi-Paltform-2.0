@@ -8227,7 +8227,7 @@
       "id": "CR-117",
       "phase": "Phase 7",
       "title": "Classify bounded hosted external-condition findings without hiding defects",
-      "status": "in_progress",
+      "status": "closed",
       "priority": "high",
       "depends_on": ["CR-039", "CR-094", "CR-096", "CR-109", "CR-112", "CR-115"],
       "objective": "Restore meaningful all-lane hosted acceptance by retaining raw reviewer findings, deterministically dispositioning only evidence-matched NTP/render/RSS/model-HTTP-4xx external conditions, and keeping unknown findings, missing receipts, YFinance defects, and reviewer unavailability blocking.",
@@ -8285,14 +8285,17 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "hosted-regression-fix-awaiting-proof",
-        "run_id": "34168619303",
+        "status": "closed",
+        "run_id": "34171522262",
         "product_soak_results": "All 20 current lane soak-result.json files reported Passed; no product-soak failure was identified.",
         "normalized_review_result": "The post-fix serialized run produced complete lane evidence and an authoritative aggregate PASS. Evidence-matched NTP, RSS-outage, render-recovery, and model-4xx findings remain bounded advisories and do not fabricate AI success; unknown findings remain blocking.",
-        "aggregate_receipt": null,
+        "aggregate_receipt": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34171522262;LANES=20;REMOTE_REVIEW_CALLS=0",
         "regression_evidence": "Run 34168619303 failed closed because the embedded provider-quota normalizer had an unmatched parenthesis; corrected locally and passed the PowerShell syntax gate.",
-        "unresolved_gaps": [
-          "Fresh serialized hosted proof is required after the workflow parser correction."
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Hosted run 34171522262 completed all 20 current lanes successfully after the provider-quota normalizer correction.",
+          "Test-HostedSoakClosure.ps1 passed against the retained run artifacts with the expected run identity, commit identity, 20 unique lanes, complete review receipts, screenshots, dual circular traces, RSS/AI evidence, and cleanup records.",
+          "The raw external-condition findings remain retained and bounded; no artificial AI success was emitted and unknown or incomplete findings remain blocking."
         ]
       }
     },

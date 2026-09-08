@@ -15,11 +15,10 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Implementation correction in progress after hosted run `34168619303`
-identified an embedded PowerShell syntax defect in the provider-quota
-normalizer. The prior proof `34129921207` remains valid for the earlier
-revision, but cannot close the corrected revision until one fresh serialized
-proof completes.
+Closed. Hosted run `34171522262` is the fresh serialized proof for the
+corrected provider-quota normalizer. The retained 20-lane evidence passed the
+authoritative closure validator; external-condition findings remain bounded
+advisories and no artificial AI success was emitted.
 
 ## Objective
 
@@ -83,12 +82,13 @@ retirement.
 
 ## Closure Evidence
 
-Hosted run `34129921207` completed all 20 current lanes successfully. The
-aggregate receipt is `HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34129921207;LANES=20;REMOTE_REVIEW_CALLS=0`.
+Hosted run `34171522262` completed all 20 current lanes successfully. The
+aggregate receipt is
+`HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34171522262;LANES=20;REMOTE_REVIEW_CALLS=0`.
 Every lane reached terminal state with its product soak result, screenshots
 where supported, both circular traces, RSS/AI evidence, reviewer result, and
-closure record consumed by the aggregate. This is the post-fix proof for the
-evidence-matched provider-quota normalization; no artificial AI success was
+closure record consumed by the aggregate. This proof is bound to commit
+`a0beab2afe050d71562b7d5fcd26cba0e8fb5197`; no artificial AI success was
 emitted, and unknown or incomplete reviewer evidence remains blocking.
 
 Run `34168619303` failed closed before evidence review on affected lanes
@@ -104,7 +104,7 @@ Run the upstream forward and reverse gates, focused closure self-tests, the
 full Release suite, license/PowerShell/workflow gates, NVIDIA source review,
 and one fresh serialized 20-lane matrix. Inspect every raw reviewer result,
 advisory disposition, screenshot, both circular traces, RSS/AI evidence, and
-closure record. Close only when all lanes have authoritative receipts and no
+closure record. These gates were satisfied by run `34171522262`; no
 unapproved blocking finding remains.
 
 ## Reverse Upstream Gap Scan
