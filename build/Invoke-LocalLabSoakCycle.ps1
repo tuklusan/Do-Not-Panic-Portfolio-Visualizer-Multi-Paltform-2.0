@@ -726,9 +726,9 @@ foreach ($record in @($availability.machines)) {
                         'Start-Sleep -Seconds 2',
                         'if (Test-Path -LiteralPath ' + $remoteCleanupRootLiteral + ') { Remove-Item -LiteralPath ' + $remoteCleanupRootLiteral + ' -Force -Recurse -ErrorAction SilentlyContinue }'
                     )
-                    # Use explicit separators because OpenSSH/PowerShell can
-                    # normalize transported newlines before decoding them.
-                    $remoteCleanupPayload = (($remoteCleanupLines -join ';') + ';')
+                    # Encode a typed, newline-delimited script so OpenSSH and
+                    # PowerShell cannot collapse adjacent statements.
+                    $remoteCleanupPayload = [string]::Join([Environment]::NewLine, [string[]]$remoteCleanupLines) + [Environment]::NewLine
                     $remoteCleanupEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCleanupPayload))
                     Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                         'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
