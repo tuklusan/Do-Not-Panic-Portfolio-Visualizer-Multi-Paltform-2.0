@@ -250,7 +250,16 @@ function Assert-RemoteProductProcessesClean {
     if ($Platform -eq 'windows') {
         # Windows OpenSSH commonly dispatches through cmd.exe. Encode the
         # PowerShell payload so cmd cannot reinterpret its pipeline syntax.
-        $payload = "Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' } | Stop-Process -Force -ErrorAction SilentlyContinue; if (Get-Process | Where-Object { `$_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or `$_.ProcessName -like '*YFinance.NET.Server*' }) { exit 17 }"
+        $payload = @'
+$matches = { Get-Process | Where-Object { $_.ProcessName -like '*DoNotPanicPortfolioVisualizer*' -or $_.ProcessName -like '*YFinance.NET.Server*' }
+}
+& $matches | Stop-Process -Force -ErrorAction SilentlyContinue
+for ($attempt = 0; $attempt -lt 20; $attempt++) {
+    if (@(& $matches).Count -eq 0) { exit 0 }
+    Start-Sleep -Milliseconds 250
+}
+if (@(& $matches).Count -gt 0) { exit 17 }
+'@
         $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($payload))
         $command = "powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded"
         Invoke-RemoteNative -User $MachineRecord.user -HostName $MachineRecord.address -Secret $Secret -Arguments @(
