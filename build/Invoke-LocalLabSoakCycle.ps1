@@ -716,19 +716,16 @@ foreach ($record in @($availability.machines)) {
                     # remove the tree through native PowerShell so read-only
                     # attributes and Windows path semantics are handled.
                     $cycleToken = [IO.Path]::GetFileName($remoteCleanupRoot)
-                    $cycleTokenLiteral = "'" + $cycleToken.Replace("'", "''") + "'"
                     $remoteCleanupRootLiteral = "'" + $remoteCleanupRoot.Replace("'", "''") + "'"
-                    $remoteCleanupLines = @(
-                        '$token = ' + $cycleTokenLiteral,
-                        'Get-ScheduledTask -TaskName ''DNPPV_ProductSceneValidation'' -ErrorAction SilentlyContinue | Stop-ScheduledTask -ErrorAction SilentlyContinue',
-                        'Unregister-ScheduledTask -TaskName ''DNPPV_ProductSceneValidation'' -Confirm:$false -ErrorAction SilentlyContinue',
-                        'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like (''*'' + $token + ''*'') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }',
-                        'Start-Sleep -Seconds 2',
-                        'if (Test-Path -LiteralPath ' + $remoteCleanupRootLiteral + ') { Remove-Item -LiteralPath ' + $remoteCleanupRootLiteral + ' -Force -Recurse -ErrorAction SilentlyContinue }'
-                    )
-                    # Encode a typed, newline-delimited script so OpenSSH and
-                    # PowerShell cannot collapse adjacent statements.
-                    $remoteCleanupPayload = [string]::Join([Environment]::NewLine, [string[]]$remoteCleanupLines) + [Environment]::NewLine
+                    # Encode one complete script so OpenSSH cannot collapse
+                    # token assignment and task cleanup into one statement.
+                    $remoteCleanupPayload = @"
+Get-ScheduledTask -TaskName 'DNPPV_ProductSceneValidation' -ErrorAction SilentlyContinue | Stop-ScheduledTask -ErrorAction SilentlyContinue
+Unregister-ScheduledTask -TaskName 'DNPPV_ProductSceneValidation' -Confirm:`$false -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process | Where-Object { `$_.CommandLine -like '*$cycleToken*' } | ForEach-Object { Stop-Process -Id `$_.ProcessId -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Seconds 2
+if (Test-Path -LiteralPath $remoteCleanupRootLiteral) { Remove-Item -LiteralPath $remoteCleanupRootLiteral -Force -Recurse -ErrorAction SilentlyContinue }
+"@
                     $remoteCleanupEncoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCleanupPayload))
                     Invoke-RemoteNative -User $machineRecord.user -HostName $machineRecord.address -Secret $password -Arguments @(
                         'ssh', '-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=no', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-o', 'NumberOfPasswordPrompts=1', '-o', 'ConnectTimeout=60',
