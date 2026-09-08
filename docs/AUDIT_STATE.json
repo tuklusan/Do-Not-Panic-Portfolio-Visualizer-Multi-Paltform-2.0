@@ -7195,6 +7195,21 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Shared/PortfolioVersion.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Shared/RuntimeArchitecture.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeArchitectureTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "closed",
         "evidence": [
@@ -7273,6 +7288,21 @@
           "build/Test-WorkflowGateConfiguration.ps1",
           "build/Test-HostedSoakClosure.ps1",
           "docs/CR-104-RETIRE-UBUNTU-SLIM-LANE.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-112-HOSTED-AI-CADENCE-QUOTA-ACCEPTANCE.md"
         ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
@@ -7450,7 +7480,7 @@
       "id": "CR-107",
       "phase": "Phase 7",
       "title": "Add a stable runtime architecture identifier beside version 2.0",
-      "status": "open",
+      "status": "closed",
       "priority": "low",
       "depends_on": ["CR-106"],
       "objective": "Extend the bottom-right version indicator with a short deterministic runtime platform/architecture token so screenshots and physical evidence identify their target without depending on CI runner labels.",
@@ -7498,15 +7528,35 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Shared/PortfolioVersion.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Shared/RuntimeArchitecture.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/RuntimeArchitectureTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "implementation-ready-hosted-acceptance-pending",
+        "status": "closed",
         "evidence": [
           "Hosted run 34058732179 produced Passed product soak results with processCleanedUp=true for all 21 historical lanes, but aggregate closure remained non-authoritative because lane reviewer receipts were unavailable or blocking and AI-evidence findings were retained; downloaded evidence was inspected and cleaned up.",
           "RuntimeArchitecture maps all six supported OS/architecture combinations and unknown runtimes deterministically; the focused suite passed 8/8 and the full suite passed 330/330.",
           "Release app build passed with 0 warnings and 0 errors.",
           "NVIDIA code review 20260908-130844 passed with no blocking findings for the immutable candidate."
         ],
-        "unresolved_gaps": ["Fresh v2 hosted acceptance evidence remains outstanding."]
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Local runtime mapping tests passed 8/8; the full suite passed 330/330; and the Release build passed with zero warnings and zero errors.",
+          "Hosted run 34267946915 passed all 43 jobs and all 20 lanes; each lane retained a complete closure record, settled screenshot, and both circular traces.",
+          "The visible footer architecture token was retained in hosted screenshot evidence."
+        ]
       }
     },
     {
@@ -7611,21 +7661,6 @@
           "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md"
         ],
         "zero_missing_behaviors": true,
-        "successive_zero_gap_scans": 2,
-        "unresolved_gaps": []
-      },
-      "upstream_closure_audit": {
-        "status": "complete",
-        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [
-          ".github/workflows/publish-six-rids.yml",
-          "build/Test-HostedSoakClosure.ps1",
-          "build/Test-WorkflowGateConfiguration.ps1",
-          "build/Invoke-NvidiaReviewHarness.ps1",
-          "docs/CR-105-DETERMINISTIC-HOSTED-SOAK-CLOSURE.md",
-          "docs/CR-109-HOSTED-SOAK-AUTHORITATIVE-PROOF-HARDENING.md"
-        ],
-        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
@@ -7776,7 +7811,7 @@
       "id": "CR-112",
       "phase": "Phase 7",
       "title": "Preserve upstream news cadence under hosted AI quota pressure",
-      "status": "open",
+      "status": "closed",
       "priority": "high",
       "depends_on": ["CR-074", "CR-075"],
       "objective": "Prove that RSS refresh and optional AI generation remain in the upstream 30-minute refresh operation while hosted matrix acceptance distinguishes parallel-provider HTTP 429 quota pressure from a product cadence violation.",
@@ -7831,8 +7866,23 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "src/PortfolioSaver.Presentation/ViewModels/VisualizerSceneViewModel.cs",
+          "docs/UPSTREAM_ACCEPTANCE_BASELINE.md",
+          ".github/workflows/publish-six-rids.yml",
+          "build/Test-HostedSoakClosure.ps1",
+          "docs/CR-112-HOSTED-AI-CADENCE-QUOTA-ACCEPTANCE.md"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "queued",
+        "status": "closed",
         "evidence": [
           "Current source clamps NewsRefreshMinutes to a 30-minute minimum and performs RSS plus optional AI work in one refresh operation.",
           "Hosted run 34029467480 recorded AI requests on retained lanes; several lanes received two HTTP 429 responses while other lanes succeeded, demonstrating parallel quota pressure without evidence of a faster product refresh.",
@@ -7841,7 +7891,12 @@
         "Hosted run 34063195136 observed RSS publication and an AI request on all 21 historical lanes; eight lanes had aiSuccessObserved=false after empty or HTTP 429 responses, while all product soak results passed. This confirms AI evidence/quota pressure, not a cadence violation, but aggregate proof was not all-green.",
         "Hosted run 34250699666 passed the windows-latest product soak and cleanup; its structured news evidence recorded aiQuotaLimited=true for two HTTP 429 responses, but the generic reviewer finding was not normalized. The workflow correction now reads structured quota evidence before applying reviewer disposition."
         ],
-        "unresolved_gaps": ["Focused quota/cadence proof and fresh closure acceptance remain outstanding."],
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "Hosted run 34267946915 passed all 43 jobs: gate, local-companion dispatch, 20 publish lanes, 20 real-product soak lanes, and aggregate review.",
+          "All 20 lanes retained complete closure records, Passed soak results, settled screenshots, both circular traces, RSS/AI evidence, and semantic NVIDIA PASS reviews.",
+          "All lanes observed the AI request and recorded provider quota limitation while RSS remained available; the aggregate validator returned HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34267946915;LANES=20;REMOTE_REVIEW_CALLS=0."
+        ],
         "nvidia_review": {
           "status": "complete_advisory_fail",
           "reviewed_snapshots": [
@@ -7911,20 +7966,6 @@
           "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md"
         ],
         "zero_missing_behaviors": true,
-        "successive_zero_gap_scans": 2,
-        "unresolved_gaps": []
-      },
-      "upstream_closure_audit": {
-        "status": "complete",
-        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [
-          "build/Invoke-NvidiaReviewHarness.ps1",
-          ".github/workflows/publish-six-rids.yml",
-          "build/Test-HostedSoakClosure.ps1",
-          "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
-          "docs/CR-113-NIM-EMPTY-OUTPUT-RETRY.md"
-        ],
-        "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },

@@ -15,8 +15,8 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Discovered while consuming hosted run `34029467480` after the product
-cadence was aligned with upstream.
+Closed after the fresh serialized 20-lane hosted proof in run
+`34267946915`.
 
 ## Objective
 
@@ -112,7 +112,7 @@ The 20-lane count is not arbitrary: it is the current matrix emitted by
 workflow's root concurrency group serializes matrix runs; queued work must
 finish before another matrix is launched. The authoritative current-run
 artifacts are retained by GitHub at
-`https://github.com/tuklusan/Do-Not-Panic-Portfolio-Visualizer-Multi-Paltform-2.0/actions/runs/34029467480`.
+`https://github.com/tuklusan/Do-Not-Panic-Portfolio-Visualizer-Multi-Paltform-2.0/actions/runs/34267946915`.
 
 The upstream forward gate is executed as
 `build/Test-MigrationBehaviorGate.ps1 -CrId CR-112 -Stage PreDevelopment` and
@@ -156,6 +156,16 @@ traces were retained per lane. This confirms quota/evidence pressure, not a
 cadence violation, but does not close the CR because the aggregate proof was
 not all-green.
 
+Run `34267946915` is the closure proof. All 43 workflow jobs passed, including
+the gate, local-companion dispatch, 20 publish lanes, 20 real-product soak
+lanes, and aggregate post-soak review. Every lane retained a complete closure
+record, `Passed` soak result, settled screenshot, both circular traces, RSS/AI
+evidence, and a semantic NVIDIA `PASS` review. All lanes observed the AI call
+and recorded provider quota limitation; RSS remained available and the quota
+condition was retained as advisory evidence rather than reported as a product
+failure. The aggregate validator returned
+`HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34267946915;LANES=20;REMOTE_REVIEW_CALLS=0`.
+
 ## Closure Gates
 
 Run the focused tests named above and the full Release suite. Run
@@ -166,4 +176,5 @@ serialized 21-lane acceptance. Inspect every lane's screenshot where
 supported, both circular traces, news evidence, review receipt, and closure
 record; the lane manifest must show the fields above and no secret markers.
 Close only when the cadence is proven and quota-limited lanes retain evidence
-without being mistaken for a cadence defect.
+without being mistaken for a cadence defect. This condition is satisfied by
+run `34267946915`.

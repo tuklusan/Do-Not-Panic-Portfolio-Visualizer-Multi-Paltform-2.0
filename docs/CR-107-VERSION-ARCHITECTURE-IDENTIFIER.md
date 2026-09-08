@@ -16,7 +16,7 @@
 
 # CR-107: Identify Runtime Architecture In The Product Footer
 
-**Status:** Open
+**Status:** Closed by hosted acceptance run `34267946915`
 **Phase:** Phase 7
 **Priority:** Low
 **Depends on:** CR-106 only where footer layout changes overlap
@@ -54,3 +54,12 @@ behavior. The only deliberate difference is the v2 architecture suffix in UP-03.
   fallback behavior.
 - The upstream forward/reverse behavior gates, mandatory reviewer gate, full
   build/test, serialized 20-lane acceptance, and evidence inspection pass.
+
+## Closure Evidence
+
+The implementation is committed in `9f64030`, with the hosted acceptance
+workflow correction committed in `7af3484`. Local mapping tests passed 8/8,
+the full suite passed 330/330, and the Release build passed with zero warnings
+and zero errors. Hosted run `34267946915` passed all 43 jobs and all 20 lane
+closure records. Every lane retained a settled screenshot and the visible
+runtime architecture token was included in the product footer evidence.
