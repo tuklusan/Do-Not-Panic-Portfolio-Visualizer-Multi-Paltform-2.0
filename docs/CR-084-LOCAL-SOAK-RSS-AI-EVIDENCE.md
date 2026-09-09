@@ -69,6 +69,18 @@ finance-news text. Two successive full local cycles and the required hosted
 two complete 10-minute cycles are still required before this CR can close while
 the migration CR queue remains open; four-hour cycles are paused by policy.
 
+The serialized hosted matrices `34315560639` and `34317618331` both completed
+all 43 jobs with aggregate `HOSTED_SOAK_CLOSURE=Passed`. Their Windows 2022
+lane records `rssUsable=true` and `RssPlaybackReady`, but also
+`aiSuccessObserved=false` with `provider-quota-rate-limited` / HTTP 429. The
+physical Windows 10 retry `dnppv2-local-cycle-cr084-win10-retry2` completed the
+real-product scene, screenshots, circular traces, and cleanup with
+`rssUsable=true`, but recorded `aiSuccessObserved=false` with an external AI
+4xx advisory. A full local-lab retry remains invalid because the frozen
+coordinator's macOS cleanup path rejected `sshpass` and requires native
+interactive SSH. These results are retained as bounded external/access
+evidence and do not count toward the two successful AI cycles.
+
 ## Upstream And Reverse Checks
 
 The upstream `FinanceNewsService` and cinematic news loop were re-read for the
