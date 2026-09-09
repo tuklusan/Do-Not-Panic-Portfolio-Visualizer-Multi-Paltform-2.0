@@ -7765,7 +7765,7 @@
       "id": "CR-110",
       "phase": "Phase 7",
       "title": "Forward project traces and logs over UDP-only Unix syslog",
-      "status": "open",
+      "status": "closed",
       "priority": "normal",
       "depends_on": ["CR-109"],
       "objective": "When DNPPV_TRACE_FORWARD exists and is exactly Y or 1, forward every project-owned product, hosted-runner-harness, and local-lab-harness trace and log event, including each new entry appended to both bounded circular trace files as it is added, without privacy-based suppression or forwarding-time redaction, only to sanyalnet-oracle-vps2.duckdns.org:65514 over documented Unix syslog framing with bounded nonblocking UDP delivery. With the variable absent or any other value, product and harnesses perform no remote forwarding. The requestor explicitly authorizes complete forwarding when enabled because the destination is part of the requestor's secure network.",
@@ -7826,10 +7826,43 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CappedFileLogWriter.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CircularTraceSettings.cs",
+          "YFinance.net/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs",
+          "tests/PortfolioSaver.Tests/Services/TraceLogTests.cs",
+          "tests/PortfolioSaver.Tests/Services/CappedFileLogWriterTests.cs",
+          "tests/PortfolioSaver.Tests/Services/YFinanceCircularTraceSinkTests.cs",
+          "build/validation/Analyze-InstalledSoakTrace.ps1",
+          "build/validation/Run-InstalledSoakOnce.local.ps1"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "queued",
-        "evidence": [],
-        "unresolved_gaps": ["UDP syslog transport is not implemented or validated."]
+        "status": "closed",
+        "evidence": [
+          "Candidate 7483f7e51f86710597f8b2174642b1d7395b81e3 passed local Release tests, syntax/license/workflow/freeze gates, NVIDIA CODE review, protected pre-push gates, and exact Win10 physical validation cycle dnppv2-local-cycle-cr110-exact.",
+          "Exact Win10 cycle recorded status=Passed, ten-minute real-product scene validation, screenshots, both circular traces, and cleanup at C:\\Users\\vagab\\AppData\\Local\\Temp\\dnppv2-local-cycle-cr110-exact.",
+          "Hosted run 34306816264 completed HOSTED_SOAK_CLOSURE=Passed with 20 lanes and REMOTE_REVIEW_CALLS=0; retained Windows, Linux, macOS Intel, and macOS ARM lane evidence contains passed ten-minute soaks, both circular traces, complete closure records, cleanup, and semantic TEST_ARTIFACT PASS results.",
+          "The all-machine local cycle was retained as harness-failure evidence because the frozen Mac path requires interactive SSH; targeted exact-candidate Win10 evidence passed and the failure was not reclassified as product unavailability or PASS."
+        ],
+        "unresolved_gaps": [],
+        "closure_evidence": [
+          "NVIDIA CODE review for the exact 7483f7e51f86710597f8b2174642b1d7395b81e3 candidate passed with zero blocking findings and a valid protected receipt.",
+          "Focused local UDP receiver tests proved exact opt-in, complete payload, bounded datagrams, and local test override isolation; the shared forwarding entry point now also preserves local circular trace parity for harness events."
+        ],
+        "nvidia_review": {
+          "status": "complete_pass",
+          "reviewed_snapshot": "5db5136db40f986848959417c5a0b9baded7a699:dfffb6f8335897b91d28ecae619166c038115010128139c7218589c791bec8a6",
+          "actionable_findings": [],
+          "false_positive_findings": []
+        }
       }
     },
     {

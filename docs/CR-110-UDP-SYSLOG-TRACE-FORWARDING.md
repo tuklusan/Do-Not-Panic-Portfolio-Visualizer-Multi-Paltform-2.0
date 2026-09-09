@@ -15,7 +15,8 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Open. Queued for execution after the current higher-priority closure work.
+Closed after the exact reviewed candidate passed local transport tests, the
+hosted 20-lane matrix, and an exact-candidate physical Windows 10 cycle.
 
 ## Objective
 
@@ -107,3 +108,23 @@ this CR-110 change.
 - The final CR record documents the exact wire format, facility/severity map,
   complete-event forwarding authorization, `DNPPV_TRACE_FORWARD` enablement
   policy, test override policy, and evidence.
+
+## Closure Evidence
+
+- Candidate `7483f7e51f86710597f8b2174642b1d7395b81e3` passed the focused UDP
+  receiver tests, full Release tests, syntax/license/workflow/freeze gates,
+  NVIDIA CODE review, protected pre-push gates, and the fresh Closure
+  migration gate with two successive zero-gap scans.
+- Hosted run `34306816264` completed with
+  `HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34306816264;LANES=20;REMOTE_REVIEW_CALLS=0`.
+  Retained lanes include Windows, Linux, macOS Intel, and macOS ARM, with
+  passed ten-minute soaks, both circular traces, complete inspected closure
+  records, cleanup, and semantic TEST_ARTIFACT PASS results.
+- Exact-candidate physical cycle `dnppv2-local-cycle-cr110-exact` recorded a
+  passed ten-minute Windows 10 real-product validation with screenshots, both
+  circular traces, and clean remote teardown. The all-machine attempt was
+  retained as harness-failure evidence because the frozen Mac path requires
+  interactive SSH; it was not reclassified as product unavailability or PASS.
+- `DNPPV_TRACE_FORWARD` accepts only exact `Y` or `1`; the production endpoint
+  remains locked to `sanyalnet-oracle-vps2.duckdns.org:65514`, while the local
+  receiver override is guarded by `DNPPV_TRACE_FORWARD_TEST_OVERRIDE=Y`.
