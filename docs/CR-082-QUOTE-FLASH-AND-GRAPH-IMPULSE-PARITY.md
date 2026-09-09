@@ -80,3 +80,11 @@ impulse remains required before closure. The graph template now renders the
 directed and neutral graph flash through a card-surface overlay, matching the
 upstream `FloatingGraphControl` animation target; physical production-scene
 and circular-trace evidence remains required before closure.
+
+The production scene now retains the motion-controller cue result and writes
+key-free `GRAPH_IMPULSE;STATE=STARTED/COMPLETED` events for real live-quote
+directed travel, plus `GRAPH_REFRESH_CUE;MODE=NEUTRAL` for unchanged-value
+card flashes. Fixture events remain separately named and are not used as
+production evidence. Focused build/test validation passed after this change;
+fresh production-scene captures must still demonstrate a live quote delta and
+match the start/completion trace pair before closure.

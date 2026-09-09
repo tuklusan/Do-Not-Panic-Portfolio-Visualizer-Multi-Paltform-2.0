@@ -112,6 +112,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         string.Equals(Environment.GetEnvironmentVariable("DNPPV_FORCE_NEWS_FAILURE"), "1", StringComparison.Ordinal);
     private DateTimeOffset _renderHeartbeatFixtureStartedUtc;
     private readonly HashSet<string> _fixtureActiveSymbols = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _productionImpulseSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
@@ -815,7 +816,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 if (existing is not null)
                 {
                     existing.CopyContentFrom(graph);
-                    _graphMotion?.ApplyQuote(existing, last, changePercent, suppressMotionCue: false);
+                    ApplyProductionGraphQuote(existing, last, changePercent, "HISTORICAL_REFRESH");
                     continue;
                 }
 
@@ -913,6 +914,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
         TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
+        TraceCompletedProductionImpulses();
         TraceCompletedGraphFixtureImpulses();
 
         _globalMarketsMotion.Step(elapsed);
@@ -1015,7 +1017,45 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         FloatingGraphViewModel? graph = Graphs.FirstOrDefault(candidate =>
             string.Equals(candidate.Symbol, quote.Symbol, StringComparison.OrdinalIgnoreCase));
         if (graph is not null)
-            _graphMotion?.ApplyQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent);
+            ApplyProductionGraphQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent, "LIVE_QUOTE");
+    }
+
+    private void ApplyProductionGraphQuote(
+        FloatingGraphViewModel graph,
+        decimal? last,
+        decimal? changePercent,
+        string source)
+    {
+        if (_graphMotion?.ApplyQuote(graph, last, changePercent) != true)
+            return;
+
+        if (!graph.IsRefreshTravelFlashActive)
+        {
+            WriteCinematicTrace(
+                $"GRAPH_REFRESH_CUE;STATE=STARTED;SOURCE={source};MODE=NEUTRAL;SYMBOL={graph.Symbol}");
+            return;
+        }
+
+        string direction = graph.RefreshTravelDirection < 0 ? "UP" : "DOWN";
+        WriteCinematicTrace(
+            $"GRAPH_IMPULSE;STATE=STARTED;SOURCE={source};SYMBOL={graph.Symbol};DIRECTION={direction};TARGET=BOUNDARY");
+        _productionImpulseSymbols.Add(graph.Symbol);
+    }
+
+    private void TraceCompletedProductionImpulses()
+    {
+        if (_productionImpulseSymbols.Count == 0)
+            return;
+
+        foreach (FloatingGraphViewModel graph in Graphs
+                     .Where(graph => _productionImpulseSymbols.Contains(graph.Symbol) &&
+                                     !graph.IsRefreshTravelFlashActive)
+                     .ToArray())
+        {
+            WriteCinematicTrace(
+                $"GRAPH_IMPULSE;STATE=COMPLETED;SOURCE=PRODUCTION_SCENE;SYMBOL={graph.Symbol};TARGET=BOUNDARY");
+            _productionImpulseSymbols.Remove(graph.Symbol);
+        }
     }
 
     private static string GetGraphKey(FloatingGraphViewModel graph)
