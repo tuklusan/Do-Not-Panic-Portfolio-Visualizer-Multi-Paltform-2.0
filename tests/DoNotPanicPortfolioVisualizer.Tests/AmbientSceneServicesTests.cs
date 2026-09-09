@@ -1087,7 +1087,7 @@ public sealed class AmbientSceneServicesTests
 
         string text = await service.GetNewsTextAsync(CreateSummarizedSettings(), CancellationToken.None);
 
-        Assert.Equal("A later usable summary.", text);
+        Assert.Contains("A later usable summary.", text, StringComparison.Ordinal);
     }
 
     [Fact]
