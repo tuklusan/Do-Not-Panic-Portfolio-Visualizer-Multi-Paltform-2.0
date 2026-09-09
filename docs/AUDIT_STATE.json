@@ -5301,6 +5301,22 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/SingleSymbolQuoteRefresh.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProgressiveQuoteRefreshPipelineTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "pending_provider_success",
         "unresolved_gaps": [
@@ -7058,14 +7074,55 @@
           "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
           "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs"
         ],
-        "zero_known_gaps": false,
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/SingleSymbolQuoteRefresh.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProgressiveQuoteRefreshPipelineTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "src/PortfolioSaver.Data/Providers/YahooFinanceQuoteProvider.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/ProgressiveQuoteRefreshPipeline.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/SingleSymbolQuoteRefresh.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProgressiveQuoteRefreshPipelineTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Ancillary macro and global-market request shape requires the complete source comparison and implementation decision."
-        ]
+        "status": "closed",
+        "run_id": "34368830018",
+        "product_soak_results": "All 20 retained lane soak-result.json files reported Passed; every lane closure record reported complete with process cleanup.",
+        "aggregate_receipt": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34368830018;LANES=20;REMOTE_REVIEW_CALLS=0",
+        "trace_evidence": "All 20 lanes retained screenshots and dual circular traces; all 40 yfinance.circular.log files contained only requested_count=1.",
+        "artifact_review": "All 20 retained review-result.json files reported PASS with complete receipts.",
+        "external_ai_disposition": "Provider-quota-limited external-AI findings were retained as negative evidence; no AI success was fabricated.",
+        "closure_evidence": [
+          "Focused progressive-pipeline tests passed 5 of 5.",
+          "Hosted run 34368830018 completed all 20 lanes with soak, artifact review, screenshots, circular traces, and cleanup passing.",
+          "Two successive forward and reverse upstream scans at 65a53bbbf0cf9af1058363f8939d464ca03858f8 showed zero unmapped request-shape or scheduling behavior."
+        ],
+        "unresolved_gaps": []
       }
     },
     {
@@ -8828,6 +8885,56 @@
           "Independent minimal-scope review passed for the implementation commit a17acb2ae093e7616508a030b66933e8ac9eff5b.",
           "Protected push completed for the implementation commit a17acb2ae093e7616508a030b66933e8ac9eff5b.",
           "Hosted run 34329193881 completed all 43 jobs successfully with HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34329193881;LANES=20;REMOTE_REVIEW_CALLS=0."
+        ]
+      }
+    },
+    {
+      "id": "CR-121",
+      "phase": "Phase 1",
+      "title": "NVIDIA review gate thinking and transport cleanup",
+      "status": "in_progress",
+      "priority": "high",
+      "depends_on": [
+        "CR-120"
+      ],
+      "objective": "Improve the active PowerShell NVIDIA review gate with explicit model-specific thinking, asynchronous response handling, complete review serialization, lean health checks, and phase-specific token budgets without weakening immutable evidence or minimal review-material contracts.",
+      "acceptance_criteria": [
+        "Substantive Super and Lightning review calls explicitly enable their documented thinking controls and reserve output headroom.",
+        "HTTP 202 responses are polled within the same logical request deadline and retry budget.",
+        "A global host-local review mutex prevents concurrent complete reviews while preserving the response-spacing mutex.",
+        "Health checks use a small exact-JSON request against both authorized models.",
+        "Harness, bootstrap, syntax, license, workflow, independent review, receipt, freeze, and protected push gates pass."
+      ],
+      "validation_plan": [
+        "Run active harness, bootstrap, review-gate, syntax, license, and workflow self-tests.",
+        "Generate a minimal packet and inspect the serialized scope and diff before review dispatch.",
+        "Run the lean health check against both authorized models when the reviewer service is available.",
+        "Run the independent review, freeze approval, receipt, and protected push gates."
+      ],
+      "artifacts": [
+        "build/Invoke-NvidiaReviewHarness.ps1",
+        "build/Invoke-BootstrapReviewer.ps1",
+        "build/Invoke-ReviewGate.ps1",
+        "build/Run-NvidiaCodeReview.ps1",
+        "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
+        "docs/CR-121-NVIDIA-REVIEW-GATE-THINKING-TRANSPORT-CLEANUP.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "not_applicable_process_infrastructure",
+        "document": "docs/CR-121-NVIDIA-REVIEW-GATE-THINKING-TRANSPORT-CLEANUP.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "in_progress",
+        "evidence": [
+          "PowerShell syntax validation passed for all four active review-gate entry points.",
+          "Harness, wrapper, and review-gate self-tests passed after the thinking, transport, mutex, health-check, and token-budget changes.",
+          "License, harness-freeze, workflow, and upstream-mutation gates require the explicit CR-121 approval marker before final closure."
+        ],
+        "unresolved_gaps": [
+          "Independent minimal-scope review, receipt, approved freeze gate, commit, and protected push remain."
         ]
       }
     }

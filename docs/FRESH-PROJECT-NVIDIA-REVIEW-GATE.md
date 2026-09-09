@@ -754,6 +754,13 @@ Every mandatory phase checks the deadline before starting.
 Deadline exhaustion yields a fail-closed unavailable/incomplete result and no
 CODE PASS receipt.
 
+If the NVIDIA endpoint returns HTTP `202`, treat it as an asynchronous accepted
+request, extract its `requestId` (or `request_id`), and poll
+`/status/{requestId}` within the same logical request deadline. A completed
+`200` response is then subjected to the normal semantic checks above. Polling
+must not create a new inference attempt or reset the retry budget; non-`202`
+poll failures use the normal bounded availability policy.
+
 ## 10. Duplicate-review exclusion
 
 Normal review packets MUST NOT be processed in parallel.
@@ -764,9 +771,13 @@ Use a private active-review status/lock keyed by at least:
 - current CR identity; and
 - immutable snapshot identity.
 
-The reference stale-lock threshold is 900 seconds, with process-liveness checks.
-Completed, abandoned, or demonstrably stale locks may be removed. A live
-parallel review causes `ACTIVE_REVIEW_ALREADY_RUNNING` and fails closed.
+The executable gate additionally holds one host-wide named review mutex for the
+entire review lifecycle. The existing response-spacing mutex remains separate
+and continues to enforce the 30-second cadence. A live parallel review waits
+for or fails closed on the global review mutex; it is not admitted by using a
+snapshot-specific lock file. Abandoned ownership is recoverable through the
+operating system's mutex semantics, while the review request deadline remains
+the authoritative time bound.
 
 ## 11. CODE snapshot construction
 

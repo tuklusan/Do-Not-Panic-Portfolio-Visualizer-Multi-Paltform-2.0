@@ -16,14 +16,16 @@ SANYALnet Labs." See LICENSE for full terms.
 | YF-03 | Ancillary macro and world-market lanes are separate lanes and must be compared independently; they are not evidence that portfolio requests may be bulked. | upstream scene lane methods | 2.0 macro/world-market refresh methods |
 | YF-04 | Every request and response must retain per-symbol ordering, cancellation, timeout, stale fallback, and circular-trace observability. | upstream runtime quote queue and trace calls | 2.0 quote pipeline and circular trace |
 
-## Gap
+## Resolved Implementation Gap
 
-The 2.0 portfolio pipeline already calls the provider with `[symbol]` and caps
-the progressive portfolio depth at four, matching the upstream coordinator's
-current behavior. However, the 2.0 macro and global-market loops call
-`GetQuotesAsync` with collections of symbols. Upstream's live scene dispatch
-path is explicitly one symbol per request, so the ancillary refresh contract
-must be resolved by a complete upstream comparison before implementation.
+The 2.0 portfolio pipeline calls the provider with `[symbol]` and caps the
+progressive portfolio depth at four, matching the upstream coordinator's
+current behavior. The macro and global-market loops now use
+`SingleSymbolQuoteRefresh`, which normalizes and de-duplicates each lane's
+symbols and calls `GetQuotesAsync([symbol], cancellationToken)` once per symbol
+in lane order. Upstream's live scene dispatch path is explicitly one symbol per
+request; the complete source comparison therefore resolves the ancillary
+request-shape gap without changing portfolio concurrency.
 
 This CR must not infer that all upstream calls are serial: the upstream
 progressive coordinator can have four concurrent one-symbol requests. The
@@ -57,10 +59,28 @@ concurrency.
 
 ## Status
 
-Implementation in progress. The portfolio one-symbol/four-deep path is
-present, and the macro/global-market lanes now share
+Implementation complete for the request-shape scope. The portfolio
+one-symbol/four-deep path is present, and the macro/global-market lanes share
 `SingleSymbolQuoteRefresh`, which normalizes symbols, removes duplicates, and
 dispatches one provider request per symbol in sequence. The call-shape
-contract is covered by `SingleSymbolQuoteRefresh_FetchesDistinctSymbolsSequentially`.
-Fresh upstream reverse scans and settled real-product trace evidence are still
-required before closure.
+contract is covered by `SingleSymbolQuoteRefresh_FetchesDistinctSymbolsSequentially`; the pipeline tests also cover bounded dispatch, cancellation,
+timeout retry, and completed-result draining. Fresh upstream reverse scans and
+settled real-product trace evidence are recorded for hosted run `34368830018`:
+all 20 lane closure records, soak results, and artifact reviews passed; all 20
+screenshots and 40 retained circular trace files are present; every observed
+`yfinance.circular.log` contains only `requested_count=1`; and every lane
+records process cleanup. The aggregate receipt was
+`HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34368830018;LANES=20;REMOTE_REVIEW_CALLS=0`.
+The provider-quota-limited external-AI disposition was retained as negative
+evidence without fabricating AI success. CR-090 closure evidence is complete
+for the request-shape scope.
+
+## Closure Evidence
+
+- Focused progressive-pipeline tests: 5 passed, 0 failed.
+- Hosted run `34368830018`: 20 of 20 lanes passed soak, semantic artifact
+  review, screenshot capture, dual circular-trace retention, and cleanup.
+- Trace scan: 40 `yfinance.circular.log` files, with zero non-single-symbol
+  request-count findings.
+- Upstream forward and reverse scans: two successive zero-gap scans at
+  `65a53bbbf0cf9af1058363f8939d464ca03858f8`.
