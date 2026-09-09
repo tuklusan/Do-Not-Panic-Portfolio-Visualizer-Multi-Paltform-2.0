@@ -92,6 +92,14 @@ The preserved review-gate entry points are:
 - `build/Assert-CodeReviewReceipt.ps1`
 - `build/Test-CodeReviewReceipt.ps1`
 
+Every code-review dispatch must provide one minimal but complete requirement,
+only the directly related changed files and snippets, and a zero-context diff
+when prior content exists. Document reviews must provide only the document
+purpose, purpose-relevant snippets, and a zero-context prior-section diff.
+`build/Run-NvidiaCodeReview.ps1` enforces this contract through its mandatory
+`-Requirement` and `-RelevantPath` arguments; do not send broader repository
+context or unrelated files.
+
 ## Generated Artifact Cleanup
 
 Use `build/Cleanup-LocalProjectArtifacts.ps1` for disposable local outputs.
