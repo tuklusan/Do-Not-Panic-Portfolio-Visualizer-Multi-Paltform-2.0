@@ -81,6 +81,16 @@ coordinator's macOS cleanup path rejected `sshpass` and requires native
 interactive SSH. These results are retained as bounded external/access
 evidence and do not count toward the two successful AI cycles.
 
+An independent native-interactive Mac lane (`artifact-cr084-native`) then
+completed the frozen 10-minute Mac driver with `MAC_PRODUCT_SOAK=Passed`.
+It produced a settled product screenshot, fresh RSS, and both circular trace
+families; the trace recorded two OpenRouter HTTP 429 responses and no
+`AiSummarySucceeded`. Exact product-process checks after the run were clean,
+and the remote project root measured 85,468 KiB after generated publish and
+artifact cleanup. This lane proves the mandated access path and cleanup but,
+because it is not a complete concurrent four-machine coordinator cycle and
+still lacks AI success, it does not satisfy CR-084 closure.
+
 ## Upstream And Reverse Checks
 
 The upstream `FinanceNewsService` and cinematic news loop were re-read for the
