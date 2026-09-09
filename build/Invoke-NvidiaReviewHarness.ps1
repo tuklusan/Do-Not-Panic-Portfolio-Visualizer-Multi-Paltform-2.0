@@ -15,13 +15,14 @@
 param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
-    [Parameter(ParameterSetName = 'Review')][string]$Endpoint = 'https://integrate.api.nvidia.com/v1',
-    [Parameter(ParameterSetName = 'Review')][string]$Model = 'nvidia/nemotron-3-super-120b-a12b',
+    [string]$Endpoint = 'https://integrate.api.nvidia.com/v1',
+    [string]$Model = 'nvidia/nemotron-3-super-120b-a12b',
     [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/dnppv2-nvidia-review',
-    [Parameter(ParameterSetName = 'Review')][int]$MaxRequestBytes = 1048576,
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(1, 32768)][int]$MaxTokens = 8192,
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 7200,
+    [int]$MaxRequestBytes = 1048576,
+    [Parameter(ParameterSetName = 'Review')][ValidateRange(1, 32768)][int]$MaxTokens = 28672,
+    [ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 7200,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest,
+    [Parameter(Mandatory = $true, ParameterSetName = 'HealthCheck')][switch]$HealthCheck,
     [switch]$AcknowledgeEndpointOverride
 )
 
@@ -64,6 +65,8 @@ function Get-ReviewPasses([string]$Type) {
 }
 
 function Get-TransientStatus([object]$Exception) {
+    $statusData = $Exception.Data['NvidiaStatusCode']
+    if ($null -ne $statusData) { return [int]$statusData }
     $responseProperty = $Exception.PSObject.Properties['Response']
     if ($null -ne $responseProperty -and $null -ne $responseProperty.Value -and $null -ne $responseProperty.Value.StatusCode) { return [int]$responseProperty.Value.StatusCode }
     return $null
@@ -349,6 +352,33 @@ function ConvertFrom-ReviewJson([string]$Content, [string]$ExpectedPass) {
     return $parsed
 }
 
+function Get-NvidiaReviewTokenLimit {
+    param(
+        [Parameter(Mandatory = $true)][ValidateSet('DISCOVERY', 'INTEGRATION', 'FALSIFICATION', 'ADJUDICATION', 'HEALTH')][string]$Stage,
+        [Parameter(Mandatory = $true)][int]$RequestedLimit
+    )
+
+    switch ($Stage) {
+        # Health must exercise the same production reasoning contract. Keep
+        # the full final-JSON reserve so thinking cannot consume the probe's
+        # output allowance and create a false negative.
+        'HEALTH' { return [Math]::Min(24576, $RequestedLimit) }
+        'DISCOVERY' { return [Math]::Min(24576, $RequestedLimit) }
+        'INTEGRATION' { return [Math]::Min(24576, $RequestedLimit) }
+        'FALSIFICATION' { return [Math]::Min(28672, $RequestedLimit) }
+        'ADJUDICATION' { return [Math]::Min(28672, $RequestedLimit) }
+    }
+}
+
+function Get-NvidiaPassStage([string]$PassId) {
+    switch -Regex ($PassId) {
+        '-A$' { return 'DISCOVERY' }
+        '-B$' { return 'FALSIFICATION' }
+        '-C$' { return 'INTEGRATION' }
+        default { throw "No token-budget stage is defined for review pass '$PassId'." }
+    }
+}
+
 function Get-SanitizedNvidiaErrorMessage([object]$Exception) {
     $message = [string]$Exception.Message
     if ([string]::IsNullOrWhiteSpace($message)) {
@@ -501,6 +531,55 @@ function Test-IsNvidiaModel([string]$TargetModel) {
         $TargetModel.StartsWith('nvidia/', [StringComparison]::OrdinalIgnoreCase)
 }
 
+function Enter-NvidiaReviewMutex {
+    param([Parameter(Mandatory = $true)][int]$TimeoutSeconds)
+
+    $mutexName = if ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT) {
+        'Global\DoNotPanicPortfolioVisualizer.NvidiaReviewHarness.Review'
+    }
+    else {
+        'DoNotPanicPortfolioVisualizer.NvidiaReviewHarness.Review'
+    }
+    $mutex = New-Object System.Threading.Mutex($false, $mutexName)
+    $taken = $false
+    try {
+        try {
+            $taken = $mutex.WaitOne([TimeSpan]::FromSeconds([Math]::Min(120, [Math]::Max(30, $TimeoutSeconds / 2))))
+            if (-not $taken) { throw 'Timed out waiting for the Nvidia review mutex.' }
+        }
+        catch [System.Threading.AbandonedMutexException] {
+            $taken = $true
+        }
+        return @{ Mutex = $mutex; Taken = $taken }
+    }
+    catch {
+        $mutex.Dispose()
+        throw
+    }
+}
+
+function Exit-NvidiaReviewMutex([hashtable]$Lease) {
+    if ($null -eq $Lease) { return }
+    try {
+        if ([bool]$Lease.Taken) {
+            try { $Lease.Mutex.ReleaseMutex() }
+            catch [System.ApplicationException] { }
+            catch [System.Threading.SynchronizationLockException] { }
+        }
+    }
+    finally {
+        $Lease.Mutex.Dispose()
+    }
+}
+
+function Test-IsNvidiaSuperModel([string]$TargetModel) {
+    return [string]::Equals($TargetModel, 'nvidia/nemotron-3-super-120b-a12b', [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-IsNvidiaLightningModel([string]$TargetModel) {
+    return [string]::Equals($TargetModel, 'nvidia/nemotron-3.5-lightning-30b-a3b', [StringComparison]::OrdinalIgnoreCase)
+}
+
 function New-NvidiaHarnessRequestBody {
     param(
         [Parameter(Mandatory = $true)][string]$System,
@@ -512,18 +591,22 @@ function New-NvidiaHarnessRequestBody {
     $body = [ordered]@{
         model = $TargetModel
         messages = @(@{ role = 'system'; content = $System }, @{ role = 'user'; content = $User })
-        temperature = 0.1
+        temperature = 1.0
+        top_p = 0.95
         response_format = @{ type = 'json_object' }
         max_tokens = $TokenLimit
         stream = $false
     }
 
-    if (Test-IsNvidiaModel $TargetModel) {
-        # Nvidia V4 can spend the output budget in reasoning/thinking content
-        # and leave message.content empty or truncated for our JSON contract.
-        # Disable thinking for review-harness requests so the gate returns a
-        # bounded JSON verdict reliably on larger packets.
-        $body['chat_template_kwargs'] = @{ enable_thinking = $false }
+    if (Test-IsNvidiaSuperModel $TargetModel) {
+        # Substantive review calls use explicit high reasoning. The result
+        # contract still forbids exposing the model's private reasoning text.
+        $body['reasoning_effort'] = 'high'
+        $body['reasoning_budget'] = [Math]::Min(16384, $TokenLimit)
+    }
+    elseif (Test-IsNvidiaLightningModel $TargetModel) {
+        $body['reasoning_budget'] = [Math]::Min(16384, $TokenLimit)
+        $body['chat_template_kwargs'] = @{ enable_thinking = $true }
     }
 
     return $body | ConvertTo-Json -Depth 10 -Compress
@@ -531,24 +614,30 @@ function New-NvidiaHarnessRequestBody {
 
 function Invoke-HarnessSelfTest {
     try {
-        $deepSeekBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3-super-120b-a12b' -TokenLimit 16 |
+        $deepSeekBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3-super-120b-a12b' -TokenLimit 32768 |
             ConvertFrom-Json -ErrorAction Stop
-        $genericBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'generic-model' -TokenLimit 16 |
+        $lightningBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'nvidia/nemotron-3.5-lightning-30b-a3b' -TokenLimit 32768 |
+            ConvertFrom-Json -ErrorAction Stop
+        $genericBodyProbe = New-NvidiaHarnessRequestBody -System 'self-test system' -User 'self-test user' -TargetModel 'generic-model' -TokenLimit 32768 |
             ConvertFrom-Json -ErrorAction Stop
     }
     catch {
         throw "Nvidia review harness self-test failed; could not parse request body JSON: $($_.Exception.Message)"
     }
 
-    if ($deepSeekBodyProbe.chat_template_kwargs.enable_thinking -ne $false) {
-        throw 'Nvidia review harness self-test failed; Nvidia request body does not disable thinking mode.'
+    if ($deepSeekBodyProbe.reasoning_effort -ne 'high' -or
+        $deepSeekBodyProbe.PSObject.Properties.Name -contains 'chat_template_kwargs') {
+        throw 'Nvidia review harness self-test failed; Super thinking policy is not explicit high reasoning.'
     }
 
-    if ($deepSeekBodyProbe.PSObject.Properties.Name -contains 'reasoning_effort') {
-        throw 'Nvidia review harness self-test failed; request body unexpectedly preserved reasoning_effort while thinking is disabled.'
+    if ($lightningBodyProbe.chat_template_kwargs.enable_thinking -ne $true -or
+        $lightningBodyProbe.reasoning_budget -ne 16384 -or
+        $lightningBodyProbe.PSObject.Properties.Name -contains 'reasoning_effort') {
+        throw 'Nvidia review harness self-test failed; Lightning thinking policy is not explicitly enabled.'
     }
 
-    if ($deepSeekBodyProbe.temperature -ne 0.1 -or $deepSeekBodyProbe.max_tokens -ne 16) {
+    if ($deepSeekBodyProbe.temperature -ne 1.0 -or $deepSeekBodyProbe.top_p -ne 0.95 -or
+        $deepSeekBodyProbe.reasoning_budget -ne 16384 -or $deepSeekBodyProbe.max_tokens -ne 32768) {
         throw 'Nvidia review harness self-test failed; Nvidia request body has an unexpected shape.'
     }
 
@@ -635,6 +724,14 @@ function Invoke-HarnessSelfTest {
         throw 'Nvidia review harness self-test failed; the project-specific 404/429 transient contract changed.'
     }
 
+    $statusProbe = New-NvidiaHttpStatusException -StatusCode 503 -Body 'test body'
+    if ((Get-TransientStatus $statusProbe) -ne 503 -or
+        (Get-NvidiaReviewTokenLimit -Stage 'HEALTH' -RequestedLimit 32768) -ne 24576 -or
+        (Get-NvidiaReviewTokenLimit -Stage 'DISCOVERY' -RequestedLimit 32768) -ne 24576 -or
+        (Get-NvidiaReviewTokenLimit -Stage 'FALSIFICATION' -RequestedLimit 32768) -ne 28672) {
+        throw 'Nvidia review harness self-test failed; status propagation or phase token budgeting changed.'
+    }
+
     $redactionProbe = Redact-LikelySecretsInText -Text 'Authorization: Bearer nvapi-example-token api_key=example-secret-value'
     if ($redactionProbe -match 'nvapi-example-token|example-secret-value' -or
         $redactionProbe -notmatch '\[redacted\]') {
@@ -688,6 +785,34 @@ function Test-IsRetryableReviewException([object]$Exception, $Status) {
     return $false
 }
 
+function New-NvidiaHttpStatusException([int]$StatusCode, [string]$Body) {
+    $summary = if ([string]::IsNullOrWhiteSpace($Body)) { 'empty response body' } else { 'response body received' }
+    $exception = [System.Exception]::new("Nvidia returned HTTP $StatusCode ($summary).")
+    $exception.Data['NvidiaStatusCode'] = $StatusCode
+    return $exception
+}
+
+function Invoke-NvidiaHttpJson {
+    param(
+        [Parameter(Mandatory = $true)][ValidateSet('GET', 'POST')][string]$Method,
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [Parameter(Mandatory = $true)][hashtable]$Headers,
+        [AllowNull()][string]$Body,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+    )
+
+    $invokeParameters = @{
+        Method = $Method
+        Uri = $Uri
+        Headers = $Headers
+        TimeoutSec = $TimeoutSeconds
+        SkipHttpErrorCheck = $true
+    }
+    if ($null -ne $Body) { $invokeParameters['Body'] = $Body }
+    $response = Invoke-WebRequest @invokeParameters
+    return [ordered]@{ StatusCode = [int]$response.StatusCode; Content = [string]$response.Content }
+}
+
 function Test-IsRetryableHarnessFailureMessage([string]$Message) {
     if ([string]::IsNullOrWhiteSpace($Message)) {
         return $false
@@ -735,8 +860,41 @@ function Invoke-NvidiaJsonRequest {
     $attemptIndex = 0
     while ($true) {
         try {
-            $response = Invoke-NvidiaRequestWithSpacing -TimeoutSeconds $TimeoutSeconds -Request {
-                Invoke-RestMethod -Method Post -Uri ($TargetEndpoint.TrimEnd('/') + '/chat/completions') -Headers @{ Authorization = "Bearer $ApiKey"; 'Content-Type' = 'application/json' } -Body $body -TimeoutSec $TimeoutSeconds
+            $response = $null
+            $attemptDeadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
+            $headers = @{ Authorization = "Bearer $ApiKey"; 'Content-Type' = 'application/json' }
+            $httpResponse = Invoke-NvidiaRequestWithSpacing -TimeoutSeconds $TimeoutSeconds -Request {
+                $remainingSeconds = [Math]::Max(1, [int][Math]::Ceiling(($attemptDeadline - [DateTimeOffset]::UtcNow).TotalSeconds))
+                Invoke-NvidiaHttpJson -Method POST -Uri ($TargetEndpoint.TrimEnd('/') + '/chat/completions') -Headers $headers -Body $body -TimeoutSeconds $remainingSeconds
+            }
+            if ($httpResponse.StatusCode -eq 202) {
+                try { $pending = $httpResponse.Content | ConvertFrom-Json -ErrorAction Stop }
+                catch { throw 'Nvidia asynchronous response was not valid JSON.' }
+                $requestId = $null
+                if ($pending.PSObject.Properties.Name -contains 'requestId') { $requestId = [string]$pending.requestId }
+                elseif ($pending.PSObject.Properties.Name -contains 'request_id') { $requestId = [string]$pending.request_id }
+                if ([string]::IsNullOrWhiteSpace($requestId)) { throw 'Nvidia asynchronous response omitted requestId.' }
+                do {
+                    $remainingBeforePoll = ($attemptDeadline - [DateTimeOffset]::UtcNow).TotalSeconds
+                    if ($remainingBeforePoll -le 0) { break }
+                    $sleepMilliseconds = [int][Math]::Max(1, [Math]::Min(2000, [Math]::Floor($remainingBeforePoll * 1000)))
+                    Start-Sleep -Milliseconds $sleepMilliseconds
+                    $remainingPollSeconds = [Math]::Max(1, [int][Math]::Floor(($attemptDeadline - [DateTimeOffset]::UtcNow).TotalSeconds))
+                    $pollResponse = Invoke-NvidiaHttpJson -Method GET -Uri ($TargetEndpoint.TrimEnd('/') + '/status/' + [uri]::EscapeDataString($requestId)) -Headers $headers -TimeoutSeconds $remainingPollSeconds
+                    if ($pollResponse.StatusCode -eq 202) { continue }
+                    if ($pollResponse.StatusCode -ne 200) { throw (New-NvidiaHttpStatusException -StatusCode $pollResponse.StatusCode -Body $pollResponse.Content) }
+                    try { $response = $pollResponse.Content | ConvertFrom-Json -ErrorAction Stop }
+                    catch { throw 'Nvidia asynchronous completion response was not valid JSON.' }
+                    break
+                } while ([DateTimeOffset]::UtcNow -lt $attemptDeadline)
+                if ($null -eq $response) { throw 'Nvidia asynchronous response did not complete before the request deadline.' }
+            }
+            elseif ($httpResponse.StatusCode -eq 200) {
+                try { $response = $httpResponse.Content | ConvertFrom-Json -ErrorAction Stop }
+                catch { throw 'Nvidia response was not valid JSON.' }
+            }
+            else {
+                throw (New-NvidiaHttpStatusException -StatusCode $httpResponse.StatusCode -Body $httpResponse.Content)
             }
             $choice = @($response.choices)[0]
             if ($null -eq $choice) { throw 'Nvidia response was absent.' }
@@ -763,7 +921,8 @@ function Invoke-NvidiaJsonRequest {
             $shouldRetry = Test-ShouldRetryNvidiaRequest -Exception $_.Exception -Status $status -AttemptIndex $attemptIndex
             if (-not $shouldRetry) {
                 $statusText = if ($null -ne $status) { "status=$status; " } else { [string]::Empty }
-                throw "Nvidia review request failed after $($attemptIndex + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name). See ignored Nvidia telemetry for local diagnostics."
+                $safeMessage = Get-SanitizedNvidiaErrorMessage $_.Exception
+                throw "Nvidia review request failed after $($attemptIndex + 1) attempt(s): ${statusText}error=$($_.Exception.GetType().Name); message=$safeMessage. See ignored Nvidia telemetry for local diagnostics."
             }
             $delaySeconds = Get-TransientRetryDelaySeconds -AttemptIndex $attemptIndex
             if (-not [string]::IsNullOrWhiteSpace([string]$script:NvidiaSpacingRoot)) {
@@ -782,9 +941,37 @@ function Invoke-NvidiaJsonRequest {
     }
 }
 
+function Invoke-NvidiaHealthCheck {
+    param(
+        [Parameter(Mandatory = $true)][string]$TargetEndpoint,
+        [Parameter(Mandatory = $true)][string]$TargetModel,
+        [Parameter(Mandatory = $true)][string]$ApiKey,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+    )
+
+    $response = Invoke-NvidiaJsonRequest -System 'Output exactly this JSON object and no other text: {"ok":true}. The property ok must be boolean true. Do not output an empty object.' -User 'Respond with exactly: {"ok":true}' -ApiKey $ApiKey -TargetEndpoint $TargetEndpoint -TargetModel $TargetModel -TokenLimit (Get-NvidiaReviewTokenLimit -Stage 'HEALTH' -RequestedLimit 24576) -TimeoutSeconds $TimeoutSeconds
+    try { $health = $response.Content | ConvertFrom-Json -ErrorAction Stop }
+    catch { throw 'Nvidia health-check response was not valid JSON.' }
+    $healthProperties = @(Get-ReviewObjectMemberNames $health)
+    if ($healthProperties.Count -ne 1 -or $healthProperties -notcontains 'ok' -or $health.ok -ne $true) {
+        throw 'Nvidia health-check response was not exactly {"ok":true}.'
+    }
+}
+
 switch ($PSCmdlet.ParameterSetName) {
     'SelfTest' {
         Invoke-HarnessSelfTest
+    }
+    'HealthCheck' {
+        if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING'))) { throw 'NVIDIA_API_KEY_CODING is required for reviewer health-check.' }
+        $healthRoot = Join-Path (Get-RepoRoot) 'build/dnppv2-nvidia-review'
+        New-Item -ItemType Directory -Force -Path $healthRoot | Out-Null
+        $script:NvidiaSpacingRoot = [IO.Path]::GetFullPath($healthRoot)
+        $validatedEndpoint = Get-ValidatedNvidiaEndpoint -Endpoint $Endpoint
+        $healthKey = Get-NvidiaApiKey -RepositoryRoot (Get-RepoRoot)
+        Invoke-NvidiaHealthCheck -TargetEndpoint $validatedEndpoint -TargetModel $Model -ApiKey $healthKey -TimeoutSeconds $RequestTimeoutSeconds
+        Write-Output 'NVIDIA_REVIEW_HEALTHCHECK=Passed'
+        return
     }
     'Review' { }
     default { throw "Unsupported parameter set: $($PSCmdlet.ParameterSetName)" }
@@ -811,6 +998,7 @@ $outputRoot = [IO.Path]::GetFullPath($outputCandidate)
 if (-not $outputRoot.StartsWith($repoRootWithSeparator, [StringComparison]::OrdinalIgnoreCase)) { throw 'OutputDirectory must resolve under the repository root.' }
 New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 $script:NvidiaSpacingRoot = $outputRoot
+$reviewMutexLease = Enter-NvidiaReviewMutex -TimeoutSeconds $RequestTimeoutSeconds
 $relativeOutputDirectory = $outputRoot.Substring($repoRootWithSeparator.Length).Replace('\', '/').TrimEnd('/')
 $relativeTelemetryPath = $outputRoot.Substring($repoRootWithSeparator.Length).Replace('\', '/').TrimEnd('/') + '/telemetry.jsonl'
 Push-Location $repoRoot
@@ -836,15 +1024,16 @@ $results = New-Object System.Collections.Generic.List[object]
 $callCount = 0
 $findings = [System.Collections.Generic.List[object]]::new()
 try {
+    try {
     foreach ($pass in Get-ReviewPasses $ReviewType) {
         $passSystem = $sharedSystem + " Required schema for this pass: {`"pass`":`"$($pass.Id)`",`"review_complete`":true,`"findings`":[],`"uncertainties`":[]}. The pass field must be exactly `"$($pass.Id)`"."
-        $response = Invoke-NvidiaJsonRequest -System $passSystem -User ($sharedUser + "\n\nPass-specific scope: " + $pass.Focus) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
+        $response = Invoke-NvidiaJsonRequest -System $passSystem -User ($sharedUser + "\n\nPass-specific scope: " + $pass.Focus) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit (Get-NvidiaReviewTokenLimit -Stage (Get-NvidiaPassStage $pass.Id) -RequestedLimit $MaxTokens) -TimeoutSeconds $RequestTimeoutSeconds
         $callCount += $response.Attempts
         [void]$results.Add((ConvertFrom-ReviewJson -Content $response.Content -ExpectedPass $pass.Id))
     }
     $specialistJson = $results | ConvertTo-Json -Depth 20 -Compress
-    $consolidationSystem = "You are the adversarial consolidation stage for a strict $ReviewType gate. Return JSON only. Recheck each proposed BLOCKER/HIGH finding against the immutable snapshot. Remove duplicates and unsupported or stale claims, group root causes, preserve any independently valid serious finding even if only one specialist found it, and add a serious issue only with concrete evidence. Required schema: {`"pass`":`"CONSOLIDATION`",`"review_complete`":true,`"blocking_findings`":[],`"root_cause_groups`":[],`"uncertainties`":[]}. The pass field must be exactly `"CONSOLIDATION`"."
-    $consolidation = Invoke-NvidiaJsonRequest -System $consolidationSystem -User ($sharedUser + "\n\nSpecialist JSON:\n" + $specialistJson) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit $MaxTokens -TimeoutSeconds $RequestTimeoutSeconds
+    $consolidationSystem = "You are the adversarial consolidation stage for a strict $ReviewType gate. Return JSON only. Recheck each proposed BLOCKER/HIGH finding against the immutable snapshot. Remove duplicates and unsupported or stale claims, group root causes, preserve any independently valid serious finding even if only one specialist found it, and add a serious issue only with concrete evidence. Required schema: {`"pass`":`"CONSOLIDATION`",`"review_complete`":true,`"blocking_findings`":[],`"root_cause_groups`":[],`"uncertainties`":[]}. The pass field must be exactly `"CONSOLIDATION`". `"blocking_findings` must always be a JSON array; each element must be a JSON object with a severity and problem field. If there are no serious findings, emit exactly an empty array `[]`, never a string, scalar, or object."
+    $consolidation = Invoke-NvidiaJsonRequest -System $consolidationSystem -User ($sharedUser + "\n\nSpecialist JSON:\n" + $specialistJson) -ApiKey $apiKey -TargetEndpoint $Endpoint -TargetModel $Model -TokenLimit (Get-NvidiaReviewTokenLimit -Stage 'ADJUDICATION' -RequestedLimit $MaxTokens) -TimeoutSeconds $RequestTimeoutSeconds
     $callCount += $consolidation.Attempts
     $final = ConvertFrom-ReviewJson -Content $consolidation.Content -ExpectedPass 'CONSOLIDATION'
     $findings = [System.Collections.Generic.List[object]]::new()
@@ -854,7 +1043,7 @@ try {
     }
     $verdict = if ($findings.Count -eq 0) { 'PASS' } else { 'FAIL' }
     $result = [ordered]@{ schema_version = 1; reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = $verdict; review_complete = $true; blocking_findings = $findings; root_cause_groups = @($final.root_cause_groups); prior_findings = @() }
-}
+    }
 catch {
     $result = [ordered]@{ schema_version = 1; reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; verdict = 'REVIEW_UNAVAILABLE'; review_complete = $false; reason = 'Nvidia review could not be completed reliably. See local invocation error.' }
     $errorSummary = Get-SanitizedNvidiaExceptionSummary $_.Exception
@@ -863,5 +1052,9 @@ catch {
 }
 
 Write-ReviewTelemetry -Root $outputRoot -Record @{ timestamp = [DateTimeOffset]::UtcNow.ToString('o'); reviewer_id = $script:ReviewerIdentity; review_type = $ReviewType; snapshot_id = $snapshotId; calls = $callCount; specialist_passes = @((Get-ReviewPasses $ReviewType | ForEach-Object Id)); final_serious_finding_count = $findings.Count; final_verdict = $result.verdict; elapsed_ms = ([DateTimeOffset]::UtcNow - $started).TotalMilliseconds }
+}
+finally {
+    Exit-NvidiaReviewMutex -Lease $reviewMutexLease
+}
 $result | ConvertTo-Json -Depth 20 -Compress
 

@@ -13,11 +13,12 @@
 # ============================================================================
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
-    [Parameter(Mandatory = $true)][string]$ReviewMaterialPath,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
     [string]$OutputDirectory = 'build/dnppv2-nvidia-review',
     [ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 1800,
-    [string]$Model = 'nvidia/nemotron-3-super-120b-a12b'
+    [string]$Model = 'nvidia/nemotron-3-super-120b-a12b',
+    [Parameter(Mandatory = $true, ParameterSetName = 'HealthCheck')][switch]$HealthCheck
 )
 
 Set-StrictMode -Version Latest
@@ -28,4 +29,9 @@ if (-not (Test-Path -LiteralPath $legacyPath -PathType Leaf)) {
     throw "Bootstrap reviewer engine is missing: $legacyPath"
 }
 
-& $legacyPath -ReviewType $ReviewType -ReviewMaterialPath $ReviewMaterialPath -Model $Model -OutputDirectory $OutputDirectory -RequestTimeoutSeconds $RequestTimeoutSeconds
+if ($HealthCheck) {
+    & $legacyPath -HealthCheck -Model $Model -RequestTimeoutSeconds $RequestTimeoutSeconds
+}
+else {
+    & $legacyPath -ReviewType $ReviewType -ReviewMaterialPath $ReviewMaterialPath -Model $Model -OutputDirectory $OutputDirectory -RequestTimeoutSeconds $RequestTimeoutSeconds
+}

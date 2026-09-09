@@ -197,8 +197,7 @@ function New-NvidiaReviewRequestBody {
     param(
         [Parameter(Mandatory = $true)][string]$ModelValue,
         [Parameter(Mandatory = $true)][string]$Packet,
-        [Parameter(Mandatory = $true)][int]$MaxTokensValue,
-        [switch]$DisableThinking
+        [Parameter(Mandatory = $true)][int]$MaxTokensValue
     )
 
     $request = [ordered]@{
@@ -213,14 +212,18 @@ function New-NvidiaReviewRequestBody {
                 content = $Packet
             }
         )
-        temperature = 0.1
+        temperature = 1.0
+        top_p = 0.95
         max_tokens = $MaxTokensValue
     }
 
-    if ($DisableThinking) {
-        # Nvidia V4 defaults to thinking mode, which can spend the whole
-        # token budget in reasoning_content and return empty message.content.
-        $request['chat_template_kwargs'] = @{ enable_thinking = $false }
+    if ($ModelValue -eq 'nvidia/nemotron-3-super-120b-a12b') {
+        $request['reasoning_effort'] = 'high'
+        $request['reasoning_budget'] = 16384
+    }
+    elseif ($ModelValue -eq 'nvidia/nemotron-3.5-lightning-30b-a3b') {
+        $request['reasoning_budget'] = 16384
+        $request['chat_template_kwargs'] = @{ enable_thinking = $true }
     }
 
     try {
@@ -311,7 +314,9 @@ if ($SelfTest) {
     }
 
     try {
-        $deepSeekBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3-super-120b-a12b' -Packet 'self-test packet' -MaxTokensValue 16 -DisableThinking |
+        $deepSeekBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3-super-120b-a12b' -Packet 'self-test packet' -MaxTokensValue 16 |
+            ConvertFrom-Json
+        $lightningBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'nvidia/nemotron-3.5-lightning-30b-a3b' -Packet 'self-test packet' -MaxTokensValue 16 |
             ConvertFrom-Json
         $genericBodyProbe = New-NvidiaReviewRequestBody -ModelValue 'generic-model' -Packet 'self-test packet' -MaxTokensValue 16 |
             ConvertFrom-Json
@@ -320,17 +325,26 @@ if ($SelfTest) {
         throw "Nvidia review gate self-test failed; could not parse request body JSON: $($_.Exception.Message)"
     }
 
-    if ($deepSeekBodyProbe.chat_template_kwargs.enable_thinking -ne $false) {
-        throw "Nvidia review gate self-test failed; Nvidia request body does not disable thinking mode."
+    if ($deepSeekBodyProbe.reasoning_effort -ne 'high' -or
+        $deepSeekBodyProbe.PSObject.Properties.Name -contains 'chat_template_kwargs') {
+        throw "Nvidia review gate self-test failed; Super thinking policy is not explicit high reasoning."
     }
 
     if ($deepSeekBodyProbe.model -ne 'nvidia/nemotron-3-super-120b-a12b' -or
         $deepSeekBodyProbe.messages.Count -ne 2 -or
         $deepSeekBodyProbe.messages[0].role -ne 'system' -or
         $deepSeekBodyProbe.messages[1].role -ne 'user' -or
-        $deepSeekBodyProbe.temperature -ne 0.1 -or
+        $deepSeekBodyProbe.temperature -ne 1.0 -or
+        $deepSeekBodyProbe.top_p -ne 0.95 -or
+        $deepSeekBodyProbe.reasoning_budget -ne 16384 -or
         $deepSeekBodyProbe.max_tokens -ne 16) {
         throw "Nvidia review gate self-test failed; Nvidia request body has an unexpected shape."
+    }
+
+    if ($lightningBodyProbe.chat_template_kwargs.enable_thinking -ne $true -or
+        $lightningBodyProbe.reasoning_budget -ne 16384 -or
+        $lightningBodyProbe.PSObject.Properties.Name -contains 'reasoning_effort') {
+        throw "Nvidia review gate self-test failed; Lightning thinking policy is not explicitly enabled."
     }
 
     if ($genericBodyProbe.PSObject.Properties.Name -contains 'chat_template_kwargs') {

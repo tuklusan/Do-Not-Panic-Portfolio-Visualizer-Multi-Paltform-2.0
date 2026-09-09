@@ -16,7 +16,7 @@ param(
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][ValidateSet('CODE', 'DOCUMENTATION', 'TEST_ARTIFACT')][string]$ReviewType,
     [Parameter(Mandatory = $true, ParameterSetName = 'Review')][string]$ReviewMaterialPath,
     [Parameter(ParameterSetName = 'Review')][string]$OutputDirectory = 'build/dnppv2-nvidia-review',
-    [Parameter(ParameterSetName = 'Review')][ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 1800,
+    [ValidateRange(60, 14400)][int]$RequestTimeoutSeconds = 1800,
     [Parameter(Mandatory = $true, ParameterSetName = 'HealthCheck')][switch]$HealthCheck,
     [Parameter(Mandatory = $true, ParameterSetName = 'SelfTest')][switch]$SelfTest
 )
@@ -62,7 +62,7 @@ if ($SelfTest) {
 if ($HealthCheck) {
     if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('NVIDIA_API_KEY_CODING'))) { throw 'NVIDIA_API_KEY_CODING is required for reviewer health-check.' }
     foreach ($model in @($primary, $fallback)) {
-        & $bootstrap -ReviewType DOCUMENTATION -ReviewMaterialPath (Join-Path $PSScriptRoot '..\docs\FRESH-PROJECT-NVIDIA-REVIEW-GATE.md') -Model $model -RequestTimeoutSeconds $RequestTimeoutSeconds | Out-Null
+        & $bootstrap -HealthCheck -Model $model -RequestTimeoutSeconds $RequestTimeoutSeconds | Out-Null
     }
     Write-Output 'REVIEW_GATE_HEALTHCHECK=Passed'
     exit 0
