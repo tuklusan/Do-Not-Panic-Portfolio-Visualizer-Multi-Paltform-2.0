@@ -26,6 +26,7 @@ an otherwise successful provider response has empty content.
 
 | ID | Upstream behavior or contract | 2.0 counterpart | Required result |
 | --- | --- | --- | --- |
+| AI-91 | AI response-shape parity inventory | `FinanceNewsService` and hosted evidence gate. | Complete; detailed shape rows follow. |
 | AI-SHAPE-01 | Read ordinary scalar assistant content. | `FinanceNewsService.ExtractAiSummary`. | Preserve existing behavior. |
 | AI-SHAPE-02 | Accept structured assistant content parts and completion text where providers return them. | `FinanceNewsService.ExtractContentText`. | Extract text without secrets or provider-specific crashes. |
 | AI-SHAPE-03 | Retry an empty successful response within the bounded request budget before falling back. | `FinanceNewsService` retry loop. | Emit circular retry and terminal outcome events. |
