@@ -7673,7 +7673,7 @@
         "tests/"
       ],
       "upstream_behavior_inventory": {
-        "status": "queued",
+        "status": "complete",
         "document": "docs/CR-108-YFINANCE-REVIEW-BASELINE-REFRESH.md",
         "zero_known_gaps": false,
         "known_gaps_routed_to_change_requests": true
@@ -7791,25 +7791,40 @@
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "queued",
+        "status": "complete",
         "document": "docs/CR-110-UDP-SYSLOG-TRACE-FORWARDING.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
         "source_files": [
-          "build/DeepSeekWorkflowCommon.ps1",
-          "build/Run-DeepSeekCodeReview.ps1",
-          "build/Test-DeepSeekWorkflowGate.ps1",
-          "build/validation/Invoke-DeepSeekArtifactReview.ps1",
-          ".github/workflows/itch-publish.yml",
-          "tests/PortfolioSaver.Tests/Services/DeepSeekCodeReviewTests.cs"
+          "src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CappedFileLogWriter.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CircularTraceSettings.cs",
+          "YFinance.net/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs",
+          "tests/PortfolioSaver.Tests/Services/TraceLogTests.cs",
+          "tests/PortfolioSaver.Tests/Services/CappedFileLogWriterTests.cs",
+          "tests/PortfolioSaver.Tests/Services/YFinanceCircularTraceSinkTests.cs",
+          "build/validation/Analyze-InstalledSoakTrace.ps1",
+          "build/validation/Run-InstalledSoakOnce.local.ps1"
         ],
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation and closure scans are pending."]
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CappedFileLogWriter.cs",
+          "src/PortfolioSaver.Shared/Diagnostics/CircularTraceSettings.cs",
+          "YFinance.net/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs",
+          "tests/PortfolioSaver.Tests/Services/TraceLogTests.cs",
+          "tests/PortfolioSaver.Tests/Services/CappedFileLogWriterTests.cs",
+          "tests/PortfolioSaver.Tests/Services/YFinanceCircularTraceSinkTests.cs",
+          "build/validation/Analyze-InstalledSoakTrace.ps1",
+          "build/validation/Run-InstalledSoakOnce.local.ps1"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
         "status": "queued",

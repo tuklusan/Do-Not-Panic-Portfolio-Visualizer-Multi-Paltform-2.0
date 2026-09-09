@@ -47,6 +47,26 @@ and must never weaken local retention, cleanup, or reviewer gates.
 | LOG-09 | Windows, Linux, macOS Intel, macOS ARM, hosted runners, and local lab harnesses use the same cross-platform implementation and honor the same opt-in variable. |
 | LOG-10 | Unit, integration, wire-format, failure, complete-payload-fidelity, shutdown, and cross-platform tests prove the contract; test packets use a local UDP receiver and never the production VPS. |
 
+## Upstream behavior inventory
+
+The pinned upstream baseline is commit
+`65a53bbbf0cf9af1058363f8939d464ca03858f8`. The source-cited inventory below
+was completed before implementation work:
+
+| Upstream source | Observed behavior | 2.0 mapping and gap disposition |
+| --- | --- | --- |
+| `src/PortfolioSaver.Shared/Diagnostics/TraceLog.cs` | Structured events are queued to a background worker, bounded to 1900-character lines, and written to a fixed-size circular file under app data with a synchronized cursor and index checkpointing. | `src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/TraceLog.cs` is the mapped implementation. UDP forwarding must be opt-in and must not alter local queue, retention, or cleanup behavior. |
+| `src/PortfolioSaver.Shared/Diagnostics/CappedFileLogWriter.cs` | Harness/log output is serialized and size-capped with deterministic rotation; rotation failures fall back to local append. | The fresh 2.0 line has no direct `CappedFileLogWriter` counterpart; its script/harness logs are a routed migration gap and must be covered by the new transport integration without weakening local output. |
+| `src/PortfolioSaver.Shared/Diagnostics/CircularTraceSettings.cs` | Trace size is environment-configurable and clamped to documented minimum/maximum bounds. | `src/DoNotPanicPortfolioVisualizer.Shared/Diagnostics/CircularTraceSettings.cs` is the mapped settings contract; forwarding cannot change bounds. |
+| `YFinance.net/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs` | The secondary YFinance trace uses the same bounded asynchronous circular-write pattern with concurrency, burst, index-recovery, and shutdown-safe behavior. | `src/YFinance/YFinance.NET/Diagnostics/YFinanceCircularTraceSink.cs` is the mapped secondary stream; each append remains local-authoritative and is a separate forwarding event only when opted in. |
+| `tests/PortfolioSaver.Tests/Services/TraceLogTests.cs`, `CappedFileLogWriterTests.cs`, and `YFinanceCircularTraceSinkTests.cs` | Tests prove bounded files, cursor recovery, concurrent writes, burst draining, and local retention under failure. | `tests/DoNotPanicPortfolioVisualizer.Tests/` contains the mapped tests; CR-110 adds local UDP receiver, wire-format, payload-fidelity, failure, shutdown, and opt-in matrix coverage without using the production VPS. |
+| `build/validation/Analyze-InstalledSoakTrace.ps1` and `build/validation/Run-InstalledSoakOnce.local.ps1` | Validation retrieves and analyzes the two trace streams from product/local soak execution. | `build/Invoke-ProductSoak.ps1`, hosted matrix evidence, and local-lab scripts are the mapped validation surfaces; remote forwarding remains optional and secondary to retained traces. |
+
+The inventory found no upstream remote-transport behavior to copy. The mapped
+gap is a new cross-platform, opt-in UDP syslog transport and its harness/test
+integration; local circular writers, boundedness, failure nonfatality, and
+evidence retention are required parity constraints.
+
 ## Scope and Safety Boundary
 
 This CR does not replace the two circular trace files, change their size
