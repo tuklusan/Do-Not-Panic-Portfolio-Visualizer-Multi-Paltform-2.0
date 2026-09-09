@@ -517,6 +517,19 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public void FloatingGraphMotion_StaleChangedQuoteDoesNotCreateCue()
+    {
+        FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 3);
+        FloatingGraphViewModel graph = new() { Symbol = "STALE", TapeName = "Tape" };
+        controller.ConfigureViewport(1000d, 700d, [graph]);
+        controller.ApplyQuote(graph, 100m, 1m, suppressMotionCue: true);
+
+        Assert.False(controller.ApplyQuote(graph, 101m, 1.2m, isStale: true));
+        Assert.False(graph.IsCardFlashActive);
+        Assert.False(graph.IsRefreshTravelFlashActive);
+    }
+
+    [Fact]
     public void FloatingGraphMotion_DirectedImpulseCrossesCrowdedSceneWithoutTimingOut()
     {
         FloatingGraphMotionController controller = new(22d, 48d, bounceWithinViewport: true, randomSeed: 8);

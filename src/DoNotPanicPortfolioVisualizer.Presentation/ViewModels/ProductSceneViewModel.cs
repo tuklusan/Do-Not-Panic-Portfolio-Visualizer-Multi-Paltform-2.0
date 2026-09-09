@@ -778,7 +778,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _settings.HistoricalLookbackDays,
             cancellationToken);
         HistoricalGraphBuilder builder = new();
-        List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent)> resolvedGraphs = [];
+        List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent, bool IsStale)> resolvedGraphs = [];
         for (int index = 0; index < movers.Count; index++)
         {
             (string tapeName, TickerQuoteViewModel quote) = movers[index];
@@ -794,7 +794,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                         _settings.EnableBouncingGraphCards,
                         () => builder.Build(tapeName, history, quote.ChangePercent, index)),
                     quote.Last,
-                    quote.ChangePercent));
+                    quote.ChangePercent,
+                    quote.IsStale));
             }
         }
 
@@ -809,14 +810,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     Graphs.RemoveAt(index);
             }
 
-            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent) in resolvedGraphs)
+            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent, bool isStale) in resolvedGraphs)
             {
                 FloatingGraphViewModel? existing = Graphs.FirstOrDefault(candidate =>
                     string.Equals(GetGraphKey(candidate), GetGraphKey(graph), StringComparison.OrdinalIgnoreCase));
                 if (existing is not null)
                 {
                     existing.CopyContentFrom(graph);
-                    ApplyProductionGraphQuote(existing, last, changePercent, "HISTORICAL_REFRESH");
+                    ApplyProductionGraphQuote(existing, last, changePercent, isStale, "HISTORICAL_REFRESH");
                     continue;
                 }
 
@@ -1017,16 +1018,17 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         FloatingGraphViewModel? graph = Graphs.FirstOrDefault(candidate =>
             string.Equals(candidate.Symbol, quote.Symbol, StringComparison.OrdinalIgnoreCase));
         if (graph is not null)
-            ApplyProductionGraphQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent, "LIVE_QUOTE");
+            ApplyProductionGraphQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent, quote.IsStale, "LIVE_QUOTE");
     }
 
     private void ApplyProductionGraphQuote(
         FloatingGraphViewModel graph,
         decimal? last,
         decimal? changePercent,
+        bool isStale,
         string source)
     {
-        if (_graphMotion?.ApplyQuote(graph, last, changePercent) != true)
+        if (_graphMotion?.ApplyQuote(graph, last, changePercent, isStale: isStale) != true)
             return;
 
         if (!graph.IsRefreshTravelFlashActive)

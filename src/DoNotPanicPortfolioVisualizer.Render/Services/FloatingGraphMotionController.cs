@@ -109,7 +109,8 @@ public sealed class FloatingGraphMotionController
         FloatingGraphViewModel graph,
         decimal? last,
         decimal? changePercent,
-        bool suppressMotionCue = false)
+        bool suppressMotionCue = false,
+        bool isStale = false)
     {
         bool changed = graph.RawLastValue.HasValue && last.HasValue && graph.RawLastValue.Value != last.Value;
         graph.RawLastValue = last;
@@ -125,7 +126,7 @@ public sealed class FloatingGraphMotionController
         };
         graph.LatestSegmentBrush = graph.AccentBrush;
 
-        if (!changed || suppressMotionCue || graph.IsRefreshTravelFlashActive)
+        if (!changed || suppressMotionCue || isStale || graph.IsRefreshTravelFlashActive)
         {
             return false;
         }
