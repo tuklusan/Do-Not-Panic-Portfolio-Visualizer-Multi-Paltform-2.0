@@ -42,7 +42,19 @@ has a complete CODE `PASS` receipt.
 
 The objective is correctness and evidentiary integrity, not API-call economy.
 
-### 1.1 Project identity and slow-response policy
+### 1.1 Minimal review-material contract
+
+Every code-review dispatch in this project MUST provide one minimal but
+complete requirement, list only the directly related changed files, and include
+only the relevant code or document snippets plus a zero-context diff when prior
+content exists. The packet builder MUST reject unlisted changed files and paths
+that are not part of the candidate. For document changes, the requirement is
+the document purpose and the included material is limited to purpose-relevant
+snippets and their prior-section diff. Generic reviewer instructions do not
+expand the material scope. This contract is permanent and applies to NVIDIA
+and vendor-neutral review entry points.
+
+### 1.2 Project identity and slow-response policy
 
 This repository's authoritative reviewer namespace is
 `dnppv2-nvidia-review-gate-v1`, exposed as `DNPPV_REVIEWER_ID`. Review output

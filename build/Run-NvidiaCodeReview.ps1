@@ -23,6 +23,8 @@ param(
     [int]$MaxResponseCharacters = 1000000,
     [int]$MaxTokens = 32768,
     [int]$CleanupOlderThanDays = 7,
+    [string]$Requirement,
+    [string[]]$RelevantPath,
     [switch]$SelfTest,
     [switch]$SendForReview,
     [switch]$PacketOnly,
@@ -446,6 +448,33 @@ if ($changedFiles.Count -eq 0) {
     Complete-ReviewGate 0
 }
 
+if ([string]::IsNullOrWhiteSpace($Requirement)) {
+    throw 'Requirement is mandatory for every review packet and must be minimal but complete.'
+}
+if ($null -eq $RelevantPath -or $RelevantPath.Count -eq 0) {
+    throw 'RelevantPath is mandatory for every review packet and must list only directly related changed files.'
+}
+
+$normalizedRelevantPaths = @($RelevantPath | ForEach-Object {
+        $candidate = ([string]$_).Trim().Replace('\', '/')
+        if ([string]::IsNullOrWhiteSpace($candidate) -or $candidate.StartsWith('/') -or $candidate.Contains('..')) {
+            throw "RelevantPath must be a repository-relative path without parent traversal: '$candidate'."
+        }
+        $candidate
+    } | Sort-Object -Unique)
+if ($normalizedRelevantPaths.Count -eq 0) {
+    throw 'At least one RelevantPath is required for a review packet.'
+}
+$normalizedChangedPaths = @($changedFiles | ForEach-Object { ([string]$_).Replace('\', '/') } | Sort-Object -Unique)
+$unlistedChangedFiles = @($normalizedChangedPaths | Where-Object { -not ($normalizedRelevantPaths -contains $_) })
+if ($unlistedChangedFiles.Count -gt 0) {
+    throw "Review scope is not minimal; RelevantPath must list every and only directly related changed file. Unlisted changed files: $($unlistedChangedFiles -join ', ')"
+}
+$missingRelevantFiles = @($normalizedRelevantPaths | Where-Object { -not ($normalizedChangedPaths -contains $_) })
+if ($missingRelevantFiles.Count -gt 0) {
+    throw "RelevantPath must identify changed files present in the review candidate. Missing: $($missingRelevantFiles -join ', ')"
+}
+
 if ($WhatIfPreference) {
     Write-Output "WhatIf requested; no review packet was written and no Nvidia API call was made."
     Complete-ReviewGate 0
@@ -478,15 +507,29 @@ $responsePath = Join-Path $outputRoot "nvidia-review-$timestamp.md"
 
 $sections = New-Object System.Collections.Generic.List[string]
 $sections.Add("# Mandatory Nvidia code-review packet")
-$sections.Add("Review the uncommitted changes in this repository before commit/push and before local or VM validation. Focus on correctness, regressions, security/privacy, reliability, UI behavior, test adequacy, and maintainability. Return findings first, ordered by severity, with exact file paths. If there are no actionable findings, say so explicitly.")
+$sections.Add("Review only the following requirement, directly related files, and their diffs. Return findings first, ordered by severity, with exact file paths. If there are no actionable findings, say so explicitly.")
+$sections.Add("# Requirement")
+$sections.Add($Requirement.Trim())
+$sections.Add("# Directly related changed files")
+$sections.Add(($normalizedRelevantPaths -join "`n"))
 $sections.Add("# Git status")
-$sections.Add(($statusLines | Out-String))
+$sections.Add(($statusLines | Where-Object {
+        $line = [string]$_
+        if ($line.Length -lt 4) { return $false }
+        $path = $line.Substring(3).Trim()
+        if ($path.Contains(' -> ')) { $path = ($path -split ' -> ', 2)[1].Trim() }
+        $normalized = $path.Replace('\', '/')
+        $normalizedRelevantPaths -contains $normalized
+    } | Out-String))
 $sections.Add("# Unstaged diff")
-$sections.Add(((Invoke-GitLines @('diff', '--no-ext-diff', '--unified=80')) -join "`n"))
+$sections.Add(((Invoke-GitLines (@('diff', '--no-ext-diff', '--unified=0', '--') + $normalizedRelevantPaths)) -join "`n"))
 $sections.Add("# Staged diff")
-$sections.Add(((Invoke-GitLines @('diff', '--cached', '--no-ext-diff', '--unified=80')) -join "`n"))
+$sections.Add(((Invoke-GitLines (@('diff', '--cached', '--no-ext-diff', '--unified=0', '--') + $normalizedRelevantPaths)) -join "`n"))
 
-foreach ($file in ($untrackedFiles | Sort-Object)) {
+foreach ($file in ($untrackedFiles | Where-Object {
+        $normalized = ([string]$_).Replace('\', '/')
+        $normalizedRelevantPaths -contains $normalized
+    } | Sort-Object)) {
     $literalPath = Join-Path $repoRoot $file
     if (Test-SecretLikePath $file) {
         continue

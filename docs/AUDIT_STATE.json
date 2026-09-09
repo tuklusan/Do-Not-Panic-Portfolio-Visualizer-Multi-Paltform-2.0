@@ -8702,6 +8702,49 @@
         ],
         "unresolved_gaps": []
       }
+    },
+    {
+      "id": "CR-120",
+      "phase": "Phase 1",
+      "title": "Enforce minimal requirement-scoped review material",
+      "status": "open",
+      "priority": "high",
+      "depends_on": [
+        "CR-102",
+        "CR-103"
+      ],
+      "objective": "Make every code and document review dispatch contain only its minimal complete requirement or purpose, directly related material, and relevant zero-context diff.",
+      "acceptance_criteria": [
+        "The NVIDIA packet builder requires a minimal requirement and explicit directly related changed-file list.",
+        "Unlisted changed files and missing candidate paths fail closed.",
+        "Code packets contain only directly related code and zero-context diffs; document packets contain only purpose-relevant snippets and zero-context prior-section diffs.",
+        "The provider-neutral review contract records the same permanent material rule.",
+        "Harness self-tests, syntax, license, independent review, receipt, and protected push gates pass."
+      ],
+      "validation_plan": [
+        "Run review harness self-tests and the generic workflow gate.",
+        "Generate a packet with an explicit requirement and exact changed-file scope, then verify the packet contains no unrelated files or diff context.",
+        "Run license, PowerShell syntax, harness-freeze approval, independent review, receipt, and protected push gates."
+      ],
+      "artifacts": [
+        "build/Run-NvidiaCodeReview.ps1",
+        "docs/FRESH-PROJECT-NVIDIA-REVIEW-GATE.md",
+        "docs/FRESH-PROJECT-CODE-REVIEW-GATE.md",
+        "docs/CR-120-MINIMAL-REVIEW-MATERIAL-CONTRACT.md",
+        "docs/AUDIT_STATE.json"
+      ],
+      "upstream_behavior_inventory": {
+        "status": "not_applicable_process_infrastructure",
+        "document": "docs/CR-120-MINIMAL-REVIEW-MATERIAL-CONTRACT.md",
+        "zero_known_gaps": false,
+        "known_gaps_routed_to_change_requests": true
+      },
+      "current_validation": {
+        "status": "in_progress",
+        "unresolved_gaps": [
+          "Implementation is awaiting focused harness, review, receipt, and protected-push validation."
+        ]
+      }
     }
   ],
   "remaining_validation_gaps": [

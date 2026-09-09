@@ -35,6 +35,16 @@ Override JSON must be an object. Protected request fields (`model`, `messages`,
 `response_format`, and `stream`) remain engine-controlled and cannot be null.
 The adapter never logs, writes, or echoes the secret.
 
+## Minimal review-material contract
+
+Every review dispatch MUST contain one minimal but complete requirement, only
+the directly related code or document snippets, and a zero-context diff when
+prior content exists. For documents, the requirement is the document purpose
+and the material is limited to purpose-relevant snippets and their prior-section
+diff. Generic reviewer instructions do not expand the material scope. Review
+callers MUST reject changed files that are not explicitly listed as directly
+related. This contract is permanent and applies to every configured reviewer.
+
 ## Result contract
 
 The engine must return one JSON result with:
