@@ -5059,7 +5059,7 @@
       "id": "CR-098",
       "phase": "Phase 7",
       "title": "Restore Windows ARM RSS and AI news soak evidence",
-      "status": "open",
+      "status": "closed",
       "priority": "normal",
       "depends_on": [
         "CR-096"
@@ -5107,35 +5107,30 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending_review_disposition_rerun",
-        "unresolved_gaps": [
-          "A fresh hosted candidate is required after the evidence-matched reviewer disposition correction; Windows ARM still needs a successful AI response to close the success-path claim."
-        ],
+        "status": "closed",
+        "unresolved_gaps": [],
         "closure_evidence": [
-          "Hosted run 33982819747 reproduced the Ubuntu Slim missing closure record; the same run produced complete Windows ARM closure records.",
-          "NVIDIA review 20260905-145732 identified the receipt lifecycle as actionable; workflow root-block findings were false positives because the current file and local gate contain the required blocks.",
-          "Hosted run 34290530942 completed the Windows ARM soak with RssPlaybackReady state=Fresh, NEWS_PLAYBACK_PUBLISHED, and AiSummaryRequestStarted; HTTP 429 on both provider attempts produced aiQuotaLimited=true and no AiSummarySucceeded event.",
-          "Hosted run 34290530942 exposed reviewer disposition false positives for quota-shaped AI findings and a ten-minute RSS-refresh expectation; the raw findings are retained and a workflow-only normalization correction is pending rerun."
+          "Hosted run 34294520090 completed successfully with the aggregate validator reporting HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34294520090;LANES=20;REMOTE_REVIEW_CALLS=0.",
+          "The windows-11-arm lane retained rssUsable=true, rssPublished=true, aiRequestObserved=true, aiSuccessObserved=true, aiQuotaLimited=false, a Passed ten-minute soak with processCleanedUp=true, a complete inspected closure record, both circular traces, and a semantic NVIDIA TEST_ARTIFACT PASS.",
+          "The windows-11-vs2026-arm lane retained rssUsable=true, rssPublished=true, aiRequestObserved=true, aiSuccessObserved=true, aiQuotaLimited=false, a Passed ten-minute soak with processCleanedUp=true, a complete inspected closure record, both circular traces, and a semantic NVIDIA TEST_ARTIFACT PASS.",
+          "The transient Windows 2025 test failure was rerun on the exact reviewed commit 4c170145fca4f9df287d44fcada4abc07ff40233 and the final aggregate completed successfully."
         ],
         "nvidia_review": {
-          "status": "complete_advisory_fail",
-          "reviewed_snapshot": "2c9a57ae337ac9a8638ab40c8d38586099b31e65:ca06b82920d0bbbafc36a7bbcbb69f52ac5cb159efc9108be7738daf93c0159f",
-          "actionable_findings": [
-            "Receipt must be created after soak completion and accurately distinguish soak failure/cancellation from review pending.",
-            "Retained evidence redaction must be verified after redaction and cover authorization/bearer formats.",
-            "AI evidence failure must not prevent a product soak from producing a closure receipt."
-          ],
-          "false_positive_findings": [
-            "Root concurrency block is present and passes Test-WorkflowGateConfiguration.ps1.",
-            "Required push, pull_request, and workflow_dispatch triggers are present.",
-            "Root contents: read permissions are present."
-          ]
+          "status": "complete_pass",
+          "reviewed_snapshot": "4c170145fca4f9df287d44fcada4abc07ff40233:70943bf33c7e429ecad373bd0977a723c97879ee5c1c63040c3dfed2e8696f14",
+          "actionable_findings": [],
+          "false_positive_findings": []
         }
       },
       "upstream_closure_audit": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_rescanned": [],
+        "source_files_rescanned": [
+          ".github/workflows/publish-six-rids.yml",
+          "build/Invoke-ProductSoak.ps1",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/Services/FinanceNewsService.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs"
+        ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []

@@ -26,9 +26,9 @@ and success pair.
 
 | ID | Required behavior | 2.0 counterpart | Status |
 | --- | --- | --- | --- |
-| NE-01 | Windows ARM real-product soak publishes usable RSS playback evidence. | Product RSS pipeline and hosted `news-evidence.json` assertion. | Open |
-| NE-02 | Windows ARM real-product soak observes the configured AI news request and success path. | Product AI news orchestration and circular trace markers. | Open |
-| NE-03 | Failure diagnosis distinguishes feed freshness, playback scheduling, credentials, and platform behavior. | Two circular traces plus `news-evidence.json`. | Open |
+| NE-01 | Windows ARM real-product soak publishes usable RSS playback evidence. | Product RSS pipeline and hosted `news-evidence.json` assertion. | Closed |
+| NE-02 | Windows ARM real-product soak observes the configured AI news request and success path. | Product AI news orchestration and circular trace markers. | Closed |
+| NE-03 | Failure diagnosis distinguishes feed freshness, playback scheduling, credentials, and platform behavior. | Two circular traces plus `news-evidence.json`. | Closed |
 
 ## Upstream and Reverse Gates
 
@@ -71,9 +71,21 @@ workflow harness correction. The change preserves the frozen harness contract:
 raw reviewer output remains retained, only evidence-matched external/quota
 conditions are normalized, and no product or test harness behavior is weakened.
 
+Final closure run `34294520090` on commit
+`4c170145fca4f9df287d44fcada4abc07ff40233` completed the serialized 20-lane
+matrix successfully. Both `windows-11-arm` and `windows-11-vs2026-arm`
+produced `rssUsable=true`, `rssPublished=true`, `aiRequestObserved=true`,
+`aiSuccessObserved=true`, and `aiQuotaLimited=false`. Each ten-minute product
+soak passed with `processCleanedUp=true`; each lane retained a complete inspected
+closure record, settled screenshot, both circular traces, and a semantic NVIDIA
+`TEST_ARTIFACT` PASS. The aggregate validator reported
+`HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34294520090;LANES=20;REMOTE_REVIEW_CALLS=0`.
+The unrelated transient Windows 2025 test failure was rerun on the same exact
+commit and the final aggregate completed successfully.
+
 ## Acceptance
 
-The Windows ARM lane emits the required RSS and AI markers, passes its news
-evidence gate, produces a complete inspected closure record, and leaves no
-residual product or helper process. Current status: implementation corrected;
-pending fresh hosted validation.
+The Windows ARM lanes emit the required RSS and AI markers, pass the news
+evidence gate, produce complete inspected closure records, and leave no
+residual product or helper process. Current status: closed on final hosted
+run `34294520090`.
