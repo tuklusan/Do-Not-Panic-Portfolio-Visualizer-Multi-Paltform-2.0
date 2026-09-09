@@ -6470,7 +6470,7 @@
       "id": "CR-081",
       "phase": "Phase 7",
       "title": "Improve ticker quote-lane contrast over cinematic backgrounds",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-069"
@@ -6522,14 +6522,29 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
-      "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Current Avalonia styling contains the requested darker neutral quote-lane treatment; fresh settled production screenshots, focused visual checks, and closure-gate evidence remain required."
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml",
+          "src/PortfolioSaver.Render/Themes/Generic.xaml",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
         ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "current_validation": {
+        "status": "closed",
+        "unresolved_gaps": [],
         "evidence": [
           "Manual upstream/current source mapping recorded in docs/CR-081-TICKER-QUOTE-LANE-CONTRAST.md.",
-          "Current ProductShellWindow.axaml uses #C52A3138 for the quote-lane background, preserves the grey name lane, fixed columns, 28-pixel clipping, and vertical centering."
+          "ProductShellWindow.axaml uses #C52A3138 for the quote-lane background, preserves the grey name lane, fixed columns, 28-pixel clipping, and vertical centering.",
+          "Real Linux production-scene profiles at 5, 10, and 30 minutes passed with settled screenshots and circular traces; the 30-minute validation frame was visually inspected for readable lanes over the dark New York background.",
+          "Hosted matrix 34311236812 completed all 43 jobs successfully and aggregate closure passed for 20 lanes."
         ]
       }
     },

@@ -79,7 +79,14 @@ settling behavior. Do not replace the real product scene with a visual fixture.
 
 ## Status
 
-Open. The upstream forward and reverse inventory is now recorded above and the
-pre-development gate is ready to rerun. Current Avalonia styling already
-contains the requested darker neutral quote-lane treatment; fresh production
-screenshots and closure-gate evidence remain required before closing this CR.
+Closed. The upstream forward and reverse inventory passed with two successive
+zero-gap scans. The real production-scene validation captured readable quote
+values over the dark New York background: the Linux profiles
+`dnppv2-local-cycle-cr071-5m`, `dnppv2-local-cycle-cr071-10m`, and
+`dnppv2-local-cycle-cr071-30m` all passed with settled `validation.png`,
+`motion.png`, and circular traces. The 30-minute validation frame was reviewed
+directly and shows the darker neutral quote lanes, preserved grey name lanes,
+fixed lane widths, centered values, and readable positive/negative quote colors.
+Hosted matrix `34311236812` passed all 43 jobs and its aggregate closure passed
+for 20 lanes. The external AI 4xx advisory is unrelated to lane contrast; RSS
+remained usable and all remote processes were cleaned up.
