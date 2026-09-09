@@ -5263,6 +5263,44 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
+        "source_files_rescanned": [
+          "yfinance/data.py",
+          "yfinance/scrapers/history.py",
+          "yfinance/exceptions.py",
+          "yfinance/scrapers/quote.py",
+          "yfinance/utils.py",
+          "tests/test_cookie_crumb_degradation.py",
+          "tests/test_prices.py",
+          "tests/test_price_repair.py",
+          "tests/test_ticker.py",
+          "tests/test_data.py"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
+        "source_files_rescanned": [
+          "yfinance/data.py",
+          "yfinance/scrapers/history.py",
+          "yfinance/exceptions.py",
+          "yfinance/scrapers/quote.py",
+          "yfinance/utils.py",
+          "tests/test_cookie_crumb_degradation.py",
+          "tests/test_prices.py",
+          "tests/test_price_repair.py",
+          "tests/test_ticker.py",
+          "tests/test_data.py"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
         "status": "pending_provider_success",
         "unresolved_gaps": [
@@ -7651,7 +7689,7 @@
       "id": "CR-108",
       "phase": "Phase 7",
       "title": "Refresh the reviewed YFinance upstream baseline",
-      "status": "open",
+      "status": "closed",
       "priority": "normal",
       "depends_on": ["CR-105"],
       "objective": "Investigate and close the hosted yfinance upstream-sync warning by verifying the current upstream commit, reviewing relevant behavior, and updating or explicitly retaining the source-cited reviewed baseline.",
@@ -7675,19 +7713,58 @@
       "upstream_behavior_inventory": {
         "status": "complete",
         "document": "docs/CR-108-YFINANCE-REVIEW-BASELINE-REFRESH.md",
-        "zero_known_gaps": false,
+        "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
+        "source_files": [
+          "yfinance/data.py",
+          "yfinance/scrapers/history.py",
+          "yfinance/exceptions.py",
+          "yfinance/scrapers/quote.py",
+          "yfinance/utils.py",
+          "tests/test_cookie_crumb_degradation.py",
+          "tests/test_prices.py",
+          "tests/test_price_repair.py",
+          "tests/test_ticker.py",
+          "tests/test_data.py"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": ["Implementation and closure scans are pending."]
+        "status": "complete",
+        "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
+        "source_files_scanned": [
+          "yfinance/data.py",
+          "yfinance/scrapers/history.py",
+          "yfinance/exceptions.py",
+          "yfinance/scrapers/quote.py",
+          "yfinance/utils.py",
+          "tests/test_cookie_crumb_degradation.py",
+          "tests/test_prices.py",
+          "tests/test_price_repair.py",
+          "tests/test_ticker.py",
+          "tests/test_data.py"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
+        "source_files_rescanned": ["yfinance/data.py", "yfinance/scrapers/history.py", "yfinance/exceptions.py", "yfinance/scrapers/quote.py", "yfinance/utils.py", "tests/test_cookie_crumb_degradation.py", "tests/test_prices.py", "tests/test_price_repair.py", "tests/test_ticker.py", "tests/test_data.py"],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "queued",
-        "evidence": ["Hosted run 33999741342 reports UpstreamYFinanceNewerThanReviewed; quote requests nevertheless returned HTTP 200 in the sampled lane."],
-        "unresolved_gaps": ["Upstream commit verification and reviewed-baseline decision remain outstanding."]
+        "status": "closed",
+        "evidence": [
+          "GitHub API verification confirmed upstream commit 3d9d2f0cacb662bff689874cd6113bae3a30a885, dated 2026-08-26T17:20:38Z, yfinance 1.7.0.",
+          "Source-cited behavior disposition was recorded for session, cookie, crumb, retry, history, quote, exception, metadata, and Python-only currency-repair changes.",
+          "The reviewed baseline metadata now records the verified upstream commit and CR-108.",
+          "Focused YFinance tests, Release build/test, migration gates, NVIDIA review, and hosted current-head matrix evidence passed; no unexplained UpstreamYFinanceNewerThanReviewed warning remains."
+        ],
+        "unresolved_gaps": []
       }
     },
     {

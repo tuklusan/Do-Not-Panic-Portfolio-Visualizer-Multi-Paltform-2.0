@@ -18,8 +18,8 @@ public static class YFinanceUpstreamSyncMetadata
     // Keep these constants synchronized with YFinance.net/upstream-sync.json whenever an upstream review baseline changes.
     public const string UpstreamRepository = "https://github.com/ranaroussi/yfinance";
     public const string ForkRepository = "https://github.com/tuklusan/yfinance";
-    public const string ReviewedCommit = "38c73ce33fb1ee77d37a0998c95c06e60356298e";
-    public const string ReviewedCommitDate = "2026-06-28T19:12:48+01:00";
-    public const string ReviewedVersion = "1.5.1";
-    public const string ReviewedByCr = "CR-139";
+    public const string ReviewedCommit = "3d9d2f0cacb662bff689874cd6113bae3a30a885";
+    public const string ReviewedCommitDate = "2026-08-26T18:20:38+01:00";
+    public const string ReviewedVersion = "1.7.0";
+    public const string ReviewedByCr = "CR-108";
 }

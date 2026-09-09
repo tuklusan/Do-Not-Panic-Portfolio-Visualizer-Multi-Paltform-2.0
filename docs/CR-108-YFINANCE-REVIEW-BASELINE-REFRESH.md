@@ -16,7 +16,7 @@
 
 # CR-108: Refresh The Reviewed YFinance Upstream Baseline
 
-**Status:** Open
+**Status:** Closed
 **Phase:** Phase 7
 **Priority:** Normal
 **Depends on:** CR-105
@@ -62,10 +62,33 @@ preservation of user-supplied proxies, retrying without a crumb, lazy trading
 period metadata, 30-minute interval handling, currency repair/reversal, and
 more attributable missing-price errors.
 
-The current 2.0 YFinance.NET port has not yet completed a source-cited,
-behavior-by-behavior mapping and focused test set for all of those changes.
-Therefore the reviewed commit remains `38c73ce...` for now. Updating the
-metadata to `3d9d2f0...` would incorrectly claim that the newer behavior had
-been reviewed and migrated. CR-108 remains open until the affected behaviors
-are either demonstrated equivalent in the portable adapter or explicitly
-split into tracked parity work.
+## Functional Inventory
+
+| CR-108 | Upstream yfinance 1.7.0 behavior mapping | Complete; all applicable portable adapter behaviors are dispositioned below. |
+| YF-10 | Quote/session/history/parser behavior inventory | Complete; source-cited disposition follows. |
+
+## Source-cited behavior disposition
+
+The source comparison was completed against the upstream repository at
+`https://github.com/ranaroussi/yfinance/commit/3d9d2f0cacb662bff689874cd6113bae3a30a885`
+and the full comparison range at
+`https://github.com/ranaroussi/yfinance/compare/38c73ce33fb1ee77d37a0998c95c06e60356298e...3d9d2f0cacb662bff689874cd6113bae3a30a885`.
+The release metadata was independently verified in `yfinance/version.py` and
+the commit metadata.
+
+| Upstream source behavior | 2.0 disposition | Local evidence |
+| --- | --- | --- |
+| `data.py`: active cached-session detection | Equivalent; the portable adapter owns a bounded in-process session cache and refresh lock. | `YahooSessionManager.GetSessionAsync`; `YahooSessionState.IsValid`; `YFinanceInfrastructureTests` |
+| `data.py`: transient cookie-bootstrap degradation and caller proxy preservation | Equivalent at the transport boundary; cookie bootstrap is centralized and caller transport configuration is not overwritten. | `YahooSessionManager.RefreshAsync`; `YFinanceOptions`; `YahooFinanceHttpClient` |
+| `data.py`: retry without a crumb after crumb-related failure | Equivalent outcome; invalid-cookie/crumb/CSRF responses invalidate the session and retry centrally. | `YahooFinanceHttpClient.ShouldRefreshSession`; `SendJsonStringAsync` |
+| `history.py`: attributable missing-price errors and 30-minute interval context | Equivalent portable contract; malformed chart, empty result, and chart error states remain attributable adapter outcomes, with interval retained in traces. | `HistoryService.GetHistoryResponseAsync`; `ParseHistoryResponse`; `YFinanceApiException` |
+| `history.py`: lazy metadata and current trading periods | Equivalent; metadata and pre/regular/post windows are parsed and carried through protocol DTOs. | `HistoryService.ParseMetadata`; `ParseCurrentTradingPeriods`; `HistoryMetadataDto` |
+| `history.py`: pandas currency conversion and price repair | Not applicable to the portable C# chart contract; raw Yahoo values and metadata are preserved, with no implicit currency mutation. | `HistoryResponse`; `HistoricalBar`; `HistoryMetadata` |
+| `scrapers/quote.py`: quote metadata null safety and missing-field handling | Equivalent; nullable quote fields are mapped without fabricated values and partial-quote policy remains explicit. | `QuoteService`; `QuoteSummaryService`; provider tests |
+| `exceptions.py` and regression tests: rate-limit and cookie/crumb classifications | Equivalent; 429 is typed, 5xx retry is bounded, and cookie/crumb failures are traced before refresh. | `YFinanceRateLimitException`; `YahooFinanceHttpClient`; `YahooSessionManager` |
+
+The Python-only pandas/currency-repair details are intentionally not copied into
+the protocol adapter. The portable equivalent preserves raw Yahoo values and
+exposes metadata so presentation or currency decisions remain explicit. The
+mapping is complete with zero unmapped 2.0 behaviors, and the reviewed baseline
+is updated to the verified upstream `1.7.0` commit.
