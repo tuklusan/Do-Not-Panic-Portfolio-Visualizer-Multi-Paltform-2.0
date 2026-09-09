@@ -86,12 +86,24 @@ key-free `GRAPH_IMPULSE;STATE=STARTED/COMPLETED` events for real live-quote
 directed travel, plus `GRAPH_REFRESH_CUE;MODE=NEUTRAL` for unchanged-value
 card flashes. Fixture events remain separately named and are not used as
 production evidence. Focused build/test validation passed after this change;
-fresh production-scene captures must still demonstrate a live quote delta and
-match the start/completion trace pair before closure.
+Fresh production-scene capture `dnppv2-local-cycle-cr082-resume-b7fcf79458164c8f96e75d94bc57102b`
+completed the real ten-minute Windows 10 soak with settled product screenshots
+and circular traces. The production trace recorded 16 live-quote directed
+impulse starts and 16 matching production completions, with no fixture source;
+the captured scene was visually inspected and showed the production quote,
+graph, market, and news surfaces. RSS was usable and the AI request was
+observed, while the provider returned an external 4xx advisory; this is
+retained as negative AI evidence and is not treated as AI success.
 
-The fresh current-candidate Win10 production run
+The physical production-scene and circular-trace acceptance evidence is now
+complete for this CR; the retained hosted matrix for candidate `94d8fcee`
+remains valid because this closure update changes only documentation and
+tracker bookkeeping.
+
+The earlier current-candidate Win10 production run
 `dnppv2-local-cycle-cr082-current-win10` completed the real ten-minute scene
 soak with screenshots, circular traces, live quote traffic, RSS evidence, and
 cleanup. Its production trace contained zero `GRAPH_IMPULSE` and zero
 `GRAPH_REFRESH_CUE` events, so it is retained as valid negative evidence and
-does not close this CR.
+did not close this CR. The subsequent keyed run above supersedes that negative
+graph-evidence result for closure.

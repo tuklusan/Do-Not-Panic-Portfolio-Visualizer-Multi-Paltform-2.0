@@ -6552,7 +6552,7 @@
       "id": "CR-082",
       "phase": "Phase 7",
       "title": "Restore upstream quote flash and graph impulse parity",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-069"
@@ -6609,11 +6609,36 @@
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
       },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Presentation/Controls/VisualizerSceneControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/TickerTapeControl.xaml.cs",
+          "src/PortfolioSaver.Render/Controls/FloatingGraphControl.xaml.cs",
+          "src/PortfolioSaver.Render/ViewModels/TapeItemViewModel.cs",
+          "src/PortfolioSaver.Render/ViewModels/FloatingGraphViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/Services/FloatingGraphMotionController.cs",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/FloatingGraphViewModel.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/AmbientSceneServicesTests.cs",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/ProductShellTickerPresentationTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Fresh unchanged-value blue flashing now uses the raw value delta, preventing non-zero daily ChangePercent from causing false red/green flashes; focused-tested. The shared DNPPV-2.0 single-instance lease now ignores per-run data overrides and applies to configuration validation too; Windows and Mac harnesses hard-stop before launch when an existing product process is detected. Production-scene visual and circular-trace proof remains outstanding.",
-          "Current graph-motion tests cover directed travel, and ProductSceneViewModel now retains the motion-controller cue result and writes key-free GRAPH_IMPULSE start/completion events for live-quote directed travel plus a separate neutral-cue event. Fresh production evidence still needs a real quote delta, a matching start/completion trace pair, and settled visual acceptance without fixtures. Current-candidate Win10 cycle dnppv2-local-cycle-cr082-current-win10 completed the real ten-minute scene soak with screenshots, circular traces, live quote traffic, RSS evidence, and cleanup but recorded zero production GRAPH_IMPULSE and GRAPH_REFRESH_CUE events; it is retained as valid negative evidence and does not close CR-082."
+        "status": "closed",
+        "run_id": "dnppv2-local-cycle-cr082-resume-b7fcf79458164c8f96e75d94bc57102b",
+        "unresolved_gaps": [],
+        "evidence": [
+          "Focused quote-flash and graph-motion tests, full Release tests, upstream forward/reverse scans, license, syntax, workflow, review, receipt, protected push, and hosted matrix validation passed for candidate 94d8fcee86486cdd6168b0848da5071b52f09b2a.",
+          "The fresh Windows 10 production-scene run completed the real ten-minute soak and retained settled screenshots, circular traces, live quote traffic, RSS evidence, and cleanup evidence.",
+          "The production circular trace recorded 16 GRAPH_IMPULSE starts from LIVE_QUOTE and 16 matching completions from PRODUCTION_SCENE; no fixture events were used as acceptance evidence.",
+          "The captured product scene was visually inspected and showed the production quote, graph, market, and news surfaces. RSS was usable and the AI request was observed, while the provider returned an external 4xx advisory retained as negative AI evidence.",
+          "The retained hosted matrix 34336919366 completed all 43 jobs successfully for the exact product candidate; this closure-only documentation/tracker update is matrix-neutral and reuses that evidence."
         ]
       }
     },
@@ -7771,7 +7796,18 @@
       "upstream_closure_audit": {
         "status": "complete",
         "upstream_commit": "3d9d2f0cacb662bff689874cd6113bae3a30a885",
-        "source_files_rescanned": ["yfinance/data.py", "yfinance/scrapers/history.py", "yfinance/exceptions.py", "yfinance/scrapers/quote.py", "yfinance/utils.py", "tests/test_cookie_crumb_degradation.py", "tests/test_prices.py", "tests/test_price_repair.py", "tests/test_ticker.py", "tests/test_data.py"],
+        "source_files_rescanned": [
+          "yfinance/data.py",
+          "yfinance/scrapers/history.py",
+          "yfinance/exceptions.py",
+          "yfinance/scrapers/quote.py",
+          "yfinance/utils.py",
+          "tests/test_cookie_crumb_degradation.py",
+          "tests/test_prices.py",
+          "tests/test_price_repair.py",
+          "tests/test_ticker.py",
+          "tests/test_data.py"
+        ],
         "zero_unmapped_behaviors": true,
         "successive_zero_gap_scans": 2,
         "unresolved_gaps": []
@@ -8754,7 +8790,6 @@
   "remaining_validation_gaps": [
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
-    "CR-082: upstream-equivalent unchanged-value blue ticker flash and complete graph-impulse acceptance are not yet proven.",
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest cycle passed Linux, Windows 11, and Intel Mac but failed Windows 10 task launch.",
     "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
     "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
