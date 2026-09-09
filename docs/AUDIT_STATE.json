@@ -8707,7 +8707,7 @@
       "id": "CR-120",
       "phase": "Phase 1",
       "title": "Enforce minimal requirement-scoped review material",
-      "status": "open",
+      "status": "closed",
       "priority": "high",
       "depends_on": [
         "CR-102",
@@ -8740,9 +8740,13 @@
         "known_gaps_routed_to_change_requests": true
       },
       "current_validation": {
-        "status": "in_progress",
-        "unresolved_gaps": [
-          "Implementation is awaiting focused harness, review, receipt, and protected-push validation."
+        "status": "passed",
+        "unresolved_gaps": [],
+        "evidence": [
+          "Harness self-tests, generic workflow gate, PowerShell syntax, license headers, and receipt validation passed.",
+          "Independent minimal-scope review passed for the implementation commit a17acb2ae093e7616508a030b66933e8ac9eff5b.",
+          "Protected push completed for the implementation commit a17acb2ae093e7616508a030b66933e8ac9eff5b.",
+          "Hosted run 34329193881 completed all 43 jobs successfully with HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34329193881;LANES=20;REMOTE_REVIEW_CALLS=0."
         ]
       }
     }

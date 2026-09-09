@@ -39,3 +39,10 @@ same material rule to every configured reviewer.
   snippets, and zero-context diffs only.
 - Harness self-tests, syntax, license, review, receipt, and protected-push
   gates pass for the implementation.
+- Hosted run `34329193881` passed all 43 jobs across 20 lanes with
+  `HOSTED_SOAK_CLOSURE=Passed` and `REMOTE_REVIEW_CALLS=0`.
+
+## Closure
+
+CR-120 is closed. The permanent material rule remains enforced for every
+project code-review gate.
