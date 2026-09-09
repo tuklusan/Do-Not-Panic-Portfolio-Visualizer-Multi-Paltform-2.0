@@ -5234,35 +5234,49 @@
         ".github/workflows/publish-six-rids.yml"
       ],
       "upstream_behavior_inventory": {
-        "status": "pending",
+        "status": "complete",
         "document": "docs/CR-100-WINDOWS-2022-AI-EMPTY-CONTENT.md",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files": [],
-        "zero_known_gaps": false,
+        "source_files": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs",
+          "tests/PortfolioSaver.Tests/Services/OpenRouterModelResolverTests.cs",
+          "build/validation/Analyze-InstalledSoakTrace.ps1",
+          "build/validation/Run-InstalledSoakOnce.local.ps1"
+        ],
+        "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
       "reverse_upstream_gap_scan": {
-        "status": "pending",
+        "status": "complete",
         "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
-        "source_files_scanned": [],
-        "zero_missing_behaviors": false,
-        "successive_zero_gap_scans": 0,
-        "unresolved_gaps": [
-          "Implementation and fresh upstream audit are pending."
-        ]
+        "source_files_scanned": [
+          "src/PortfolioSaver.Presentation/Services/FinanceNewsService.cs",
+          "tests/PortfolioSaver.Tests/Services/FinanceNewsServiceTests.cs",
+          "src/PortfolioSaver.Core/Services/OpenRouterModelResolver.cs",
+          "tests/PortfolioSaver.Tests/Services/OpenRouterModelResolverTests.cs",
+          "build/validation/Analyze-InstalledSoakTrace.ps1",
+          "build/validation/Run-InstalledSoakOnce.local.ps1"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending",
+        "status": "pending_provider_success",
         "unresolved_gaps": [
-          "Windows 2022 AI response remains empty after HTTP 200 and retry sequence."
+          "Fresh Windows 2022 run 34298682486 was provider-quota-limited (aiQuotaLimited=true, aiSuccessObserved=false); a provider-success proof is still required for the CR acceptance criterion."
         ],
         "closure_evidence": [
-          "Hosted run 33982819747 recorded rssUsable=true, aiRequestObserved=true, aiSuccessObserved=false for windows-2022; trace showed HTTP 200, empty parsing, retry, HTTP 429, and another empty HTTP 200 response."
+          "Hosted run 33982819747 recorded rssUsable=true, aiRequestObserved=true, aiSuccessObserved=false for windows-2022; trace showed HTTP 200, empty parsing, retry, HTTP 429, and another empty HTTP 200 response.",
+          "Hosted run 34298682486 completed successfully with HOSTED_SOAK_CLOSURE=Passed;RUN_ID=34298682486;LANES=20;REMOTE_REVIEW_CALLS=0. Windows 2022 retained rssUsable=true, rssPublished=true, aiRequestObserved=true, aiSuccessObserved=false, aiQuotaLimited=true, aiExternalFailureDisposition=provider-quota-rate-limited, a Passed soak, processCleanedUp=true, complete closure evidence, both circular traces, and a semantic NVIDIA TEST_ARTIFACT PASS.",
+          "The exact CR-100 commit 0ad58176583b6b41b64c10a10ef0e4248ee0886d has a clean NVIDIA CODE PASS and adds a focused empty-successful-response recovery test; the migrated service already contains the upstream-equivalent bounded retry and fallback behavior."
         ],
         "nvidia_review": {
-          "status": "complete_advisory_fail",
-          "reviewed_with": "CR-099 review 20260905-145732",
-          "actionable_finding": "Do not couple AI evidence failure to overall soak pass/fail; retain the lane receipt so the AI defect is attributable."
+          "status": "complete_pass",
+          "reviewed_snapshot": "0ad58176583b6b41b64c10a10ef0e4248ee0886d:ebc4c4481e664b6521293c38554abcbd068a3159b80a4e11d6295e1c7599ea88",
+          "actionable_finding": "Provider-quota-limited Windows 2022 evidence remains open; the hosted workflow correctly retains the attributable lane receipt without weakening the real AI output requirement."
         }
       },
       "upstream_closure_audit": {

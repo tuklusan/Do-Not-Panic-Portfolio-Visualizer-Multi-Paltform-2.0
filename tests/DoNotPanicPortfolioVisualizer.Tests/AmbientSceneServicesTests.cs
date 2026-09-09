@@ -1079,6 +1079,18 @@ public sealed class AmbientSceneServicesTests
     }
 
     [Fact]
+    public async Task FinanceNewsService_RetriesEmptySuccessfulResponseAndPublishesLaterSummary()
+    {
+        const string rss = "<rss><channel><item><title>Markets remain readable</title></item></channel></rss>";
+        const string validResponse = "{\"choices\":[{\"message\":{\"content\":\"A later usable summary.\"}}]}";
+        using FinanceNewsService service = new(new SequenceAiResponseHandler(rss, "{}", validResponse));
+
+        string text = await service.GetNewsTextAsync(CreateSummarizedSettings(), CancellationToken.None);
+
+        Assert.Equal("A later usable summary.", text);
+    }
+
+    [Fact]
     public async Task FinanceNewsService_FallsBackToRssWhenAiTimesOut()
     {
         const string rss = "<rss><channel><item><title>Timeout still leaves RSS</title></item></channel></rss>";
@@ -1205,6 +1217,23 @@ public sealed class AmbientSceneServicesTests
             if (timeout)
                 throw new TaskCanceledException("simulated provider timeout", innerException: null, cancellationToken);
             return Task.FromResult(new HttpResponseMessage(statusCode) { Content = new StringContent(responseBody, Encoding.UTF8, "application/json") });
+        }
+    }
+
+    private sealed class SequenceAiResponseHandler(string rss, params string[] responseBodies) : HttpMessageHandler
+    {
+        private int _responseIndex;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get)
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(rss, Encoding.UTF8, "application/rss+xml") });
+
+            int index = Math.Min(Interlocked.Increment(ref _responseIndex) - 1, responseBodies.Length - 1);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(responseBodies[index], Encoding.UTF8, "application/json")
+            });
         }
     }
 
