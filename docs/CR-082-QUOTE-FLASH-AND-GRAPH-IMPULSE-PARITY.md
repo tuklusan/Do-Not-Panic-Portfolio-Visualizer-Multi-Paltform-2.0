@@ -88,3 +88,10 @@ card flashes. Fixture events remain separately named and are not used as
 production evidence. Focused build/test validation passed after this change;
 fresh production-scene captures must still demonstrate a live quote delta and
 match the start/completion trace pair before closure.
+
+The fresh current-candidate Win10 production run
+`dnppv2-local-cycle-cr082-current-win10` completed the real ten-minute scene
+soak with screenshots, circular traces, live quote traffic, RSS evidence, and
+cleanup. Its production trace contained zero `GRAPH_IMPULSE` and zero
+`GRAPH_REFRESH_CUE` events, so it is retained as valid negative evidence and
+does not close this CR.
