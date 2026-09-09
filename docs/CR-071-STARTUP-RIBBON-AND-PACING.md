@@ -50,7 +50,7 @@ Avalonia binding name, the quote/status assignments are inside
 releasing their dependencies. The reviewer remains advisory; no blocking
 functional finding was substantiated.
 
-**Status:** Open
+**Status:** Closed
 
 ## Implementation Progress
 
@@ -71,3 +71,25 @@ while a network-available quote refresh has not produced values; it does not
 expose a YFinance connection message in the status ribbon. The corresponding
 2.0 refresh state is now aligned to that behavior. Ribbon geometry, scheduling
 variance, and physical settled evidence remain open work for this CR.
+
+## Closure evidence
+
+The startup ribbon and pacing acceptance was completed on the real product
+against commit `c1212f8d1fc0a827a2c2c1bec37e3131512e56fb`.
+
+- Linux physical 5-minute profile: `dnppv2-local-cycle-cr071-5m`, machine
+  manifest `Passed`, with fullscreen, menu, motion, circular-trace, RSS, and
+  cleanup evidence.
+- Linux physical 10-minute profile: `dnppv2-local-cycle-cr071-10m`, machine
+  manifest `Passed`, with the same complete evidence set.
+- Linux physical 30-minute profile: `dnppv2-local-cycle-cr071-30m`, machine
+  manifest `Passed`, with the same complete evidence set and `SOAK_COMPLETED`.
+- Hosted matrix `34311236812` completed all 43 jobs successfully; the
+  authoritative aggregate reports `HOSTED_SOAK_CLOSURE=Passed`, `LANES=20`,
+  and `REMOTE_REVIEW_CALLS=0`.
+
+RSS was usable in all three Linux profiles. AI summary requests were observed
+but returned the recorded external 4xx advisory disposition; this is retained
+as an external-provider advisory and does not invalidate the startup ribbon or
+pacing acceptance. The circular trace pair remained the only product
+diagnostic evidence, and all remote processes were cleaned up.

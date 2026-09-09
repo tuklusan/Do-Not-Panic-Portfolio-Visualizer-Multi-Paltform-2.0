@@ -5634,7 +5634,7 @@
       "id": "CR-071",
       "phase": "Phase 7",
       "title": "Correct startup ribbon alignment and pacing variance",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-069"
@@ -5684,10 +5684,14 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "The startup freshness state now matches upstream's neutral LOADING - waiting for data behavior and the status column is stably left-anchored, but pacing diagnosis, focused behavioral coverage, and settled physical evidence remain open."
-        ]
+        "status": "closed",
+        "evidence": [
+          "Linux physical 5-minute profile dnppv2-local-cycle-cr071-5m passed with real product scene, fullscreen, menu, motion, circular traces, RSS evidence, and cleanup.",
+          "Linux physical 10-minute profile dnppv2-local-cycle-cr071-10m passed with the same complete evidence set.",
+          "Linux physical 30-minute profile dnppv2-local-cycle-cr071-30m passed with SOAK_COMPLETED, complete circular traces, and cleanup.",
+          "Hosted matrix 34311236812 completed all 43 jobs successfully; aggregate closure passed with 20 lanes and zero remote review calls."
+        ],
+        "unresolved_gaps": []
       },
       "upstream_closure_audit": {
         "status": "complete",
