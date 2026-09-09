@@ -5107,13 +5107,15 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "pending_hosted_revalidation",
+        "status": "pending_review_disposition_rerun",
         "unresolved_gaps": [
-          "Fresh hosted validation of the post-soak receipt and cancellation path is pending."
+          "A fresh hosted candidate is required after the evidence-matched reviewer disposition correction; Windows ARM still needs a successful AI response to close the success-path claim."
         ],
         "closure_evidence": [
           "Hosted run 33982819747 reproduced the Ubuntu Slim missing closure record; the same run produced complete Windows ARM closure records.",
-          "NVIDIA review 20260905-145732 identified the receipt lifecycle as actionable; workflow root-block findings were false positives because the current file and local gate contain the required blocks."
+          "NVIDIA review 20260905-145732 identified the receipt lifecycle as actionable; workflow root-block findings were false positives because the current file and local gate contain the required blocks.",
+          "Hosted run 34290530942 completed the Windows ARM soak with RssPlaybackReady state=Fresh, NEWS_PLAYBACK_PUBLISHED, and AiSummaryRequestStarted; HTTP 429 on both provider attempts produced aiQuotaLimited=true and no AiSummarySucceeded event.",
+          "Hosted run 34290530942 exposed reviewer disposition false positives for quota-shaped AI findings and a ten-minute RSS-refresh expectation; the raw findings are retained and a workflow-only normalization correction is pending rerun."
         ],
         "nvidia_review": {
           "status": "complete_advisory_fail",

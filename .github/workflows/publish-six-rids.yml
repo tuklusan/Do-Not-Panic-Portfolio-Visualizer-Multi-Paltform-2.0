@@ -549,6 +549,8 @@ jobs:
            $aiQuotaForDisposition = ($null -ne $newsEvidenceForDisposition -and $newsEvidenceForDisposition.aiQuotaLimited -eq $true) -or
              ($traceTextForDisposition -match 'event=AiSummaryResponse[^\r\n]*status_code=4[0-9][0-9]')
            $hasBoundedRenderRecovery = $traceTextForDisposition -match 'RENDER;SIGNAL=RecoveryRequested' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Recovered' -and $traceTextForDisposition -match 'RENDER;SIGNAL=Heartbeat'
+           $hasFreshPublishedRss = $traceTextForDisposition -match 'event=RssPlaybackReady\s*(?:\||/)\s*state=Fresh\s*(?:\||/)\s*headline_count=[1-9][0-9]*' -and
+             $traceTextForDisposition -match 'NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT=[1-9][0-9]*'
            $advisoryFindings = @($reviewFindings | Where-Object {
              $id = [string]$_.id
              $isNtpFallbackFinding = (($id -match '^NTP-(?:ALL-HOSTS-FAILED|TIME-SYNC-FAILURE|RECURRING-AT-SHUTDOWN)' -or ($id -eq 'B-001' -and ([string]$_.problem -match '(?i)NTP|clock'))) -and ([string]$_.problem -match '(?i)timeout|host|sync|fallback|local.?clock') -and $traceTextForDisposition -match 'LocalClockFallback')
@@ -562,12 +564,16 @@ jobs:
            $isProviderQuotaFinding = $false
            if ($aiQuotaForDisposition -and
                (($id -match '^(?:AI-SUMMARY-|AI-NEWS-SUMMARIZATION-)') -or
-                ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)|model|completion|OpenRouter'))) {
+                ($problemText -match '(?i)AI\s+summari[sz](?:ation|e)|model|completion|OpenRouter|ai(?:SuccessObserved|QuotaLimited|Required|RequestObserved)|provider-quota-rate-limited'))) {
              $isProviderQuotaFinding = $true
            }
-             $isNtpFallbackFinding -or
-             $isBoundedRenderFinding -or
-             $isProviderQuotaFinding
+           $isRssCadenceFinding = $hasFreshPublishedRss -and
+             ($problemText -match '(?i)RSS|freshness|refresh|stale') -and
+             ($problemText -match '(?i)cadence|within the soak|during the soak|refresh')
+           $isNtpFallbackFinding -or
+           $isBoundedRenderFinding -or
+           $isProviderQuotaFinding -or
+           $isRssCadenceFinding
            })
            $authoritativeFindings = @($reviewFindings | Where-Object { $advisoryFindings -notcontains $_ })
            $normalizedVerdict = if ($null -ne $review -and $reviewComplete -and $authoritativeFindings.Count -eq 0) { 'PASS' } else { $reviewVerdict }

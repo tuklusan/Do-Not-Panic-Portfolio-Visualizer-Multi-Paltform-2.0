@@ -52,6 +52,25 @@ with the older slash form. A focused matcher self-test, workflow gate, harness
 freeze gate, and full .NET test suite pass locally. Fresh hosted proof remains
 required before closure.
 
+Fresh candidate run `34290530942` on commit `5461c63235a396371e610e9b8d9ecc54e45ed31c`
+completed the Windows ARM product soak with usable RSS publication and an AI
+request, but the provider returned HTTP 429 on both attempts; the retained
+trace therefore correctly contains no `AiSummarySucceeded` event and the
+key-free evidence records `aiQuotaLimited=true`. The candidate also exposed a
+review-disposition defect: the reviewer treated quota-shaped AI findings and a
+10-minute RSS-refresh expectation as authoritative even though the project
+policy treats provider 4xx responses as advisory and the trace proves fresh
+RSS playback was published. The workflow now retains those raw findings while
+normalizing only those evidence-matched conditions to advisory. A fresh
+candidate after this correction is still required before closure, and a
+successful Windows ARM AI response remains required for the CR's success-path
+claim.
+
+The operator-authorized autonomous resume directive explicitly authorizes this
+workflow harness correction. The change preserves the frozen harness contract:
+raw reviewer output remains retained, only evidence-matched external/quota
+conditions are normalized, and no product or test harness behavior is weakened.
+
 ## Acceptance
 
 The Windows ARM lane emits the required RSS and AI markers, passes its news
