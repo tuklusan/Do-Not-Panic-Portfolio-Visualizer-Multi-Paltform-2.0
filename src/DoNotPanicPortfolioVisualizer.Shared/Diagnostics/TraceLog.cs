@@ -103,6 +103,20 @@ public static class TraceLog
         [CallerMemberName] string functionName = "")
         => Enqueue("ERROR", source, BuildStructuredMessage(eventName, fields), exception, functionName);
 
+    public static void ForwardExternalState(
+        string level,
+        string source,
+        string eventName,
+        IEnumerable<KeyValuePair<string, object?>> fields,
+        Exception? exception = null)
+    {
+        EnsureNetworkMetadataResolution();
+        UdpSyslogTraceForwarder.TryEnqueue(level, source, BuildLine(level, source, BuildStructuredMessage(eventName, fields), exception, "external"), "dnppv2");
+    }
+
+    public static void ShutdownForwarding()
+        => UdpSyslogTraceForwarder.Shutdown();
+
     public static bool ShouldForceSoftwareRendering()
     {
         string? explicitOverride = Environment.GetEnvironmentVariable(ForceSoftwareRenderingEnvironmentVariable)
@@ -168,12 +182,18 @@ public static class TraceLog
     {
         EnsureWorker();
         EnsureNetworkMetadataResolution();
+        string line = BuildLine(level, source, message, exception, functionName);
+        UdpSyslogTraceForwarder.TryEnqueue(level, source, line, ProgramName);
+        Queue.Enqueue(line);
+        QueueSignal.Release();
+    }
+
+    private static string BuildLine(string level, string source, string message, Exception? exception, string functionName)
+    {
         string exceptionText = exception is null ? string.Empty : $" | ex={exception.GetType().Name}: {exception.Message}";
         string functionText = string.IsNullOrWhiteSpace(functionName) ? "unknown" : functionName;
         NetworkMetadata metadata = Volatile.Read(ref _networkMetadata);
-        string line = $"{DateTimeOffset.UtcNow:O} | {level} | program={ProgramName} | source={source} | function={functionText} | host={metadata.HostName} | ip={metadata.LocalIp} | pid={Environment.ProcessId} | tid={Environment.CurrentManagedThreadId} | {SanitizeValue(message, MaxLineLength)}{SanitizeValue(exceptionText, 240)}";
-        Queue.Enqueue(line);
-        QueueSignal.Release();
+        return $"{DateTimeOffset.UtcNow:O} | {level} | program={ProgramName} | source={source} | function={functionText} | host={metadata.HostName} | ip={metadata.LocalIp} | pid={Environment.ProcessId} | tid={Environment.CurrentManagedThreadId} | {SanitizeValue(message, MaxLineLength)}{SanitizeValue(exceptionText, 240)}";
     }
 
     private static string BuildStructuredMessage(string eventName, IEnumerable<KeyValuePair<string, object?>> fields)

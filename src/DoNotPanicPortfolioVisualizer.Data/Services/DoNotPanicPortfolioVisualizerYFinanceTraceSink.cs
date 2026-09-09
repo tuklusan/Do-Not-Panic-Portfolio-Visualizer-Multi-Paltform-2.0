@@ -12,6 +12,7 @@
 // patent, trademark, and governing-law provisions.
 // ============================================================================
 using YFinance.NET.Diagnostics;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
 
 namespace DoNotPanicPortfolioVisualizer.Data.Services;
 
@@ -25,12 +26,20 @@ public sealed class DoNotPanicPortfolioVisualizerYFinanceTraceSink : IYFinanceTr
     }
 
     public void InfoState(string source, string eventName, IEnumerable<KeyValuePair<string, object?>> fields)
-        => Sink.InfoState(source, eventName, fields);
+    {
+        TraceLog.ForwardExternalState("INFO", source, eventName, fields);
+        Sink.InfoState(source, eventName, fields);
+    }
 
     public void WarnState(string source, string eventName, IEnumerable<KeyValuePair<string, object?>> fields)
-        => Sink.WarnState(source, eventName, fields);
+    {
+        TraceLog.ForwardExternalState("WARN", source, eventName, fields);
+        Sink.WarnState(source, eventName, fields);
+    }
 
     public void ErrorState(string source, string eventName, IEnumerable<KeyValuePair<string, object?>> fields, Exception? exception = null)
-        => Sink.ErrorState(source, eventName, fields, exception);
+    {
+        TraceLog.ForwardExternalState("ERROR", source, eventName, fields, exception);
+        Sink.ErrorState(source, eventName, fields, exception);
+    }
 }
-

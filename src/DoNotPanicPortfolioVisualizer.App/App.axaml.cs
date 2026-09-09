@@ -87,7 +87,11 @@ public partial class App : Application
                     shell.Opened += (_, _) => _ = ProbeSummarizedNewsAccessAsync();
                 }
                 if (!configurationValidationMode)
-                    desktop.Exit += (_, _) => ReleaseSingleInstanceLease();
+                    desktop.Exit += (_, _) =>
+                    {
+                        TraceLog.ShutdownForwarding();
+                        ReleaseSingleInstanceLease();
+                    };
             }
             catch
             {
