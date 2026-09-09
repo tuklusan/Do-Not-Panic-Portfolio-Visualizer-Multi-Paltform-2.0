@@ -6963,16 +6963,61 @@
         "docs/AUDIT_STATE.json"
       ],
       "upstream_behavior_inventory": {
-        "status": "complete_for_implementation_scope",
+        "status": "complete",
         "document": "docs/CR-089-MACRO-BAR-STARTUP-PARITY.md",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files": [
+          "src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "docs/screenshot-release-1.0.png"
+        ],
         "zero_known_gaps": true,
         "known_gaps_routed_to_change_requests": true
       },
+      "reverse_upstream_gap_scan": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_scanned": [
+          "src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "docs/screenshot-release-1.0.png",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/MacroQuoteViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/TickerPresentationTests.cs"
+        ],
+        "zero_missing_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
+      "upstream_closure_audit": {
+        "status": "complete",
+        "upstream_commit": "65a53bbbf0cf9af1058363f8939d464ca03858f8",
+        "source_files_rescanned": [
+          "src/PortfolioSaver.Render/ViewModels/MacroMeterViewModel.cs",
+          "src/PortfolioSaver.Render/Controls/StatusBarControl.xaml",
+          "src/PortfolioSaver.Presentation/Services/StartupCoordinator.cs",
+          "docs/screenshot-release-1.0.png",
+          "src/DoNotPanicPortfolioVisualizer.Render/ViewModels/MacroQuoteViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.Presentation/ViewModels/ProductSceneViewModel.cs",
+          "src/DoNotPanicPortfolioVisualizer.App/Views/ProductShellWindow.axaml",
+          "tests/DoNotPanicPortfolioVisualizer.Tests/TickerPresentationTests.cs"
+        ],
+        "zero_unmapped_behaviors": true,
+        "successive_zero_gap_scans": 2,
+        "unresolved_gaps": []
+      },
       "current_validation": {
-        "status": "open",
-        "unresolved_gaps": [
-          "Startup placeholder gauge implementation and focused regression coverage pass locally; the local-macro-startup-current Win10 real-product screenshot shows the macro bar present with readable labels and gauge values. First-render evidence before network data plus settled screenshots and circular trace evidence on every supported lane remain outstanding."
-        ]
+        "status": "closed",
+        "evidence": [
+          "Release build and focused TickerPresentationTests pass; MacroViewModel_StartsWithVisiblePlaceholderGauge proves startup placeholders and visible track/arc/needle paths.",
+          "Fresh Win10 physical capture dnppv2-local-cycle-cr089-first-render-win10 passed the frozen configuration harness. small-viewport.png shows all six macro cards with readable labels, -- placeholders, and visible gauge geometry while the scene remains in LOADING - waiting for data.",
+          "Hosted matrix run 34363171543 completed all 20 supported hosted lanes with settled product screenshots, circular traces, cleanup, and aggregate HOSTED_SOAK_CLOSURE=Passed.",
+          "The hosted run's provider-quota-rate-limited AI result is retained as negative AI evidence and does not affect macro-bar acceptance."
+        ],
+        "unresolved_gaps": []
       }
     },
     {

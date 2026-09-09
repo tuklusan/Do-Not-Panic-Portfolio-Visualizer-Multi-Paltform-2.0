@@ -47,3 +47,13 @@ arc and needle so the gauge cards have a visible startup state.
   unavailable values.
 - Startup and degraded states are covered by tests and circular trace evidence
   on every supported platform lane.
+
+## Closure Evidence
+
+The existing implementation and focused regression `MacroViewModel_StartsWithVisiblePlaceholderGauge` preserve the upstream startup contract: six macro cards are constructed before quote responses, each starts with `--` value/change text, a visible zero-fill arc, a visible needle, and stable labels/order.
+
+The fresh Win10 physical capture `dnppv2-local-cycle-cr089-first-render-win10` passed the frozen configuration harness with `SceneWarmupSeconds=2` and `SoakDurationMinutes=0`. Its `small-viewport.png` is the first-render evidence: all six macro cards are visible with readable labels, `--` placeholders, and visible gauge geometry while the scene still reports `LOADING - waiting for data`; `step.log` records the settled viewport/fullscreen captures and `trace/trace.circular.log` records the ordered startup transitions.
+
+Hosted matrix run `34363171543` completed all 20 supported hosted lanes. Each lane retained the required settled product screenshot and circular traces, and the aggregate closure validator passed. The matrix run's AI evidence was negative provider-quota evidence and is unrelated to this macro-bar acceptance.
+
+The upstream forward inventory and reverse closure scan are recorded against upstream commit `65a53bbbf0cf9af1058363f8939d464ca03858f8`; the closure gate requires two successive zero-gap scans and reports the same source set used by the implementation inventory.
