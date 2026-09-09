@@ -64,8 +64,36 @@ $process = $null
 $outcome = 'Failed'
 $failure = $null
 $samples = [Collections.Generic.List[object]]::new()
+$traceForwarderType = $null
+
+function Send-HarnessTrace {
+    param(
+        [Parameter(Mandatory = $true)][string]$Level,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+    if ($null -eq $traceForwarderType) { return }
+    try {
+        [void]$traceForwarderType.GetMethod('ForwardExternalLine').Invoke($null, @($Level, 'Invoke-ProductSoak', $Message, 'dnppv2-harness'))
+    }
+    catch {
+        # Remote forwarding is best effort; local soak artifacts remain authoritative.
+    }
+}
 
 New-Item -ItemType Directory -Path $resolvedArtifactRoot, $resolvedDataRoot -Force | Out-Null
+
+if ($env:DNPPV_TRACE_FORWARD -eq 'Y' -or $env:DNPPV_TRACE_FORWARD -eq '1') {
+    try {
+        $sharedAssemblyPath = Join-Path (Split-Path -Parent $resolvedExecutable) 'DoNotPanicPortfolioVisualizer.Shared.dll'
+        $sharedAssembly = [Reflection.Assembly]::LoadFrom($sharedAssemblyPath)
+        $traceForwarderType = $sharedAssembly.GetType('DoNotPanicPortfolioVisualizer.Shared.Diagnostics.TraceLog', $true)
+    }
+    catch {
+        $traceForwarderType = $null
+    }
+}
+
+Send-HarnessTrace -Level 'INFO' -Message "PRODUCT_SOAK_STARTED duration_minutes=$DurationMinutes artifact_root=$resolvedArtifactRoot"
 
 try {
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
@@ -82,6 +110,17 @@ try {
         # The key exists only in the child process environment and is never
         # written to the result manifest, trace artifact, or command output.
         $startInfo.Environment['DNPPV_OPENROUTER_API_KEY'] = $OpenRouterApiKey
+    }
+    foreach ($forwardingVariable in @(
+        'DNPPV_TRACE_FORWARD',
+        'DNPPV_TRACE_FORWARD_TEST_OVERRIDE',
+        'DNPPV_TRACE_FORWARD_HOST',
+        'DNPPV_TRACE_FORWARD_PORT'
+    )) {
+        $forwardingValue = [Environment]::GetEnvironmentVariable($forwardingVariable)
+        if ($null -ne $forwardingValue) {
+            $startInfo.Environment[$forwardingVariable] = $forwardingValue
+        }
     }
     if (-not [string]::IsNullOrWhiteSpace($ScreenshotPath)) {
         $startInfo.Environment['DNPPV_PRODUCT_CAPTURE_PATH'] = $ScreenshotPath
@@ -103,6 +142,7 @@ try {
             pid = $process.Id
             running = -not $process.HasExited
         })
+        Send-HarnessTrace -Level 'INFO' -Message "PRODUCT_SOAK_SAMPLE pid=$($process.Id) running=$(-not $process.HasExited)"
         if ($process.HasExited) {
             throw "Product exited before soak duration completed with code $($process.ExitCode)."
         }
@@ -111,6 +151,7 @@ try {
 }
 catch {
     $failure = $_.Exception.Message
+    Send-HarnessTrace -Level 'ERROR' -Message "PRODUCT_SOAK_FAILED message=$failure"
 }
 finally {
     if ($null -ne $process) {
@@ -184,6 +225,10 @@ finally {
         $result.failure = $failure
     }
     $result | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $resultPath -Encoding utf8
+    Send-HarnessTrace -Level $(if ($outcome -eq 'Passed') { 'INFO' } else { 'ERROR' }) -Message "PRODUCT_SOAK_COMPLETED outcome=$outcome trace_files=$([string]::Join(',', @($result.traceFiles)))"
+    if ($null -ne $traceForwarderType) {
+        try { [void]$traceForwarderType.GetMethod('ShutdownForwarding').Invoke($null, @()) } catch { }
+    }
 }
 
 if ($outcome -ne 'Passed') {

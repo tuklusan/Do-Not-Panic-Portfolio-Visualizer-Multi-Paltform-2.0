@@ -117,6 +117,15 @@ public static class TraceLog
     public static void ShutdownForwarding()
         => UdpSyslogTraceForwarder.Shutdown();
 
+    public static void ForwardExternalLine(string level, string source, string line, string application)
+    {
+        EnsureWorker();
+        EnsureNetworkMetadataResolution();
+        TryForward(level, source, line, application);
+        Queue.Enqueue(BuildLine(level, source, line, null, "external"));
+        QueueSignal.Release();
+    }
+
     public static bool ShouldForceSoftwareRendering()
     {
         string? explicitOverride = Environment.GetEnvironmentVariable(ForceSoftwareRenderingEnvironmentVariable)
@@ -183,9 +192,21 @@ public static class TraceLog
         EnsureWorker();
         EnsureNetworkMetadataResolution();
         string line = BuildLine(level, source, message, exception, functionName);
-        UdpSyslogTraceForwarder.TryEnqueue(level, source, line, ProgramName);
+        TryForward(level, source, line, ProgramName);
         Queue.Enqueue(line);
         QueueSignal.Release();
+    }
+
+    private static void TryForward(string level, string source, string line, string application)
+    {
+        try
+        {
+            UdpSyslogTraceForwarder.TryEnqueue(level, source, line, application);
+        }
+        catch
+        {
+            // Remote forwarding is best effort; local circular traces remain authoritative.
+        }
     }
 
     private static string BuildLine(string level, string source, string message, Exception? exception, string functionName)

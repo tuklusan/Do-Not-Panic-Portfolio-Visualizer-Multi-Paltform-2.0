@@ -55,6 +55,36 @@ $resolvedPublishRoot = (Resolve-Path -LiteralPath $LocalPublishRoot -ErrorAction
 $resolvedArtifactRoot = [IO.Path]::GetFullPath($ArtifactRoot)
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 New-Item -ItemType Directory -Path $resolvedArtifactRoot -Force | Out-Null
+$traceForwarderType = $null
+
+function Send-HarnessTrace {
+    param(
+        [Parameter(Mandatory = $true)][string]$Level,
+        [Parameter(Mandatory = $true)][string]$Message
+    )
+    if ($null -eq $traceForwarderType) { return }
+    try {
+        [void]$traceForwarderType.GetMethod('ForwardExternalLine').Invoke($null, @($Level, 'Invoke-LocalLabSoakCycle', $Message, 'dnppv2-harness'))
+    }
+    catch {
+        # Remote forwarding is best effort; local cycle artifacts remain authoritative.
+    }
+}
+
+if ($env:DNPPV_TRACE_FORWARD -eq 'Y' -or $env:DNPPV_TRACE_FORWARD -eq '1') {
+    try {
+        $sharedAssemblyPath = Get-ChildItem -LiteralPath $resolvedPublishRoot -Recurse -Filter 'DoNotPanicPortfolioVisualizer.Shared.dll' -File | Select-Object -First 1 -ExpandProperty FullName
+        if (-not [string]::IsNullOrWhiteSpace($sharedAssemblyPath)) {
+            $sharedAssembly = [Reflection.Assembly]::LoadFrom($sharedAssemblyPath)
+            $traceForwarderType = $sharedAssembly.GetType('DoNotPanicPortfolioVisualizer.Shared.Diagnostics.TraceLog', $true)
+        }
+    }
+    catch {
+        $traceForwarderType = $null
+    }
+}
+
+Send-HarnessTrace -Level 'INFO' -Message "LOCAL_LAB_CYCLE_STARTED duration_minutes=$DurationMinutes artifact_root=$resolvedArtifactRoot"
 
 $probePath = Join-Path $PSScriptRoot 'Test-LocalLabAvailability.ps1'
 $availabilityPath = if ($SkipAvailabilityProbe) {
@@ -368,6 +398,7 @@ else {
 }
 function Save-CycleManifest {
     $cycle | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $cyclePath -Encoding utf8
+    Send-HarnessTrace -Level 'INFO' -Message "LOCAL_LAB_CYCLE_STATE cycle=$($cycle.cycleId) machines=$(@($cycle.machines).Count)"
 }
 
 if ([string]::IsNullOrWhiteSpace($MachineName)) {
@@ -769,5 +800,10 @@ if (Test-Path -LiteralPath __DNPPV_ROOT_LITERAL__) { Remove-Item -LiteralPath __
 
 $cycle.completedUtc = [DateTimeOffset]::UtcNow.ToString('O')
 Save-CycleManifest
-if (@($cycle.machines | Where-Object { $_.status -eq 'Failed' }).Count -gt 0) { throw "Local lab cycle failed; see $cyclePath" }
+$failedMachines = @($cycle.machines | Where-Object { $_.status -eq 'Failed' })
+Send-HarnessTrace -Level $(if ($failedMachines.Count -eq 0) { 'INFO' } else { 'ERROR' }) -Message "LOCAL_LAB_CYCLE_COMPLETED cycle=$($cycle.cycleId) failed_machines=$($failedMachines.Count)"
+if ($null -ne $traceForwarderType) {
+    try { [void]$traceForwarderType.GetMethod('ShutdownForwarding').Invoke($null, @()) } catch { }
+}
+if ($failedMachines.Count -gt 0) { throw "Local lab cycle failed; see $cyclePath" }
 Write-Output "LOCAL_LAB_CYCLE=Recorded;CYCLE=$($cycle.cycleId);ARTIFACT=$resolvedArtifactRoot"

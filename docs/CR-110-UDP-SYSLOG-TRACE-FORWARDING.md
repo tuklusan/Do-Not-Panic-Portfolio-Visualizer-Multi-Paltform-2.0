@@ -79,6 +79,14 @@ there is no privacy-based event allowlist or forwarding-time redaction. No
 TCP fallback, HTTP fallback, alternate DNS target, unbounded queue, or blocking
 network call is acceptable.
 
+The operator-authorized CR-110 harness integration is an approved frozen-harness
+change. `build/Invoke-ProductSoak.ps1` and
+`build/Invoke-LocalLabSoakCycle.ps1` route their lifecycle and sample events
+through the same shared forwarding entry point when the exact opt-in variable is
+enabled, while preserving their existing local output and cleanup behavior. The
+freeze approval is recorded for the candidate commit and is consumed only for
+this CR-110 change.
+
 ## Acceptance Criteria
 
 - Source-cited upstream and current-2.0 logging inventories pass forward and
