@@ -46,7 +46,7 @@ contention during local reproduction:
 dotnet publish src/DoNotPanicPortfolioVisualizer.App/DoNotPanicPortfolioVisualizer.App.csproj `
   --configuration Release --runtime <rid> --self-contained true `
   --output artifacts/<rid>
-./build/generate-release-manifest.ps1 -ReleaseDirectory artifacts/<rid> -Rid <rid> -ProductVersion 2.0
+./build/generate-release-manifest.ps1 -ReleaseDirectory artifacts/<rid> -ProductVersion 2.0
 ```
 
 The hosted workflow currently publishes the RID directory. The release
