@@ -28,8 +28,10 @@ public sealed partial class TickerLaneViewModel : ObservableObject
     private const int MaximumVisibleTickerItems = 4;
     private const double LabelCharacterWidth = 7.2d;
     private const double LabelHorizontalPadding = 14d;
-    private const double LabelToViewportGap = 0d;
-    private const double LaneHorizontalPadding = 4d;
+    // Account for the lane border/padding, label border/margin, and viewport
+    // border margins so the measured track never extends past the lane edge.
+    private const double LabelToViewportGap = 16d;
+    private const double LaneHorizontalPadding = 24d;
 
     private readonly TickerMotionController _motion = new();
     private int _sideCopies;

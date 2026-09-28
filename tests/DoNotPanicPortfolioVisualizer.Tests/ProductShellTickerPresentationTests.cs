@@ -37,6 +37,8 @@ public sealed class ProductShellTickerPresentationTests
         Assert.Contains("FontSize=\"12\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Height=\"28\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Margin=\"4,0,4,0\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("HorizontalAlignment=\"Stretch\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("ColumnDefinitions=\"Auto,*\"", xaml, StringComparison.Ordinal);
         Assert.Contains("ColumnDefinitions=\"64,66,72,*\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Margin=\"9,0,18,0\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Background=\"#C52A3138\"", xaml, StringComparison.Ordinal);
@@ -93,7 +95,7 @@ public sealed class ProductShellTickerPresentationTests
 
         Assert.Contains("Text=\"Delayed by minimum 15 minutes.\"", xaml, StringComparison.Ordinal);
         Assert.Contains("Width=\"{Binding LaneWidth}\"", xaml, StringComparison.Ordinal);
-        Assert.Contains("Width=\"{Binding ContentViewportWidth}\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("ColumnDefinitions=\"Auto,*\"", xaml, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -106,11 +108,12 @@ public sealed class ProductShellTickerPresentationTests
             "Views",
             "ProductShellWindow.axaml"));
 
-        int viewportStart = xaml.IndexOf("Width=\"{Binding ContentViewportWidth}\"", StringComparison.Ordinal);
+        int viewportStart = xaml.IndexOf("Height=\"28\"", StringComparison.Ordinal);
         int trackStart = xaml.IndexOf("ItemsSource=\"{Binding TrackItems}\"", viewportStart, StringComparison.Ordinal);
 
         Assert.True(viewportStart >= 0);
         Assert.True(trackStart > viewportStart);
+        Assert.DoesNotContain("Width=\"{Binding ContentViewportWidth}\"", xaml, StringComparison.Ordinal);
 
         string viewportAndTrack = xaml[viewportStart..xaml.IndexOf("</Border>", trackStart, StringComparison.Ordinal)];
         Assert.Contains("ClipToBounds=\"True\"", viewportAndTrack, StringComparison.Ordinal);

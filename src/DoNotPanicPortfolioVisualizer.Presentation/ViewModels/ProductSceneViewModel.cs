@@ -101,6 +101,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private Task? _deferredSceneLoops;
     private Task? _newsPlaybackLoop;
     private Task? _ambientLoop;
+    private int _ambientFramePosted;
+    private long _lastAmbientUiTimestamp;
     private Task? _renderHeartbeatLoop;
     private bool _deferredSceneLoopsStarted;
     private bool _sceneDisposalStarted;
@@ -312,27 +314,55 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunAmbientLoopAsync(CancellationToken cancellationToken)
     {
-        Stopwatch clock = Stopwatch.StartNew();
-        TimeSpan prior = clock.Elapsed;
         while (!cancellationToken.IsCancellationRequested)
         {
             if (!_cinematicPlaybackActive)
             {
-                prior = clock.Elapsed;
+                Interlocked.Exchange(ref _lastAmbientUiTimestamp, 0);
                 await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
                 continue;
             }
 
-            TimeSpan current = clock.Elapsed;
-            TimeSpan elapsed = current - prior;
-            prior = current;
             try
             {
                 if (DateTimeOffset.UtcNow - _lastNtpSyncUtc >= TimeSpan.FromMinutes(10))
                     StartNtpRefresh(cancellationToken);
-                Stopwatch uiClock = Stopwatch.StartNew();
-                await InvokeOnUiAsync(() => UpdateClockAndMotion(elapsed), cancellationToken);
-                TraceFrameTiming(elapsed, uiClock.Elapsed);
+                PostAmbientFrame(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                // Keep clocks and motion alive if one optional background is malformed.
+                TraceDegradedLane("ambient", ex);
+            }
+            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken);
+        }
+    }
+
+    private void PostAmbientFrame(CancellationToken cancellationToken)
+    {
+        if (Interlocked.Exchange(ref _ambientFramePosted, 1) != 0)
+            return;
+
+        _uiContext.Post(_ =>
+        {
+            Interlocked.Exchange(ref _ambientFramePosted, 0);
+            if (cancellationToken.IsCancellationRequested || !_cinematicPlaybackActive)
+                return;
+
+            long started = Stopwatch.GetTimestamp();
+            long prior = Interlocked.Exchange(ref _lastAmbientUiTimestamp, started);
+            TimeSpan elapsed = prior == 0
+                ? TimeSpan.Zero
+                : Stopwatch.GetElapsedTime(prior, started);
+            try
+            {
+                UpdateClockAndMotion(elapsed);
+                TimeSpan uiElapsed = Stopwatch.GetElapsedTime(started);
+                TraceFrameTiming(elapsed, uiElapsed);
                 DateTimeOffset acceptedAt = DateTimeOffset.UtcNow;
                 TimeSpan fixtureElapsed = acceptedAt - _renderHeartbeatFixtureStartedUtc;
                 bool suppressFixtureFrame = _renderHeartbeatFixtureEnabled &&
@@ -346,17 +376,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     TraceRenderHeartbeat(heartbeat);
                 }
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (Exception exception)
             {
-                break;
+                TraceDegradedLane("ambient-frame", exception);
             }
-            catch (Exception ex)
-            {
-                // Keep clocks and motion alive if one optional background is malformed.
-                TraceDegradedLane("ambient", ex);
-            }
-            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken);
-        }
+        }, null);
     }
 
     private async Task RunNewsPlaybackLoopAsync(CancellationToken cancellationToken)

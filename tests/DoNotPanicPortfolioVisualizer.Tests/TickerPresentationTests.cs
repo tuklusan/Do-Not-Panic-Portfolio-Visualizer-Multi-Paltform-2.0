@@ -110,7 +110,7 @@ public sealed class TickerPresentationTests
 
         lane.ConfigureViewport(1200d);
 
-        Assert.Equal(1146d, lane.ContentViewportWidth);
+        Assert.Equal(1110d, lane.ContentViewportWidth);
         Assert.Equal(1200d, lane.LaneWidth);
         Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
     }
