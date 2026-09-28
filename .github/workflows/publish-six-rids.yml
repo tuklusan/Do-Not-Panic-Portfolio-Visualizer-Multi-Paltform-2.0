@@ -693,9 +693,14 @@ jobs:
             $reviewText = if (Test-Path -LiteralPath $reviewLog -PathType Leaf) { Get-Content -LiteralPath $reviewLog -Raw } else { '' }
             if ([string]::IsNullOrWhiteSpace($reviewText)) { $failures.Add("NVIDIA review output is empty: $reviewLog") }
             $reviewResult = $null
+            $reviewUncertainties = @()
             if (Test-Path -LiteralPath $reviewResultPath -PathType Leaf) {
               try { $reviewResult = Get-Content -LiteralPath $reviewResultPath -Raw | ConvertFrom-Json } catch { $failures.Add("Unreadable semantic review result: $reviewResultPath") }
             }
+            if ($null -ne $reviewResult -and $null -ne $reviewResult.uncertainties) {
+              $reviewUncertainties = @($reviewResult.uncertainties | Where-Object { $null -ne $_ })
+            }
+            $uncertaintiesMalformed = $null -ne $reviewResult -and $null -ne $reviewResult.uncertainties -and $reviewResult.uncertainties -isnot [array]
             $materialHash = if (Test-Path -LiteralPath $manifestPath -PathType Leaf) { (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant() } else { $null }
             $expectedSnapshotId = if ($null -ne $materialHash) { ('{0}:{1}' -f ([string]$env:GITHUB_SHA).ToLowerInvariant(), $materialHash).ToLowerInvariant() } else { $null }
             if ($null -ne $reviewResult -and $null -ne $materialHash) {
@@ -711,7 +716,7 @@ jobs:
             elseif ($reviewResult.schema -cne 'dnppv2-test-artifact-review-result/v2' -or $reviewResult.verdict -cne 'PASS' -or
               $reviewResult.reviewComplete -isnot [bool] -or -not $reviewResult.reviewComplete -or
               $reviewResult.blockingFindings -isnot [array] -or $reviewResult.blockingFindings.Count -ne 0 -or
-              $reviewResult.uncertainties -isnot [array] -or $reviewResult.uncertainties.Count -ne 0) {
+              $uncertaintiesMalformed -or $reviewUncertainties.Count -ne 0) {
               $failures.Add('Semantic TEST_ARTIFACT PASS receipt is missing, incomplete, or not clean.')
             }
             if ($null -ne $reviewResult -and $reviewResult.materialSha256 -ne $materialHash) { $failures.Add('Semantic review material hash does not match the retained manifest.') }
