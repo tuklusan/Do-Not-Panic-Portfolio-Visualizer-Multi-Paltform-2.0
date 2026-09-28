@@ -96,7 +96,7 @@ public sealed class TickerPresentationTests
     }
 
     [Fact]
-    public void TickerLane_OuterWidthUsesMeasuredContentWithoutStretchingSparseLanes()
+    public void TickerLane_ExpandsSparseContentToFillTheAvailableViewport()
     {
         TickerGroup source = new()
         {
@@ -110,9 +110,9 @@ public sealed class TickerPresentationTests
 
         lane.ConfigureViewport(1200d);
 
-        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
-        Assert.Equal(4d, lane.LaneWidth - (5d * 7.2d + 14d + lane.ContentViewportWidth));
-        Assert.True(lane.LaneWidth < 1200d);
+        Assert.Equal(1146d, lane.ContentViewportWidth);
+        Assert.Equal(1200d, lane.LaneWidth);
+        Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class TickerPresentationTests
         Assert.True(lane.LaneWidth > 0d);
 
         lane.Quotes.Add(new TickerQuoteViewModel(new TickerItem { Symbol = "BBB", Enabled = true }));
-        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.Equal(1006d, lane.ContentViewportWidth);
         Assert.NotEmpty(lane.TrackItems);
     }
 
@@ -148,8 +148,9 @@ public sealed class TickerPresentationTests
         TickerLaneViewModel lane = new(source);
         lane.ConfigureViewport(1600d);
 
-        Assert.Equal(4d * TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
-        Assert.True(lane.LaneWidth < 1200d);
+        Assert.Equal(1582d, lane.ContentViewportWidth);
+        Assert.Equal(1600d, lane.LaneWidth);
+        Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
     }
 
     [Theory]

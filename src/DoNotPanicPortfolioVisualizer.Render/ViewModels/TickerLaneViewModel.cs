@@ -83,7 +83,7 @@ public sealed partial class TickerLaneViewModel : ObservableObject
             TrackItems.Clear();
             TrackWidth = 0d;
             TrackOffset = 0d;
-            LaneWidth = GetLabelWidth() + LaneHorizontalPadding;
+            LaneWidth = Math.Max(GetLabelWidth() + LaneHorizontalPadding, _viewportWidth);
             ContentViewportWidth = 0d;
             _sideCopies = 0;
             _motion.Stop();
@@ -96,8 +96,11 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         double measuredContentWidth = Math.Min(
             Quotes.Count * ItemWidth,
             MaximumVisibleTickerItems * ItemWidth);
-        ContentViewportWidth = measuredContentWidth;
-        int sideCopies = Math.Max(2, (int)Math.Ceiling(_viewportWidth / cycleDistance) + 2);
+        double availableContentWidth = Math.Max(
+            1d,
+            _viewportWidth - GetLabelWidth() - LabelToViewportGap - LaneHorizontalPadding);
+        ContentViewportWidth = Math.Max(measuredContentWidth, availableContentWidth);
+        int sideCopies = Math.Max(2, (int)Math.Ceiling(ContentViewportWidth / cycleDistance) + 2);
         if (sideCopies != _sideCopies || TrackItems.Count == 0)
         {
             _sideCopies = sideCopies;
@@ -113,7 +116,9 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         }
 
         TrackWidth = ((sideCopies * 2) + 1) * cycleDistance;
-        LaneWidth = GetLabelWidth() + LabelToViewportGap + ContentViewportWidth + LaneHorizontalPadding;
+        LaneWidth = Math.Max(
+            _viewportWidth,
+            GetLabelWidth() + LabelToViewportGap + ContentViewportWidth + LaneHorizontalPadding);
         _motion.Configure(cycleDistance, Speed, Direction, sideCopies);
         TrackOffset = _motion.Offset;
     }

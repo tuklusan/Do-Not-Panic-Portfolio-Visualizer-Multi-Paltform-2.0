@@ -310,7 +310,7 @@ public partial class ProductShellWindow : Window
         if (DataContext is not ProductSceneViewModel scene)
             return;
 
-        double tickerViewportWidth = Math.Max(1d, e.NewSize.Width - 180d);
+        double tickerViewportWidth = Math.Max(1d, e.NewSize.Width - 32d);
         foreach (TickerLaneViewModel lane in scene.Lanes)
             lane.ConfigureViewport(tickerViewportWidth);
 

@@ -92,13 +92,13 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset _nextBackgroundChangeUtc;
     private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
     private DateTimeOffset _lastNtpSyncUtc = DateTimeOffset.MinValue;
+    private Task? _ntpRefreshTask;
     private TimeSpan? _ntpOffset;
     private double _graphViewportWidth = 1280d;
     private double _graphViewportHeight = 720d;
     private double _globalMarketsViewportWidth = 900d;
     private Task? _initialQuoteSequence;
     private Task? _deferredSceneLoops;
-    private Task? _tickerMotionLoop;
     private Task? _newsPlaybackLoop;
     private Task? _ambientLoop;
     private Task? _renderHeartbeatLoop;
@@ -115,6 +115,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly HashSet<string> _productionImpulseSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
+    private DateTimeOffset _nextFrameTimingTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private readonly object _degradedTraceGate = new();
     private readonly Dictionary<string, DateTimeOffset> _lastDegradedTraceUtc = new(StringComparer.Ordinal);
@@ -271,7 +272,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _initialQuoteSequence ??= RunInitialQuoteSequenceAsync(_lifetimeCts.Token);
             // The upstream scene first presents its bootstrap state and completes its
             // initial quote ordering before its independent background lanes fan out.
-            _tickerMotionLoop ??= RunTickerMotionLoopAsync(_lifetimeCts.Token);
             _newsPlaybackLoop ??= RunNewsPlaybackLoopAsync(_lifetimeCts.Token);
             _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
             _renderHeartbeatLoop ??= RunRenderHeartbeatLoopAsync(_lifetimeCts.Token);
@@ -329,8 +329,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             try
             {
                 if (DateTimeOffset.UtcNow - _lastNtpSyncUtc >= TimeSpan.FromMinutes(10))
-                    await RefreshNtpAsync(cancellationToken);
+                    StartNtpRefresh(cancellationToken);
+                Stopwatch uiClock = Stopwatch.StartNew();
                 await InvokeOnUiAsync(() => UpdateClockAndMotion(elapsed), cancellationToken);
+                TraceFrameTiming(elapsed, uiClock.Elapsed);
                 DateTimeOffset acceptedAt = DateTimeOffset.UtcNow;
                 TimeSpan fixtureElapsed = acceptedAt - _renderHeartbeatFixtureStartedUtc;
                 bool suppressFixtureFrame = _renderHeartbeatFixtureEnabled &&
@@ -353,44 +355,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 // Keep clocks and motion alive if one optional background is malformed.
                 TraceDegradedLane("ambient", ex);
             }
-            await Task.Delay(TimeSpan.FromMilliseconds(50), cancellationToken);
-        }
-    }
-
-    private async Task RunTickerMotionLoopAsync(CancellationToken cancellationToken)
-    {
-        Stopwatch clock = Stopwatch.StartNew();
-        TimeSpan prior = clock.Elapsed;
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            if (!_cinematicPlaybackActive)
-            {
-                prior = clock.Elapsed;
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
-                continue;
-            }
-
-            TimeSpan current = clock.Elapsed;
-            TimeSpan elapsed = current - prior;
-            prior = current;
-            try
-            {
-                await InvokeOnUiAsync(() =>
-                {
-                    foreach (TickerLaneViewModel lane in Lanes)
-                        lane.Step(elapsed);
-                }, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                // A single lane failure must not permanently stop tape motion.
-                TraceDegradedLane("ticker-motion", ex);
-            }
-            await Task.Delay(TimeSpan.FromMilliseconds(33), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken);
         }
     }
 
@@ -915,6 +880,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
         TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
+        foreach (TickerLaneViewModel lane in Lanes)
+            lane.Step(elapsed);
         TraceCompletedProductionImpulses();
         TraceCompletedGraphFixtureImpulses();
 
@@ -960,6 +927,15 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _lastNtpSyncUtc = attemptUtc;
             TraceLog.WarnState("NtpTimeService", "RefreshFailed", [new("exception_type", exception.GetType().Name)]);
         }
+    }
+
+    private void StartNtpRefresh(CancellationToken cancellationToken)
+    {
+        if (_ntpRefreshTask is { IsCompleted: false })
+            return;
+
+        _lastNtpSyncUtc = DateTimeOffset.UtcNow;
+        _ntpRefreshTask = RefreshNtpAsync(cancellationToken);
     }
 
     private DateTimeOffset GetReferenceUtcNow()
@@ -1140,6 +1116,18 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private void WriteCinematicTrace(string message)
         => TraceLog.Info("ProductScene.Cinematic", message);
 
+    private void TraceFrameTiming(TimeSpan schedulerElapsed, TimeSpan uiElapsed)
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        if (now < _nextFrameTimingTraceUtc)
+            return;
+
+        _nextFrameTimingTraceUtc = now.AddSeconds(1);
+        WriteCinematicTrace(
+            $"FRAME;CLOCK_MS={schedulerElapsed.TotalMilliseconds:0.0};UI_MS={uiElapsed.TotalMilliseconds:0.0};" +
+            $"OVERDUE={schedulerElapsed.TotalMilliseconds >= 100d};ACTIVE={_cinematicPlaybackActive}");
+    }
+
     private void TraceDegradedLane(string lane, Exception exception)
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
@@ -1206,7 +1194,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             [
                 _initialQuoteSequence,
                 _deferredSceneLoops,
-                _tickerMotionLoop,
                 _newsPlaybackLoop,
                 _ambientLoop,
                 _renderHeartbeatLoop

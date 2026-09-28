@@ -90,7 +90,8 @@ function Invoke-NativeCommand {
         [Parameter(Mandatory = $true)][string]$FilePath,
         [Parameter()][string[]]$ArgumentList = @(),
         [Parameter()][int[]]$AllowedExitCodes = @(0),
-        [Parameter()][ValidateRange(0, 30000)][int]$TimeoutSeconds = 0
+        [Parameter()][ValidateRange(0, 30000)][int]$TimeoutSeconds = 0,
+        [Parameter()][string]$WorkingDirectory = ''
     )
 
     if ($TimeoutSeconds -le 0) {
@@ -102,6 +103,9 @@ function Invoke-NativeCommand {
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
+    if (-not [string]::IsNullOrWhiteSpace($WorkingDirectory)) {
+        $psi.WorkingDirectory = $WorkingDirectory
+    }
     if ($psi.PSObject.Properties.Name -contains 'ArgumentList') {
         foreach ($argument in $ArgumentList) {
             [void]$psi.ArgumentList.Add($argument)
@@ -333,8 +337,18 @@ function Copy-ToRemote {
 
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
+    $sourceParent = Split-Path -Parent $SourcePath
+    $sourceLeaf = Split-Path -Leaf $SourcePath
+    if ([string]::IsNullOrWhiteSpace($sourceParent)) {
+        $sourceParent = (Get-Location).Path
+    }
+    $sourceParent = (Resolve-Path -LiteralPath $sourceParent).Path
     try {
-        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -ArgumentList @(
+        # OpenSSH scp interprets the colon in an absolute Windows drive path as
+        # a remote-spec separator. Run from the source directory and pass only
+        # the leaf (including any publish wildcard) as the local operand.
+        Push-Location -LiteralPath $sourceParent
+        Invoke-NativeCommand -FilePath 'sshpass' -TimeoutSeconds ([Math]::Max($script:NativeCommandTimeoutSeconds, 600)) -WorkingDirectory $sourceParent -ArgumentList @(
             '-e',
             'scp',
             '-O',
@@ -346,11 +360,12 @@ function Copy-ToRemote {
             'BatchMode=no',
             '-o',
             'ConnectTimeout=60',
-            $SourcePath,
+            $sourceLeaf,
             "${User}@${HostName}:$DestinationPath"
         )
     }
     finally {
+        Pop-Location
         if ($null -eq $previous) {
             Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue
         }
@@ -505,7 +520,7 @@ function Copy-FromRemote {
             "${User}@${HostName}:$SourcePath",
             '.'
         )
-        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList $copyArguments
+        Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList $copyArguments -WorkingDirectory $copyWorkingDirectory
     }
     finally {
         Pop-Location
