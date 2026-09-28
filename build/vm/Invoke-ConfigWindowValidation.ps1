@@ -474,7 +474,9 @@ function Copy-FromRemote {
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
     $destinationParent = Split-Path -Parent $DestinationPath
-    $destinationIsDirectory = $Recursive.IsPresent -or $SourcePath.EndsWith('/*', [StringComparison]::Ordinal)
+    $destinationIsDirectory = $Recursive.IsPresent -or
+        $DestinationPath.EndsWith('\\', [StringComparison]::Ordinal) -or
+        $DestinationPath.EndsWith('/', [StringComparison]::Ordinal)
     if ($destinationIsDirectory) {
         New-Item -ItemType Directory -Force -Path $DestinationPath | Out-Null
         $copyWorkingDirectory = (Resolve-Path -LiteralPath $DestinationPath).Path
