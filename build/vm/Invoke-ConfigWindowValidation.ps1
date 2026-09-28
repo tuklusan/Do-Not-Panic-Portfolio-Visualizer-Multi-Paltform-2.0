@@ -473,7 +473,21 @@ function Copy-FromRemote {
 
     $previous = $env:SSHPASS
     $env:SSHPASS = $Secret
+    $destinationParent = Split-Path -Parent $DestinationPath
+    $destinationIsDirectory = $Recursive.IsPresent -or $SourcePath.EndsWith('/*', [StringComparison]::Ordinal)
+    if ($destinationIsDirectory) {
+        New-Item -ItemType Directory -Force -Path $DestinationPath | Out-Null
+        $copyWorkingDirectory = (Resolve-Path -LiteralPath $DestinationPath).Path
+    }
+    else {
+        New-Item -ItemType Directory -Force -Path $destinationParent | Out-Null
+        $copyWorkingDirectory = (Resolve-Path -LiteralPath $destinationParent).Path
+    }
     try {
+        # OpenSSH scp interprets the colon in an absolute Windows drive path as
+        # a remote-spec separator. Run from the destination directory and use
+        # '.' so paths such as H:\\My Documents\\... remain local.
+        Push-Location -LiteralPath $copyWorkingDirectory
         $copyArguments = @('-e', 'scp')
         if ($Recursive.IsPresent) {
             $copyArguments += '-r'
@@ -487,11 +501,12 @@ function Copy-FromRemote {
             '-o',
             'ConnectTimeout=60',
             "${User}@${HostName}:$SourcePath",
-            $DestinationPath
+            '.'
         )
         Invoke-NativeCommand -FilePath 'sshpass' -ArgumentList $copyArguments
     }
     finally {
+        Pop-Location
         if ($null -eq $previous) {
             Remove-Item Env:SSHPASS -ErrorAction SilentlyContinue
         }
