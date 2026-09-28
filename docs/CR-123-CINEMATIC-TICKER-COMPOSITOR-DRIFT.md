@@ -45,6 +45,9 @@ Status: Open. This is a release-blocking visual-parity defect.
   macOS with screenshots and circular traces reviewed against the upstream
   cinematic contract;
 - no unexplained `FRAME;...OVERDUE=true` bursts during hydration or settled
+- floating graph cards must move with render transforms rather than `Canvas.Left`/
+  `Canvas.Top`; layout-position animation invalidates the full scene and was
+  identified as a Linux compositor queue-starvation risk
   playback; and
-- NVIDIA review and protected release-gate evidence for the implementation and
+- NVIDIA review and release-gate evidence for the implementation and
   the retained runtime artifacts.

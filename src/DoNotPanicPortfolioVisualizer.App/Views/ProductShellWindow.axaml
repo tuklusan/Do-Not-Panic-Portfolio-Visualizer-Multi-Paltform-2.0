@@ -110,12 +110,6 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         <Canvas />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-                <ItemsControl.Styles>
-                    <Style Selector="ItemsControl > ContentPresenter">
-                        <Setter Property="Canvas.Left" Value="{Binding X}" />
-                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
-                    </Style>
-                </ItemsControl.Styles>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Width="186"
@@ -125,6 +119,16 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                 BorderThickness="1"
                                 CornerRadius="6"
                                 Padding="7">
+                            <!--
+                                 Graph cards are continuously animated. Keep their
+                                 layout slot stable and move the visual with a
+                                 render transform; Canvas.Left/Top invalidates the
+                                 whole scene layout on every frame, which produces
+                                 queue starvation on Linux compositors.
+                            -->
+                            <Border.RenderTransform>
+                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                            </Border.RenderTransform>
                             <Grid>
                                 <!-- Upstream flashes the graph card surface during a quote impulse. -->
                                 <Border Background="{Binding FlashBrush}"
