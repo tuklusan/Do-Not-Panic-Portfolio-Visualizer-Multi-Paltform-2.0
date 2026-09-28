@@ -13,6 +13,7 @@
 // ============================================================================
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Render.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
@@ -38,12 +39,16 @@ public sealed partial class MacroQuoteViewModel(
     [ObservableProperty]
     private string _needlePath = BuildNeedlePath(0d);
 
+    [ObservableProperty]
+    private MarketSession _marketSession = MarketSession.Unknown;
+
     public string Label { get; } = label;
     public string Symbol { get; } = symbol;
     public string TrackPath { get; } = BuildArcPath(1d);
 
     public void Apply(QuoteSnapshot quote)
     {
+        MarketSession = quote.MarketSession;
         ValueText = TickerFormatter.FormatPrice(quote);
         ChangeText = TickerFormatter.FormatChange(quote);
         string upBrush = invertRiskColors ? "#FF5A36" : "#39E75F";

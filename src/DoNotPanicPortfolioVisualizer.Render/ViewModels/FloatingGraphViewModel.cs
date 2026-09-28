@@ -12,6 +12,7 @@
 // patent, trademark, and governing-law provisions.
 // ============================================================================
 using CommunityToolkit.Mvvm.ComponentModel;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 
 namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
@@ -51,6 +52,7 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
     [ObservableProperty] private string _middleTimeScaleText = string.Empty;
     [ObservableProperty] private string _rightTimeScaleText = string.Empty;
     [ObservableProperty] private string _overlayText = string.Empty;
+    [ObservableProperty] private MarketSession _marketSession = MarketSession.Unknown;
 
     public string Symbol { get; init; } = string.Empty;
     public string TapeName { get; init; } = string.Empty;
@@ -80,5 +82,6 @@ public sealed partial class FloatingGraphViewModel : ObservableObject
         MiddleTimeScaleText = source.MiddleTimeScaleText;
         RightTimeScaleText = source.RightTimeScaleText;
         OverlayText = source.OverlayText;
+        MarketSession = source.MarketSession;
     }
 }

@@ -12,6 +12,7 @@
 // patent, trademark, and governing-law provisions.
 // ============================================================================
 using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using DoNotPanicPortfolioVisualizer.Shared;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -77,6 +78,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly WorldWeatherService _weatherService = new();
     private readonly NtpTimeService _ntpTimeService = new();
     private readonly InternetProbeService _networkProbe = new();
+    private readonly YFinanceExchangeTimingService _exchangeTimingService = new();
     private readonly BackgroundImageService _backgroundService = new();
     private readonly HistoricalGraphBuildCache _graphBuildCache = new();
     private readonly StagedSceneStartupCoordinator _sceneStartupCoordinator = new();
@@ -91,6 +93,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly object _renderHeartbeatGate = new();
     private DateTimeOffset _nextBackgroundChangeUtc;
     private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
+    private DateTimeOffset _nextCalendarRefreshUtc = DateTimeOffset.MinValue;
+    private ExchangeCalendarSet _exchangeCalendars = new();
+    private readonly ConcurrentDictionary<string, QuoteSnapshot> _latestQuotes = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset _lastNtpSyncUtc = DateTimeOffset.MinValue;
     private Task? _ntpRefreshTask;
     private TimeSpan? _ntpOffset;
@@ -617,6 +622,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 foreach (Action<QuoteSnapshot> apply in applyActions)
                     apply(quote);
 
+                _latestQuotes[quote.Symbol] = quote;
+
                 ApplyQuoteToGraph(quote);
                 UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
                 MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
@@ -652,7 +659,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
                         string.Equals(candidate.Symbol, macro.Symbol, StringComparison.OrdinalIgnoreCase));
                     if (quote is not null)
+                    {
                         macro.Apply(quote);
+                        _latestQuotes[quote.Symbol] = quote;
+                    }
                 }
             }, cancellationToken);
         }
@@ -667,9 +677,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         try
         {
+            await RefreshExchangeCalendarsAsync(cancellationToken);
             IReadOnlyList<QuoteSnapshot> quotes = await SingleSymbolQuoteRefresh.FetchAsync(
                 _quoteProvider,
-                GlobalMarkets.Select(static market => market.Symbol),
+                GlobalMarkets
+                    .Select(static market => market.Symbol)
+                    .Where(symbol => !IsClosedClockMarketQuoteFresh(symbol, DateTimeOffset.UtcNow)),
                 cancellationToken);
             await InvokeOnUiAsync(() =>
             {
@@ -678,8 +691,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
                         string.Equals(candidate.Symbol, market.Symbol, StringComparison.OrdinalIgnoreCase));
                     if (quote is not null)
+                    {
                         market.ApplyQuote(quote);
+                        _latestQuotes[quote.Symbol] = quote;
+                    }
                 }
+                ApplyExchangeCalendarStatuses(DateTimeOffset.UtcNow);
             }, cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -732,7 +749,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _settings.HistoricalLookbackDays,
             cancellationToken);
         HistoricalGraphBuilder builder = new();
-        List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent, bool IsStale)> resolvedGraphs = [];
+        List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent, bool IsStale, MarketSession Session)> resolvedGraphs = [];
         for (int index = 0; index < movers.Count; index++)
         {
             (string tapeName, TickerQuoteViewModel quote) = movers[index];
@@ -749,7 +766,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                         () => builder.Build(tapeName, history, quote.ChangePercent, index)),
                     quote.Last,
                     quote.ChangePercent,
-                    quote.IsStale));
+                    quote.IsStale,
+                    quote.MarketSession));
             }
         }
 
@@ -764,8 +782,9 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     Graphs.RemoveAt(index);
             }
 
-            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent, bool isStale) in resolvedGraphs)
+            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent, bool isStale, MarketSession session) in resolvedGraphs)
             {
+                graph.MarketSession = session;
                 FloatingGraphViewModel? existing = Graphs.FirstOrDefault(candidate =>
                     string.Equals(GetGraphKey(candidate), GetGraphKey(graph), StringComparison.OrdinalIgnoreCase));
                 if (existing is not null)
@@ -871,6 +890,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 market.TimeText = "--:--";
             }
         }
+        ApplyExchangeCalendarStatuses(now);
 
         TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
@@ -988,7 +1008,87 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         FloatingGraphViewModel? graph = Graphs.FirstOrDefault(candidate =>
             string.Equals(candidate.Symbol, quote.Symbol, StringComparison.OrdinalIgnoreCase));
         if (graph is not null)
+        {
+            graph.MarketSession = quote.MarketSession;
             ApplyProductionGraphQuote(graph, quote.Last ?? quote.PreviousClose, quote.ChangePercent, quote.IsStale, "LIVE_QUOTE");
+        }
+    }
+
+    private async Task RefreshExchangeCalendarsAsync(CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        if (now < _nextCalendarRefreshUtc)
+            return;
+
+        bool networkAvailable = await _networkProbe.IsInternetAvailableAsync(cancellationToken).ConfigureAwait(false);
+        if (networkAvailable)
+        {
+            IReadOnlyList<ExchangeCalendarRequest> requests = WorldMarkets.Select(static market => new ExchangeCalendarRequest
+            {
+                CityKey = market.Key,
+                ExchangeCode = market.Key switch
+                {
+                    "NewYork" => "NASDAQ",
+                    "London" => "LSE",
+                    "Paris" => "EURONEXT",
+                    "Tokyo" => "TSE",
+                    "HongKong" => "HKEX",
+                    "Mumbai" => "NSE",
+                    "Sydney" => "ASX",
+                    "SaoPaulo" => "B3",
+                    _ => market.Exchange
+                },
+                ExchangeName = market.Exchange,
+                ExchangeSymbol = market.Symbol,
+                TimeZoneId = market.TimeZone,
+                AlternateTimeZoneId = market.TimeZone
+            }).ToArray();
+
+            ExchangeCalendarSet calendars = await _exchangeTimingService
+                .GetCalendarSetAsync(requests, networkAvailable, cancellationToken)
+                .ConfigureAwait(false);
+            if (calendars.CalendarsByCityKey.Count > 0)
+                _exchangeCalendars = calendars;
+        }
+
+        _nextCalendarRefreshUtc = now.AddMinutes(10);
+    }
+
+    private void ApplyExchangeCalendarStatuses(DateTimeOffset referenceUtc)
+    {
+        foreach (GlobalMarketViewModel market in GlobalMarkets)
+        {
+            ExchangeTradingCalendar? calendar = _exchangeCalendars.TryGetByCityKey(market.Key);
+            if (calendar is null)
+                continue;
+
+            ExchangeCalendarStatus status = _exchangeTimingService.ResolveStatus(calendar, referenceUtc);
+            market.ApplyCalendarStatus(status.Session, _exchangeTimingService.FormatCompactStatus(status));
+            if (ReferenceEquals(market, PinnedGlobalMarket))
+            {
+                string session = status.Session switch
+                {
+                    MarketSession.Regular => "Open",
+                    MarketSession.PreMarket => "Pre-Market",
+                    MarketSession.AfterHours => "After Hours",
+                    MarketSession.Closed => "Closed",
+                    _ => "--"
+                };
+                string countdown = status.HasCountdown ? $" | {_exchangeTimingService.FormatCompactStatus(status)}" : string.Empty;
+                MarketStatusText = $"Market: New York {session}{countdown}";
+            }
+        }
+    }
+
+    private bool IsClosedClockMarketQuoteFresh(string symbol, DateTimeOffset nowUtc)
+    {
+        if (!GlobalMarkets.Any(market => string.Equals(market.Symbol, symbol, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        return _latestQuotes.TryGetValue(symbol, out QuoteSnapshot? quote) &&
+               quote.MarketSession == MarketSession.Closed &&
+               quote.FetchTimestampUtc != DateTimeOffset.MinValue &&
+               nowUtc - quote.FetchTimestampUtc < TimeSpan.FromMinutes(10);
     }
 
     private void ApplyProductionGraphQuote(

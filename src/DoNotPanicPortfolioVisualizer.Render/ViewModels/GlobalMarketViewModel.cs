@@ -13,6 +13,7 @@
 // ============================================================================
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Render.Services;
 using System.Globalization;
 using System.Text;
@@ -26,6 +27,7 @@ public sealed partial class GlobalMarketViewModel : ObservableObject
     [ObservableProperty] private string _changeText = "--";
     [ObservableProperty] private string _accentBrush = "#D4DEE5";
     [ObservableProperty] private string _sessionText = "Waiting";
+    [ObservableProperty] private MarketSession _marketSession = MarketSession.Unknown;
     [ObservableProperty] private string _weatherText = "--";
     [ObservableProperty] private string _miniGraphPath = "M 0,6 L 120,6";
 
@@ -50,6 +52,7 @@ public sealed partial class GlobalMarketViewModel : ObservableObject
             _ => "#D4DEE5"
         };
         SessionText = quote.MarketSession.ToString();
+        MarketSession = quote.MarketSession;
 
         decimal? value = quote.Last ?? quote.PreviousClose;
         if (value.HasValue)
@@ -63,6 +66,15 @@ public sealed partial class GlobalMarketViewModel : ObservableObject
 
             MiniGraphPath = BuildMiniGraphPath(_graphSamples);
         }
+    }
+
+    public void ApplyCalendarStatus(MarketSession session, string displayText)
+    {
+        if (session == MarketSession.Unknown)
+            return;
+
+        MarketSession = session;
+        SessionText = string.IsNullOrWhiteSpace(displayText) ? session.ToString() : displayText;
     }
 
     private static string BuildMiniGraphPath(IEnumerable<decimal> samples)

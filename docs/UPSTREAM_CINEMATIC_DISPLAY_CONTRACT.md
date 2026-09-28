@@ -207,6 +207,14 @@ not evidence that motion behavior passes.
 - Background, quote, history, weather, market, and news failures degrade their
   own surfaces without stopping unrelated animation.
 
+Market-session parity is required across every display zone: quote sessions are
+carried into ticker, macro-dial, floating-graph, and world-market view models;
+world-market cards use YFinance exchange-calendar truth when quote session data
+is unknown or lags; the pinned New York band exposes pre-market, regular,
+after-hours, and closed countdown states; and recently fetched closed
+world-market symbols are not re-requested until the ten-minute closed-market
+refresh window expires.
+
 ## Acceptance Evidence
 
 Each cinematic CR requires all of the following:

@@ -13,6 +13,7 @@
 // ============================================================================
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Core.Enums;
 using DoNotPanicPortfolioVisualizer.Render.Services;
 
 namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
@@ -36,6 +37,9 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _hasMissingData;
+
+    [ObservableProperty]
+    private MarketSession _marketSession = MarketSession.Unknown;
 
     [ObservableProperty]
     private string _waitingGlyphText = "🕒";
@@ -84,6 +88,7 @@ public sealed partial class TickerQuoteViewModel : ObservableObject
             _ => "#D4DEE5"
         };
         IsStale = quote.IsStale;
+        MarketSession = quote.MarketSession;
         Last = usableLast;
         ChangePercent = quote.ChangePercent;
         IsWaitingOnData = !usableLast.HasValue;
