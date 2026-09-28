@@ -1,0 +1,279 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using DoNotPanicPortfolioVisualizer.Core.Constants;
+using DoNotPanicPortfolioVisualizer.Core.Models;
+using DoNotPanicPortfolioVisualizer.Render.Services;
+using DoNotPanicPortfolioVisualizer.Render.ViewModels;
+
+namespace DoNotPanicPortfolioVisualizer.Tests;
+
+public sealed class TickerPresentationTests
+{
+    [Fact]
+    public void TickerFormatter_FormatsPositiveNegativeAndUnavailableValues()
+    {
+        Assert.Equal("123.46", TickerFormatter.FormatPrice(new QuoteSnapshot { Last = 123.456m }));
+        Assert.Equal("+1.25%", TickerFormatter.FormatChange(new QuoteSnapshot { ChangePercent = 1.25m }));
+        Assert.Equal("-0.75%", TickerFormatter.FormatChange(new QuoteSnapshot { ChangePercent = -0.75m }));
+        Assert.Equal("99.50", TickerFormatter.FormatPrice(new QuoteSnapshot { PreviousClose = 99.5m }));
+        Assert.Equal("--", TickerFormatter.FormatPrice(null));
+        Assert.Equal("--", TickerFormatter.FormatChange(new QuoteSnapshot()));
+    }
+
+    [Fact]
+    public void TickerLane_UsesConfiguredTitleDirectionSpeedAndEnabledSymbols()
+    {
+        TickerGroup source = Defaults.CreateSettings().Groups[1];
+        source.Tickers[0].Enabled = false;
+
+        TickerLaneViewModel lane = new(source);
+
+        Assert.Equal(source.Name, lane.Title);
+        Assert.Equal(source.Direction, lane.Direction);
+        Assert.Equal(source.Speed, lane.Speed);
+        Assert.Equal(source.RowHeight, lane.RowHeight);
+        Assert.Equal(source.Tickers.Count - 1, lane.Quotes.Count);
+        Assert.DoesNotContain(lane.Quotes, quote => quote.Symbol == source.Tickers[0].Symbol);
+        Assert.True(lane.TrackItems.Count >= TickerLaneViewModel.MinimumSequenceItemCount * 5);
+    }
+
+    [Fact]
+    public void TickerLane_RepeatsTheConfiguredQuotesThroughTheMinimumSequence()
+    {
+        TickerGroup source = new()
+        {
+            Tickers =
+            [
+                new TickerItem { Symbol = "AAA", Enabled = true },
+                new TickerItem { Symbol = "BBB", Enabled = true }
+            ]
+        };
+        TickerLaneViewModel lane = new(source);
+
+        Assert.True(lane.TrackItems.Count >= TickerLaneViewModel.MinimumSequenceItemCount * 5);
+        Assert.Equal(0, lane.TrackItems.Count % TickerLaneViewModel.MinimumSequenceItemCount);
+        Assert.Equal("AAA", lane.TrackItems[0].Quote.Symbol);
+        Assert.Equal("BBB", lane.TrackItems[1].Quote.Symbol);
+        Assert.Equal("BBB", lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount - 1].Quote.Symbol);
+        Assert.Equal(TickerLaneViewModel.ItemWidth + TickerLaneViewModel.CopySpacing,
+            lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount - 1].Width);
+        Assert.Equal("AAA", lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount].Quote.Symbol);
+    }
+
+    [Fact]
+    public void TickerLane_TrackGeometryHasNoUncoveredGapsAcrossRepeatedCopies()
+    {
+        TickerGroup source = new()
+        {
+            Tickers =
+            [
+                new TickerItem { Symbol = "AAA", Enabled = true },
+                new TickerItem { Symbol = "BBB", Enabled = true },
+                new TickerItem { Symbol = "CCC", Enabled = true },
+                new TickerItem { Symbol = "DDD", Enabled = true }
+            ]
+        };
+        TickerLaneViewModel lane = new(source);
+
+        double renderedTrackWidth = lane.TrackItems.Sum(static item => item.Width);
+
+        Assert.Equal(lane.TrackWidth, renderedTrackWidth, precision: 6);
+        Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
+        Assert.Equal(TickerLaneViewModel.CopySpacing,
+            lane.TrackItems[TickerLaneViewModel.MinimumSequenceItemCount - 1].Width
+            - TickerLaneViewModel.ItemWidth);
+    }
+
+    [Fact]
+    public void TickerLane_OuterWidthUsesMeasuredContentWithoutStretchingSparseLanes()
+    {
+        TickerGroup source = new()
+        {
+            Name = "SHORT",
+            Tickers =
+            [
+                new TickerItem { Symbol = "AAA", Enabled = true }
+            ]
+        };
+        TickerLaneViewModel lane = new(source);
+
+        lane.ConfigureViewport(1200d);
+
+        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.Equal(4d, lane.LaneWidth - (5d * 7.2d + 14d + lane.ContentViewportWidth));
+        Assert.True(lane.LaneWidth < 1200d);
+    }
+
+    [Fact]
+    public void TickerLane_StopsWhenQuotesAreRemovedAndReconfiguresWhenAdded()
+    {
+        TickerGroup source = new()
+        {
+            Tickers = [new TickerItem { Symbol = "AAA", Enabled = true }]
+        };
+        TickerLaneViewModel lane = new(source);
+        lane.Step(TimeSpan.FromMilliseconds(100));
+        Assert.NotEqual(0d, lane.TrackOffset);
+
+        lane.Quotes.Clear();
+        lane.Step(TimeSpan.FromSeconds(1));
+        Assert.Equal(0d, lane.TrackOffset);
+        Assert.Equal(0d, lane.ContentViewportWidth);
+        Assert.Empty(lane.TrackItems);
+        Assert.True(lane.LaneWidth > 0d);
+
+        lane.Quotes.Add(new TickerQuoteViewModel(new TickerItem { Symbol = "BBB", Enabled = true }));
+        Assert.Equal(TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.NotEmpty(lane.TrackItems);
+    }
+
+    [Fact]
+    public void TickerLane_BoundsVisibleContentWindowForDenseLanes()
+    {
+        TickerGroup source = new();
+        for (int index = 0; index < 8; index++)
+            source.Tickers.Add(new TickerItem { Symbol = $"S{index}", Enabled = true });
+
+        TickerLaneViewModel lane = new(source);
+        lane.ConfigureViewport(1600d);
+
+        Assert.Equal(4d * TickerLaneViewModel.ItemWidth, lane.ContentViewportWidth);
+        Assert.True(lane.LaneWidth < 1200d);
+    }
+
+    [Theory]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    [InlineData(-1d)]
+    public void TickerLane_RejectsNonFiniteViewport(double viewportWidth)
+    {
+        TickerLaneViewModel lane = new(new TickerGroup
+        {
+            Tickers = [new TickerItem { Symbol = "AAA", Enabled = true }]
+        });
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => lane.ConfigureViewport(viewportWidth));
+    }
+
+    [Fact]
+    public void TickerAndMacroViewModels_ApplyQuoteTrendAndStaleness()
+    {
+        QuoteSnapshot quote = new()
+        {
+            Symbol = "VOO",
+            Last = 700.25m,
+            ChangePercent = -0.42m,
+            IsStale = true
+        };
+        TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO", DisplayName = "VOO" });
+        MacroQuoteViewModel macro = new("S&P 500", "VOO", 1000m);
+
+        ticker.Apply(quote);
+        macro.Apply(quote);
+
+        Assert.Equal("700.25", ticker.PriceText);
+        Assert.Equal("-0.42%", ticker.ChangeText);
+        Assert.Equal("#FF5A36", ticker.TrendBrush);
+        Assert.True(ticker.IsStale);
+        Assert.Equal(ticker.PriceText, macro.ValueText);
+        Assert.Equal(ticker.ChangeText, macro.ChangeText);
+        Assert.Equal("#F4C95D", macro.AccentBrush);
+        Assert.StartsWith("M ", macro.TrackPath, StringComparison.Ordinal);
+        Assert.StartsWith("M ", macro.ArcPath, StringComparison.Ordinal);
+        Assert.StartsWith("M 12,12 L ", macro.NeedlePath, StringComparison.Ordinal);
+        Assert.False(ticker.IsWaitingOnData);
+        Assert.False(ticker.HasMissingData);
+
+        MacroQuoteViewModel invertedRisk = new("VIX", "^VIX", 60m, invertRiskColors: true);
+        invertedRisk.Apply(new QuoteSnapshot
+        {
+            Symbol = "^VIX",
+            Last = 30m,
+            ChangePercent = 1m
+        });
+        Assert.Equal("#FF5A36", invertedRisk.AccentBrush);
+    }
+
+    [Fact]
+    public void MacroViewModel_StartsWithVisiblePlaceholderGauge()
+    {
+        MacroQuoteViewModel macro = new("VIX", "^VIX", 60m, invertRiskColors: true);
+
+        Assert.Equal("--", macro.ValueText);
+        Assert.Equal("--", macro.ChangeText);
+        Assert.StartsWith("M ", macro.TrackPath, StringComparison.Ordinal);
+        Assert.StartsWith("M ", macro.ArcPath, StringComparison.Ordinal);
+        Assert.StartsWith("M 12,12 L ", macro.NeedlePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TickerQuote_DistinguishesWaitingAndMissingQuoteStates()
+    {
+        TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO", DisplayName = "VOO" });
+
+        Assert.True(ticker.IsWaitingOnData);
+        Assert.Equal("🕒", ticker.WaitingGlyphText);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO" });
+
+        Assert.True(ticker.IsWaitingOnData);
+        Assert.True(ticker.HasMissingData);
+        Assert.Equal("◌", ticker.WaitingGlyphText);
+        Assert.Equal("#FF8C00", ticker.WaitingGlyphBrush);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", PreviousClose = 99.5m });
+
+        Assert.False(ticker.IsWaitingOnData);
+        Assert.False(ticker.HasMissingData);
+        Assert.Equal(string.Empty, ticker.WaitingGlyphText);
+        Assert.Equal(99.5m, ticker.Last);
+    }
+
+    [Fact]
+    public void TickerQuote_SuppressesHydrationFlashThenUsesBlueHeartbeatForFreshUnchangedValue()
+    {
+        TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO" });
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 100m, ChangePercent = 0.2m });
+        Assert.Equal(0, ticker.UpdateSequence);
+        Assert.Equal(0d, ticker.FlashOpacity);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 100m, ChangePercent = 0.2m });
+        ticker.StepVisuals(TimeSpan.FromMilliseconds(100));
+
+        Assert.Equal(1, ticker.UpdateSequence);
+        Assert.Equal("#F000BFFF", ticker.FlashBrush);
+        Assert.InRange(ticker.FlashOpacity, 0.6d, 0.94d);
+    }
+
+    [Fact]
+    public void TickerQuote_UsesDirectionalFreshColorsAndSuppressesStaleChanges()
+    {
+        TickerQuoteViewModel ticker = new(new TickerItem { Symbol = "VOO" });
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 100m });
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 101m });
+        Assert.Equal("#F039E75F", ticker.FlashBrush);
+        Assert.Equal(1, ticker.UpdateSequence);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 99m, IsStale = true });
+        Assert.Equal("#F039E75F", ticker.FlashBrush);
+        Assert.Equal(1, ticker.UpdateSequence);
+
+        ticker.Apply(new QuoteSnapshot { Symbol = "VOO", Last = 98m });
+        Assert.Equal("#F0FF5A36", ticker.FlashBrush);
+        Assert.Equal(2, ticker.UpdateSequence);
+    }
+}

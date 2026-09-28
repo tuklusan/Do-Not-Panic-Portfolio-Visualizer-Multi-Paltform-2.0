@@ -1,0 +1,19 @@
+{
+  "schema": "dnppv2-local-lab-cycle/v1",
+  "cycleId": "dnppv2-local-cycle-linux-flashscope-framework2",
+  "startedUtc": "2026-09-28T04:18:39.7843915+00:00",
+  "durationMinutes": 1,
+  "machines": [
+    {
+      "name": "linux-x64-lxqt",
+      "address": "192.168.4.76",
+      "user": "sanyalnet",
+      "status": "Passed",
+      "artifactRoot": "H:\\dnppv2-local-cycle-linux-flashscope-framework2\\linux-x64-lxqt",
+      "rid": "linux-x64",
+      "startedUtc": "2026-09-28T04:18:39.8088874+00:00",
+      "completedUtc": "2026-09-28T04:24:22.1253987+00:00"
+    }
+  ],
+  "completedUtc": "2026-09-28T04:24:22.1319559+00:00"
+}

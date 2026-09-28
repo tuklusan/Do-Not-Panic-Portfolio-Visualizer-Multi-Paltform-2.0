@@ -1,0 +1,120 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using System.Net;
+using System.Net.Sockets;
+using DoNotPanicPortfolioVisualizer.Shared.Diagnostics;
+
+namespace DoNotPanicPortfolioVisualizer.Presentation.Services;
+
+public sealed class NtpTimeService
+{
+    private static readonly string[] Hosts = ["pool.ntp.org", "0.pool.ntp.org", "1.pool.ntp.org"];
+    private static readonly TimeSpan PerHostTimeout = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan DnsTimeout = TimeSpan.FromSeconds(1.5);
+
+    public async Task<NtpSyncResult> TryGetUtcNowAsync(CancellationToken cancellationToken = default)
+    {
+        int failureCount = 0;
+        string? lastFailure = null;
+        foreach (string host in Hosts)
+        {
+            try
+            {
+                DateTimeOffset utcNow = await QueryHostAsync(host, cancellationToken).ConfigureAwait(false);
+                return new NtpSyncResult { Success = true, Source = host, UtcNow = utcNow };
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                failureCount++;
+                lastFailure = exception.GetType().Name;
+            }
+        }
+
+        TraceLog.WarnState(
+            "NtpTimeService",
+            "AllHostsFailed",
+            [new("host_count", Hosts.Length), new("failure_count", failureCount), new("last_failure", lastFailure ?? "none")]);
+        return new NtpSyncResult { Success = false, Source = "Local clock", UtcNow = DateTimeOffset.UtcNow };
+    }
+
+    private static async Task<DateTimeOffset> QueryHostAsync(string host, CancellationToken cancellationToken)
+    {
+        using CancellationTokenSource hostTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        hostTimeout.CancelAfter(PerHostTimeout);
+        try
+        {
+            using UdpClient udpClient = new();
+            udpClient.Client.ReceiveTimeout = 3000;
+            udpClient.Client.SendTimeout = 3000;
+            IPAddress[] addresses = await ResolveHostAsync(host, hostTimeout.Token).ConfigureAwait(false);
+            IPEndPoint? endpoint = addresses
+                .Where(address => address.AddressFamily == AddressFamily.InterNetwork)
+                .Select(address => new IPEndPoint(address, 123))
+                .FirstOrDefault();
+            if (endpoint is null)
+                throw new InvalidOperationException($"Could not resolve an IPv4 endpoint for {host}.");
+
+            byte[] request = new byte[48];
+            request[0] = 0x1B;
+            await udpClient.SendAsync(request, endpoint, hostTimeout.Token).ConfigureAwait(false);
+            UdpReceiveResult response = await udpClient.ReceiveAsync(hostTimeout.Token).ConfigureAwait(false);
+            if (response.Buffer.Length < 48)
+                throw new InvalidOperationException($"NTP response from {host} was too short.");
+
+            const int transmitTimeOffset = 40;
+            ulong seconds = ((ulong)response.Buffer[transmitTimeOffset] << 24)
+                | ((ulong)response.Buffer[transmitTimeOffset + 1] << 16)
+                | ((ulong)response.Buffer[transmitTimeOffset + 2] << 8)
+                | response.Buffer[transmitTimeOffset + 3];
+            ulong fraction = ((ulong)response.Buffer[transmitTimeOffset + 4] << 24)
+                | ((ulong)response.Buffer[transmitTimeOffset + 5] << 16)
+                | ((ulong)response.Buffer[transmitTimeOffset + 6] << 8)
+                | response.Buffer[transmitTimeOffset + 7];
+            DateTime epoch = new(1900, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            double milliseconds = (seconds * 1000d) + ((fraction * 1000d) / 0x100000000L);
+            return new DateTimeOffset(epoch.AddMilliseconds(milliseconds));
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            TraceLog.InfoState("NtpTimeService", "HostTimeout", [new("host", host), new("timeout_ms", PerHostTimeout.TotalMilliseconds)]);
+            throw new TimeoutException($"NTP lookup timed out for {host}.");
+        }
+    }
+
+    private static async Task<IPAddress[]> ResolveHostAsync(string host, CancellationToken cancellationToken)
+    {
+        using CancellationTokenSource dnsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        dnsTimeout.CancelAfter(DnsTimeout);
+        try
+        {
+            return await Dns.GetHostAddressesAsync(host, dnsTimeout.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            TraceLog.InfoState("NtpTimeService", "DnsTimeout", [new("host", host), new("timeout_ms", DnsTimeout.TotalMilliseconds)]);
+            throw new TimeoutException($"DNS resolution timed out for {host}.");
+        }
+    }
+}
+
+public sealed class NtpSyncResult
+{
+    public bool Success { get; init; }
+    public string Source { get; init; } = string.Empty;
+    public DateTimeOffset UtcNow { get; init; }
+}

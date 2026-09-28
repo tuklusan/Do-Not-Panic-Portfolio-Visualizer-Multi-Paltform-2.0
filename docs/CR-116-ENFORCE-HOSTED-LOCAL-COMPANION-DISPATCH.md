@@ -1,0 +1,132 @@
+<!--
+============================================================================
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Proprietary rights reserved except as expressly licensed herein.
+
+DO NOT PANIC PORTFOLIO VISUALIZER
+This file is governed by the SANYALnet Labs Non-Commercial License in the
+root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+for AI/ML model training are prohibited unless separately authorized.
+
+Attribution is required: "Based on original work by Supratim Sanyal of
+SANYALnet Labs." See LICENSE for full terms.
+============================================================================
+-->
+
+# CR-116: Enforce Hosted-Matrix and Local-Companion Dispatch
+
+## Status
+
+Closed. The workflow now emits a credential-free, same-duration local
+companion request for every hosted cycle, and the checked-in receipt validator
+binds a completed local cycle to that request by run-derived cycle identity,
+duration, machine coverage, and terminal lane status. Two independent combined
+cycles have now passed; no new soak was launched solely to validate the
+validator or post-run instrumentation.
+
+Two attempts against the same self-contained hosted candidate are recorded as
+diagnostic only. Linux, Windows 10, and Intel macOS produced successful
+real-product evidence in the first attempt; Windows 11 launched and completed
+its soak but failed strict AI evidence after the configured external OpenRouter
+endpoint returned HTTP 429. The second attempt reproduced the Windows 11
+external-endpoint response, while its Linux child exceeded
+the bounded completion window without a terminal result. A fresh availability
+probe recorded all four machines reachable. These results do not satisfy the
+combined closure requirement.
+
+A fresh four-machine 10-minute cycle on 2026-09-07 reached all four boxes and
+completed collection. Linux and both Windows lanes recorded fresh RSS playback
+but the required AI success event was absent after OpenRouter returned HTTP
+429; macOS recorded RSS playback but its strict news evidence gate reported a
+missing RSS/AI trace pair. The coordinator failed closed and disposable
+artifacts were cleaned after inspection. These findings remain routed to the
+existing AI/news CRs and are not local-machine unavailability.
+Under the updated CR-117 disposition contract, evidence-matched external RSS
+outage and model HTTP 4xx conditions are advisory; they do not mask missing
+traces, missing requests, cleanup defects, or unknown runtime failures.
+
+## Gap
+
+CR-092 defines the combined hosted-plus-local acceptance contract and
+`build/Invoke-LocalLabSoakCycle.ps1` implements the physical-machine runner.
+The hosted workflow now emits `dnppv2-local-companion-dispatch-<run>.json` as a
+credential-free handoff. Its `companionCycleId` is the deterministic cycle
+identity expected by `build/Test-LocalCompanionReceipt.ps1`. A private-lab
+operator consumes that request with the frozen local coordinator and validates
+the resulting cycle manifest; hosted runners never reach the private LAN.
+
+## Functional Inventory
+
+| ID | Requirement | Evidence |
+| --- | --- | --- |
+| COMP-01 | Each hosted matrix cycle records a uniquely identified local-companion cycle request with the same soak duration. | Dispatch manifest and shared cycle identifier. |
+| COMP-02 | The local coordinator probes all four machines at cycle start and records available versus unavailable machines explicitly. | Availability and cycle manifests. |
+| COMP-03 | Every available machine runs the real product with the same RSS, AI, screenshot, dual-trace, cleanup, and artifact-review contract as hosted lanes. | Per-machine result and reviewed evidence. |
+| COMP-04 | The bridge cannot launch a second local or hosted cycle while one is queued or active. | Serialization and concurrency gate tests. |
+| COMP-05 | Local-network unavailability remains an explicit non-product skip; an available-machine failure remains a failure. | Aggregated disposition and negative tests. |
+| COMP-06 | The bridge never exposes local credentials or requires hosted runners to reach the private LAN. | Secret-scan and workflow topology review. |
+| COMP-07 | A local result cannot be accepted for the wrong hosted request, duration, machine set, or non-terminal lane state. | `build/Test-LocalCompanionReceipt.ps1 -SelfTest` and receipt validation. |
+
+## Required Work
+
+The dispatch and receipt bridge is implemented by
+`build/New-LocalCompanionDispatch.ps1` and
+`build/Test-LocalCompanionReceipt.ps1`. The operator-controlled local
+coordinator must consume the request using the prescribed cycle identity and
+retain the validated receipt with the combined evidence. Keep
+`Invoke-LocalLabSoakCycle.ps1` locked unless a concrete continuation defect
+requires a change. A startup/scene timeout is a concrete continuation defect:
+the coordinator must bind every platform cycle root before launch and remove
+it in its `finally` cleanup path, so a product that is not visible within the
+180-second validation timeout aborts cleanly. After serialized pre-launch
+process cleanup succeeds, an interrupted owned root is reclaimed before the
+next deployment; an active product/helper process still hard-stops the lane.
+Reconcile combined evidence with CR-092, CR-094, and CR-109 without weakening
+any existing gate.
+On Linux, every `xdotool search --pid` window-discovery probe is independently
+bounded to five seconds with a two-second kill grace period, and the discovery
+loop uses a wall-clock deadline rather than a probe-count budget. A hung X11
+probe therefore cannot defeat the 180-second scene deadline; the normal
+trap/finally cleanup path remains authoritative for the owned product, helper,
+and cycle root.
+The subsequent direct retry reached the Linux host, but the lane failed closed
+because the executable was absent after deployment. This is a deployment-path
+diagnostic, not a passed companion result; the remaining machine lanes were
+aborted and their exact remote roots and processes were cleaned.
+The next retry confirmed the Linux host was reachable, but deployment failed
+closed with `Disk quota exceeded`: the project-owned `/tmp/dnppv2-local-cycle`
+root contained 1.1 GB of stale material and left only 679 MB available. The
+root was purged after stopping the cycle, restoring 1.8 GB available; this
+diagnostic also does not count as companion evidence.
+
+The coordinator now watches all started machine children as a group. If one
+child fails or the overall completion deadline expires, it terminates only the
+remaining children from that cycle, waits for their cleanup paths, and records
+the sibling-abort reason in each generated manifest. This prevents a fast
+180-second scene failure on one box from leaving other product processes or
+cycle roots running while the coordinator waits on them serially.
+Windows cleanup payloads use explicit statement separators when transported
+through OpenSSH encoded commands, preventing newline normalization from
+turning the cleanup script into invalid PowerShell.
+Because a sibling abort can terminate a child before its per-machine `finally`
+block runs, the serialized coordinator now reclaims the exact interrupted
+Linux and macOS cycle roots after the pre-launch process check. This preserves
+the collision hard stop for active product processes while making a retry of
+the same dispatch identity recoverable.
+
+## Closure Evidence
+
+The upstream forward and reverse inventories, workflow/license/syntax gates,
+NVIDIA review, focused serialization and secret-free dispatch tests, two
+independent hosted-plus-available-local cycles, full evidence inspection, local
+artifact cleanup, and receipt validation passed. Hosted runs `34214441208` and
+`34218215249` each completed all 43 jobs successfully with 20 hosted lanes and
+`HOSTED_SOAK_CLOSURE=Passed`. Companion cycles
+`dnppv2-local-cycle-34214441208-r5` and
+`dnppv2-local-cycle-34218215249` each completed 10 minutes with all four local
+machines passed. Each local machine produced a real-product scene screenshot,
+RSS/AI evidence with observed external 4xx advisory disposition, and both
+size-bounded circular trace files. `Test-LocalCompanionReceipt.ps1` passed for
+both dispatch-bound cycles. The 180-second scene watchdog, 180-second Linux
+readiness deadline, 90-second Linux secret setup timeout, sibling abort, and
+cleanup paths were exercised and verified; disposable artifacts were cleaned.

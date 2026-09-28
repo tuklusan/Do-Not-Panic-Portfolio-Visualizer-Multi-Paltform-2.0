@@ -1,0 +1,172 @@
+// ============================================================================
+// Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+// Proprietary rights reserved except as expressly licensed herein.
+//
+// DO NOT PANIC PORTFOLIO VISUALIZER
+// This file is governed by the SANYALnet Labs Non-Commercial License in the
+// root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+// for AI/ML model training are prohibited unless separately authorized.
+//
+// Attribution is required: "Based on original work by Supratim Sanyal of
+// SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+// patent, trademark, and governing-law provisions.
+// ============================================================================
+using System.Security.Cryptography;
+using System.Text.Json;
+using DoNotPanicPortfolioVisualizer.Shared.Integrity;
+using Xunit;
+
+namespace DoNotPanicPortfolioVisualizer.Tests.Services;
+
+public sealed class ReleaseManifestValidatorTests
+{
+    [Fact]
+    public void ValidateDirectory_ReturnsValid_ForMatchingManifest()
+    {
+        string root = CreateTempDirectory();
+        try
+        {
+            string alphaPath = Path.Combine(root, "alpha.txt");
+            string betaDir = Path.Combine(root, "sub");
+            string betaPath = Path.Combine(betaDir, "beta.txt");
+            Directory.CreateDirectory(betaDir);
+            File.WriteAllText(alphaPath, "alpha");
+            File.WriteAllText(betaPath, "beta");
+
+            WriteManifest(root, [alphaPath, betaPath]);
+
+            ReleaseManifestValidationResult result = ReleaseManifestValidator.ValidateDirectory(root);
+            Assert.True(result.IsValid);
+            Assert.DoesNotContain("failed", result.Summary, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            SafeDelete(root);
+        }
+    }
+
+    [Fact]
+    public void ValidateDirectory_ReturnsInvalid_WhenManifestMissing()
+    {
+        string root = CreateTempDirectory();
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "alpha.txt"), "alpha");
+            ReleaseManifestValidationResult result = ReleaseManifestValidator.ValidateDirectory(root);
+            Assert.False(result.IsValid);
+            Assert.Contains("manifest", result.Summary, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            SafeDelete(root);
+        }
+    }
+
+    [Fact]
+    public void ValidateDirectory_ReturnsInvalid_WhenChecksumMismatch()
+    {
+        string root = CreateTempDirectory();
+        try
+        {
+            string alphaPath = Path.Combine(root, "alpha.txt");
+            File.WriteAllText(alphaPath, "alpha");
+            WriteManifest(root, [alphaPath]);
+            File.WriteAllText(alphaPath, "bravo");
+
+            ReleaseManifestValidationResult result = ReleaseManifestValidator.ValidateDirectory(root);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, error => error.Contains("Checksum mismatch", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            SafeDelete(root);
+        }
+    }
+
+    [Fact]
+    public void ReleaseManifestGuard_ExposesBackgroundValidationForAvaloniaHostIntegration()
+    {
+        Assert.NotNull(typeof(ReleaseManifestGuard).GetMethod(
+            nameof(ReleaseManifestGuard.ValidateCurrentExecutableInBackground)));
+    }
+
+    [Fact]
+    public void ReleaseManifestGuard_BackgroundApiQueuesFullDirectoryValidation()
+    {
+        string repoRoot = GetRepoRoot();
+        string source = File.ReadAllText(Path.Combine(repoRoot, "src", "DoNotPanicPortfolioVisualizer.Shared", "Integrity", "ReleaseManifestValidator.cs"));
+
+        Assert.Contains("ValidateCurrentExecutableInBackground", source, StringComparison.Ordinal);
+        Assert.Contains("Task.Run(() => ReleaseManifestValidator.ValidateDirectory(AppContext.BaseDirectory))", source, StringComparison.Ordinal);
+        Assert.Contains("TryNotifyValidationFailed(source, onValidationFailed, result.Summary);", source, StringComparison.Ordinal);
+    }
+
+    private static string CreateTempDirectory()
+    {
+        string path = Path.Combine(Path.GetTempPath(), "PortfolioSaverTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
+    private static void WriteManifest(string root, IReadOnlyList<string> fullPaths)
+    {
+        List<object> files = [];
+        foreach (string fullPath in fullPaths.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+        {
+            FileInfo fileInfo = new(fullPath);
+            files.Add(new
+            {
+                path = Path.GetRelativePath(root, fullPath).Replace('\\', '/'),
+                sizeBytes = fileInfo.Length,
+                sha256 = ComputeSha256Hex(fullPath)
+            });
+        }
+
+        var manifest = new
+        {
+            schemaVersion = 1,
+            productName = "DO NOT PANIC PORTFOLIO VISUALIZER",
+            productVersion = "test",
+            generatedUtc = DateTimeOffset.UtcNow.ToString("o"),
+            files
+        };
+
+        string manifestPath = Path.Combine(root, ReleaseManifestValidator.ManifestFileName);
+        string json = JsonSerializer.Serialize(manifest);
+        File.WriteAllText(manifestPath, json);
+    }
+
+    private static string ComputeSha256Hex(string path)
+    {
+        using FileStream stream = File.OpenRead(path);
+        using SHA256 sha256 = SHA256.Create();
+        byte[] hash = sha256.ComputeHash(stream);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static void SafeDelete(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+        }
+        catch
+        {
+        }
+    }
+
+    private static string GetRepoRoot()
+    {
+        string directory = AppContext.BaseDirectory;
+        while (!string.IsNullOrWhiteSpace(directory))
+        {
+            if (File.Exists(Path.Combine(directory, "DoNotPanicPortfolioVisualizer.sln")))
+                return directory;
+
+            directory = Directory.GetParent(directory)?.FullName ?? string.Empty;
+        }
+
+        throw new InvalidOperationException("Repository root was not found.");
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "dnppv2-local-lab-cycle/v1",
+  "cycleId": "dnppv2-local-cycle-win10-flashscope-selfcontained",
+  "startedUtc": "2026-09-28T04:28:54.7817456+00:00",
+  "durationMinutes": 1,
+  "machines": [
+    {
+      "name": "windows-10-reference",
+      "address": "192.168.4.75",
+      "user": "sanyalnet",
+      "status": "Passed",
+      "artifactRoot": "H:\\dnppv2-local-cycle-win10-flashscope-selfcontained\\windows-10-reference",
+      "rid": "win-x64",
+      "startedUtc": "2026-09-28T04:28:54.8051409+00:00",
+      "completedUtc": "2026-09-28T04:32:33.7234858+00:00"
+    }
+  ],
+  "completedUtc": "2026-09-28T04:32:33.7319499+00:00"
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# ============================================================================
+# Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+# Proprietary rights reserved except as expressly licensed herein.
+#
+# DO NOT PANIC PORTFOLIO VISUALIZER
+# This file is governed by the SANYALnet Labs Non-Commercial License in the
+# root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+# for AI/ML model training are prohibited unless separately authorized.
+#
+# Attribution is required: "Based on original work by Supratim Sanyal of
+# SANYALnet Labs." See LICENSE for full terms, warranty disclaimer, termination,
+# patent, trademark, and governing-law provisions.
+# ============================================================================
+set -eu
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if ! command -v pwsh >/dev/null 2>&1; then
+    echo "PowerShell 7 (pwsh) is required for the DNPPV pre-push hook." 1>&2
+    exit 1
+fi
+exec pwsh -NoProfile -File "$SCRIPT_DIR/pre-push.ps1" "$@"

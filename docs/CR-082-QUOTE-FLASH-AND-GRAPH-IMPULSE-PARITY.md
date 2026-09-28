@@ -1,0 +1,109 @@
+<!--
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+This file is governed by the SANYALnet Labs Non-Commercial License in the
+root LICENSE file. Non-Commercial use is permitted; Commercial Use and use
+for AI/ML model training are prohibited unless separately authorized.
+Attribution is required: "Based on original work by Supratim Sanyal of
+SANYALnet Labs." See LICENSE for full terms.
+-->
+
+# CR-082: Quote Flash And Graph Impulse Parity
+
+## Functional Inventory
+
+The upstream production scene applies a value flash for every fresh usable
+quote, including a quote whose displayed value is unchanged. The flash color is
+green for a positive changed value, red for a negative changed value, and blue
+for an unchanged value. Stale quotes do not create this fresh-update cue.
+The flash direction is based on the raw current-value delta, not merely the
+daily `ChangePercent`; a stable current value with a non-zero daily change must
+remain blue.
+
+The value cue is also scoped to the displayed last-value field rather than the
+whole ticker card, and its envelope is one rise-and-fall pulse per fresh quote.
+The product single-instance lease is independent of per-run test data
+overrides. This prevents concurrent harness launches from acquiring distinct
+locks, while the DNPPV-2.0 product-specific lock identity remains separate from
+the upstream 1.0 product. Both Windows validation launch paths now hard-stop
+before starting when an existing DNPPV-2.0 process is present; the Mac driver
+does the equivalent process check. The Mac driver uses a larger 1920x1080
+window only for its physical acceptance harness.
+
+| CR-082-01 | Fresh usable quote flash scope and direction | `TickerTapeControl.xaml.cs`, `VisualizerSceneControl.xaml.cs` | `TickerQuoteViewModel`, `ProductShellWindow.axaml` |
+| CR-082-02 | Raw-price graph impulse to ceiling/floor and nominal-motion recovery | `VisualizerSceneControl.xaml.cs`, `FloatingGraphControl.xaml.cs` | `FloatingGraphMotionController`, `FloatingGraphViewModel` |
+| CR-082-03 | Stale, hydration, percent-only, structural, timeout, and collision branches | `VisualizerSceneControl.xaml.cs`, `FloatingGraphViewModel.cs` | `ProductSceneViewModel`, motion tests |
+| CR-01 | Fresh quote visual cue and raw-value direction | Upstream ticker and scene controls | 2.0 ticker view model and shell |
+
+Upstream graph cards use a different rule: a raw last-price change triggers the
+card itself to flash repeatedly while it makes rapid travel toward the ceiling
+for an increase or floor for a decrease, then restores the normal card
+appearance and swimming velocity. An unchanged raw value,
+initial hydration, percent-only change, stale data, and structural replacement
+must not create the directed impulse. A bounded timeout and boundary completion
+must restore normal motion.
+
+## Required Work
+
+Compare the upstream implementations line by line with the current Avalonia
+view models, scene coordinator, graph-motion controller, and visual controls.
+Restore any missing behavior, with the ticker blue unchanged-value flash as an
+explicit acceptance case. Keep the real production scene as the demonstrated
+surface; fixtures may only provide deterministic test inputs.
+
+## Acceptance
+
+- Fresh positive, negative, unchanged, stale, and initial-hydration quote cases
+  are covered by focused tests and circular trace assertions.
+- The ticker flash is rendered only behind the displayed last-value field and
+  each fresh quote produces one rise/hold/fall pulse; the symbol, overlay,
+  change field, graph, and card background are not affected by that ticker-only
+  cue. Graph impulses separately flash the complete graph-card surface as
+  upstream does.
+- Graph increases flash visibly while travelling rapidly to the top boundary,
+  decreases flash visibly while travelling rapidly to the bottom boundary, and
+  each card then returns to its base appearance and prior swimming velocity;
+  no-op cases remain ordinary.
+- Settled production screenshots show the flash and directed graph motion on an
+  available local machine, with hosted smoke coverage where applicable.
+- Upstream forward/reverse inventory, NVIDIA review, build/test, license,
+  syntax, artifact review, cleanup, and commit/push gates pass.
+
+## Status
+
+The ticker update rule is implemented: post-hydration fresh usable quotes flash
+green/red only when their raw value changes and blue when the displayed value is
+unchanged, even when daily `ChangePercent` is non-zero; initial hydration and
+stale refreshes remain quiet. Focused tests cover these cases. Shared
+single-instance locking and harness pre-launch guards are implemented. Full
+production-scene visual and circular-trace evidence for the flash and graph
+impulse remains required before closure. The graph template now renders the
+directed and neutral graph flash through a card-surface overlay, matching the
+upstream `FloatingGraphControl` animation target; physical production-scene
+and circular-trace evidence remains required before closure.
+
+The production scene now retains the motion-controller cue result and writes
+key-free `GRAPH_IMPULSE;STATE=STARTED/COMPLETED` events for real live-quote
+directed travel, plus `GRAPH_REFRESH_CUE;MODE=NEUTRAL` for unchanged-value
+card flashes. Fixture events remain separately named and are not used as
+production evidence. Focused build/test validation passed after this change;
+Fresh production-scene capture `dnppv2-local-cycle-cr082-resume-b7fcf79458164c8f96e75d94bc57102b`
+completed the real ten-minute Windows 10 soak with settled product screenshots
+and circular traces. The production trace recorded 16 live-quote directed
+impulse starts and 16 matching production completions, with no fixture source;
+the captured scene was visually inspected and showed the production quote,
+graph, market, and news surfaces. RSS was usable and the AI request was
+observed, while the provider returned an external 4xx advisory; this is
+retained as negative AI evidence and is not treated as AI success.
+
+The physical production-scene and circular-trace acceptance evidence is now
+complete for this CR; the retained hosted matrix for candidate `94d8fcee`
+remains valid because this closure update changes only documentation and
+tracker bookkeeping.
+
+The earlier current-candidate Win10 production run
+`dnppv2-local-cycle-cr082-current-win10` completed the real ten-minute scene
+soak with screenshots, circular traces, live quote traffic, RSS evidence, and
+cleanup. Its production trace contained zero `GRAPH_IMPULSE` and zero
+`GRAPH_REFRESH_CUE` events, so it is retained as valid negative evidence and
+did not close this CR. The subsequent keyed run above supersedes that negative
+graph-evidence result for closure.
