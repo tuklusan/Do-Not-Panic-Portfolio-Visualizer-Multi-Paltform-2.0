@@ -149,7 +149,7 @@ public sealed class ProductShellTickerPresentationTests
             "src",
             "DoNotPanicPortfolioVisualizer.App",
             "Views",
-            "ProductShellWindow.axaml.cs"));
+            "ProductShellWindow.axaml.cs")).Replace("\r\n", "\n", StringComparison.Ordinal);
 
         Assert.Contains("private const double UpstreamTickerTopOffset = 188d;", code, StringComparison.Ordinal);
         Assert.Contains("Math.Min(\n            UpstreamTickerTopOffset,", code, StringComparison.Ordinal);

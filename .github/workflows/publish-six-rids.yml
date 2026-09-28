@@ -44,6 +44,11 @@ on:
         description: 'Required commit SHA of the completed matrix when evidence_mode is reuse-completed-run'
         required: false
         type: string
+      harness_change_approved:
+        description: 'One-time operator authorization for the frozen-harness correction in this candidate'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -88,7 +93,7 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.before }}
           PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          DNPPV_HARNESS_CHANGE_APPROVED: ${{ steps.phase1.outputs.admitted == 'true' && 'Y' || '' }}
+          DNPPV_HARNESS_CHANGE_APPROVED: ${{ steps.phase1.outputs.admitted == 'true' && 'Y' || (inputs.harness_change_approved == true && 'Y' || '') }}
         run: |
           ./build/Test-LicenseHeaders.ps1
           ./build/Test-PowerShellSyntax.ps1
