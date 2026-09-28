@@ -34,3 +34,7 @@ This change does not convert an incomplete review into a pass. It accepts only
 uncertainties is treated as no uncertainty, while non-empty or malformed
 uncertainties remain failures. The provider-quota disposition is accepted only
 when both `news-evidence.json` and the circular trace independently prove it.
+The upstream effective 30-minute minimum is an interval between refresh operations,
+not a requirement that the locked ten-minute acceptance soak run for thirty
+minutes; one initial refresh with no second refresh before the cadence floor is
+compliant.
