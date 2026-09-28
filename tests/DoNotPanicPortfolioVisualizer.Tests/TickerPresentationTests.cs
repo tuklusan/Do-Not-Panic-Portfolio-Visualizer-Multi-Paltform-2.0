@@ -153,6 +153,24 @@ public sealed class TickerPresentationTests
         Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
     }
 
+    [Fact]
+    public void TickerLane_NeverExpandsOuterLanePastANarrowViewport()
+    {
+        TickerGroup source = new()
+        {
+            Name = "WIDE LABEL",
+            Tickers = Enumerable.Range(1, 4)
+                .Select(index => new TickerItem { Symbol = $"S{index}", Enabled = true })
+                .ToList()
+        };
+        TickerLaneViewModel lane = new(source);
+
+        lane.ConfigureViewport(960d);
+
+        Assert.Equal(960d, lane.LaneWidth);
+        Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
+    }
+
     [Theory]
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]

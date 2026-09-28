@@ -25,7 +25,6 @@ public sealed partial class TickerLaneViewModel : ObservableObject
     public const int MinimumSequenceItemCount = 18;
     public const double ItemWidth = 230d;
     public const double CopySpacing = 20d;
-    private const int MaximumVisibleTickerItems = 4;
     private const double LabelCharacterWidth = 7.2d;
     private const double LabelHorizontalPadding = 14d;
     // Account for the lane border/padding, label border/margin, and viewport
@@ -95,13 +94,12 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         IReadOnlyList<TickerQuoteViewModel> sequence = BuildVisualSequence();
         double sequenceWidth = sequence.Count * ItemWidth;
         double cycleDistance = sequenceWidth + CopySpacing;
-        double measuredContentWidth = Math.Min(
-            Quotes.Count * ItemWidth,
-            MaximumVisibleTickerItems * ItemWidth);
         double availableContentWidth = Math.Max(
             1d,
             _viewportWidth - GetLabelWidth() - LabelToViewportGap - LaneHorizontalPadding);
-        ContentViewportWidth = Math.Max(measuredContentWidth, availableContentWidth);
+        // The viewport is the visible window; quote count must never expand the
+        // lane itself beyond that window. Repetition supplies the missing width.
+        ContentViewportWidth = availableContentWidth;
         int sideCopies = Math.Max(2, (int)Math.Ceiling(ContentViewportWidth / cycleDistance) + 2);
         if (sideCopies != _sideCopies || TrackItems.Count == 0)
         {
@@ -118,9 +116,7 @@ public sealed partial class TickerLaneViewModel : ObservableObject
         }
 
         TrackWidth = ((sideCopies * 2) + 1) * cycleDistance;
-        LaneWidth = Math.Max(
-            _viewportWidth,
-            GetLabelWidth() + LabelToViewportGap + ContentViewportWidth + LaneHorizontalPadding);
+        LaneWidth = _viewportWidth;
         _motion.Configure(cycleDistance, Speed, Direction, sideCopies);
         TrackOffset = _motion.Offset;
     }
