@@ -347,6 +347,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         if (Interlocked.Exchange(ref _ambientFramePosted, 1) != 0)
             return;
 
+        long posted = Stopwatch.GetTimestamp();
         _uiContext.Post(_ =>
         {
             Interlocked.Exchange(ref _ambientFramePosted, 0);
@@ -354,6 +355,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 return;
 
             long started = Stopwatch.GetTimestamp();
+            TimeSpan queueElapsed = Stopwatch.GetElapsedTime(posted, started);
             long prior = Interlocked.Exchange(ref _lastAmbientUiTimestamp, started);
             TimeSpan elapsed = prior == 0
                 ? TimeSpan.Zero
@@ -362,7 +364,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 UpdateClockAndMotion(elapsed);
                 TimeSpan uiElapsed = Stopwatch.GetElapsedTime(started);
-                TraceFrameTiming(elapsed, uiElapsed);
+                TraceFrameTiming(elapsed, queueElapsed, uiElapsed);
                 DateTimeOffset acceptedAt = DateTimeOffset.UtcNow;
                 TimeSpan fixtureElapsed = acceptedAt - _renderHeartbeatFixtureStartedUtc;
                 bool suppressFixtureFrame = _renderHeartbeatFixtureEnabled &&
@@ -602,13 +604,16 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _quoteProvider,
             cancellationToken);
 
-        foreach (QuoteSnapshot quote in result.UpdatedQuotes)
+        // Hydration commonly returns many symbols at once. Publish the whole
+        // snapshot through one UI callback so quote bindings cannot queue a
+        // long chain of layout passes ahead of the cinematic frame scheduler.
+        await InvokeOnUiAsync(() =>
         {
-            if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
-                continue;
-
-            await InvokeOnUiAsync(() =>
+            foreach (QuoteSnapshot quote in result.UpdatedQuotes)
             {
+                if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
+                    continue;
+
                 foreach (Action<QuoteSnapshot> apply in applyActions)
                     apply(quote);
 
@@ -618,8 +623,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
                 DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
                 FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
-            }, cancellationToken);
-        }
+            }
+        }, cancellationToken);
 
         if (!result.ProviderHealth.IsHealthy && result.CachedQuotes.Count == 0)
         {
@@ -1105,7 +1110,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private void WriteCinematicTrace(string message)
         => TraceLog.Info("ProductScene.Cinematic", message);
 
-    private void TraceFrameTiming(TimeSpan schedulerElapsed, TimeSpan uiElapsed)
+    private void TraceFrameTiming(TimeSpan schedulerElapsed, TimeSpan queueElapsed, TimeSpan uiElapsed)
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;
         if (now < _nextFrameTimingTraceUtc)
@@ -1113,7 +1118,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
         _nextFrameTimingTraceUtc = now.AddSeconds(1);
         WriteCinematicTrace(
-            $"FRAME;CLOCK_MS={schedulerElapsed.TotalMilliseconds:0.0};UI_MS={uiElapsed.TotalMilliseconds:0.0};" +
+            $"FRAME;CLOCK_MS={schedulerElapsed.TotalMilliseconds:0.0};QUEUE_MS={queueElapsed.TotalMilliseconds:0.0};" +
+            $"UI_MS={uiElapsed.TotalMilliseconds:0.0};" +
             $"OVERDUE={schedulerElapsed.TotalMilliseconds >= 100d};ACTIVE={_cinematicPlaybackActive}");
     }
 
