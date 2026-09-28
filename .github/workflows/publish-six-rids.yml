@@ -546,6 +546,7 @@ jobs:
              Set-Content -LiteralPath $reviewLog -Value $safeOutput -Encoding utf8
            }
            $review = $null
+           $reviewUncertainties = @()
            # Review output is recorded here; inspection below is the sole
            # authoritative lane gate and emits the final v2 closure record.
            $reviewParseError = $null
@@ -559,12 +560,15 @@ jobs:
                  $review.packet_sha256 -cnotmatch '^[0-9a-f]{64}$' -or
                  $review.verdict -cnotin @('PASS','FAIL','INCONCLUSIVE') -or
                  $review.review_complete -isnot [bool] -or $review.fallback_used -isnot [bool] -or
-                 $review.blocking_findings -isnot [array] -or $review.uncertainties -isnot [array] -or
+                 $review.blocking_findings -isnot [array] -or
+                 ($null -ne $review.uncertainties -and $review.uncertainties -isnot [array]) -or
                  @($review.blocking_findings | Where-Object { $null -eq $_ }).Count -ne 0 -or
                  @($review.uncertainties | Where-Object { $null -eq $_ }).Count -ne 0 -or
                  $null -ne $review.failure_class)) {
                $reviewParseError = 'Reviewer result identity or schema mismatch.'
                $review = $null
+             } elseif ($null -ne $review.uncertainties) {
+               $reviewUncertainties = @($review.uncertainties | Where-Object { $null -ne $_ })
              }
            } else { $reviewParseError = "Reviewer infrastructure exited $reviewExitCode or wrote diagnostics; see retained stderr and transaction evidence." }
            $reviewVerdict = if ($null -ne $review -and -not [string]::IsNullOrWhiteSpace([string]$review.verdict)) { [string]$review.verdict } else { 'MALFORMED' }
@@ -614,7 +618,7 @@ jobs:
            })
            $authoritativeFindings = @($reviewFindings | Where-Object { $advisoryFindings -notcontains $_ })
            $cleanReview = $null -ne $review -and $reviewExitCode -eq 0 -and $reviewVerdict -eq 'PASS' -and
-             $reviewComplete -and $reviewFindings.Count -eq 0 -and @($review.uncertainties).Count -eq 0
+             $reviewComplete -and $reviewFindings.Count -eq 0 -and $reviewUncertainties.Count -eq 0
            $normalizedVerdict = if ($reviewVerdict -eq 'PASS' -and -not $cleanReview) { 'INCONCLUSIVE' } else { $reviewVerdict }
            $semantic = [ordered]@{
              schema = 'dnppv2-test-artifact-review-result/v2'
@@ -628,7 +632,7 @@ jobs:
              verdict = $normalizedVerdict
              reviewComplete = $reviewComplete
              blockingFindings = $authoritativeFindings
-             uncertainties = if ($null -ne $review) { @($review.uncertainties) } else { @() }
+             uncertainties = $reviewUncertainties
              advisoryFindings = $advisoryFindings
              materialSha256 = (Get-FileHash -LiteralPath $manifest -Algorithm SHA256).Hash.ToLowerInvariant()
            }
