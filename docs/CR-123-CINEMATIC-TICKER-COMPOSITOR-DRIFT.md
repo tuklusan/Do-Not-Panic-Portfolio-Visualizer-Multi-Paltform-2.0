@@ -20,6 +20,9 @@ Status: Open. This is a release-blocking visual-parity defect.
 2. The cinematic scene can freeze, jitter, and later catch up during initial
    hydration and ordinary playback. The motion scheduler must not queue
    competing UI updates behind refresh, hydration, network, or clock work.
+3. The upstream Global Markets strip includes compact per-market trend graphs
+   inside the moving cards. A text-only card is incomplete even when its
+   clock, session, quote, and weather fields are present.
 
 ## Mitigation in this candidate
 
@@ -30,6 +33,9 @@ Status: Open. This is a release-blocking visual-parity defect.
 - NTP refresh is detached from the frame critical path.
 - Bounded `FRAME` timing records now correlate monotonic scheduler elapsed time
   with UI-dispatch duration and overdue frames.
+- Global-market cards now retain quote samples and render a compact trend path;
+  news playback is stepped by the same coalesced ambient frame as the other
+  cinematic motion, eliminating a competing 40-ms UI-dispatch loop.
 
 ## Closure evidence required
 

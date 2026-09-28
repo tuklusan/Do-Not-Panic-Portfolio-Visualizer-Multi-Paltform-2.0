@@ -1144,6 +1144,38 @@ public sealed class AmbientSceneServicesTests
         => Assert.Equal(expected, WorldWeatherService.GetGlyph(code, isDay));
 
     [Fact]
+    public void GlobalMarketViewModel_BuildsCompactTrendGraphFromQuoteSamples()
+    {
+        GlobalMarketViewModel market = new()
+        {
+            Key = "new-york",
+            City = "New York",
+            ExchangeName = "NYSE",
+            Symbol = "^GSPC",
+            TimeZoneId = "America/New_York",
+            Latitude = 40.7,
+            Longitude = -74.0
+        };
+
+        market.ApplyQuote(new QuoteSnapshot
+        {
+            Symbol = "^GSPC",
+            Last = 101m,
+            PreviousClose = 100m,
+            ChangePercent = 1m
+        });
+        market.ApplyQuote(new QuoteSnapshot
+        {
+            Symbol = "^GSPC",
+            Last = 99m,
+            ChangePercent = -1m
+        });
+
+        Assert.StartsWith("M ", market.MiniGraphPath, StringComparison.Ordinal);
+        Assert.Contains("L 120,", market.MiniGraphPath, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task WorldWeatherService_UsesInjectedBoundedTransport()
     {
         GlobalMarketViewModel market = new()

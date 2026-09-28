@@ -210,6 +210,8 @@ Required preserved behaviors:
   concurrency gates on cancellation;
 - NTP-adjusted UTC is used while a recent synchronization remains valid;
 - the strip updates independently from the main quote flow;
+- each moving market card includes the upstream compact trend graph/indicator
+  beneath its identity and quote fields;
 - clocks remain live at one-second cadence while ancillary market redraws are
   throttled, and pinned New York uses calendar truth when quote session state
   lags.

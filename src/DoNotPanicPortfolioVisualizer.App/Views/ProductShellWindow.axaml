@@ -594,7 +594,7 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                             BorderThickness="1"
                                             CornerRadius="4"
                                             Padding="5,3">
-                                        <Grid RowDefinitions="Auto,Auto,Auto">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto">
                                             <Grid ColumnDefinitions="*,Auto">
                                                 <TextBlock Text="{Binding City}"
                                                            FontSize="9"
@@ -615,7 +615,15 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                                                        HorizontalAlignment="Right"
                                                        FontSize="7"
                                                        Foreground="#AFC0CB" />
-                                            <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*">
+                                            <Path Grid.Row="2"
+                                                  Data="{Binding MiniGraphPath}"
+                                                  Height="10"
+                                                  HorizontalAlignment="Stretch"
+                                                  Stretch="None"
+                                                  Stroke="{Binding AccentBrush}"
+                                                  StrokeThickness="1.4"
+                                                  IsHitTestVisible="False" />
+                                            <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*">
                                                 <TextBlock Text="{Binding ValueText}"
                                                            FontFamily="Consolas"
                                                            FontSize="9"

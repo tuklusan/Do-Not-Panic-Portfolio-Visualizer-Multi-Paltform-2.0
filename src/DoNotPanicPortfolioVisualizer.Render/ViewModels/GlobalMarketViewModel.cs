@@ -14,6 +14,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DoNotPanicPortfolioVisualizer.Core.Models;
 using DoNotPanicPortfolioVisualizer.Render.Services;
+using System.Globalization;
+using System.Text;
 
 namespace DoNotPanicPortfolioVisualizer.Render.ViewModels;
 
@@ -25,6 +27,9 @@ public sealed partial class GlobalMarketViewModel : ObservableObject
     [ObservableProperty] private string _accentBrush = "#D4DEE5";
     [ObservableProperty] private string _sessionText = "Waiting";
     [ObservableProperty] private string _weatherText = "--";
+    [ObservableProperty] private string _miniGraphPath = "M 0,6 L 120,6";
+
+    private readonly Queue<decimal> _graphSamples = new();
 
     public required string Key { get; init; }
     public required string City { get; init; }
@@ -45,5 +50,41 @@ public sealed partial class GlobalMarketViewModel : ObservableObject
             _ => "#D4DEE5"
         };
         SessionText = quote.MarketSession.ToString();
+
+        decimal? value = quote.Last ?? quote.PreviousClose;
+        if (value.HasValue)
+        {
+            if (_graphSamples.Count == 0 && quote.PreviousClose.HasValue)
+                _graphSamples.Enqueue(quote.PreviousClose.Value);
+
+            _graphSamples.Enqueue(value.Value);
+            while (_graphSamples.Count > 12)
+                _graphSamples.Dequeue();
+
+            MiniGraphPath = BuildMiniGraphPath(_graphSamples);
+        }
+    }
+
+    private static string BuildMiniGraphPath(IEnumerable<decimal> samples)
+    {
+        decimal[] values = samples.ToArray();
+        if (values.Length == 0)
+            return "M 0,6 L 120,6";
+
+        decimal minimum = values.Min();
+        decimal maximum = values.Max();
+        decimal range = Math.Max(0.0001m, maximum - minimum);
+        StringBuilder path = new();
+        for (int index = 0; index < values.Length; index++)
+        {
+            double x = values.Length == 1 ? 60d : 120d * index / (values.Length - 1d);
+            double y = 10d - (double)((values[index] - minimum) / range * 8m);
+            path.Append(index == 0 ? "M " : " L ")
+                .Append(x.ToString("0.##", CultureInfo.InvariantCulture))
+                .Append(',')
+                .Append(y.ToString("0.##", CultureInfo.InvariantCulture));
+        }
+
+        return path.ToString();
     }
 }

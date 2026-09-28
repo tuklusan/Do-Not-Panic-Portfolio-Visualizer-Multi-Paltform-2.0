@@ -163,8 +163,9 @@ not evidence that motion behavior passes.
 
 - The global-market lane preserves the local-desk summary and all 18 upstream
   exchange centers, bundled flags, local exchange clocks, index
-  value/direction, exchange-calendar session state, and weather, with its own
-  refresh lane and recent NTP offset when available.
+  value/direction, exchange-calendar session state, weather, and each card's
+  compact trend graph/indicator, with its own refresh lane and recent NTP
+  offset when available.
 - It remains a continuously animated tape, not eight static squeezed cells.
   New York/NASDAQ is pinned in a 150-pixel card; the other 164x54 cards move
   through a 68-pixel clipped viewport with duplicated sequences, edge fades,

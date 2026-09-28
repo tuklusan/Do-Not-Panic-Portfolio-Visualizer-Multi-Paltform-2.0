@@ -99,7 +99,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private double _globalMarketsViewportWidth = 900d;
     private Task? _initialQuoteSequence;
     private Task? _deferredSceneLoops;
-    private Task? _newsPlaybackLoop;
     private Task? _ambientLoop;
     private int _ambientFramePosted;
     private long _lastAmbientUiTimestamp;
@@ -274,7 +273,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _initialQuoteSequence ??= RunInitialQuoteSequenceAsync(_lifetimeCts.Token);
             // The upstream scene first presents its bootstrap state and completes its
             // initial quote ordering before its independent background lanes fan out.
-            _newsPlaybackLoop ??= RunNewsPlaybackLoopAsync(_lifetimeCts.Token);
+            // News playback is stepped by the coalesced ambient frame so it
+            // cannot compete with motion through a second UI-dispatch queue.
             _ambientLoop ??= RunAmbientLoopAsync(_lifetimeCts.Token);
             _renderHeartbeatLoop ??= RunRenderHeartbeatLoopAsync(_lifetimeCts.Token);
         }
@@ -381,46 +381,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 TraceDegradedLane("ambient-frame", exception);
             }
         }, null);
-    }
-
-    private async Task RunNewsPlaybackLoopAsync(CancellationToken cancellationToken)
-    {
-        Stopwatch clock = Stopwatch.StartNew();
-        TimeSpan prior = clock.Elapsed;
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            if (!_cinematicPlaybackActive)
-            {
-                prior = clock.Elapsed;
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
-                continue;
-            }
-
-            TimeSpan current = clock.Elapsed;
-            TimeSpan elapsed = current - prior;
-            prior = current;
-            try
-            {
-                await InvokeOnUiAsync(() =>
-                {
-                    _newsPlayback.Step(elapsed);
-                    NewsText = _newsPlayback.DisplayText;
-                    NewsVerticalOffset = _newsPlayback.VerticalOffset;
-                    NewsPhaseText = _newsPlayback.Phase.ToString();
-                    TraceCinematicPlayback(DateTimeOffset.UtcNow);
-                }, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                // Playback recovers on the next tick without affecting other scene lanes.
-                TraceDegradedLane("news-playback", ex);
-            }
-            await Task.Delay(TimeSpan.FromMilliseconds(40), cancellationToken);
-        }
     }
 
     private async Task RunRenderHeartbeatLoopAsync(CancellationToken cancellationToken)
@@ -887,6 +847,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private void UpdateClockAndMotion(TimeSpan elapsed)
     {
         DateTimeOffset now = GetReferenceUtcNow();
+        _newsPlayback.Step(elapsed);
+        NewsText = _newsPlayback.DisplayText;
+        NewsVerticalOffset = _newsPlayback.VerticalOffset;
+        NewsPhaseText = _newsPlayback.Phase.ToString();
+        TraceCinematicPlayback(now);
         ClockDateText = now.ToLocalTime().ToString("ddd dd-MMM-yyyy").ToUpperInvariant();
         ClockText = now.ToString("HH:mm:ss 'UTC'");
         foreach (GlobalMarketViewModel market in GlobalMarkets)
@@ -1218,7 +1183,6 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             [
                 _initialQuoteSequence,
                 _deferredSceneLoops,
-                _newsPlaybackLoop,
                 _ambientLoop,
                 _renderHeartbeatLoop
             ];
