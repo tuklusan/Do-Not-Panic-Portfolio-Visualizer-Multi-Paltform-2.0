@@ -1009,7 +1009,15 @@ function Invoke-LinuxValidation {
     if ($SoakMinutes -gt 0) {
         $screenshotsArtifactRoot = Join-Path $ArtifactRoot 'screenshots'
         New-Item -ItemType Directory -Force -Path $screenshotsArtifactRoot | Out-Null
-        Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/screenshots/*") -DestinationPath $screenshotsArtifactRoot -Recursive
+        try {
+            Copy-FromRemote -User $User -HostName $HostName -Secret $Secret -SourcePath (Convert-ToScpRemotePath -TargetPlatform 'linux' -Path "$TargetPublishDir/screenshots/*") -DestinationPath $screenshotsArtifactRoot -Recursive
+        }
+        catch {
+            # The product capture interval is 30 minutes. A shorter physical
+            # soak can therefore finish with no periodic screenshots; the
+            # required settled scene captures above remain authoritative.
+            Write-Verbose "No optional periodic soak screenshots were retrieved: $($_.Exception.Message)"
+        }
     }
 
     $traceArtifactRoot = Join-Path $ArtifactRoot 'trace'

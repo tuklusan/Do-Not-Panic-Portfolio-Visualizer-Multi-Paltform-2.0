@@ -25,6 +25,10 @@ SANYALnet Labs." See LICENSE for full terms.
   budget and retrieves its evidence.
 - Two successive targeted reruns pass with no new actionable defect.
 
+The local Linux retrieval path treats the 30-minute periodic soak-screenshot
+set as optional when a shorter soak completes without any periodic capture;
+the settled scene captures and circular traces remain mandatory.
+
 ## Gates
 
 Re-read the upstream provider overlay, real product startup, and physical
