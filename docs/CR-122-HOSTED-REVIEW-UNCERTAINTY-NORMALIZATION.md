@@ -15,7 +15,10 @@ Normalize a semantically valid NVIDIA review receipt whose optional
 `uncertainties` member is JSON `null` to the empty collection required by
 hosted closure validation. Also allow the existing cross-platform matrix
 workflow to carry one explicit, operator-authorized freeze approval for this
-correction.
+correction. The hosted review instruction explicitly classifies an
+independently evidenced provider-quota HTTP 4xx as non-blocking degraded
+behavior during the locked ten-minute soak, while unknown or unsubstantiated
+AI/RSS failures remain blocking.
 
 ## Operator authorization
 
@@ -29,4 +32,5 @@ commit message and is exposed only through the workflow-dispatch boolean
 This change does not convert an incomplete review into a pass. It accepts only
 `verdict=PASS`, `reviewComplete=true`, and no blocking findings; `null`
 uncertainties is treated as no uncertainty, while non-empty or malformed
-uncertainties remain failures.
+uncertainties remain failures. The provider-quota disposition is accepted only
+when both `news-evidence.json` and the circular trace independently prove it.
