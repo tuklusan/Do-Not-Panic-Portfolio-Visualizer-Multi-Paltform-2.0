@@ -1,4 +1,6 @@
 {
+  "license_notice": "Based on original work by Supratim Sanyal of SANYALnet Labs.",
+  "copyright": "Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.",
   "schema": "dnppv2-local-lab-cycle/v1",
   "cycleId": "dnppv2-local-cycle-win10-flashscope-selfcontained",
   "startedUtc": "2026-09-28T04:28:54.7817456+00:00",
