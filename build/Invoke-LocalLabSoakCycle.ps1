@@ -426,13 +426,21 @@ if ([string]::IsNullOrWhiteSpace($MachineName)) {
         New-Item -ItemType Directory -Path $machineArtifactRoot -Force | Out-Null
         $childOutput = Join-Path $machineArtifactRoot 'coordinator-output.txt'
         $childError = Join-Path $machineArtifactRoot 'coordinator-error.txt'
+        # Start-Process flattens ArgumentList into one command line. Quote
+        # every filesystem argument because the canonical workspace contains
+        # spaces (for example, H:\My Documents\...). Without this, pwsh
+        # receives a truncated script path and prints its usage text.
+        $quoteProcessArgument = {
+            param([string]$Value)
+            '"{0}"' -f ($Value -replace '"', '\\"')
+        }
         $childArguments = @(
             '-NoProfile',
-            '-File', $PSCommandPath,
+            '-File', (& $quoteProcessArgument $PSCommandPath),
             '-DurationMinutes', $DurationMinutes.ToString(),
-            '-LocalPublishRoot', $resolvedPublishRoot,
-            '-InventoryPath', (Resolve-Path -LiteralPath $InventoryPath).Path,
-            '-ArtifactRoot', $resolvedArtifactRoot,
+            '-LocalPublishRoot', (& $quoteProcessArgument $resolvedPublishRoot),
+            '-InventoryPath', (& $quoteProcessArgument (Resolve-Path -LiteralPath $InventoryPath).Path),
+            '-ArtifactRoot', (& $quoteProcessArgument $resolvedArtifactRoot),
             '-TimeoutSeconds', $TimeoutSeconds.ToString(),
             '-SceneWarmupSeconds', $SceneWarmupSeconds.ToString(),
             '-MachineName', [string]$record.name,
