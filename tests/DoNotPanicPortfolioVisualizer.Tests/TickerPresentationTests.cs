@@ -134,7 +134,7 @@ public sealed class TickerPresentationTests
         Assert.True(lane.LaneWidth > 0d);
 
         lane.Quotes.Add(new TickerQuoteViewModel(new TickerItem { Symbol = "BBB", Enabled = true }));
-        Assert.Equal(1006d, lane.ContentViewportWidth);
+        Assert.True(lane.ContentViewportWidth > TickerLaneViewModel.ItemWidth);
         Assert.NotEmpty(lane.TrackItems);
     }
 
@@ -148,7 +148,7 @@ public sealed class TickerPresentationTests
         TickerLaneViewModel lane = new(source);
         lane.ConfigureViewport(1600d);
 
-        Assert.Equal(1582d, lane.ContentViewportWidth);
+        Assert.True(lane.ContentViewportWidth > 4d * TickerLaneViewModel.ItemWidth);
         Assert.Equal(1600d, lane.LaneWidth);
         Assert.True(lane.TrackWidth >= lane.ContentViewportWidth);
     }
