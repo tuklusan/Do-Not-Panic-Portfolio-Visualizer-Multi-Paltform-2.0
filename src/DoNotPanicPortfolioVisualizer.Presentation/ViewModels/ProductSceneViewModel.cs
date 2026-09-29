@@ -622,34 +622,43 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _quoteProvider,
             cancellationToken);
 
-        // Hydration commonly returns many symbols at once. Publish the whole
-        // snapshot through one UI callback so quote bindings cannot queue a
-        // long chain of layout passes ahead of the cinematic frame scheduler.
-        await InvokeOnUiAsync(() =>
+        // Hydration commonly returns many symbols at once. Publish bounded
+        // chunks so no single quote batch monopolizes the UI dispatcher while
+        // the independent cinematic controllers continue to receive frames.
+        const int publishChunkSize = 6;
+        QuoteSnapshot[] updatedQuotes = result.UpdatedQuotes.ToArray();
+        for (int chunkStart = 0; chunkStart < updatedQuotes.Length; chunkStart += publishChunkSize)
         {
-            foreach (QuoteSnapshot quote in result.UpdatedQuotes)
+            QuoteSnapshot[] chunk = updatedQuotes
+                .Skip(chunkStart)
+                .Take(publishChunkSize)
+                .ToArray();
+            await InvokeOnUiAsync(() =>
             {
-                if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
-                    continue;
+                foreach (QuoteSnapshot quote in chunk)
+                {
+                    if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
+                        continue;
 
-                foreach (Action<QuoteSnapshot> apply in applyActions)
-                    apply(quote);
+                    foreach (Action<QuoteSnapshot> apply in applyActions)
+                        apply(quote);
 
-                _latestQuotes[quote.Symbol] = quote;
+                    _latestQuotes[quote.Symbol] = quote;
 
-                ApplyQuoteToGraph(quote);
-                UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
-                // The quote's marketState is instrument/provider metadata and can
-                // legitimately lag or disagree with the exchange session clock.
-                // Once the exchange calendar is available, it is the sole source
-                // of truth for the user-visible New York status.
-                if (!_hasNewYorkCalendarStatus)
-                    MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
-                bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
-                DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
-                FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
-            }
-        }, cancellationToken);
+                    ApplyQuoteToGraph(quote);
+                    UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
+                    // The quote's marketState is instrument/provider metadata and can
+                    // legitimately lag or disagree with the exchange session clock.
+                    // Once the exchange calendar is available, it is the sole source
+                    // of truth for the user-visible New York status.
+                    if (!_hasNewYorkCalendarStatus)
+                        MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
+                    bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
+                    DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
+                    FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
+                }
+            }, cancellationToken);
+        }
 
         if (!result.ProviderHealth.IsHealthy && result.CachedQuotes.Count == 0)
         {
