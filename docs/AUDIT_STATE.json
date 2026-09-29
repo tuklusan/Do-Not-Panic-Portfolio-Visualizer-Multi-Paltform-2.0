@@ -8969,6 +8969,13 @@
       }
     }
   ],
+  "latest_hosted_validation_receipt": {
+    "run_id": "36568059852",
+    "commit": "9e5ed741",
+    "result": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=36568059852;LANES=20;REMOTE_REVIEW_CALLS=0",
+    "all_jobs_successful": true,
+    "artifact": "dnppv2-post-soak-review-36568059852/aggregate-validation.txt"
+  },
   "remaining_validation_gaps": [
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the fresh Windows 10, Windows 11, and Linux runs observed RSS and AI requests but external AI success remains quota/provider-limited.",
     "CR-085: fresh Windows 10, Windows 11, and Linux evidence passed launch, quote-server, cleanup, and frame-overdue checks; repeated AI-required closure and a returning Mac AI-required run remain outstanding.",
