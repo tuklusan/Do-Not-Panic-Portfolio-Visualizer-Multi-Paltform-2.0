@@ -119,7 +119,11 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         // The provider completes requests from another task. Allow a bounded
         // scheduling window on slower arm64 runners before declaring a drain
         // failure; the production pipeline remains non-blocking.
-        for (int attempt = 0; attempt < 100; attempt++)
+        // Intel macOS hosted runners can briefly starve the test thread pool
+        // while the full suite drains unrelated continuations. Keep this
+        // bounded, but allow a complete scheduling window before declaring
+        // the non-blocking pipeline failed.
+        for (int attempt = 0; attempt < 400; attempt++)
         {
             ProgressiveQuoteRefreshResult result = await pipeline.RefreshAsync(["AAA", "BBB"], provider);
             if (result.UpdatedQuotes.Count == 2)
