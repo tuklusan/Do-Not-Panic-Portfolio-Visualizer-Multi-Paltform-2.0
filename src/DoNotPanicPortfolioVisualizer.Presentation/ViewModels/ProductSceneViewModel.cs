@@ -105,7 +105,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private Task? _initialQuoteSequence;
     private Task? _deferredSceneLoops;
     private Task? _ambientLoop;
-    private int _ambientFramePosted;
+    private readonly AmbientFrameGate _ambientFrameGate = new();
     private long _lastAmbientUiTimestamp;
     private Task? _renderHeartbeatLoop;
     private bool _deferredSceneLoopsStarted;
@@ -349,24 +349,23 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private void PostAmbientFrame(CancellationToken cancellationToken)
     {
-        if (Interlocked.Exchange(ref _ambientFramePosted, 1) != 0)
+        if (!_ambientFrameGate.TryAcquire())
             return;
 
         long posted = Stopwatch.GetTimestamp();
         _uiContext.Post(_ =>
         {
-            Interlocked.Exchange(ref _ambientFramePosted, 0);
-            if (cancellationToken.IsCancellationRequested || !_cinematicPlaybackActive)
-                return;
-
-            long started = Stopwatch.GetTimestamp();
-            TimeSpan queueElapsed = Stopwatch.GetElapsedTime(posted, started);
-            long prior = Interlocked.Exchange(ref _lastAmbientUiTimestamp, started);
-            TimeSpan elapsed = prior == 0
-                ? TimeSpan.Zero
-                : Stopwatch.GetElapsedTime(prior, started);
             try
             {
+                if (cancellationToken.IsCancellationRequested || !_cinematicPlaybackActive)
+                    return;
+
+                long started = Stopwatch.GetTimestamp();
+                TimeSpan queueElapsed = Stopwatch.GetElapsedTime(posted, started);
+                long prior = Interlocked.Exchange(ref _lastAmbientUiTimestamp, started);
+                TimeSpan elapsed = prior == 0
+                    ? TimeSpan.Zero
+                    : Stopwatch.GetElapsedTime(prior, started);
                 UpdateClockAndMotion(elapsed);
                 TimeSpan uiElapsed = Stopwatch.GetElapsedTime(started);
                 TraceFrameTiming(elapsed, queueElapsed, uiElapsed);
@@ -386,6 +385,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             catch (Exception exception)
             {
                 TraceDegradedLane("ambient-frame", exception);
+            }
+            finally
+            {
+                // Keep the coalescing guard held for the entire UI callback.
+                // Releasing it before UpdateClockAndMotion completes permits the
+                // 16 ms scheduler to enqueue a backlog during a slow frame,
+                // producing the observed freeze/jitter/recovery bursts.
+                _ambientFrameGate.Release();
             }
         }, null);
     }

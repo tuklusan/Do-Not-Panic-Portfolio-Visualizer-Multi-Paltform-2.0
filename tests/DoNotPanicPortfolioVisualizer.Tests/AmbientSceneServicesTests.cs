@@ -28,6 +28,22 @@ namespace DoNotPanicPortfolioVisualizer.Tests;
 public sealed class AmbientSceneServicesTests
 {
     [Fact]
+    public void AmbientFrameGate_HoldsThroughCallbackAndCoalescesQueuedRequests()
+    {
+        AmbientFrameGate gate = new();
+
+        Assert.True(gate.TryAcquire());
+        Assert.True(gate.IsHeld);
+        Assert.False(gate.TryAcquire());
+
+        gate.Release();
+
+        Assert.False(gate.IsHeld);
+        Assert.True(gate.TryAcquire());
+        gate.Release();
+    }
+
+    [Fact]
     public void TickerMotionController_WrapsAtAuditedSpeedInBothDirections()
     {
         TickerMotionController left = new();
