@@ -8976,6 +8976,14 @@
     "all_jobs_successful": true,
     "artifact": "dnppv2-post-soak-review-36568059852/aggregate-validation.txt"
   },
+  "latest_physical_acceptance_receipt": {
+    "commit": "1b792187b50bed0f2717bf08e2c20a458d81828f",
+    "document": "docs/PHYSICAL-ACCEPTANCE-1B792187.md",
+    "machines": 4,
+    "result": "linux-x64=Passed;win10=Passed;win11=Passed;osx-x64-native-pty=Passed",
+    "duration_minutes": 10,
+    "ai_success_claimed": false
+  },
   "remaining_validation_gaps": [
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the fresh Windows 10, Windows 11, and Linux runs observed RSS and AI requests but external AI success remains quota/provider-limited.",
     "CR-085: fresh Windows 10, Windows 11, and Linux evidence passed launch, quote-server, cleanup, and frame-overdue checks; repeated AI-required closure and a returning Mac AI-required run remain outstanding.",
