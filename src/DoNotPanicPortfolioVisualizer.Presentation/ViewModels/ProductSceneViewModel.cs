@@ -95,6 +95,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset _nextWeatherRefreshUtc = DateTimeOffset.MinValue;
     private DateTimeOffset _nextCalendarRefreshUtc = DateTimeOffset.MinValue;
     private ExchangeCalendarSet _exchangeCalendars = new();
+    private bool _hasNewYorkCalendarStatus;
     private readonly ConcurrentDictionary<string, QuoteSnapshot> _latestQuotes = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset _lastNtpSyncUtc = DateTimeOffset.MinValue;
     private Task? _ntpRefreshTask;
@@ -634,7 +635,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
                 ApplyQuoteToGraph(quote);
                 UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
-                MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
+                // The quote's marketState is instrument/provider metadata and can
+                // legitimately lag or disagree with the exchange session clock.
+                // Once the exchange calendar is available, it is the sole source
+                // of truth for the user-visible New York status.
+                if (!_hasNewYorkCalendarStatus)
+                    MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
                 bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
                 DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
                 FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
@@ -1062,7 +1068,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 .GetCalendarSetAsync(requests, networkAvailable, cancellationToken)
                 .ConfigureAwait(false);
             if (calendars.CalendarsByCityKey.Count > 0)
-                _exchangeCalendars = calendars;
+                _exchangeCalendars.Overlay(calendars);
         }
 
         _nextCalendarRefreshUtc = now.AddMinutes(10);
@@ -1080,6 +1086,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             market.ApplyCalendarStatus(status.Session, _exchangeTimingService.FormatCompactStatus(status));
             if (ReferenceEquals(market, PinnedGlobalMarket))
             {
+                _hasNewYorkCalendarStatus = true;
                 string session = status.Session switch
                 {
                     MarketSession.Regular => "Open",
