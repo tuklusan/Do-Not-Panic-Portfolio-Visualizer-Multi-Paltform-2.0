@@ -29,6 +29,7 @@ public sealed class FloatingGraphMotionController
     private readonly double _maximumVelocity;
     private readonly bool _bounceWithinViewport;
     private GraphMotionBounds _bounds;
+    private TimeSpan _collisionBudget;
 
     public FloatingGraphMotionController(
         double minimumVelocity,
@@ -59,6 +60,7 @@ public sealed class FloatingGraphMotionController
                 graph.RefreshTravelTargetY = GetTravelTarget(graph, graph.RefreshTravelDirection);
         }
         ResolveOverlaps(graphs);
+        _collisionBudget = TimeSpan.Zero;
     }
 
     public void SeedMissingLayouts(IReadOnlyList<FloatingGraphViewModel> graphs)
@@ -157,8 +159,17 @@ public sealed class FloatingGraphMotionController
     public void Step(IReadOnlyList<FloatingGraphViewModel> graphs, TimeSpan elapsed)
     {
         double seconds = Math.Clamp(elapsed.TotalSeconds, 0d, MaximumFrameSeconds);
-        if (_bounds.IsUsable)
+        // Collision resolution is scene-layout work, not animation work. Running
+        // the O(n²) solver on every ambient frame serialized all graph motion with
+        // the UI thread. Keep the initial placement synchronous, then amortize
+        // corrections over a quarter-second budget while transforms continue to
+        // advance every frame.
+        _collisionBudget -= elapsed;
+        if (_bounds.IsUsable && _collisionBudget <= TimeSpan.Zero)
+        {
             ResolveOverlaps(graphs);
+            _collisionBudget = TimeSpan.FromMilliseconds(250);
+        }
         foreach (FloatingGraphViewModel graph in graphs)
         {
             if (graph.IsCardFlashActive)

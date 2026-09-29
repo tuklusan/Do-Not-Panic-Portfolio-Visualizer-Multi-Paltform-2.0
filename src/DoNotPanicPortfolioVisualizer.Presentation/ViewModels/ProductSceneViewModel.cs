@@ -121,6 +121,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly HashSet<string> _productionImpulseSymbols = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
+    private long _lastMarketStatusSecond = long.MinValue;
     private DateTimeOffset _nextFrameTimingTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private readonly object _degradedTraceGate = new();
@@ -885,19 +886,25 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         TraceCinematicPlayback(now);
         ClockDateText = now.ToLocalTime().ToString("ddd dd-MMM-yyyy").ToUpperInvariant();
         ClockText = now.ToString("HH:mm:ss 'UTC'");
-        foreach (GlobalMarketViewModel market in GlobalMarkets)
+        long marketStatusSecond = now.ToUnixTimeSeconds();
+        if (marketStatusSecond != _lastMarketStatusSecond)
         {
-            try
+            _lastMarketStatusSecond = marketStatusSecond;
+            foreach (GlobalMarketViewModel market in GlobalMarkets)
             {
-                TimeZoneInfo zone = ExchangeTimeZoneResolver.Resolve(market.TimeZoneId);
-                market.TimeText = TimeZoneInfo.ConvertTime(now, zone).ToString("HH:mm");
+                try
+                {
+                    TimeZoneInfo zone = ExchangeTimeZoneResolver.Resolve(market.TimeZoneId);
+                    market.TimeText = TimeZoneInfo.ConvertTime(now, zone).ToString("HH:mm");
+                }
+                catch (InvalidTimeZoneException)
+                {
+                    market.TimeText = "--:--";
+                }
             }
-            catch (InvalidTimeZoneException)
-            {
-                market.TimeText = "--:--";
-            }
+
+            ApplyExchangeCalendarStatuses(now);
         }
-        ApplyExchangeCalendarStatuses(now);
 
         TriggerGraphImpulseFixture(now);
         _graphMotion?.Step(Graphs, elapsed);
