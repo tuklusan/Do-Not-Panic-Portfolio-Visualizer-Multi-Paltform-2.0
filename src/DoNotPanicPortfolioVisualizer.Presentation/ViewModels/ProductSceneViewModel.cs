@@ -129,6 +129,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
     private long _lastMarketStatusSecond = long.MinValue;
     private MarketSession _lastTracedNewYorkSession = MarketSession.Unknown;
+    private MarketSession _pendingNewYorkSession = MarketSession.Unknown;
+    private int _pendingNewYorkSessionObservations;
     private DateTimeOffset _nextFrameTimingTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private readonly object _degradedTraceGate = new();
@@ -1186,6 +1188,36 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         if (session == MarketSession.Unknown)
             return;
 
+        // Provider calendar responses can briefly disagree at a session
+        // boundary (or while a refreshed response is being overlaid). Do not
+        // expose a one-frame status transition to the user. A real transition
+        // must be observed on two consecutive clock/status passes; countdown
+        // text still updates every pass once the session is stable.
+        bool transitioned = false;
+        if (session != _lastTracedNewYorkSession)
+        {
+            if (_pendingNewYorkSession != session)
+            {
+                _pendingNewYorkSession = session;
+                _pendingNewYorkSessionObservations = 1;
+            }
+            else
+            {
+                _pendingNewYorkSessionObservations++;
+            }
+
+            if (_lastTracedNewYorkSession != MarketSession.Unknown && _pendingNewYorkSessionObservations < 2)
+            {
+                WriteCinematicTrace($"MARKET_STATUS_TRANSITION_PENDING;SOURCE={source};FROM={_lastTracedNewYorkSession};TO={session}");
+                return;
+            }
+
+            _lastTracedNewYorkSession = session;
+            _pendingNewYorkSession = MarketSession.Unknown;
+            _pendingNewYorkSessionObservations = 0;
+            transitioned = true;
+        }
+
         PinnedGlobalMarket.ApplyCalendarStatus(session, session switch
         {
             MarketSession.PreMarket => "PRE --",
@@ -1203,11 +1235,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _ => "--"
         };
         MarketStatusText = $"Market: New York {displaySession}{countdown}";
-        if (session != _lastTracedNewYorkSession)
-        {
-            _lastTracedNewYorkSession = session;
+        if (transitioned)
             WriteCinematicTrace($"MARKET_STATUS;SOURCE={source};SESSION={session}");
-        }
     }
 
     private bool IsClosedClockMarketQuoteFresh(string symbol, DateTimeOffset nowUtc)
