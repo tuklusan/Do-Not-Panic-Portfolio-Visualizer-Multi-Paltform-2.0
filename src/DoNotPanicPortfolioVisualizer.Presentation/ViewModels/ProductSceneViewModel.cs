@@ -626,7 +626,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         // Hydration commonly returns many symbols at once. Publish bounded
         // chunks so no single quote batch monopolizes the UI dispatcher while
         // the independent cinematic controllers continue to receive frames.
-        const int publishChunkSize = 6;
+        const int publishChunkSize = 1;
         QuoteSnapshot[] updatedQuotes = result.UpdatedQuotes.ToArray();
         for (int chunkStart = 0; chunkStart < updatedQuotes.Length; chunkStart += publishChunkSize)
         {
@@ -680,19 +680,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 _quoteProvider,
                 MacroQuotes.Select(static macro => macro.Symbol),
                 cancellationToken);
-            await InvokeOnUiAsync(() =>
+            foreach (MacroQuoteViewModel macro in MacroQuotes)
             {
-                foreach (MacroQuoteViewModel macro in MacroQuotes)
+                QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Symbol, macro.Symbol, StringComparison.OrdinalIgnoreCase));
+                if (quote is null)
+                    continue;
+
+                await InvokeOnUiAsync(() =>
                 {
-                    QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
-                        string.Equals(candidate.Symbol, macro.Symbol, StringComparison.OrdinalIgnoreCase));
-                    if (quote is not null)
-                    {
-                        macro.Apply(quote);
-                        _latestQuotes[quote.Symbol] = quote;
-                    }
-                }
-            }, cancellationToken, "macro-quotes");
+                    macro.Apply(quote);
+                    _latestQuotes[quote.Symbol] = quote;
+                }, cancellationToken, "macro-quotes");
+            }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -712,20 +712,23 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     .Select(static market => market.Symbol)
                     .Where(symbol => !IsClosedClockMarketQuoteFresh(symbol, DateTimeOffset.UtcNow)),
                 cancellationToken);
-            await InvokeOnUiAsync(() =>
+            foreach (GlobalMarketViewModel market in GlobalMarkets)
             {
-                foreach (GlobalMarketViewModel market in GlobalMarkets)
+                QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Symbol, market.Symbol, StringComparison.OrdinalIgnoreCase));
+                if (quote is null)
+                    continue;
+
+                await InvokeOnUiAsync(() =>
                 {
-                    QuoteSnapshot? quote = quotes.FirstOrDefault(candidate =>
-                        string.Equals(candidate.Symbol, market.Symbol, StringComparison.OrdinalIgnoreCase));
-                    if (quote is not null)
-                    {
-                        market.ApplyQuote(quote);
-                        _latestQuotes[quote.Symbol] = quote;
-                    }
-                }
-                ApplyExchangeCalendarStatuses(DateTimeOffset.UtcNow);
-            }, cancellationToken, "global-markets");
+                    market.ApplyQuote(quote);
+                    _latestQuotes[quote.Symbol] = quote;
+                }, cancellationToken, "global-markets");
+            }
+            await InvokeOnUiAsync(
+                () => ApplyExchangeCalendarStatuses(DateTimeOffset.UtcNow),
+                cancellationToken,
+                "market-status");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
