@@ -5053,10 +5053,11 @@
       },
       "current_validation": {
         "status": "hosted-validation-passed",
-        "run_id": "34129921207",
+        "run_id": "36618319261",
         "unresolved_gaps": [],
         "closure_evidence": [
-          "Run 34129921207 reached terminal success with all 20 required lanes, complete per-lane evidence, and aggregate closure proof."
+          "Run 36618319261 reached terminal success with all 20 required lanes, complete per-lane evidence, and aggregate closure proof.",
+          "Aggregate validator receipt: HOSTED_SOAK_CLOSURE=Passed;RUN_ID=36618319261;LANES=20;REMOTE_REVIEW_CALLS=0."
         ]
       },
       "upstream_closure_audit": {
