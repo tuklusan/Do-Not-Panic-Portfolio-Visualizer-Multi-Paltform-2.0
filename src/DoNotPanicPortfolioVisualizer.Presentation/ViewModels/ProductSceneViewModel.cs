@@ -627,7 +627,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         // chunks so no single quote batch monopolizes the UI dispatcher while
         // the independent cinematic controllers continue to receive frames.
         const int publishChunkSize = 1;
-        QuoteSnapshot[] updatedQuotes = result.UpdatedQuotes.ToArray();
+        QuoteSnapshot[] updatedQuotes = result.UpdatedQuotes
+            .Where(ShouldPublishQuote)
+            .ToArray();
+        foreach (QuoteSnapshot quote in result.UpdatedQuotes)
+        {
+            if (!updatedQuotes.Contains(quote))
+                _latestQuotes[quote.Symbol] = quote;
+        }
         for (int chunkStart = 0; chunkStart < updatedQuotes.Length; chunkStart += publishChunkSize)
         {
             QuoteSnapshot[] chunk = updatedQuotes
@@ -688,6 +695,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 if (quote is null)
                     continue;
 
+                if (!ShouldPublishQuote(quote))
+                {
+                    _latestQuotes[quote.Symbol] = quote;
+                    continue;
+                }
+
                 await InvokeOnUiAsync(() =>
                 {
                     macro.Apply(quote);
@@ -719,6 +732,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     string.Equals(candidate.Symbol, market.Symbol, StringComparison.OrdinalIgnoreCase));
                 if (quote is null)
                     continue;
+
+                if (!ShouldPublishQuote(quote))
+                {
+                    _latestQuotes[quote.Symbol] = quote;
+                    continue;
+                }
 
                 await InvokeOnUiAsync(() =>
                 {
@@ -1138,6 +1157,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                quote.MarketSession == MarketSession.Closed &&
                quote.FetchTimestampUtc != DateTimeOffset.MinValue &&
                nowUtc - quote.FetchTimestampUtc < TimeSpan.FromMinutes(10);
+    }
+
+    private bool ShouldPublishQuote(QuoteSnapshot quote)
+    {
+        if (!_latestQuotes.TryGetValue(quote.Symbol, out QuoteSnapshot? previous))
+            return true;
+
+        return previous.Last != quote.Last ||
+               previous.Change != quote.Change ||
+               previous.ChangePercent != quote.ChangePercent ||
+               previous.PreviousClose != quote.PreviousClose ||
+               previous.MarketSession != quote.MarketSession ||
+               previous.IsStale != quote.IsStale;
     }
 
     private void ApplyProductionGraphQuote(
