@@ -822,18 +822,27 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
         }
 
-        const int graphPublishChunkSize = 4;
+        const int graphPublishChunkSize = 1;
         HashSet<string> selectedKeys = resolvedGraphs
             .Select(static item => GetGraphKey(item.Graph))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        await InvokeOnUiAsync(() =>
+        List<string> staleGraphKeys = Graphs
+            .Where(graph => !selectedKeys.Contains(GetGraphKey(graph)))
+            .Select(GetGraphKey)
+            .ToList();
+        foreach (string staleGraphKey in staleGraphKeys)
         {
-            for (int index = Graphs.Count - 1; index >= 0; index--)
-            {
-                if (!selectedKeys.Contains(GetGraphKey(Graphs[index])))
-                    Graphs.RemoveAt(index);
-            }
-        }, cancellationToken, "graph-prune");
+            await InvokeOnUiAsync(
+                () =>
+                {
+                    FloatingGraphViewModel? staleGraph = Graphs.FirstOrDefault(graph =>
+                        string.Equals(GetGraphKey(graph), staleGraphKey, StringComparison.OrdinalIgnoreCase));
+                    if (staleGraph is not null)
+                        Graphs.Remove(staleGraph);
+                },
+                cancellationToken,
+                "graph-prune");
+        }
 
         for (int chunkStart = 0; chunkStart < resolvedGraphs.Count; chunkStart += graphPublishChunkSize)
         {
