@@ -8970,15 +8970,11 @@
     }
   ],
   "remaining_validation_gaps": [
-    "CR-069: six progressive soak profiles have not been executed and reviewed.",
-    "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
     "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the fresh Windows 10, Windows 11, and Linux runs observed RSS and AI requests but external AI success remains quota/provider-limited.",
     "CR-085: fresh Windows 10, Windows 11, and Linux evidence passed launch, quote-server, cleanup, and frame-overdue checks; repeated AI-required closure and a returning Mac AI-required run remain outstanding.",
     "CR-086: Windows 10 interactive soak launch now returns DONE with scene and cleanup validation; keyed AI-success evidence remains external-provider limited and is tracked by CR-084/CR-085.",
     "CR-087: Intel Mac evidence is retrievable, but the native-PTY workflow still needs normalized artifact-root closure evidence.",
     "CR-088: fresh Intel Mac native-PTY soak recorded 3,133 live quote responses with no launch/request failures; migration-gate closure evidence remains outstanding.",
-    "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
-    "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
     "CR-113: bounded empty-review retry is implemented; hosted run 36528156388 still had one transient macOS reviewer-empty lane and requires a fresh green proof.",
     "CR-116 is closed with two independent hosted-plus-local companion receipts.",
     "Visual-parity mitigation: clean pre-mitigation reproduction and repaired Windows 10/Linux evidence are recorded in docs/VISUAL-PARITY-MITIGATION-REVIEW.md; CR-009 is closed by fresh ordered startup traces, while CR-010C and CR-010F remain open pending complete upstream-contract re-audit.",
