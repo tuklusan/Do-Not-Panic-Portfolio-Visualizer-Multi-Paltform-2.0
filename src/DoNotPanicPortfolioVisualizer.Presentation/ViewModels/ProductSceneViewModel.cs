@@ -128,6 +128,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private DateTimeOffset? _nextGraphFixtureImpulseUtc;
     private DateTimeOffset _nextCinematicTraceUtc = DateTimeOffset.MinValue;
     private long _lastMarketStatusSecond = long.MinValue;
+    private MarketSession _lastTracedNewYorkSession = MarketSession.Unknown;
     private DateTimeOffset _nextFrameTimingTraceUtc = DateTimeOffset.MinValue;
     private NewsPlaybackPhase _lastTracedNewsPhase = NewsPlaybackPhase.Idle;
     private readonly object _degradedTraceGate = new();
@@ -1162,16 +1163,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             if (ReferenceEquals(market, PinnedGlobalMarket))
             {
                 _hasNewYorkCalendarStatus = true;
-                string session = status.Session switch
-                {
-                    MarketSession.Regular => "Open",
-                    MarketSession.PreMarket => "Pre-Market",
-                    MarketSession.AfterHours => "After Hours",
-                    MarketSession.Closed => "Closed",
-                    _ => "--"
-                };
                 string countdown = status.HasCountdown ? $" | {_exchangeTimingService.FormatCompactStatus(status)}" : string.Empty;
-                MarketStatusText = $"Market: New York {session}{countdown}";
+                ApplyNewYorkStatus(status.Session, countdown, "YFINANCE_CALENDAR");
             }
         }
     }
@@ -1179,6 +1172,14 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private void ApplyNewYorkFallbackStatus(DateTimeOffset referenceUtc)
     {
         MarketSession session = _marketSessionResolver.Resolve(referenceUtc);
+        ApplyNewYorkStatus(session, string.Empty, "FALLBACK_CLOCK");
+    }
+
+    private void ApplyNewYorkStatus(MarketSession session, string countdown, string source)
+    {
+        if (session == MarketSession.Unknown)
+            return;
+
         PinnedGlobalMarket.ApplyCalendarStatus(session, session switch
         {
             MarketSession.PreMarket => "PRE --",
@@ -1187,7 +1188,20 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             MarketSession.Closed => "CLOSED --",
             _ => "--"
         });
-        MarketStatusText = $"Market: New York {FormatMarketSession(session)}";
+        string displaySession = session switch
+        {
+            MarketSession.Regular => "Open",
+            MarketSession.PreMarket => "Pre-Market",
+            MarketSession.AfterHours => "After Hours",
+            MarketSession.Closed => "Closed",
+            _ => "--"
+        };
+        MarketStatusText = $"Market: New York {displaySession}{countdown}";
+        if (session != _lastTracedNewYorkSession)
+        {
+            _lastTracedNewYorkSession = session;
+            WriteCinematicTrace($"MARKET_STATUS;SOURCE={source};SESSION={session}");
+        }
     }
 
     private bool IsClosedClockMarketQuoteFresh(string symbol, DateTimeOffset nowUtc)
