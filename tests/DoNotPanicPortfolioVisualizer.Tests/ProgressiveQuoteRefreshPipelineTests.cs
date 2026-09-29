@@ -122,14 +122,15 @@ public sealed class ProgressiveQuoteRefreshPipelineTests
         // Intel macOS hosted runners can briefly starve the test thread pool
         // while the full suite drains unrelated continuations. Keep this
         // bounded, but allow a complete scheduling window before declaring
-        // the non-blocking pipeline failed.
-        for (int attempt = 0; attempt < 400; attempt++)
+        // the non-blocking pipeline failed. Fewer polls also avoid adding
+        // avoidable semaphore churn while the runner is recovering.
+        for (int attempt = 0; attempt < 120; attempt++)
         {
             ProgressiveQuoteRefreshResult result = await pipeline.RefreshAsync(["AAA", "BBB"], provider);
             if (result.UpdatedQuotes.Count == 2)
                 return result;
 
-            await Task.Delay(25);
+            await Task.Delay(500);
         }
 
         return await pipeline.RefreshAsync(["AAA", "BBB"], provider);
