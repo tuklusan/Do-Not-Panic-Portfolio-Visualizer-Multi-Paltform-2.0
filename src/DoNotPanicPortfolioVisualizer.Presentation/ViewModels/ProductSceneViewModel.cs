@@ -83,6 +83,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     private readonly NtpTimeService _ntpTimeService = new();
     private readonly InternetProbeService _networkProbe = new();
     private readonly YFinanceExchangeTimingService _exchangeTimingService = new();
+    private readonly MarketSessionResolver _marketSessionResolver = new();
     private readonly BackgroundImageService _backgroundService = new();
     private readonly HistoricalGraphBuildCache _graphBuildCache = new();
     private readonly StagedSceneStartupCoordinator _sceneStartupCoordinator = new();
@@ -660,8 +661,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     // legitimately lag or disagree with the exchange session clock.
                     // Once the exchange calendar is available, it is the sole source
                     // of truth for the user-visible New York status.
-                    if (!_hasNewYorkCalendarStatus)
-                        MarketStatusText = "Market: New York " + FormatMarketSession(quote.MarketSession);
+                    if (!_hasNewYorkCalendarStatus && string.Equals(quote.Symbol, PinnedGlobalMarket.Symbol, StringComparison.OrdinalIgnoreCase))
+                        ApplyNewYorkFallbackStatus(DateTimeOffset.UtcNow);
                     bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
                     DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
                     FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
@@ -1150,7 +1151,11 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
         {
             ExchangeTradingCalendar? calendar = _exchangeCalendars.TryGetByCityKey(market.Key);
             if (calendar is null)
+            {
+                if (ReferenceEquals(market, PinnedGlobalMarket))
+                    ApplyNewYorkFallbackStatus(referenceUtc);
                 continue;
+            }
 
             ExchangeCalendarStatus status = _exchangeTimingService.ResolveStatus(calendar, referenceUtc);
             market.ApplyCalendarStatus(status.Session, _exchangeTimingService.FormatCompactStatus(status));
@@ -1169,6 +1174,20 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 MarketStatusText = $"Market: New York {session}{countdown}";
             }
         }
+    }
+
+    private void ApplyNewYorkFallbackStatus(DateTimeOffset referenceUtc)
+    {
+        MarketSession session = _marketSessionResolver.Resolve(referenceUtc);
+        PinnedGlobalMarket.ApplyCalendarStatus(session, session switch
+        {
+            MarketSession.PreMarket => "PRE --",
+            MarketSession.Regular => "OPEN --",
+            MarketSession.AfterHours => "POST --",
+            MarketSession.Closed => "CLOSED --",
+            _ => "--"
+        });
+        MarketStatusText = $"Market: New York {FormatMarketSession(session)}";
     }
 
     private bool IsClosedClockMarketQuoteFresh(string symbol, DateTimeOffset nowUtc)
