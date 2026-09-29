@@ -8972,19 +8972,17 @@
   "remaining_validation_gaps": [
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
-    "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest Windows 10 cycle passed task launch and RSS/request evidence but received external AI HTTP 429.",
-    "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
+    "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the fresh Windows 10, Windows 11, and Linux runs observed RSS and AI requests but external AI success remains quota/provider-limited.",
+    "CR-085: fresh Windows 10, Windows 11, and Linux evidence passed launch, quote-server, cleanup, and frame-overdue checks; repeated AI-required closure and a returning Mac AI-required run remain outstanding.",
     "CR-086: Windows 10 interactive soak launch now returns DONE with scene and cleanup validation; keyed AI-success evidence remains external-provider limited and is tracked by CR-084/CR-085.",
-    "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization.",
-    "CR-088: Intel Mac YFinance.NET.Server startup fails, leaving quote and market lanes degraded."
-    ,"CR-106: upstream footer wording and measured narrow ticker lanes are not yet implemented or physically validated.",
-    "CR-107: runtime architecture identifier beside the version indicator is not yet implemented or validated.",
+    "CR-087: Intel Mac evidence is retrievable, but the native-PTY workflow still needs normalized artifact-root closure evidence.",
+    "CR-088: fresh Intel Mac native-PTY soak recorded 3,133 live quote responses with no launch/request failures; migration-gate closure evidence remains outstanding.",
     "CR-108: hosted yfinance upstream-sync warning requires source-cited baseline verification and refresh.",
     "CR-112: hosted parallel AI quota pressure needs cadence-preserving acceptance proof.",
-    "CR-113: empty NVIDIA reviewer output requires bounded retry and fresh hosted proof.",
+    "CR-113: bounded empty-review retry is implemented; hosted run 36528156388 still had one transient macOS reviewer-empty lane and requires a fresh green proof.",
     "CR-116 is closed with two independent hosted-plus-local companion receipts.",
     "Visual-parity mitigation: clean pre-mitigation reproduction and repaired Windows 10/Linux evidence are recorded in docs/VISUAL-PARITY-MITIGATION-REVIEW.md; CR-009 is closed by fresh ordered startup traces, while CR-010C and CR-010F remain open pending complete upstream-contract re-audit.",
-    "Visual-parity infrastructure: Linux X11 socket selection was corrected and Windows 10 now has a valid remote cycle; macOS still requires native interactive SSH/PTY access and the complete four-machine cycle remains outstanding."
+    "Visual-parity infrastructure: Linux X11 socket selection was corrected, Windows 10/11 passed fresh remote cycles, and macOS passed a native interactive SSH/PTY soak; the unified four-machine receipt and complete cinematic-contract review remain outstanding."
   ],
   "current_operational_recommendations": [
     "Use docs/UPSTREAM_ACCEPTANCE_BASELINE.md as the acceptance contract for all downstream product-port work.",
