@@ -324,7 +324,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             if (!_cinematicPlaybackActive)
             {
                 Interlocked.Exchange(ref _lastAmbientUiTimestamp, 0);
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).ConfigureAwait(false);
                 continue;
             }
 
@@ -343,7 +343,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 // Keep clocks and motion alive if one optional background is malformed.
                 TraceDegradedLane("ambient", ex);
             }
-            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -401,7 +401,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             RenderSurfaceHeartbeatResult heartbeat;
             lock (_renderHeartbeatGate)
                 heartbeat = _renderHeartbeat.Inspect(DateTimeOffset.UtcNow, _cinematicPlaybackActive);
@@ -417,10 +417,10 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
 
     private async Task RunPortfolioQuoteLoopAsync(CancellationToken cancellationToken)
     {
-        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 await RefreshPortfolioQuotesAsync(cancellationToken);
@@ -429,16 +429,16 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 TraceDegradedLane("portfolio-quotes", ex);
             }
-            await Task.Delay(QuoteRefreshPolicy.GetRefreshPollingInterval(_settings, DateTimeOffset.UtcNow), cancellationToken);
+            await Task.Delay(QuoteRefreshPolicy.GetRefreshPollingInterval(_settings, DateTimeOffset.UtcNow), cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RunMacroQuoteLoopAsync(CancellationToken cancellationToken)
     {
-        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 await RefreshMacroQuotesAsync(cancellationToken);
@@ -447,16 +447,16 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 TraceDegradedLane("macro-quotes", ex);
             }
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RunWorldMarketsLoopAsync(CancellationToken cancellationToken)
     {
-        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 await RefreshGlobalMarketsAsync(cancellationToken);
@@ -465,19 +465,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 TraceDegradedLane("global-markets", ex);
             }
-            await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RunGraphRefreshLoopAsync(CancellationToken cancellationToken)
     {
-        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
-        await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await Task.Delay(TimeSpan.FromSeconds(12), cancellationToken).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
             if (!_settings.EnableFloatingGraphs)
             {
-                await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+                await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken).ConfigureAwait(false);
                 continue;
             }
 
@@ -486,7 +486,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 Math.Max(1, _settings.MaxFloatingGraphsPerTape * Math.Max(1, Lanes.Count)));
             for (int attempt = 0; attempt < 6 && _resolvedGraphCount < desiredGraphCount; attempt++)
             {
-                await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+                await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     await RefreshGraphsAsync(cancellationToken);
@@ -498,19 +498,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 }
 
                 if (_resolvedGraphCount < desiredGraphCount && attempt < 5)
-                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(15), cancellationToken).ConfigureAwait(false);
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+            await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task RunNewsRefreshLoopAsync(CancellationToken cancellationToken)
     {
-        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken);
+        await _initialQuoteSequenceCompleted.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 await RefreshNewsAsync(cancellationToken);
@@ -520,21 +520,21 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 TraceDegradedLane("news-refresh", ex);
             }
             int refreshMinutes = Math.Clamp(_settings.NewsRefreshMinutes, 30, 240);
-            await Task.Delay(TimeSpan.FromMinutes(refreshMinutes), cancellationToken);
+            await Task.Delay(TimeSpan.FromMinutes(refreshMinutes), cancellationToken).ConfigureAwait(false);
         }
     }
 
     private async Task WaitUntilCinematicPlaybackActiveAsync(CancellationToken cancellationToken)
     {
         while (!_cinematicPlaybackActive)
-            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).ConfigureAwait(false);
     }
 
     private async Task RunInitialQuoteSequenceAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken);
+            await WaitUntilCinematicPlaybackActiveAsync(cancellationToken).ConfigureAwait(false);
             WriteCinematicTrace("STARTUP;SIGNAL=BOOTSTRAP_READY");
 
             // The upstream live scene primes macro, world-market, then user-tape
