@@ -6973,7 +6973,7 @@
       "id": "CR-089",
       "phase": "Phase 7",
       "title": "Render macro bar immediately during quote startup",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-082"
@@ -7060,7 +7060,7 @@
       "id": "CR-090",
       "phase": "Phase 7",
       "title": "Preserve upstream single-symbol YFinance refresh semantics",
-      "status": "open",
+      "status": "closed",
       "depends_on": [
         "CR-066",
         "CR-069",
