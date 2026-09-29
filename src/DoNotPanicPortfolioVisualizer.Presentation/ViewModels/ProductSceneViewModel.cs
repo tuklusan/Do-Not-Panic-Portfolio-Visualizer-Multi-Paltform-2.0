@@ -634,18 +634,19 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 .Skip(chunkStart)
                 .Take(publishChunkSize)
                 .ToArray();
-            await InvokeOnUiAsync(() =>
+            foreach (QuoteSnapshot quote in chunk)
             {
-                foreach (QuoteSnapshot quote in chunk)
+                if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
+                    continue;
+
+                foreach (Action<QuoteSnapshot> apply in applyActions)
                 {
-                    if (!targets.TryGetValue(quote.Symbol, out List<Action<QuoteSnapshot>>? applyActions))
-                        continue;
+                    await InvokeOnUiAsync(() => apply(quote), cancellationToken, "portfolio-ticker");
+                }
 
-                    foreach (Action<QuoteSnapshot> apply in applyActions)
-                        apply(quote);
-
+                await InvokeOnUiAsync(() =>
+                {
                     _latestQuotes[quote.Symbol] = quote;
-
                     ApplyQuoteToGraph(quote);
                     UpdatedTickerFieldText = TickerFormatter.FormatUpdatedSymbol(quote);
                     // The quote's marketState is instrument/provider metadata and can
@@ -657,8 +658,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     bool hardStale = QuoteRefreshPolicy.IsHardStale(quote, _settings, DateTimeOffset.UtcNow);
                     DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
                     FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
-                }
-            }, cancellationToken, "portfolio-quotes");
+                }, cancellationToken, "portfolio-quote-meta");
+            }
         }
 
         if (!result.ProviderHealth.IsHealthy && result.CachedQuotes.Count == 0)
