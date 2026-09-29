@@ -34,6 +34,10 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisposable
 {
+    // Upstream renders the tape motion at roughly 30 FPS and graph motion at
+    // roughly 20 FPS. Keeping the shared UI scheduler at 30 FPS bounds layout
+    // pressure while elapsed-time controllers preserve continuous travel.
+    private static readonly TimeSpan AmbientFrameInterval = TimeSpan.FromMilliseconds(33);
     private static readonly (string Label, string Symbol, decimal Maximum, bool InvertRiskColors)[] MacroSymbols =
     [
         ("VIX", "^VIX", 60m, true),
@@ -345,7 +349,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 // Keep clocks and motion alive if one optional background is malformed.
                 TraceDegradedLane("ambient", ex);
             }
-            await Task.Delay(TimeSpan.FromMilliseconds(16), cancellationToken).ConfigureAwait(false);
+            await Task.Delay(AmbientFrameInterval, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -392,7 +396,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             {
                 // Keep the coalescing guard held for the entire UI callback.
                 // Releasing it before UpdateClockAndMotion completes permits the
-                // 16 ms scheduler to enqueue a backlog during a slow frame,
+                // scheduler to enqueue a backlog during a slow frame,
                 // producing the observed freeze/jitter/recovery bursts.
                 _ambientFrameGate.Release();
             }
