@@ -417,7 +417,8 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             TraceRenderHeartbeat(heartbeat);
             await InvokeOnUiAsync(
                 () => RenderSurfaceRecoveryRequested?.Invoke(),
-                cancellationToken);
+                cancellationToken,
+                "render-recovery");
         }
     }
 
@@ -608,7 +609,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             ClockText = DateTimeOffset.UtcNow.ToString("HH:mm:ss 'UTC'");
             DataFreshnessText = "LOADING - waiting for data";
             FreshnessBrush = "#D8E9F8";
-        }, cancellationToken);
+        }, cancellationToken, "portfolio-header");
 
         Dictionary<string, List<Action<QuoteSnapshot>>> targets = Lanes
             .SelectMany(static lane => lane.Quotes)
@@ -657,7 +658,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     DataFreshnessText = hardStale ? "DELAYED - cached market data" : "LIVE quote feed";
                     FreshnessBrush = hardStale ? "#F4C95D" : "#39E75F";
                 }
-            }, cancellationToken);
+            }, cancellationToken, "portfolio-quotes");
         }
 
         if (!result.ProviderHealth.IsHealthy && result.CachedQuotes.Count == 0)
@@ -667,7 +668,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                 DataFreshnessText = "OFFLINE - waiting for local market service";
                 FreshnessBrush = "#FF8A55";
                 MarketStatusText = "Market: New York -- unavailable";
-            }, cancellationToken);
+            }, cancellationToken, "portfolio-offline");
         }
     }
 
@@ -691,7 +692,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                         _latestQuotes[quote.Symbol] = quote;
                     }
                 }
-            }, cancellationToken);
+            }, cancellationToken, "macro-quotes");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -724,7 +725,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     }
                 }
                 ApplyExchangeCalendarStatuses(DateTimeOffset.UtcNow);
-            }, cancellationToken);
+            }, cancellationToken, "global-markets");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -754,7 +755,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     market.WeatherText = $"{WorldWeatherService.GetGlyph(snapshot.WeatherCode, snapshot.IsDay)} {snapshot.TemperatureCelsius:0}C";
             }
             _nextWeatherRefreshUtc = DateTimeOffset.UtcNow.AddMinutes(10);
-        }, cancellationToken);
+        }, cancellationToken, "world-weather");
     }
 
     private async Task RefreshGraphsAsync(CancellationToken cancellationToken)
@@ -828,7 +829,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
             _resolvedGraphCount = Graphs.Count;
             ArmGraphImpulseFixture();
-        }, cancellationToken);
+        }, cancellationToken, "graph-refresh");
     }
 
     private async Task RefreshNewsAsync(CancellationToken cancellationToken)
@@ -843,7 +844,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             string latestPublication = freshness.LatestPublicationUtc?.ToString("O") ?? "NONE";
             WriteCinematicTrace(
                 $"NEWS_SOURCE;STATE={freshness.State};LATEST_UTC={latestPublication}");
-            await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(playback.Headlines), cancellationToken);
+            await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(playback.Headlines), cancellationToken, "news-rss");
             WriteCinematicTrace($"NEWS_PLAYBACK_PUBLISHED;SOURCE=RSS;HEADLINE_COUNT={playback.Headlines.Count}");
 
             // Publish usable RSS immediately. Optional AI generation may be slow or
@@ -856,7 +857,7 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
                     cancellationToken);
                 if (!ReferenceEquals(aiPlayback, playback))
                 {
-                    await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(aiPlayback.Headlines), cancellationToken);
+                    await InvokeOnUiAsync(() => _newsPlayback.SetHeadlines(aiPlayback.Headlines), cancellationToken, "news-ai");
                     WriteCinematicTrace($"NEWS_PLAYBACK_PUBLISHED;SOURCE=AI;HEADLINE_COUNT={aiPlayback.Headlines.Count}");
                 }
             }
@@ -866,11 +867,12 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             WriteCinematicTrace($"NEWS_SOURCE;STATE=UNAVAILABLE;LATEST_UTC=NONE;ERROR={ex.GetType().Name}");
             await InvokeOnUiAsync(
                 () => _newsPlayback.SetHeadlines(["Finance news headlines are temporarily unavailable"]),
-                cancellationToken);
+                cancellationToken,
+                "news-fallback");
         }
     }
 
-    private Task InvokeOnUiAsync(Action action, CancellationToken cancellationToken)
+    private Task InvokeOnUiAsync(Action action, CancellationToken cancellationToken, string lane)
     {
         if (ReferenceEquals(SynchronizationContext.Current, _uiContext))
         {
@@ -878,13 +880,22 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             return Task.CompletedTask;
         }
 
+        long posted = Stopwatch.GetTimestamp();
         TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         _uiContext.Post(_ =>
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                long started = Stopwatch.GetTimestamp();
                 action();
+                TimeSpan queueElapsed = Stopwatch.GetElapsedTime(posted, started);
+                TimeSpan uiElapsed = Stopwatch.GetElapsedTime(started);
+                if (queueElapsed >= TimeSpan.FromMilliseconds(100) || uiElapsed >= TimeSpan.FromMilliseconds(25))
+                {
+                    WriteCinematicTrace(
+                        $"UI_CALLBACK;LANE={lane};QUEUE_MS={queueElapsed.TotalMilliseconds:0.0};UI_MS={uiElapsed.TotalMilliseconds:0.0}");
+                }
                 completion.SetResult();
             }
             catch (Exception ex)
