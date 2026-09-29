@@ -6882,7 +6882,7 @@
       "current_validation": {
         "status": "coordinator_path_corrected_targeted_run_passed_pending_second_run",
         "unresolved_gaps": [
-          "The coordinator now resides below the Windows 10 D:\\SW_DEV\\DO-NOT-PANIC-2.0 publish directory and the fresh artifacts-win10-ai-retry cycle completed both configuration and real-product validation with status=Passed. A second targeted run and full closure-gate record remain required."
+          "The coordinator now resides below the Windows 10 D:\\SW_DEV\\DO-NOT-PANIC-2.0 publish directory. Fresh cycle dnppv2-local-cycle-4c5c6ec5-win10 completed interactive task launch, DONE, configuration validation, real-product validation, and cleanup with status=Passed; RSS was usable and an AI request was observed, while the external provider returned HTTP 429, so AI success remains routed to CR-084/CR-085."
         ]
       }
     },
@@ -8972,9 +8972,9 @@
   "remaining_validation_gaps": [
     "CR-069: six progressive soak profiles have not been executed and reviewed.",
     "CR-081: ticker quote-lane contrast improvement has not completed its upstream inventory or visual validation.",
-    "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest cycle passed Linux, Windows 11, and Intel Mac but failed Windows 10 task launch.",
+    "CR-084: two successive complete local RSS/AI evidence cycles are not yet proven; the latest Windows 10 cycle passed task launch and RSS/request evidence but received external AI HTTP 429.",
     "CR-085: Windows 11 and Intel Mac now have successful targeted RSS/AI evidence, but the required repeated targeted reruns and final closure evidence remain outstanding.",
-    "CR-086: Windows 10 interactive soak task launch returns DONE_FILE_MISSING and needs repair.",
+    "CR-086: Windows 10 interactive soak launch now returns DONE with scene and cleanup validation; keyed AI-success evidence remains external-provider limited and is tracked by CR-084/CR-085.",
     "CR-087: Intel Mac artifact retrieval leaves an unexpected nested artifacts directory and needs normalization.",
     "CR-088: Intel Mac YFinance.NET.Server startup fails, leaving quote and market lanes degraded."
     ,"CR-106: upstream footer wording and measured narrow ticker lanes are not yet implemented or physically validated.",

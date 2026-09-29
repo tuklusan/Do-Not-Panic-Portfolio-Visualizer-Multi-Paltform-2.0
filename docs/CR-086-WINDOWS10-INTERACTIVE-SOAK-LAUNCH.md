@@ -43,4 +43,7 @@ target publish directory, which is `D:\SW_DEV\DO-NOT-PANIC-2.0` for Windows 10.
 The fresh cycle `artifacts-win10-ai-retry` on 2026-09-05 completed with
 `status=Passed`, and both configuration-window and real-product validation
 passed. Its manifest recorded the required `D:\SW_DEV` and `D:\TEMP` storage
-contract. A second targeted run is still required before this CR closes.
+contract. A newer targeted cycle, `dnppv2-local-cycle-4c5c6ec5-win10`, also
+completed interactive launch, `DONE`, scene validation, and cleanup. Its news
+evidence recorded usable RSS and an AI request, but the external provider
+returned HTTP 429; AI-success closure remains routed to CR-084/CR-085.
