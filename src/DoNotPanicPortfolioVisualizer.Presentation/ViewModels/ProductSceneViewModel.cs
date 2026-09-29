@@ -822,37 +822,51 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             }
         }
 
+        const int graphPublishChunkSize = 4;
+        HashSet<string> selectedKeys = resolvedGraphs
+            .Select(static item => GetGraphKey(item.Graph))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         await InvokeOnUiAsync(() =>
         {
-            HashSet<string> selectedKeys = resolvedGraphs
-                .Select(static item => GetGraphKey(item.Graph))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
             for (int index = Graphs.Count - 1; index >= 0; index--)
             {
                 if (!selectedKeys.Contains(GetGraphKey(Graphs[index])))
                     Graphs.RemoveAt(index);
             }
+        }, cancellationToken, "graph-prune");
 
-            foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent, bool isStale, MarketSession session) in resolvedGraphs)
+        for (int chunkStart = 0; chunkStart < resolvedGraphs.Count; chunkStart += graphPublishChunkSize)
+        {
+            List<(FloatingGraphViewModel Graph, decimal? Last, decimal? ChangePercent, bool IsStale, MarketSession Session)> chunk = resolvedGraphs
+                .Skip(chunkStart)
+                .Take(graphPublishChunkSize)
+                .ToList();
+            await InvokeOnUiAsync(() =>
             {
-                graph.MarketSession = session;
-                FloatingGraphViewModel? existing = Graphs.FirstOrDefault(candidate =>
-                    string.Equals(GetGraphKey(candidate), GetGraphKey(graph), StringComparison.OrdinalIgnoreCase));
-                if (existing is not null)
+                foreach ((FloatingGraphViewModel graph, decimal? last, decimal? changePercent, bool isStale, MarketSession session) in chunk)
                 {
-                    existing.CopyContentFrom(graph);
-                    ApplyProductionGraphQuote(existing, last, changePercent, isStale, "HISTORICAL_REFRESH");
-                    continue;
+                    graph.MarketSession = session;
+                    FloatingGraphViewModel? existing = Graphs.FirstOrDefault(candidate =>
+                        string.Equals(GetGraphKey(candidate), GetGraphKey(graph), StringComparison.OrdinalIgnoreCase));
+                    if (existing is not null)
+                    {
+                        existing.CopyContentFrom(graph);
+                        ApplyProductionGraphQuote(existing, last, changePercent, isStale, "HISTORICAL_REFRESH");
+                        continue;
+                    }
+
+                    _graphMotion?.ApplyQuote(graph, last, changePercent, suppressMotionCue: true);
+                    Graphs.Add(graph);
                 }
+            }, cancellationToken, "graph-refresh");
+        }
 
-                _graphMotion?.ApplyQuote(graph, last, changePercent, suppressMotionCue: true);
-                Graphs.Add(graph);
-            }
-
+        await InvokeOnUiAsync(() =>
+        {
             _graphMotion?.ConfigureViewport(_graphViewportWidth, _graphViewportHeight, Graphs);
             _resolvedGraphCount = Graphs.Count;
             ArmGraphImpulseFixture();
-        }, cancellationToken, "graph-refresh");
+        }, cancellationToken, "graph-viewport");
     }
 
     private async Task RefreshNewsAsync(CancellationToken cancellationToken)
