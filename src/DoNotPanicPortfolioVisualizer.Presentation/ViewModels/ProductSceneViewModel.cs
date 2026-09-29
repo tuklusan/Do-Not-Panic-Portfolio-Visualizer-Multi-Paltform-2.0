@@ -1153,7 +1153,13 @@ public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisp
             ExchangeTradingCalendar? calendar = _exchangeCalendars.TryGetByCityKey(market.Key);
             if (calendar is null)
             {
-                if (ReferenceEquals(market, PinnedGlobalMarket))
+                // Once the exchange calendar has supplied New York status, a
+                // transiently incomplete refresh must not hand control back to
+                // the wall-clock fallback. Doing so can visibly oscillate the
+                // banner between the two providers while the calendar service
+                // is recovering. Preserve the last calendar-authoritative value
+                // until a replacement calendar arrives.
+                if (ReferenceEquals(market, PinnedGlobalMarket) && !_hasNewYorkCalendarStatus)
                     ApplyNewYorkFallbackStatus(referenceUtc);
                 continue;
             }
