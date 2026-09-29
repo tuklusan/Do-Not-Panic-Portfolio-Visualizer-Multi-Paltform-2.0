@@ -15,7 +15,9 @@ patent, trademark, and governing-law provisions.
 
 ## Status
 
-Closed. The bounded retry and fail-closed behavior is proven by hosted run `34129921207`.
+Closed. The bounded retry and fail-closed behavior is proven by hosted runs
+`34129921207` and the fresh serialized matrix `36534211463`, whose
+`post-soak-review` and all 21 real-product lanes completed successfully.
 
 ## Objective
 
