@@ -705,17 +705,23 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                         <TextBlock Text="{Binding BackgroundAttributionText}"
                                    MaxWidth="620"
                                    FontSize="10"
+                                   TextWrapping="NoWrap"
                                    TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="1"
                                    HorizontalAlignment="Center"
                                    Text="Delayed by minimum 15 minutes."
                                    FontSize="10"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="2"
                                    Text="{Binding RuntimeArchitectureFooterText}"
                                    HorizontalAlignment="Right"
                                    FontSize="10"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center"
                                    Foreground="#88939A" />
                     </Grid>
                 </Grid>
