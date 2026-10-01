@@ -99,6 +99,27 @@ public sealed class ProductShellTickerPresentationTests
     }
 
     [Fact]
+    public void ProductShell_BindsFooterArchitectureAsOneNoWrapField()
+    {
+        string xaml = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(),
+            "src",
+            "DoNotPanicPortfolioVisualizer.App",
+            "Views",
+            "ProductShellWindow.axaml"));
+
+        int footerStart = xaml.IndexOf("Text=\"{Binding BackgroundAttributionText}\"", StringComparison.Ordinal);
+        int footerEnd = xaml.IndexOf("</Grid>", footerStart, StringComparison.Ordinal);
+
+        Assert.True(footerStart >= 0 && footerEnd > footerStart);
+        string footer = xaml[footerStart..footerEnd];
+        Assert.Contains("Text=\"{Binding RuntimeArchitectureFooterText}\"", footer, StringComparison.Ordinal);
+        Assert.Contains("TextWrapping=\"NoWrap\"", footer, StringComparison.Ordinal);
+        Assert.DoesNotContain("Text=\"2.0 | {Binding RuntimeArchitectureToken}\"", footer, StringComparison.Ordinal);
+        Assert.DoesNotContain("Binding runtimearchitecturetoken", footer, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ProductShell_TickerViewportClipsTranslatedTrackWithoutStretchingIt()
     {
         string xaml = File.ReadAllText(Path.Combine(
