@@ -8972,11 +8972,11 @@
     }
   ],
   "latest_hosted_validation_receipt": {
-    "run_id": "36816149757",
-    "commit": "cd1f8a2c3d3aeddea7fe38719539a5f0cbe33a63",
-    "result": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=36816149757;LANES=20;REMOTE_REVIEW_CALLS=0",
+    "run_id": "36818677930",
+    "commit": "e891747d6625b1fd7010b927fc0803b54e06b575",
+    "result": "HOSTED_SOAK_CLOSURE=Passed;RUN_ID=36818677930;LANES=20;REMOTE_REVIEW_CALLS=0",
     "all_jobs_successful": true,
-    "artifact": "dnppv2-post-soak-review-36816149757/aggregate-validation.txt"
+    "artifact": "dnppv2-post-soak-review-36818677930/aggregate-validation.txt"
   },
   "latest_physical_acceptance_receipt": {
     "commit": "1b792187b50bed0f2717bf08e2c20a458d81828f",
