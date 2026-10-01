@@ -7773,7 +7773,7 @@
       "id": "CR-107",
       "phase": "Phase 7",
       "title": "Add a stable runtime architecture identifier beside version 2.0",
-      "status": "closed",
+      "status": "in_progress",
       "priority": "low",
       "depends_on": ["CR-106"],
       "objective": "Extend the bottom-right version indicator with a short deterministic runtime platform/architecture token so screenshots and physical evidence identify their target without depending on CI runner labels.",
@@ -7837,14 +7837,16 @@
         "unresolved_gaps": []
       },
       "current_validation": {
-        "status": "closed",
+        "status": "in_progress",
         "evidence": [
           "Hosted run 34058732179 produced Passed product soak results with processCleanedUp=true for all 21 historical lanes, but aggregate closure remained non-authoritative because lane reviewer receipts were unavailable or blocking and AI-evidence findings were retained; downloaded evidence was inspected and cleaned up.",
           "RuntimeArchitecture maps all six supported OS/architecture combinations and unknown runtimes deterministically; the focused suite passed 8/8 and the full suite passed 330/330.",
           "Release app build passed with 0 warnings and 0 errors.",
           "NVIDIA code review 20260908-130844 passed with no blocking findings for the immutable candidate."
         ],
-        "unresolved_gaps": [],
+        "unresolved_gaps": [
+          "Physical Win-11 evidence exposed a literal `{Binding RuntimeArchitectureToken}` in the rendered footer. The binding and footer column layout are corrected in the working tree; a fresh Release publish and physical screenshot must re-prove the visible token before closure."
+        ],
         "closure_evidence": [
           "Local runtime mapping tests passed 8/8; the full suite passed 330/330; and the Release build passed with zero warnings and zero errors.",
           "Hosted run 34267946915 passed all 43 jobs and all 20 lanes; each lane retained a complete closure record, settled screenshot, and both circular traces.",

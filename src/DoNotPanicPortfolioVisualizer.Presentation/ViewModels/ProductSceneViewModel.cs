@@ -34,6 +34,8 @@ namespace DoNotPanicPortfolioVisualizer.Presentation.ViewModels;
 
 public sealed partial class ProductSceneViewModel : ObservableObject, IAsyncDisposable
 {
+    public string RuntimeArchitectureFooterText => $"{PortfolioVersion.Version} | {RuntimeArchitecture.CurrentToken}";
+
     // Upstream renders the tape motion at roughly 30 FPS and graph motion at
     // roughly 20 FPS. Keeping the shared UI scheduler at 30 FPS bounds layout
     // pressure while elapsed-time controllers preserve continuous travel.

@@ -701,18 +701,19 @@ Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
                             </Border>
                         </Grid>
                     </Border>
-                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" Margin="0,5,0,0">
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="12,5,12,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding BackgroundAttributionText}"
                                    MaxWidth="620"
                                    FontSize="10"
                                    TextTrimming="CharacterEllipsis"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="1"
+                                   HorizontalAlignment="Center"
                                    Text="Delayed by minimum 15 minutes."
                                    FontSize="10"
                                    Foreground="#88939A" />
                         <TextBlock Grid.Column="2"
-                                   Text="2.0 | {Binding RuntimeArchitectureToken}"
+                                   Text="{Binding RuntimeArchitectureFooterText}"
                                    HorizontalAlignment="Right"
                                    FontSize="10"
                                    Foreground="#88939A" />
