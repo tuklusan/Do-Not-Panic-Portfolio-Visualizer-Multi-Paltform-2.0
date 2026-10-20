@@ -1,0 +1,15 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="DoNotPanicPortfolioVisualizer.App.App"
+             xmlns:local="using:DoNotPanicPortfolioVisualizer.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" lets the system choose the theme, on the theory that the system has had a long day and deserves a decision. "Dark" and "Light" remain available by name. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>

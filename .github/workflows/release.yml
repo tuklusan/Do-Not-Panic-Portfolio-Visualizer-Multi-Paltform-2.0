@@ -1,0 +1,84 @@
+name: Build and publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-python@v7
+        with:
+          python-version: 3.12
+      - name: Build all runtime identifiers
+        run: python build.py
+      - name: Validate and package all runtime identifiers
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import os
+          import stat
+          import zipfile
+          from pathlib import Path
+
+          root = Path.cwd()
+          tag = os.environ["RELEASE_TAG"]
+          rids = ("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
+          assets = root / "build-temp" / "release-assets"
+          assets.mkdir(parents=True, exist_ok=True)
+          archive_paths = []
+
+          for rid in rids:
+              output = root / "dist" / rid
+              required = (
+                  output / "DoNotPanicPortfolioVisualizer.App.dll",
+                  output / "DoNotPanicPortfolioVisualizer.App.deps.json",
+                  output / "DoNotPanicPortfolioVisualizer.App.runtimeconfig.json",
+                  output / "runtimes" / rid / "native",
+                  output / "YFinanceServer" / "YFinance.NET.Server.dll",
+              )
+              missing = [str(path.relative_to(root)) for path in required if not path.exists()]
+              if missing:
+                  raise SystemExit(f"{rid} output is incomplete: {', '.join(missing)}")
+              archive = assets / f"DoNotPanicPortfolioVisualizer-{tag}-{rid}.zip"
+              with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as package:
+                  files = sorted(path for path in output.rglob("*") if path.is_file())
+                  files.append(root / "LICENSE")
+                  for path in files:
+                      relative = path.relative_to(output) if output in path.parents else Path("LICENSE")
+                      info = zipfile.ZipInfo(relative.as_posix())
+                      info.create_system = 3
+                      info.compress_type = zipfile.ZIP_DEFLATED
+                      info.external_attr = (stat.S_IFREG | (path.stat().st_mode & 0o777)) << 16
+                      package.writestr(info, path.read_bytes())
+              archive_paths.append(archive)
+
+          checksum_file = assets / "SHA256SUMS.txt"
+          checksum_file.write_text(
+              "".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n" for path in archive_paths),
+              encoding="utf-8",
+          )
+          print("Prepared release assets:")
+          for path in (*archive_paths, checksum_file):
+              print(path.relative_to(root))
+          PY
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -t assets < <(find build-temp/release-assets -maxdepth 1 -type f \( -name '*.zip' -o -name 'SHA256SUMS.txt' \) -print | sort)
+          test "${#assets[@]}" -eq 7
+          gh release create "$GITHUB_REF_NAME" "${assets[@]}" --title "DO NOT PANIC PORTFOLIO VISUALIZER $GITHUB_REF_NAME" --generate-notes --verify-tag

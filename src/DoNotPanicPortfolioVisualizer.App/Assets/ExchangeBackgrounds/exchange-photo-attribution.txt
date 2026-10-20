@@ -1,0 +1,13 @@
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Based on original work by Supratim Sanyal of SANYALnet Labs.
+Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
+
+DO NOT PANIC PORTFOLIO VISUALIZER background image starters
+
+These three bundled starter photos ship with the application and are copied into the managed Local AppData background cache when the built-in rotation is used.
+
+- NYC - New York Stock Exchange | Jean-Christophe BENOIST | CC BY 3.0 | https://commons.wikimedia.org/wiki/File:NYC_-_New_York_Stock_Exchange.JPG
+- London Skyline | Rodrigo.Argenton | CC0 | https://commons.wikimedia.org/wiki/File:London_Skyline_(199638369).jpeg
+- Shanghai skyline from the Bund | Pxfuel | CC0 | https://commons.wikimedia.org/wiki/File:Shanghai_skyline_from_the_bund.jpg
+
+The runtime writes a fuller exchange-photo-attribution.txt into the managed cache folder when it warms the downloadable background manifest.

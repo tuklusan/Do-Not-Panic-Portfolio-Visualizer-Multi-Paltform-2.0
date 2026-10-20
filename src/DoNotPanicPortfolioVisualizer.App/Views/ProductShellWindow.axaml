@@ -1,0 +1,790 @@
+<!--
+Copyright (c) 2026 Supratim Sanyal of SANYALnet Labs.
+Based on original work by Supratim Sanyal of SANYALnet Labs.
+Governed by the SANYALnet Labs Non-Commercial License in the root LICENSE file.
+-->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="DoNotPanicPortfolioVisualizer.App.Views.ProductShellWindow"
+        x:Name="ShellWindow"
+        x:CompileBindings="False"
+        Title="DO NOT PANIC PORTFOLIO VISUALIZER 2.0"
+        Icon="/Assets/dnppv-icon.ico"
+        Width="1180"
+        Height="720"
+        MinWidth="960"
+        MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="#111315"
+        Opened="OnWindowOpened"
+        Closing="OnWindowClosing"
+        KeyDown="OnWindowKeyDown"
+        DoubleTapped="OnWindowDoubleTapped">
+    <Window.Styles>
+        <Style Selector="Button#RadioToggleButton:pointerover">
+            <Setter Property="Background" Value="#394957" />
+            <Setter Property="Foreground" Value="#FFE36E" />
+            <Setter Property="BorderBrush" Value="#FFE36E" />
+        </Style>
+        <Style Selector="Button#RadioToggleButton:pressed">
+            <Setter Property="Background" Value="#506273" />
+            <Setter Property="Foreground" Value="#FFE36E" />
+            <Setter Property="BorderBrush" Value="#FFE36E" />
+        </Style>
+        <Style Selector="Button#RadioToggleButton:disabled">
+            <Setter Property="Foreground" Value="#FFE36E" />
+        </Style>
+    </Window.Styles>
+    <Grid RowDefinitions="Auto,*">
+        <Menu x:Name="MainMenu"
+              Grid.Row="0"
+              Background="#171B1F"
+              Foreground="#E7EDF2">
+            <Menu.Resources>
+                <SolidColorBrush x:Key="MenuFlyoutPresenterBackground">#1D252C</SolidColorBrush>
+                <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush">#5A7890</SolidColorBrush>
+            </Menu.Resources>
+            <Menu.Styles>
+                <Style Selector="MenuItem /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#E7EDF2" />
+                </Style>
+                <Style Selector="MenuItem:selected /template/ Border#PART_LayoutRoot">
+                    <Setter Property="Background" Value="#2C4656" />
+                </Style>
+                <Style Selector="MenuItem:selected /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+                <Style Selector="MenuItem:open /template/ Border#PART_LayoutRoot">
+                    <Setter Property="Background" Value="#2C4656" />
+                </Style>
+                <Style Selector="MenuItem:open /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+                <Style Selector="MenuItem:pressed /template/ ContentPresenter#PART_HeaderPresenter">
+                    <Setter Property="Foreground" Value="#FFFFFF" />
+                </Style>
+            </Menu.Styles>
+            <MenuItem Header="_File">
+                <MenuItem Header="E_xit" Click="OnExitClick" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem x:Name="FullScreenMenuItem"
+                          Header="_Full Screen"
+                          InputGesture="F11"
+                          Click="OnFullScreenClick" />
+            </MenuItem>
+            <MenuItem Header="_Options">
+                <MenuItem Header="_Settings" Click="OnSettingsClick" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="OnAboutClick" />
+            </MenuItem>
+        </Menu>
+
+        <Grid x:Name="SceneRoot" Grid.Row="1" SizeChanged="OnSceneRootSizeChanged">
+            <Image x:Name="BackgroundLayerA"
+                   Stretch="Fill"
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding BackgroundScaleA}" ScaleY="{Binding BackgroundScaleA}" />
+                </Image.RenderTransform>
+            </Image>
+            <Image x:Name="BackgroundLayerB"
+                   Stretch="Fill"
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding BackgroundScaleB}" ScaleY="{Binding BackgroundScaleB}" />
+                </Image.RenderTransform>
+            </Image>
+            <Border Background="Black" Opacity="{Binding SceneDimOpacity}" />
+
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="0,10,0,0"
+                    Padding="26,6"
+                    Background="#AA05090D"
+                    BorderBrush="#6698D8FF"
+                    BorderThickness="1.2"
+                    CornerRadius="8"
+                    ZIndex="91"
+                    IsHitTestVisible="False">
+                <TextBlock Text="SANYALnet Labs  DO NOT PANIC Portfolio Visualizer"
+                           FontSize="19"
+                           FontWeight="Bold"
+                           Foreground="#F4F9FF" />
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding Graphs}"
+                          IsHitTestVisible="False"
+                          Margin="16,12,16,10"
+                          ClipToBounds="True"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="186"
+                                Height="78"
+                                Opacity="{Binding VisualOpacity}"
+                                Background="#C20D131B"
+                                BorderBrush="{Binding AccentBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="7">
+                            <!-- Graph cards never stop dancing, so their layout slot must stand still while a render transform moves the picture. Canvas.Left/Top makes the entire scene rearrange itself every frame, and Linux compositors respond by forming a queue of heroic length. -->
+                            <Border.RenderTransform>
+                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                            </Border.RenderTransform>
+                            <Grid>
+                                <!-- The upstream sends a flash with each quote impulse; this border politely displays it without getting in the way of a click. -->
+                                <Border Background="{Binding FlashBrush}"
+                                        Opacity="{Binding FlashOpacity}"
+                                        CornerRadius="6"
+                                        IsHitTestVisible="False" />
+                                <Grid RowDefinitions="Auto,*">
+                                    <Grid ColumnDefinitions="34,*,42,46">
+                                        <TextBlock Text="{Binding Symbol}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="White" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OverlayText}"
+                                                   Margin="2,1"
+                                                   FontSize="7"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="#8EA4B4" />
+                                         <TextBlock Grid.Column="2"
+                                                    Text="{Binding LastText}"
+                                                    HorizontalAlignment="Right"
+                                                    FontFamily="Consolas"
+                                                    FontSize="9"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    Foreground="White" />
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding ChangeText}"
+                                                   HorizontalAlignment="Right"
+                                                   FontFamily="Consolas"
+                                                   FontSize="8"
+                                                   FontWeight="Bold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{Binding AccentBrush}" />
+                                    </Grid>
+                                    <Grid Grid.Row="1" ColumnDefinitions="30,*" Margin="0,3,0,0">
+                                        <Grid RowDefinitions="Auto,*,Auto" Margin="0,0,5,0">
+                                            <TextBlock Text="{Binding MaxScaleText}"
+                                                       HorizontalAlignment="Right"
+                                                       FontFamily="Consolas"
+                                                       FontSize="7"
+                                                       Foreground="#90B0C9" />
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding MidScaleText}"
+                                                       HorizontalAlignment="Right"
+                                                       VerticalAlignment="Center"
+                                                       FontFamily="Consolas"
+                                                       FontSize="7"
+                                                       Foreground="#7E9AB0" />
+                                            <TextBlock Grid.Row="2"
+                                                       Text="{Binding MinScaleText}"
+                                                       HorizontalAlignment="Right"
+                                                       FontFamily="Consolas"
+                                                       FontSize="7"
+                                                       Foreground="#90B0C9" />
+                                        </Grid>
+                                        <Grid Grid.Column="1" Width="132" Height="40">
+                                            <Border BorderBrush="#37AFC6D8" BorderThickness="1" />
+                                            <ItemsControl ItemsSource="{Binding GreenSegmentPaths}"
+                                                          IsHitTestVisible="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <Canvas />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Path Data="{Binding}"
+                                                              Stroke="#66D672"
+                                                              StrokeThickness="2" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <ItemsControl ItemsSource="{Binding RedSegmentPaths}"
+                                                          IsHitTestVisible="False">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <Canvas />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Path Data="{Binding}"
+                                                              Stroke="#F06A6A"
+                                                              StrokeThickness="2" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <Path Data="{Binding LatestSegmentPath}"
+                                                  Stroke="{Binding LatestSegmentBrush}"
+                                                  StrokeThickness="3"
+                                                  IsHitTestVisible="False" />
+                                            <Grid VerticalAlignment="Bottom"
+                                                  ColumnDefinitions="Auto,*,Auto"
+                                                  Margin="2,0">
+                                                <TextBlock Text="{Binding LeftTimeScaleText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="6"
+                                                           Foreground="#93A9BD" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding MiddleTimeScaleText}"
+                                                           HorizontalAlignment="Center"
+                                                           FontFamily="Consolas"
+                                                           FontSize="6"
+                                                           Foreground="#93A9BD" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding RightTimeScaleText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="6"
+                                                           Foreground="#93A9BD" />
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Grid Margin="16,0,16,10"
+                  RowDefinitions="Auto,*,Auto,Auto">
+                <Border Margin="0,42,0,0"
+                        MinHeight="92"
+                        Background="#55000000"
+                        Padding="8,6"
+                        ClipToBounds="True">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Column="0"
+                                    Width="248"
+                                    MaxWidth="248"
+                                    Margin="0,0,8,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                            <TextBlock Text="{Binding MarketStatusText}"
+                                       FontFamily="Consolas"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="#F5F7F8" />
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,2,0,0"
+                                        MaxWidth="248">
+                                <TextBlock Text="{Binding UpdatedTickerFieldText}"
+                                           Width="222"
+                                           FontFamily="Consolas"
+                                           FontSize="12"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="#DCE6ED" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding DataFreshnessText}"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{Binding FreshnessBrush}" />
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding MacroQuotes}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      ClipToBounds="True">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#40131A23"
+                                            BorderBrush="#5F6C7A8A"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Width="96"
+                                            Height="50"
+                                            Padding="4,5">
+                                        <Canvas Width="86" Height="40" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                            <Grid Canvas.Left="0" Canvas.Top="10" Width="20" Height="20">
+                                                <Path Data="{Binding TrackPath}"
+                                                      Stroke="#44596C82"
+                                                      StrokeThickness="1.8"
+                                                      StrokeLineCap="Round" />
+                                                <Path Data="{Binding NegativeRangePath}"
+                                                      Stroke="#AA9A2924"
+                                                      StrokeThickness="0.7"
+                                                      StrokeLineCap="Round" />
+                                                <Path Data="{Binding PositiveRangePath}"
+                                                      Stroke="#AA237A3C"
+                                                      StrokeThickness="0.7"
+                                                      StrokeLineCap="Round" />
+                                                <Path Data="{Binding ArcPath}"
+                                                      Stroke="{Binding AccentBrush}"
+                                                      StrokeThickness="2.5"
+                                                      StrokeLineCap="Round" />
+                                                <Path Data="{Binding NeedlePath}"
+                                                      Stroke="#F6FBFF"
+                                                      StrokeThickness="0.9"
+                                                      StrokeLineCap="Round" />
+                                                <Path Data="{Binding ZeroMarkPath}"
+                                                      Stroke="#D9E2EA"
+                                                      StrokeThickness="1.1"
+                                                      StrokeLineCap="Round" />
+                                                <Ellipse Width="3.2"
+                                                         Height="3.2"
+                                                         Fill="#E6F2FF"
+                                                         Stroke="#5F6C7A8A"
+                                                         StrokeThickness="0.5" />
+                                            </Grid>
+                                            <StackPanel Canvas.Right="0" Canvas.Top="1" Width="53">
+                                                <TextBlock Text="{Binding Label}"
+                                                       FontSize="8"
+                                                       FontWeight="SemiBold"
+                                                       Width="53"
+                                                       TextAlignment="Right"
+                                                       Foreground="#C8D6E5" />
+                                            <TextBlock Text="{Binding ValueText}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="10.5"
+                                                       Width="53"
+                                                       TextAlignment="Right"
+                                                       Foreground="White" />
+                                            <TextBlock Text="{Binding ChangeText}"
+                                                       FontFamily="Consolas"
+                                                       FontSize="9.5"
+                                                       Width="53"
+                                                       TextAlignment="Right"
+                                                       Foreground="{Binding AccentBrush}" />
+                                            </StackPanel>
+                                        </Canvas>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Grid.Column="2"
+                                MinWidth="102"
+                                Margin="4,0,0,0"
+                                Padding="6,4"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Right"
+                                Background="#CC05090D"
+                                BorderBrush="#334F7489"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                ClipToBounds="True">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ClockDateText}"
+                                           HorizontalAlignment="Right"
+                                           FontFamily="Consolas"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="#D8E9F8" />
+                                <TextBlock Text="{Binding ClockText}"
+                                           HorizontalAlignment="Right"
+                                           FontFamily="Consolas"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="White" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <ItemsControl x:Name="TickerLanesHost"
+                              Grid.Row="1"
+                              ItemsSource="{Binding Lanes}"
+                              Margin="8,188,8,0"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Top"
+                              ClipToBounds="True">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#C52A3138"
+                                    Width="{Binding LaneWidth}"
+                                    HorizontalAlignment="Stretch"
+                                    BorderBrush="#332E3A47"
+                                    BorderThickness="1"
+                                    CornerRadius="7"
+                                    Margin="8,3"
+                                    Padding="9,4"
+                                    VerticalAlignment="Center">
+                                <Grid ColumnDefinitions="Auto,*"
+                                      VerticalAlignment="Center">
+                                    <Border Background="#FF121922"
+                                            BorderBrush="#5546637A"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="7,2"
+                                            Margin="0,0,10,0"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontFamily="Consolas"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="#9AB5C8" />
+                                    </Border>
+                                    <Border Grid.Column="1"
+                                            Height="28"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Center"
+                                            ClipToBounds="True">
+                                    <ItemsControl ItemsSource="{Binding TrackItems}"
+                                                   Width="{Binding TrackWidth}"
+                                                  HorizontalAlignment="Left">
+                                        <ItemsControl.RenderTransform>
+                                            <TranslateTransform X="{Binding TrackOffset}" />
+                                        </ItemsControl.RenderTransform>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Width="{Binding Width}" ColumnDefinitions="64,66,72,*">
+                                                    <Border Grid.Column="1"
+                                                            Background="{Binding Quote.FlashBrush}"
+                                                            Opacity="{Binding Quote.FlashOpacity}"
+                                                            CornerRadius="4" />
+                                                    <Grid Width="62"
+                                                          Margin="0,0,2,0"
+                                                          ColumnDefinitions="*,Auto">
+                                                        <TextBlock Text="{Binding Quote.Symbol}"
+                                                                   FontFamily="Consolas"
+                                                                   FontSize="15"
+                                                                   FontWeight="Bold"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{Binding Quote.TrendBrush}" />
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Quote.WaitingGlyphText}"
+                                                                   IsVisible="{Binding Quote.IsWaitingOnData}"
+                                                                   FontFamily="Segoe UI Emoji"
+                                                                   FontSize="11"
+                                                                   Opacity="0.82"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{Binding Quote.WaitingGlyphBrush}" />
+                                                    </Grid>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Quote.PriceText}"
+                                                               FontFamily="Consolas"
+                                                               FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               Margin="0,0,2,0"
+                                                               TextAlignment="Right"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="#F3F6F8" />
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding Quote.ChangeText}"
+                                                               FontFamily="Consolas"
+                                                               FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               TextAlignment="Right"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{Binding Quote.TrendBrush}" />
+                                                    <Border Grid.Column="3"
+                                                            Width="1"
+                                                            Height="16"
+                                                            Margin="9,0,18,0"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Center"
+                                                            Background="#5A768B9F" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border x:Name="GlobalMarketsHost"
+                        Grid.Row="2"
+                        Background="#E20B1116"
+                        BorderBrush="#314B5F"
+                        BorderThickness="1"
+                        Padding="0">
+                    <Grid ColumnDefinitions="140,158,*" Height="68">
+                        <Border Background="#F0162A3A"
+                                BorderBrush="#445C90AA"
+                                BorderThickness="0,0,1,0"
+                                Padding="11,8">
+                            <TextBlock Text="GLOBAL MARKETS"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Consolas"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="#EAF7FF" />
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                DataContext="{Binding CalendarReferenceGlobalMarket}"
+                                Width="150"
+                                Height="54"
+                                Margin="8,0,0,0"
+                                Padding="6,3"
+                                VerticalAlignment="Center"
+                                Background="#C2171D22"
+                                BorderBrush="#405564"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding City}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="#C9E8FF" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TimeText}"
+                                               FontFamily="Consolas"
+                                               FontSize="8"
+                                               Foreground="#DCE6ED" />
+                                </Grid>
+                                <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding ExchangeName}"
+                                               FontSize="8"
+                                               Foreground="#8EA4B4" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding SessionText}"
+                                               FontSize="7"
+                                               Foreground="#AFC0CB" />
+                                </Grid>
+                                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*">
+                                    <TextBlock Text="{Binding ValueText}"
+                                               FontFamily="Consolas"
+                                               FontSize="9"
+                                               Foreground="White" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding ChangeText}"
+                                               Margin="5,0,0,0"
+                                               FontFamily="Consolas"
+                                               FontSize="8"
+                                               Foreground="{Binding AccentBrush}" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding WeatherText}"
+                                               HorizontalAlignment="Right"
+                                               FontSize="8"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="#AFC0CB" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Column="2"
+                              Height="68"
+                              Margin="16,0,28,0"
+                              ClipToBounds="True">
+                            <ItemsControl ItemsSource="{Binding GlobalMarketTrackItems}"
+                                          Width="{Binding GlobalMarketsTrackWidth}"
+                                          HorizontalAlignment="Left">
+                                <ItemsControl.RenderTransform>
+                                    <TranslateTransform X="{Binding GlobalMarketsTrackOffset}" />
+                                </ItemsControl.RenderTransform>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="164"
+                                            Height="54"
+                                            Margin="0,7,14,7"
+                                            Background="#C2171D22"
+                                            BorderBrush="#405564"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Padding="5,3">
+                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock Text="{Binding City}"
+                                                           FontSize="9"
+                                                           FontWeight="Bold"
+                                                           Foreground="#C9E8FF" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding TimeText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="8"
+                                                           Foreground="#DCE6ED" />
+                                            </Grid>
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding ExchangeName}"
+                                                       FontSize="8"
+                                                       Foreground="#8EA4B4" />
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding SessionText}"
+                                                       HorizontalAlignment="Right"
+                                                       FontSize="7"
+                                                       Foreground="#AFC0CB" />
+                                            <Path Grid.Row="2"
+                                                  Data="{Binding MiniGraphPath}"
+                                                  Height="10"
+                                                  HorizontalAlignment="Stretch"
+                                                  Stretch="None"
+                                                  Stroke="{Binding AccentBrush}"
+                                                  StrokeThickness="1.4"
+                                                  IsHitTestVisible="False" />
+                                            <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*">
+                                                <TextBlock Text="{Binding ValueText}"
+                                                           FontFamily="Consolas"
+                                                           FontSize="9"
+                                                           Foreground="White" />
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding ChangeText}"
+                                                           Margin="5,0,0,0"
+                                                           FontFamily="Consolas"
+                                                           FontSize="8"
+                                                           Foreground="{Binding AccentBrush}" />
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding WeatherText}"
+                                                           HorizontalAlignment="Right"
+                                                           FontSize="8"
+                                                           Foreground="#AFC0CB" />
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Border Width="72"
+                                    HorizontalAlignment="Left"
+                                    IsHitTestVisible="False">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                                        <GradientStop Color="#E20B1116" Offset="0" />
+                                        <GradientStop Color="#000B1116" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Border Width="36"
+                                    HorizontalAlignment="Right"
+                                    IsHitTestVisible="False">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                                        <GradientStop Color="#000B1116" Offset="0" />
+                                        <GradientStop Color="#E20B1116" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="3" RowDefinitions="Auto,Auto">
+                    <Border Height="54" Background="#E2040506" Padding="0">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Background="#E51D2C" Padding="16,10">
+                                <TextBlock Text="FINANCE NEWS"
+                                           FontWeight="Bold"
+                                           Foreground="White" />
+                            </Border>
+                            <Border Grid.Column="1"
+                                    Height="44"
+                                    Margin="12,0,10,0"
+                                    VerticalAlignment="Center"
+                                    ClipToBounds="True">
+                                <TextBlock Text="{Binding NewsText}"
+                                           MaxHeight="38"
+                                           LineHeight="19"
+                                           FontFamily="Consolas"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           Foreground="#EEF2F4"
+                                           TextWrapping="Wrap">
+                                    <TextBlock.RenderTransform>
+                                        <TranslateTransform Y="{Binding NewsVerticalOffset}" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="12,5,12,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding BackgroundAttributionText}"
+                                   MaxWidth="620"
+                                   FontSize="10"
+                                   TextWrapping="NoWrap"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Foreground="#88939A" />
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="7">
+                            <TextBlock Text="Delayed by minimum 15 minutes."
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="NoWrap"
+                                       VerticalAlignment="Center"
+                                       Foreground="#FFE36E" />
+                            <StackPanel x:Name="RadioControls"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Spacing="4"
+                                        IsVisible="False"
+                                        ToolTip.Tip="{Binding StatusText}">
+                                <Canvas Width="18" Height="14" VerticalAlignment="Center">
+                                    <Border Canvas.Left="0" Canvas.Top="2" Width="13" Height="10"
+                                            Background="#202830" BorderBrush="#FFE36E"
+                                            BorderThickness="1" CornerRadius="2" />
+                                    <Ellipse Canvas.Left="3" Canvas.Top="5" Width="3" Height="3"
+                                             Fill="#FFE36E" />
+                                    <Path Data="M14,2 C18,4 18,9 14,12"
+                                          Stroke="#FFE36E" StrokeThickness="1.2" />
+                                </Canvas>
+                                <Button x:Name="RadioToggleButton"
+                                        Width="22" Height="20"
+                                        Padding="0"
+                                        FontSize="11"
+                                        Background="#202830"
+                                        Foreground="#FFE36E"
+                                        BorderBrush="#657989"
+                                        BorderThickness="1"
+                                        ToolTip.Tip="{Binding PlaybackToolTip}"
+                                        Command="{Binding TogglePlaybackCommand}">
+                                    <TextBlock x:Name="RadioGlyph"
+                                               Text="{Binding PlaybackGlyph}"
+                                               Foreground="#FFE36E"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding RuntimeArchitectureFooterText}"
+                                   HorizontalAlignment="Right"
+                                   FontSize="10"
+                                   TextWrapping="NoWrap"
+                                   VerticalAlignment="Center"
+                                   Foreground="#88939A" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
